@@ -2,9 +2,11 @@
 
 ## Statut
 
-**EN DÉVELOPPEMENT — GATE ACTIF**
+**LOT A VALIDÉ PRÉPRODUCTION — 2026-08-13. LOT B À SPÉCIFIER.**
 
 CAP-001 est validé en préproduction. CAP-003 à CAP-084 restent bloqués.
+
+Preuve du lot A : `../proofs/CAP-002A-2026-08-13.md`.
 
 ## Finalité
 
