@@ -4,16 +4,26 @@
         $modes = $profileConfiguration['participation_modes'] ?? [];
     @endphp
     <div class="space-shell">
-        <header class="space-header"><a class="brand" href="/"><span class="brand-mark">DG</span><span>DG Afrique</span></a><div class="space-search">⌕ <span>Rechercher dans DG Afrique…</span></div><div class="member-summary"><span class="avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</span><span class="member-name">{{ $identity->label }}</span><form method="POST" action="{{ route('logout') }}">@csrf<button class="logout-button">Se déconnecter</button></form></div></header>
+        <header class="space-header">
+            <div class="space-identity">
+                <a class="brand" href="/"><span class="brand-mark">G</span><span>DG Afrique</span></a>
+                <span class="space-notification" aria-label="Aucune nouvelle notification"><i></i></span>
+                <details class="account-menu">
+                    <summary class="member-summary"><span class="avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</span><span class="member-name">{{ $identity->label }}</span></summary>
+                    <div><a href="{{ route('member.space') }}">Tableau de bord</a><a href="{{ route('member.profile.edit') }}">Mon profil</a><form method="POST" action="{{ route('logout') }}">@csrf<button type="submit">Se déconnecter</button></form></div>
+                </details>
+            </div>
+            <div class="space-search">⌕ <span>Rechercher…</span></div>
+        </header>
         <div class="space-layout">
-            <aside class="space-sidebar"><nav><a href="{{ route('member.space') }}">Tableau de bord</a><a class="active" href="{{ route('member.profile.edit') }}">Mon profil <small>CAP‑003</small></a><span>ZUMRA <small>à venir</small></span><span>Mes demandes <small>à venir</small></span><span>Satellites <small>à venir</small></span><span>Paramètres <small>à venir</small></span></nav></aside>
+            <aside class="space-sidebar"><nav><a class="nav-blue" href="{{ route('member.space') }}">Tableau de bord</a><a class="active nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a><span class="nav-green">ZUMRA <small>à venir</small></span><span class="nav-amber">Mes demandes <small>à venir</small></span><span class="nav-blue">Satellites <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span></nav></aside>
             <main class="space-content profile-content">
-                <p class="eyebrow dark">Profil de capacités</p><h1>{{ $profileConfiguration['title'] }}</h1><p class="space-lead">{{ $profileConfiguration['introduction'] }}</p>
-                <section class="identity-strip"><div><small>Identité reconnue par GAMAD Core</small><strong>{{ $identity->label }}</strong></div><code>{{ $identity->reference }}</code></section>
+                <div class="profile-heading"><div><p class="eyebrow dark">Profil de capacités</p><h1>{{ $profileConfiguration['title'] }}</h1><p class="space-lead">{{ $profileConfiguration['introduction'] }}</p></div><div class="profile-avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</div></div>
+                <section class="identity-strip"><div><small>Identité reconnue par GAMAD Core</small><strong>{{ $identity->label }}</strong></div><code>{{ $identity->reference }}</code><span>Identité attestée</span></section>
                 @if (session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if ($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
                 <form method="POST" action="{{ route('member.profile.update') }}" class="profile-form">@csrf @method('PUT')
                     @foreach($sections as $sectionKey => $section)
-                        <section class="profile-section"><div class="section-number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div><div class="section-body"><h2>{{ $section['title'] }}</h2><p>{{ $section['help'] }}</p>
+                        <section class="profile-section"><div class="section-number">{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</div><div class="section-body"><div class="section-heading"><h2>{{ $section['title'] }}</h2><span>{{ $section['help'] }}</span></div>
                         @switch($sectionKey)
                             @case('situation')
                                 <div class="profile-grid"><label>{{ $profileConfiguration['field_labels']['country_code'] }}<input name="country_code" list="country-suggestions" maxlength="2" value="{{ old('country_code', $profile?->country_code) }}"></label><datalist id="country-suggestions">@foreach($profileConfiguration['country_suggestions'] ?? [] as $country)<option value="{{ $country }}">@endforeach</datalist><label>{{ $profileConfiguration['field_labels']['city'] }}<input name="city" value="{{ old('city', $profile?->city) }}"></label><label class="wide">{{ $profileConfiguration['field_labels']['current_activity'] }}<input name="current_activity" value="{{ old('current_activity', $profile?->current_activity) }}"></label><label>{{ $profileConfiguration['field_labels']['phone'] }}<input name="phone" value="{{ old('phone', $profile?->phone) }}"></label><label>{{ $profileConfiguration['field_labels']['education_level'] }}<input name="education_level" value="{{ old('education_level', $profile?->education_level) }}"></label></div>
