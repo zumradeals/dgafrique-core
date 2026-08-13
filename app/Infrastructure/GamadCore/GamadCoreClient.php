@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\GamadCore;
 
 use App\Domain\Identity\CoreIdentity;
+use App\Domain\Identity\CoreIdentityProof;
 use App\Domain\Identity\CoreSession;
 use App\Infrastructure\GamadCore\Exceptions\CoreIdentityNotFoundException;
 use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
@@ -30,6 +31,40 @@ final readonly class GamadCoreClient
         $this->assertUsable($response);
 
         return CoreSession::fromCurrentPayload($this->jsonObject($response));
+    }
+
+    public function proveIdentity(string $entity, string $secret): CoreIdentityProof
+    {
+        $entity = trim($entity);
+        if ($entity === '' || $secret === '') {
+            throw new CoreSessionRejectedException('Identité ou moyen d’accès absent.');
+        }
+
+        $response = $this->post('/sessions', [
+            'entite' => $entity,
+            'secret' => $secret,
+        ]);
+        $this->assertUsable($response);
+
+        $payload = $this->jsonObject($response);
+        $token = $payload['jeton'] ?? null;
+        if (!is_string($token) || $token === '') {
+            throw new CoreProtocolException('GAMAD Core n’a pas remis de jeton de session.');
+        }
+
+        try {
+            $session = $this->currentSession($token);
+            if (!hash_equals($entity, $session->entity)) {
+                throw new CoreProtocolException('La session Core appartient à une autre entité.');
+            }
+
+            return new CoreIdentityProof(
+                identity: $this->resolveIdentity($session->entity, $token),
+                session: $session,
+            );
+        } finally {
+            $this->revokeSession($token);
+        }
     }
 
     public function resolveIdentity(string $reference, string $bearerToken): CoreIdentity
@@ -64,14 +99,42 @@ final readonly class GamadCoreClient
         }
     }
 
-    private function request(string $bearerToken): PendingRequest
+    /** @param array<string, string> $payload */
+    private function post(string $path, array $payload): Response
     {
-        return Http::baseUrl($this->baseUrl)
+        if (trim($this->baseUrl) === '') {
+            throw new CoreUnavailableException('GAMAD Core n’est pas configuré.');
+        }
+
+        try {
+            return $this->request()->post($path, $payload);
+        } catch (ConnectionException $exception) {
+            throw new CoreUnavailableException('GAMAD Core est temporairement injoignable.', previous: $exception);
+        }
+    }
+
+    private function revokeSession(string $bearerToken): void
+    {
+        try {
+            $response = $this->request($bearerToken)->delete('/sessions/current');
+        } catch (ConnectionException $exception) {
+            throw new CoreUnavailableException('La session de preuve n’a pas pu être révoquée.', previous: $exception);
+        }
+
+        if (!$response->successful()) {
+            throw new CoreUnavailableException('Core n’a pas confirmé la révocation de la session de preuve.');
+        }
+    }
+
+    private function request(?string $bearerToken = null): PendingRequest
+    {
+        $request = Http::baseUrl($this->baseUrl)
             ->acceptJson()
-            ->withToken($bearerToken)
             ->withHeaders(['X-Correlation-ID' => (string) Str::uuid()])
             ->connectTimeout($this->connectTimeoutSeconds)
             ->timeout($this->timeoutSeconds);
+
+        return $bearerToken === null ? $request : $request->withToken($bearerToken);
     }
 
     private function assertUsable(Response $response): void

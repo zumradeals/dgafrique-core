@@ -58,6 +58,60 @@ final class GamadCoreClientTest extends TestCase
         self::assertSame('2026-08-14T02:00:00+00:00', $session->expiresAt->format(DATE_ATOM));
     }
 
+    public function test_it_proves_an_identity_and_always_revokes_the_test_session(): void
+    {
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response([
+                'jeton' => 'temporary-test-token',
+            ], 201),
+            'core.test/api/v1/sessions/current' => Http::response([
+                'entite' => 'PER-GAMAD-000000001',
+                'assurance' => 'A2',
+                'expire_le' => '2026-08-14T02:00:00+00:00',
+            ]),
+            'core.test/api/v1/identites/*' => Http::response([
+                'reference' => 'PER-GAMAD-000000001',
+                'type' => 'PERSONNE',
+                'libelle' => 'Membre DG Afrique',
+                'etat' => 'ACTIF',
+                'source' => 'SRC-GAMAD-001',
+                'regime' => 'INSCRIT',
+            ]),
+        ]);
+
+        $proof = $this->client->proveIdentity('PER-GAMAD-000000001', 'member-secret');
+
+        self::assertSame('PER-GAMAD-000000001', $proof->identity->reference);
+        self::assertSame('A2', $proof->session->assurance);
+        Http::assertSent(fn ($request): bool =>
+            $request->method() === 'DELETE'
+            && $request->url() === 'https://core.test/api/v1/sessions/current'
+            && $request->hasHeader('Authorization', 'Bearer temporary-test-token')
+        );
+    }
+
+    public function test_it_revokes_the_test_session_when_identity_resolution_fails(): void
+    {
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'temporary-test-token'], 201),
+            'core.test/api/v1/sessions/current' => Http::response([
+                'entite' => 'PER-GAMAD-000000001',
+                'assurance' => 'A2',
+                'expire_le' => '2026-08-14T02:00:00+00:00',
+            ]),
+            'core.test/api/v1/identites/*' => Http::response([], 404),
+        ]);
+
+        try {
+            $this->client->proveIdentity('PER-GAMAD-000000001', 'member-secret');
+            self::fail('La résolution devait échouer.');
+        } catch (CoreIdentityNotFoundException) {
+            self::assertTrue(true);
+        }
+
+        Http::assertSent(fn ($request): bool => $request->method() === 'DELETE');
+    }
+
     #[DataProvider('failureProvider')]
     public function test_it_preserves_core_failure_semantics(int $status, string $exception): void
     {

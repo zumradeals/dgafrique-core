@@ -104,3 +104,13 @@ La référence retournée doit être strictement identique à celle demandée.
 - preuve qu'un `401` détruit la future session portail et qu'un `503` la préserve ;
 - preuve PostgreSQL qu'aucune identité membre concurrente n'est créée ;
 - validation du dirigeant avant passage à CAP-002.
+
+## Commande de preuve préproduction
+
+```bash
+php8.4 artisan dg:core:prouver-identite PER-GAMAD-XXXXXXXXX
+```
+
+La commande demande le moyen d'accès dans une saisie invisible. Elle n'affiche
+ni le secret ni le bearer, vérifie la session attestée, résout CTR-01 et révoque
+la session de test avant de restituer la preuve lisible.
