@@ -7,8 +7,9 @@
 | CAP | Capacité | Statut | Preuve nouvelle stack |
 |---|---|---|---|
 | CAP-001 | IDENTITÉ PERSONNE | **VALIDÉ PRÉPRODUCTION — 2026-08-13** | `proofs/CAP-001-2026-08-13.md` |
-| CAP-002 | COMPTE DG AFRIQUE | **LOT A VALIDÉ — LOT B EN DÉVELOPPEMENT** | `proofs/CAP-002A-2026-08-13.md` — contrats Core de création/vérification raccordés |
-| CAP-003 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-002 | COMPTE DG AFRIQUE | **VALIDÉ PRÉPRODUCTION — 2026-08-13** | `proofs/CAP-002A-2026-08-13.md` · `proofs/CAP-002B-2026-08-13.md` |
+| CAP-003 | PROFIL DE CAPACITÉS | **AUTORISÉ — PROCHAIN GATE** | — |
+| CAP-004 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
