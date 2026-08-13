@@ -79,12 +79,16 @@ final class MemberProfileTest extends TestCase
 
     public function test_another_core_identity_cannot_overwrite_the_first_profile(): void
     {
-        $this->signIn('IDN-PER-000000005', 'Membre Un');
-        $this->put('/espace/profil', ['city' => 'Abidjan']);
+        PersonProfile::query()->create([
+            'core_identity_reference' => 'IDN-PER-000000005',
+            'city' => 'Abidjan',
+        ]);
 
-        $this->post('/deconnexion');
         $this->signIn('IDN-PER-000000006', 'Membre Deux');
-        $this->put('/espace/profil', ['city' => 'Bouaké']);
+        $this->put('/espace/profil', [
+            'city' => 'Bouaké',
+            'core_identity_reference' => 'IDN-PER-000000005',
+        ])->assertRedirect('/espace/profil');
 
         self::assertSame(2, PersonProfile::query()->count());
         self::assertSame('Abidjan', PersonProfile::query()->findOrFail('IDN-PER-000000005')->city);
