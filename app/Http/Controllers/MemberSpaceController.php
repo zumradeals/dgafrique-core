@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
+use App\Models\PortalAdministrator;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -17,7 +18,8 @@ final class MemberSpaceController
         $identity = $request->attributes->get('dg_identity');
 
         $profile = PersonProfile::query()->find($identity->reference);
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('member.space', ['identity' => $identity, 'profile' => $profile]);
+        return view('member.space', compact('identity', 'profile', 'isAdministrator'));
     }
 }

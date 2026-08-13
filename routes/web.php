@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountRegistrationController;
+use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -30,3 +31,9 @@ Route::get('/espace/profil', [MemberProfileController::class, 'edit'])
     ->middleware('core.member')->name('member.profile.edit');
 Route::put('/espace/profil', [MemberProfileController::class, 'update'])
     ->middleware(['core.member', 'throttle:profile-update'])->name('member.profile.update');
+
+Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
+    Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
+    Route::put('/profil-capacites', [ProfileConfigurationController::class, 'update'])
+        ->middleware('throttle:profile-configuration')->name('administration.profile.update');
+});

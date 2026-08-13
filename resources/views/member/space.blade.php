@@ -24,6 +24,7 @@
                     <span>Mes demandes <small>à venir</small></span>
                     <span>Satellites <small>à venir</small></span>
                     <span>Paramètres <small>à venir</small></span>
+                    @if($isAdministrator)<a href="{{ route('administration.profile.edit') }}">Administration <small>Configurer</small></a>@endif
                 </nav>
             </aside>
 

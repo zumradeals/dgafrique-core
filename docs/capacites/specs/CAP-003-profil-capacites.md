@@ -56,3 +56,11 @@ CAP-023, CAP-024 et CAP-026 porteront les modèles sémantiques plus riches.
 - retrait effectif du consentement ;
 - migration PostgreSQL et tests automatisés verts ;
 - interface desktop et mobile éprouvée en préproduction.
+
+## Administration
+
+Les libellés, textes d'aide, sections actives, ordre, pays suggérés, modes de
+participation et texte de consentement sont enregistrés dans `portal_settings`
+et modifiables depuis `/administration`. Les administrateurs sont des références
+canoniques Core provisionnées dans `portal_administrators`; aucune adresse email
+ni référence privilégiée n'est inscrite dans le code source.
