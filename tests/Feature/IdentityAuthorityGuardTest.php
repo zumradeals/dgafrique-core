@@ -1,0 +1,26 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+final class IdentityAuthorityGuardTest extends TestCase
+{
+    public function test_laravel_has_no_parallel_member_identity_provider(): void
+    {
+        self::assertSame([], config('auth.guards'));
+        self::assertSame([], config('auth.providers'));
+        self::assertFileDoesNotExist(app_path('Models/User.php'));
+        self::assertFileDoesNotExist(database_path('migrations/0001_01_01_000000_create_users_table.php'));
+    }
+
+    public function test_the_foundation_page_is_available(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('DG Afrique se reconstruit.')
+            ->assertSee('GAMAD Core');
+    }
+}
