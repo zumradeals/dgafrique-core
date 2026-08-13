@@ -2,12 +2,13 @@
 
 > L'index complet et les titres CAP-001 à CAP-084 se trouvent dans `CAPABILITY-INDEX.md`.
 
-## État initial
+## État courant
 
 | CAP | Capacité | Statut | Preuve nouvelle stack |
 |---|---|---|---|
-| CAP-001 | IDENTITÉ PERSONNE | **EN DÉVELOPPEMENT — GATE ACTIF** | Client CTR-01, DTO et gardes anti-identité locale ; preuves automatisées locales à exécuter |
-| CAP-002 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-001 | IDENTITÉ PERSONNE | **VALIDÉ PRÉPRODUCTION — 2026-08-13** | `proofs/CAP-001-2026-08-13.md` |
+| CAP-002 | COMPTE DG AFRIQUE | **AUTORISÉ — PROCHAIN GATE** | — |
+| CAP-003 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

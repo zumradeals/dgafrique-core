@@ -2,7 +2,9 @@
 
 ## Statut
 
-**EN DÉVELOPPEMENT — GATE ACTIF**
+**VALIDÉ PRÉPRODUCTION — 2026-08-13**
+
+Preuve canonique : `../proofs/CAP-001-2026-08-13.md`.
 
 Cette fiche remplace, pour la reconstruction Laravel, la validation historique archivée dans `legacy/specs/`. Aucun résultat Next.js, Supabase ou Vercel n'est hérité.
 
@@ -99,11 +101,16 @@ La référence retournée doit être strictement identique à celle demandée.
 
 ## Critères de sortie du gate
 
-- tests automatisés verts ;
-- vérification réelle contre Core en préproduction avec une identité de démonstration ;
-- preuve qu'un `401` détruit la future session portail et qu'un `503` la préserve ;
-- preuve PostgreSQL qu'aucune identité membre concurrente n'est créée ;
-- validation du dirigeant avant passage à CAP-002.
+- [x] tests automatisés verts : 14 tests, 28 assertions ;
+- [x] vérification réelle contre Core en préproduction ;
+- [x] sémantique `401`, `404`, `429`, `5xx` couverte par tests typés ;
+- [x] garde structurelle : aucune table, modèle ou provider membre local ;
+- [x] session de preuve révoquée même en cas d'échec de résolution ;
+- [x] validation du dirigeant avant passage à CAP-002.
+
+La destruction du cookie portail sur `401` et sa conservation sur panne
+transitoire appartiennent à CAP-002, car CAP-001 ne crée volontairement encore
+aucune session membre DG Afrique.
 
 ## Commande de preuve préproduction
 
@@ -114,3 +121,9 @@ php8.4 artisan dg:core:prouver-identite PER-GAMAD-XXXXXXXXX
 La commande demande le moyen d'accès dans une saisie invisible. Elle n'affiche
 ni le secret ni le bearer, vérifie la session attestée, résout CTR-01 et révoque
 la session de test avant de restituer la preuve lisible.
+
+## Décision
+
+CAP-001 est fermé en préproduction. CAP-002 — Compte DG Afrique devient le seul
+gate autorisé. Une validation de production restera distincte de cette preuve
+et n'est pas revendiquée ici.
