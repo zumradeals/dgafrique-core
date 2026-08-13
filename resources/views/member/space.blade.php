@@ -1,63 +1,87 @@
 <x-layouts.portal title="Mon espace — DG Afrique">
     <div class="space-shell">
         <header class="space-header">
-            <a class="brand" href="/">
-                <span class="brand-mark">DG</span><span>DG Afrique</span>
-            </a>
-            <div class="space-search" aria-label="Recherche bientôt disponible">⌕ <span>Rechercher dans DG Afrique…</span></div>
-            <div class="member-summary">
-                <span class="avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</span>
-                <span class="member-name">{{ $identity->label }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="logout-button" type="submit">Se déconnecter</button>
-                </form>
+            <div class="space-identity">
+                <a class="brand" href="/">
+                    <span class="brand-mark">G</span><span>DG Afrique</span>
+                </a>
+                <span class="space-notification" aria-label="Aucune nouvelle notification"><i></i></span>
+                <details class="account-menu">
+                    <summary class="member-summary">
+                        <span class="avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</span>
+                        <span class="member-name">{{ $identity->label }}</span>
+                    </summary>
+                    <div>
+                        <a href="{{ route('member.profile.edit') }}">Mon profil</a>
+                        @if($isAdministrator)<a href="{{ route('administration.profile.edit') }}">Administration</a>@endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit">Se déconnecter</button>
+                        </form>
+                    </div>
+                </details>
             </div>
+            <div class="space-search" aria-label="Recherche bientôt disponible">⌕ <span>Rechercher…</span></div>
         </header>
 
         <div class="space-layout">
             <aside class="space-sidebar">
                 <nav aria-label="Navigation Mon espace">
-                    <a class="active" href="{{ route('member.space') }}">Tableau de bord</a>
-                    <a href="{{ route('member.profile.edit') }}">Mon profil <small>CAP‑003</small></a>
-                    <span>ZUMRA <small>à venir</small></span>
-                    <span>Mes demandes <small>à venir</small></span>
-                    <span>Satellites <small>à venir</small></span>
-                    <span>Paramètres <small>à venir</small></span>
-                    @if($isAdministrator)<a href="{{ route('administration.profile.edit') }}">Administration <small>Configurer</small></a>@endif
+                    <a class="active nav-blue" href="{{ route('member.space') }}">Tableau de bord</a>
+                    <a class="nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a>
+                    <span class="nav-green">ZUMRA <small>à venir</small></span>
+                    <span class="nav-amber">Mes demandes <small>à venir</small></span>
+                    <span class="nav-blue">Satellites <small>à venir</small></span>
+                    <span class="nav-gray">Paramètres <small>à venir</small></span>
+                    @if($isAdministrator)<a class="nav-cyan" href="{{ route('administration.profile.edit') }}">Administration</a>@endif
                 </nav>
             </aside>
 
             <main class="space-content">
-                <p class="eyebrow dark">Mon espace</p>
-                <h1>Bienvenue, {{ $identity->label }}</h1>
-                <p class="space-lead">Votre identité GAMAD est reconnue. Votre espace personnel DG Afrique peut maintenant se construire autour d’elle.</p>
+                <div class="dashboard-heading">
+                    <h1>Bonjour, {{ $greetingName }}</h1>
+                    <p>Voici l’état de votre espace DG Afrique.</p>
+                </div>
 
                 <section class="status-grid" aria-label="État du compte">
-                    <article class="status-card featured">
-                        <span class="card-kicker">Compte DG Afrique</span>
-                        <strong>Accès actif</strong>
-                        <p>Session vérifiée directement auprès de GAMAD Core.</p>
+                    <article class="status-card">
+                        <span class="card-kicker">Profil complété</span>
+                        <strong>{{ $profileCompletion }}%</strong>
+                        <div class="profile-progress" aria-label="Profil complété à {{ $profileCompletion }} %"><i style="width: {{ $profileCompletion }}%"></i></div>
                     </article>
                     <article class="status-card">
-                        <span class="card-kicker">Identité canonique</span>
-                        <strong>{{ $identity->reference }}</strong>
-                        <p>{{ $identity->regime }}</p>
+                        <span class="card-kicker">Demandes en cours</span>
+                        <strong>—</strong>
+                        <p>La capacité Demandes n’est pas encore ouverte.</p>
                     </article>
                     <article class="status-card">
-                        <span class="card-kicker">Programme ZUMRA</span>
-                        <strong>Non déterminé</strong>
-                        <p>Le compte gratuit n’entraîne aucune adhésion automatique.</p>
+                        <span class="card-kicker">Contribution ZUMRA</span>
+                        <strong class="pending-state">Non attestée</strong>
+                        <p>Aucun statut n’est inventé sans contrat ZUMRA.</p>
                     </article>
                 </section>
 
-                <section class="next-section">
-                    <div>
-                        <p class="eyebrow dark">Prochaine étape</p>
-                        <h2>{{ $profile ? 'Enrichir votre profil de capacités' : 'Construire votre profil de capacités' }}</h2>
-                        <p>{{ $profile ? 'Votre profil est enregistré. Vous pouvez le compléter à votre rythme.' : 'Les informations métier resteront dans DG Afrique et seront rattachées à votre référence Core, sans modifier votre identité canonique.' }}</p>
-                    </div>
-                    <a class="next-badge profile-action" href="{{ route('member.profile.edit') }}">{{ $profile ? 'Mettre à jour mon profil' : 'Commencer mon profil' }}</a>
+                <section class="dashboard-actions" aria-label="Actions rapides">
+                    <article>
+                        <h2>{{ $profile ? 'Compléter mon profil' : 'Créer mon profil' }}</h2>
+                        <p>Ajoutez vos compétences et informations.</p>
+                        <a href="{{ route('member.profile.edit') }}">Continuer →</a>
+                    </article>
+                    <article class="zumra-action">
+                        <h2>Ouvrir ZUMRA</h2>
+                        <p>Fil, contribution et projets soutenus.</p>
+                        <span>Disponible après validation →</span>
+                    </article>
+                    <article>
+                        <h2>Faire une demande</h2>
+                        <p>Décrivez votre projet et suivez son traitement.</p>
+                        <span>Capacité à venir →</span>
+                    </article>
+                </section>
+
+                <section class="dashboard-trust">
+                    <div><span>Identité GAMAD</span><strong>{{ $identity->reference }}</strong></div>
+                    <p>Votre session est vérifiée directement auprès de GAMAD Core.</p>
                 </section>
             </main>
         </div>
