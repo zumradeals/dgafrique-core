@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#F4F8FB}
+a{color:#0877C9;text-decoration:none}
+a:hover{color:#19C2D0}
+input::placeholder,textarea::placeholder{color:#9AA6B2}
+</style>
+</helmet>
+<div style="min-height:100vh;position:relative;background:#F4F8FB">
+
+  <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height:100vh;display:flex;flex-wrap:wrap">
+      <div style="flex:1 1 380px;min-width:300px;background:#061F35;color:#fff;padding:56px;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:36px;height:36px;border-radius:9px;background:#19C2D0;color:#061F35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">G</div>
+          <span style="font-weight:800;font-size:16px">DG Afrique</span>
+        </div>
+        <div style="max-width:380px">
+          <div style="font-size:12px;letter-spacing:0.06em;text-transform:uppercase;color:#19C2D0;font-weight:700;margin-bottom:12px">Un satellite de l'écosystème GAMAD</div>
+          <div style="font-size:26px;font-weight:800;line-height:1.35;margin-bottom:14px">Le numérique qui fait avancer vos projets.</div>
+          <p style="font-size:14px;color:#B9C6D4;margin:0">Connectez-vous pour accéder à votre espace, suivre vos demandes et rejoindre ZUMRA.</p>
+        </div>
+        <div style="font-size:12px;color:#7C8A9A">© GamaDigit</div>
+      </div>
+      <div style="flex:1 1 380px;min-width:300px;background:#fff;display:flex;align-items:center;justify-content:center;padding:56px">
+        <div style="width:100%;max-width:360px">
+          <h1 style="font-size:24px;font-weight:800;color:#061F35;margin:0 0 6px">Connexion</h1>
+          <p style="font-size:13px;color:#7C8A9A;margin:0 0 28px">Accédez à votre espace DG Afrique.</p>
+          <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#061F35;margin-bottom:6px">E-mail ou téléphone</div>
+              <input value="{{ email }}" onChange="{{ setEmail }}" placeholder="vous@exemple.com" style="width:100%;border:1px solid #E4EBF1;border-radius:10px;padding:11px 14px;font-size:14px;color:#061F35;outline:none" />
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#061F35;margin-bottom:6px">Mot de passe</div>
+              <input type="password" value="{{ password }}" onChange="{{ setPassword }}" placeholder="••••••••" style="width:100%;border:1px solid #E4EBF1;border-radius:10px;padding:11px 14px;font-size:14px;color:#061F35;outline:none" />
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#7C8A9A;cursor:pointer">
+              <input type="checkbox" checked="{{ remember }}" onChange="{{ toggleRemember }}" /> Se souvenir de moi
+            </label>
+            <a href="#" style="font-size:12px;font-weight:700">Mot de passe oublié ?</a>
+          </div>
+          <button onClick="{{ goEspace }}" style="width:100%;background:#061F35;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;cursor:pointer;margin-bottom:12px">Se connecter</button>
+          <button onClick="{{ goEspace }}" style="width:100%;background:#E3F7ED;color:#21C87A;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:800;cursor:pointer">Continuer avec WhatsApp</button>
+          <div style="text-align:center;font-size:13px;color:#7C8A9A;margin-top:22px">Pas encore de compte ? <a href="#" style="font-weight:700">Créer un compte</a></div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isEspace }}">
+    <div style="display:flex;flex-direction:column;min-height:100vh">
+      <header style="background:#061F35;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:9px;background:#19C2D0;color:#061F35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px">G</div>
+          <span style="font-weight:800;font-size:15px;color:#fff">DG Afrique</span>
+        </div>
+        <div style="flex:1 1 200px;display:flex;justify-content:center;padding:0 12px;order:3">
+          <div style="width:100%;max-width:420px;min-width:160px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:20px;padding:8px 16px">
+            <div style="position:relative;width:14px;height:14px;flex-shrink:0">
+              <div style="width:10px;height:10px;border:2px solid #B9C6D4;border-radius:50%"></div>
+              <div style="position:absolute;bottom:-1px;right:-1px;width:5px;height:2px;background:#B9C6D4;border-radius:1px;transform:rotate(45deg)"></div>
+            </div>
+            <input placeholder="Rechercher…" style="flex:1;border:none;outline:none;background:transparent;color:#fff;font-size:13px" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="position:relative">
+            <button onClick="{{ toggleEspaceNotif }}" style="position:relative;width:34px;height:34px;border-radius:8px;border:none;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer">
+              <div style="width:13px;height:14px;border-radius:50% 50% 0 0;border:2px solid #fff;border-bottom:none"></div>
+              <div style="position:absolute;bottom:9px;width:6px;height:2px;background:#fff;border-radius:1px"></div>
+              <sc-if value="{{ notifCount }}"><span style="position:absolute;top:2px;right:2px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;background:#F5B942;color:#061F35;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center">{{ notifCount }}</span></sc-if>
+            </button>
+            <sc-if value="{{ showEspaceNotif }}">
+              <div style="position:absolute;top:44px;right:0;width:280px;background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(6,31,53,0.22);overflow:hidden;z-index:40">
+                <div style="padding:12px 16px;font-weight:700;font-size:13px;color:#061F35;border-bottom:1px solid #F0F3F7">Notifications</div>
+                <sc-for list="{{ espaceNotifs }}" as="notif" hint-placeholder-count="3">
+                  <div style="padding:12px 16px;border-bottom:1px solid #F4F8FB">
+                    <div style="font-size:13px;font-weight:600;color:#061F35">{{ notif.title }}</div>
+                    <div style="font-size:11px;color:#9AA6B2;margin-top:2px">{{ notif.time }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <div style="position:relative">
+            <div onClick="{{ toggleAccountMenu }}" style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <div style="width:30px;height:30px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">MK</div>
+              <span style="font-size:13px;font-weight:600;color:#fff">Mariam Koné</span>
+            </div>
+            <sc-if value="{{ showAccountMenu }}">
+              <div style="position:absolute;top:42px;right:0;width:200px;background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(6,31,53,0.22);padding:8px;z-index:40">
+                <div onClick="{{ goProfilMenu }}" style="padding:10px 12px;font-size:13px;font-weight:600;color:#061F35;border-radius:8px;cursor:pointer">Mon profil</div>
+                <div onClick="{{ goParamsMenu }}" style="padding:10px 12px;font-size:13px;font-weight:600;color:#061F35;border-radius:8px;cursor:pointer">Paramètres</div>
+                <div style="height:1px;background:#F0F3F7;margin:4px 0"></div>
+                <div onClick="{{ goLogin }}" style="padding:10px 12px;font-size:13px;font-weight:600;color:#C0392B;border-radius:8px;cursor:pointer">Se déconnecter</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </header>
+
+      <div style="flex:1;display:flex;flex-wrap:wrap">
+        <aside style="flex:0 1 230px;min-width:220px;background:#fff;border-right:1px solid #E4EBF1;padding:20px 12px;display:flex;flex-direction:column;gap:4px">
+          <sc-for list="{{ espaceNav }}" as="item" hint-placeholder-count="6">
+            <div onClick="{{ item.onSelect }}" style="{{ item.style }}">
+              <span style="{{ item.dotStyle }}"></span>{{ item.label }}
+            </div>
+          </sc-for>
+          <div style="flex:1"></div>
+          <a href="#" onClick="{{ goLogin }}" style="font-size:12px;color:#9AA6B2;padding:10px 12px">Se déconnecter</a>
+        </aside>
+
+        <main style="flex:1 1 480px;min-width:320px;padding:32px;display:flex;flex-direction:column;gap:28px">
+          <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <h1 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 4px">Bonjour, Mariam</h1>
+            <p style="font-size:13px;color:#7C8A9A;margin:0">Voici l'état de votre espace DG Afrique.</p>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px">
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px">
+              <div style="font-size:12px;font-weight:700;color:#7C8A9A;margin-bottom:10px">Profil complété</div>
+              <div style="font-size:24px;font-weight:800;color:#061F35;margin-bottom:10px">72%</div>
+              <div style="height:6px;border-radius:4px;background:#F0F3F7;overflow:hidden"><div style="height:100%;width:72%;background:#0877C9"></div></div>
+            </div>
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px">
+              <div style="font-size:12px;font-weight:700;color:#7C8A9A;margin-bottom:10px">Demandes en cours</div>
+              <div style="font-size:24px;font-weight:800;color:#061F35">2</div>
+            </div>
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px">
+              <div style="font-size:12px;font-weight:700;color:#7C8A9A;margin-bottom:10px">Contribution ZUMRA</div>
+              <span style="display:inline-block;font-size:12px;font-weight:800;color:#21C87A;background:#E3F7ED;border-radius:999px;padding:5px 12px">À jour</span>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+              <div style="font-weight:700;font-size:14px;color:#061F35">Compléter mon profil</div>
+              <div style="font-size:12px;color:#7C8A9A;flex:1">Ajoutez vos compétences et informations.</div>
+              <a href="#" style="font-size:13px;font-weight:700">Continuer →</a>
+            </div>
+            <div style="background:#061F35;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px;color:#fff">
+              <div style="font-weight:700;font-size:14px">Ouvrir ZUMRA</div>
+              <div style="font-size:12px;color:#B9C6D4;flex:1">Fil, contribution et projets soutenus.</div>
+              <a href="#" onClick="{{ goZumra }}" style="font-size:13px;font-weight:700;color:#19C2D0">Ouvrir →</a>
+            </div>
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+              <div style="font-weight:700;font-size:14px;color:#061F35">Demander un devis</div>
+              <div style="font-size:12px;color:#7C8A9A;flex:1">Décrivez votre projet, recevez une proposition.</div>
+              <a href="#" style="font-size:13px;font-weight:700">Faire une demande →</a>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#061F35;margin-bottom:12px">Activité récente</div>
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;overflow:hidden">
+              <sc-for list="{{ activity }}" as="a" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid #F4F8FB">
+                  <span style="width:8px;height:8px;border-radius:50%;background:{{ a.color }};flex-shrink:0"></span>
+                  <span style="font-size:13px;color:#334452;flex:1">{{ a.text }}</span>
+                  <span style="font-size:12px;color:#9AA6B2">{{ a.time }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-weight:800;font-size:15px;color:#061F35;margin-bottom:12px">Vos satellites</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+              <sc-for list="{{ satellites }}" as="sat" hint-placeholder-count="6">
+                <div style="background:#fff;border:1px solid #E4EBF1;border-radius:14px;padding:14px;display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:9px;background:{{ sat.accent }};color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ sat.initial }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;font-weight:700;color:#061F35">{{ sat.name }}</div>
+                    <div style="font-size:11px;color:#9AA6B2">{{ sat.statusLabel }}</div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isProfil }}">
+          <div>
+            <h1 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 4px">Mon profil</h1>
+            <p style="font-size:13px;color:#7C8A9A;margin:0">Vos informations et compétences, visibles selon vos réglages de confidentialité.</p>
+          </div>
+          <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:24px;max-width:520px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:56px;height:56px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center">MK</div>
+              <div>
+                <div style="font-weight:800;font-size:16px;color:#061F35">Mariam Koné</div>
+                <div style="font-size:12px;color:#9AA6B2">Abidjan, Côte d'Ivoire</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#061F35;margin-bottom:6px">Bio</div>
+              <textarea value="{{ profileBio }}" onChange="{{ setProfileBio }}" rows="3" placeholder="Parlez de vous, de votre activité…" style="width:100%;border:1px solid #E4EBF1;border-radius:10px;padding:10px 12px;font-size:13px;resize:none;outline:none;font-family:inherit"></textarea>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#061F35;margin-bottom:8px">Compétences déclarées</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ skills }}" as="skill" hint-placeholder-count="5">
+                  <span style="font-size:12px;font-weight:700;background:#F4F8FB;color:#0877C9;border-radius:999px;padding:6px 12px">{{ skill }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <button style="align-self:flex-start;background:#061F35;color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer">Enregistrer</button>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isDevis }}">
+          <div>
+            <h1 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 4px">Mes demandes</h1>
+            <p style="font-size:13px;color:#7C8A9A;margin:0">Suivez l'avancement de vos demandes de devis.</p>
+          </div>
+          <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;overflow:hidden">
+            <sc-for list="{{ devisList }}" as="d" hint-placeholder-count="3">
+              <div style="display:flex;align-items:center;gap:14px;padding:16px 18px;border-bottom:1px solid #F4F8FB">
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;font-weight:700;color:#061F35">{{ d.title }}</div>
+                  <div style="font-size:11px;color:#9AA6B2">{{ d.date }}</div>
+                </div>
+                <span style="{{ d.badgeStyle }}">{{ d.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isSatellites }}">
+          <div>
+            <h1 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 4px">Satellites</h1>
+            <p style="font-size:13px;color:#7C8A9A;margin:0">Ouvrez un satellite sans quitter votre compte DG Afrique.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+            <sc-for list="{{ satellitesFull }}" as="sat" hint-placeholder-count="6">
+              <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div style="width:38px;height:38px;border-radius:10px;background:{{ sat.accent }};color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center">{{ sat.initial }}</div>
+                  <span style="{{ sat.badgeStyle }}">{{ sat.badgeLabel }}</span>
+                </div>
+                <div style="font-weight:700;font-size:14px;color:#061F35">{{ sat.name }}</div>
+                <div style="font-size:12px;color:#7C8A9A;flex:1">{{ sat.desc }}</div>
+                <button style="{{ sat.btnStyle }}">{{ sat.btnLabel }}</button>
+              </div>
+            </sc-for>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isParametres }}">
+          <div>
+            <h1 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 4px">Paramètres</h1>
+            <p style="font-size:13px;color:#7C8A9A;margin:0">Gérez vos préférences de compte.</p>
+          </div>
+          <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:8px;max-width:480px">
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #F4F8FB;font-size:13px;color:#061F35;cursor:pointer">Notifications par e-mail<input type="checkbox" checked="{{ emailNotif }}" onChange="{{ toggleEmailNotif }}" /></label>
+            <label style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #F4F8FB;font-size:13px;color:#061F35;cursor:pointer">Notifications push<input type="checkbox" checked="{{ pushNotif }}" onChange="{{ togglePushNotif }}" /></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;font-size:13px;color:#061F35">Langue<span style="color:#7C8A9A">Français</span></div>
+          </div>
+          <a href="#" style="font-size:13px;font-weight:700;align-self:flex-start">Changer de mot de passe →</a>
+          </sc-if>
+        </main>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isZumra }}">
+    <div style="display:flex;flex-direction:column;min-height:100vh">
+      <header style="background:#061F35;display:flex;align-items:center;justify-content:space-between;padding:12px 24px;flex-wrap:wrap;gap:10px">
+        <div style="display:flex;align-items:center;gap:16px">
+          <a href="#" onClick="{{ goEspace }}" style="color:#B9C6D4;font-size:13px;font-weight:600">← Mon espace</a>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:26px;height:26px;border-radius:7px;background:#21C87A;color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">Z</div>
+            <span style="font-weight:800;font-size:15px;color:#fff">ZUMRA</span>
+          </div>
+        </div>
+        <div style="flex:1 1 200px;display:flex;justify-content:center;padding:0 12px;order:3">
+          <div style="width:100%;max-width:420px;min-width:160px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.08);border-radius:20px;padding:8px 16px">
+            <div style="position:relative;width:14px;height:14px;flex-shrink:0">
+              <div style="width:10px;height:10px;border:2px solid #B9C6D4;border-radius:50%"></div>
+              <div style="position:absolute;bottom:-1px;right:-1px;width:5px;height:2px;background:#B9C6D4;border-radius:1px;transform:rotate(45deg)"></div>
+            </div>
+            <input placeholder="Rechercher dans ZUMRA…" style="flex:1;border:none;outline:none;background:transparent;color:#fff;font-size:13px" />
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:12px;font-weight:800;color:#21C87A;background:#E3F7ED;border-radius:999px;padding:5px 12px">Contribution à jour</span>
+          <div style="width:30px;height:30px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center">MK</div>
+        </div>
+      </header>
+
+      <div style="flex:1;display:flex;flex-wrap:wrap">
+        <aside style="flex:0 1 220px;min-width:200px;background:#fff;border-right:1px solid #E4EBF1;padding:20px 12px;display:flex;flex-direction:column;gap:4px">
+          <sc-for list="{{ zumraNav }}" as="item" hint-placeholder-count="5">
+            <div onClick="{{ item.onSelect }}" style="{{ item.style }}">
+              <span style="{{ item.dotStyle }}"></span>{{ item.label }}
+            </div>
+          </sc-for>
+        </aside>
+
+        <main style="flex:1 1 480px;min-width:300px;padding:28px 24px;display:flex;flex-direction:column;gap:16px;max-width:820px;margin:0 auto;width:100%">
+          <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:18px">
+            <div style="display:flex;gap:12px">
+              <div style="width:38px;height:38px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">MK</div>
+              <textarea value="{{ zumraDraft }}" onChange="{{ setZumraDraft }}" placeholder="Partagez une actualité, un besoin, un projet…" rows="2" style="flex:1;border:1px solid #E4EBF1;border-radius:12px;padding:10px 14px;font-size:13px;resize:none;outline:none;font-family:inherit"></textarea>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px">
+              <button onClick="{{ publishPost }}" style="background:#21C87A;color:#fff;border:none;border-radius:20px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer">Publier</button>
+            </div>
+          </div>
+
+          <sc-if value="{{ zumraLoading }}" hint-placeholder-val="{{ false }}">
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+              <div style="height:14px;width:40%;background:#F0F3F7;border-radius:6px"></div>
+              <div style="height:10px;width:90%;background:#F4F8FB;border-radius:6px"></div>
+              <div style="height:10px;width:70%;background:#F4F8FB;border-radius:6px"></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ zumraNotLoading }}">
+          <sc-for list="{{ feedPosts }}" as="post" hint-placeholder-count="3">
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:18px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:50%;background:{{ post.color }};color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center">{{ post.initial }}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#061F35">{{ post.author }}</div>
+                  <div style="font-size:11px;color:#9AA6B2">{{ post.role }} · {{ post.time }}</div>
+                </div>
+              </div>
+              <p style="font-size:13px;color:#334452;margin:0 0 12px;line-height:1.5">{{ post.text }}</p>
+              <sc-if value="{{ post.hasImage }}">
+                <div style="height:130px;border-radius:10px;background:repeating-linear-gradient(135deg,#EDF2F7 0 10px,#F7FAFC 10px 20px);display:flex;align-items:center;justify-content:center;color:#9AA6B2;font-family:monospace;font-size:11px;margin-bottom:12px">image publication</div>
+              </sc-if>
+              <div style="display:flex;gap:18px;font-size:12px;color:#7C8A9A;font-weight:600">
+                <span>{{ post.likes }} J'aime</span><span>Commenter</span><span>Partager</span>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ zumraShowMoreBtn }}">
+            <button onClick="{{ loadMorePosts }}" style="align-self:center;background:#fff;border:1px solid #E4EBF1;color:#061F35;border-radius:20px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer">Voir plus de publications</button>
+          </sc-if>
+          </sc-if>
+        </main>
+
+        <aside style="flex:0 1 340px;min-width:280px;padding:24px 20px;display:flex;flex-direction:column;gap:24px">
+          <div style="background:#061F35;border-radius:16px;padding:18px;color:#fff">
+            <div style="width:46px;height:46px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">MK</div>
+            <div style="font-weight:800;font-size:15px">Mariam Koné</div>
+            <div style="font-size:12px;color:#B9C6D4;margin-bottom:12px">Membre ZUMRA · Abidjan</div>
+            <div style="display:flex;gap:20px">
+              <div><div style="font-weight:800;font-size:16px;color:#19C2D0">6</div><div style="font-size:11px;color:#B9C6D4">contributions</div></div>
+              <div><div style="font-weight:800;font-size:16px;color:#F5B942">2</div><div style="font-size:11px;color:#B9C6D4">projets suivis</div></div>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-weight:800;font-size:13px;color:#061F35;margin-bottom:10px">Profils à suivre</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ people }}" as="p" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:32px;height:32px;border-radius:50%;background:#F4F8FB;border:1px solid #E4EBF1;color:#7C8A9A;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ p.initial }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:700;color:#061F35">{{ p.name }}</div>
+                    <div style="font-size:11px;color:#9AA6B2">{{ p.role }}</div>
+                  </div>
+                  <a href="#" onClick="{{ p.onFollow }}" style="{{ p.followStyle }}">{{ p.followLabel }}</a>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-weight:800;font-size:13px;color:#061F35;margin-bottom:10px">Projets tendances</div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <sc-for list="{{ projects }}" as="pr" hint-placeholder-count="3">
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:#061F35;margin-bottom:6px">{{ pr.name }}</div>
+                  <div style="height:5px;border-radius:3px;background:#F0F3F7;overflow:hidden;margin-bottom:4px"><div style="{{ pr.barStyle }}"></div></div>
+                  <div style="font-size:11px;color:#9AA6B2">{{ pr.progress }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:fixed;bottom:16px;right:16px;background:#fff;border-radius:999px;box-shadow:0 8px 24px rgba(6,31,53,0.2);padding:5px;display:flex;gap:2px;z-index:50">
+    <sc-for list="{{ previewNav }}" as="p" hint-placeholder-count="3">
+      <button onClick="{{ p.onSelect }}" style="{{ p.style }}">{{ p.label }}</button>
+    </sc-for>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 1000},
+  &quot;defaultScreen&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;login&quot;, &quot;options&quot;: [&quot;login&quot;, &quot;espace&quot;, &quot;zumra&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Comportement&quot;}
+}">
+class Component extends DCLogic {
+  componentDidMount() {
+    setTimeout(() => this.setState({ zumraLoading: false }), 800);
+  }
+  renderVals() {
+    const screen = this.state.screen ?? this.props.defaultScreen ?? 'login';
+    const isLogin = screen === 'login', isEspace = screen === 'espace', isZumra = screen === 'zumra';
+    const email = this.state.email ?? '';
+    const password = this.state.password ?? '';
+    const remember = !!this.state.remember;
+    const espaceActive = this.state.espaceActive ?? 'dashboard';
+    const zumraActive = this.state.zumraActive ?? 'fil';
+    const isDashboard = espaceActive === 'dashboard';
+    const isProfil = espaceActive === 'profil';
+    const isDevis = espaceActive === 'devis';
+    const isSatellites = espaceActive === 'satellites';
+    const isParametres = espaceActive === 'parametres';
+
+    const showEspaceNotif = !!this.state.showEspaceNotif;
+    const showAccountMenu = !!this.state.showAccountMenu;
+    const espaceNotifs = [
+      { title: 'Votre devis "Site vitrine artisanat" a été reçu', time: 'Il y a 2h' },
+      { title: 'Contribution ZUMRA du mois validée', time: 'Hier' },
+      { title: 'Nouveau message de l’équipe DG Afrique', time: 'Il y a 3 jours' },
+    ];
+    const notifCount = this.state.notifCount ?? espaceNotifs.length;
+    const toggleEspaceNotif = () => this.setState(s => ({ showEspaceNotif: !s.showEspaceNotif, showAccountMenu: false, notifCount: 0 }));
+    const toggleAccountMenu = () => this.setState(s => ({ showAccountMenu: !s.showAccountMenu, showEspaceNotif: false }));
+    const goProfilMenu = () => this.setState({ espaceActive: 'profil', showAccountMenu: false });
+    const goParamsMenu = () => this.setState({ espaceActive: 'parametres', showAccountMenu: false });
+
+    const profileBio = this.state.profileBio ?? '';
+    const setProfileBio = e => this.setState({ profileBio: e.target.value });
+    const skills = ['Développement web', 'Gestion de projet', 'Formation', 'Design'];
+    const emailNotif = this.state.emailNotif ?? true;
+    const pushNotif = this.state.pushNotif ?? false;
+    const toggleEmailNotif = () => this.setState(s => ({ emailNotif: !(s.emailNotif ?? true) }));
+    const togglePushNotif = () => this.setState(s => ({ pushNotif: !(s.pushNotif ?? false) }));
+
+    const setScreen = s => () => this.setState({ screen: s });
+    const goEspace = () => this.setState({ screen: 'espace' });
+    const goZumra = () => this.setState({ screen: 'zumra' });
+    const goLogin = () => this.setState({ screen: 'login' });
+
+    const navItemStyle = active => ({
+      display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', borderRadius: '10px',
+      fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+      background: active ? '#EAF3FB' : 'transparent',
+      color: active ? '#0877C9' : '#334452',
+    });
+    const dotStyle = color => ({ width: '7px', height: '7px', borderRadius: '50%', background: color, flexShrink: 0 });
+
+    const espaceItems = [
+      { key: 'dashboard', label: 'Tableau de bord', color: '#0877C9' },
+      { key: 'profil', label: 'Mon profil', color: '#19C2D0' },
+      { key: 'zumra', label: 'ZUMRA', color: '#21C87A', goto: 'zumra' },
+      { key: 'devis', label: 'Mes demandes', color: '#F5B942' },
+      { key: 'satellites', label: 'Satellites', color: '#0877C9' },
+      { key: 'parametres', label: 'Paramètres', color: '#9AA6B2' },
+    ];
+    const espaceNav = espaceItems.map(it => ({
+      label: it.label,
+      style: navItemStyle(espaceActive === it.key),
+      dotStyle: dotStyle(it.color),
+      onSelect: () => it.goto ? this.setState({ screen: it.goto }) : this.setState({ espaceActive: it.key }),
+    }));
+
+    const zumraItems = [
+      { key: 'fil', label: 'Fil' },
+      { key: 'contribution', label: 'Ma contribution' },
+      { key: 'projets', label: 'Projets soutenus' },
+      { key: 'messages', label: 'Messages' },
+      { key: 'profil', label: 'Mon profil ZUMRA' },
+    ];
+    const zumraNav = zumraItems.map(it => ({
+      label: it.label,
+      style: navItemStyle(zumraActive === it.key),
+      dotStyle: dotStyle('#21C87A'),
+      onSelect: () => this.setState({ zumraActive: it.key }),
+    }));
+
+    const activity = [
+      { text: 'Votre devis "Site vitrine artisanat" a été reçu', time: 'Il y a 2h', color: '#0877C9' },
+      { text: 'Contribution ZUMRA du mois validée', time: 'Hier', color: '#21C87A' },
+      { text: 'Nouveau message de l’équipe DG Afrique', time: 'Il y a 3 jours', color: '#F5B942' },
+      { text: 'Profil complété à 72%', time: 'Il y a 5 jours', color: '#19C2D0' },
+    ];
+
+    const accents = ['#0877C9', '#21C87A', '#19C2D0', '#F5B942'];
+    const rawSatellites = [
+      { name: 'DG Afrique', statusLabel: 'Portail actuel' },
+      { name: 'ZUMRA', statusLabel: 'Actif' },
+      { name: 'GamaDrive', statusLabel: 'Bientôt' },
+      { name: 'Wasplex', statusLabel: 'Bientôt' },
+      { name: 'G-Market', statusLabel: 'Bientôt' },
+      { name: 'G-POS', statusLabel: 'Bientôt' },
+    ];
+    const satellites = rawSatellites.map((s, i) => ({ ...s, initial: s.name[0], accent: accents[i % accents.length] }));
+
+    const statusColors = { 'En cours': '#0877C9', 'En attente': '#F5B942', 'Terminé': '#21C87A' };
+    const rawDevis = [
+      { title: 'Site vitrine pour atelier de couture', date: '10 août 2026', status: 'En cours' },
+      { title: 'Refonte de logo et charte graphique', date: '2 août 2026', status: 'En attente' },
+      { title: 'Hébergement et nom de domaine', date: '20 juillet 2026', status: 'Terminé' },
+    ];
+    const devisList = rawDevis.map(d => ({
+      ...d,
+      badgeStyle: { fontSize: '11px', fontWeight: 800, borderRadius: '999px', padding: '4px 10px', background: statusColors[d.status] + '22', color: statusColors[d.status] },
+    }));
+
+    const satellitesFull = rawSatellites.map((s, i) => {
+      const isActive = s.statusLabel !== 'Bientôt';
+      const descMap = { 'DG Afrique': 'Portail humain d’accueil et d’orchestration.', ZUMRA: 'Réseau social d’action et de contribution communautaire.' };
+      return {
+        name: s.name, initial: s.name[0], accent: accents[i % accents.length],
+        desc: descMap[s.name] ?? 'Satellite de l’écosystème GAMAD.',
+        badgeStyle: { fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '999px', background: isActive ? '#E3F7ED' : '#FDF1DC', color: isActive ? '#21C87A' : '#B8842E' },
+        badgeLabel: isActive ? 'Actif' : 'Bientôt',
+        btnStyle: { border: 'none', borderRadius: '10px', padding: '9px 0', fontSize: '13px', fontWeight: 700, background: isActive ? '#061F35' : '#F4F8FB', color: isActive ? '#fff' : '#9AA6B2', cursor: isActive ? 'pointer' : 'not-allowed' },
+        btnLabel: isActive ? 'Ouvrir' : 'Être notifié',
+      };
+    });
+
+    const zumraPosts = [
+      { initial: 'LK', color: '#0877C9', author: 'Laëtice Kouamé', role: 'Membre ZUMRA · Abidjan', time: 'Hier', likes: 24, hasImage: true, text: 'Grâce aux contributions du mois, le projet d’atelier de couture collectif à Yopougon a reçu son premier décaissement. Preuve à l’appui dans le fil ZUMRA.' },
+      { initial: 'MD', color: '#21C87A', author: 'Moussa Diallo', role: 'Membre ZUMRA · Bamako', time: 'Il y a 2 jours', likes: 11, hasImage: false, text: 'J’ai rejoint ZUMRA ce mois-ci : comprendre ce que la communauté peut financer avec ses propres moyens avant les partenaires, ça change tout.' },
+      { initial: 'AE', color: '#F5B942', author: 'Aïcha Ehui', role: 'Membre ZUMRA · Conakry', time: 'Il y a 4 jours', likes: 8, hasImage: false, text: 'Rappel amical : la contribution mensuelle se clôture dans 3 jours. Merci à tous ceux qui ont déjà validé la leur.' },
+    ];
+
+    const people = [
+      { initial: 'CB', name: 'Christian Bamba', role: 'Community manager · Dakar' },
+      { initial: 'TS', name: 'Tapé Serge', role: 'Entrepreneur · Abidjan' },
+      { initial: 'FN', name: 'Florence N’Guessan', role: 'Designer produit · Conakry' },
+      { initial: 'RK', name: 'Rokia Koïta', role: 'Formatrice · Bamako' },
+    ];
+    const followed = this.state.followed ?? {};
+    const peopleWithFollow = people.map(p => {
+      const isFollowed = !!followed[p.initial];
+      return {
+        ...p,
+        followLabel: isFollowed ? 'Suivi' : 'Suivre',
+        followStyle: { fontSize: '11px', fontWeight: 700, flexShrink: 0, cursor: 'pointer', color: isFollowed ? '#9AA6B2' : '#0877C9' },
+        onFollow: () => this.setState(s => ({ followed: { ...(s.followed ?? {}), [p.initial]: !isFollowed } })),
+      };
+    });
+
+    const zumraLoading = this.state.zumraLoading ?? true;
+    const zumraDraft = this.state.zumraDraft ?? '';
+    const setZumraDraft = e => this.setState({ zumraDraft: e.target.value });
+    const publishPost = () => {
+      const text = (this.state.zumraDraft ?? '').trim();
+      if (!text) return;
+      const newPost = { initial: 'MK', color: '#0877C9', author: 'Mariam Koné', role: 'Membre ZUMRA · Abidjan', time: 'À l’instant', likes: 0, hasImage: false, text };
+      this.setState(s => ({ zumraExtraPosts: [newPost, ...(s.zumraExtraPosts ?? [])], zumraDraft: '' }));
+    };
+    const zumraExtraPosts = this.state.zumraExtraPosts ?? [];
+    const zumraShowMore = !!this.state.zumraShowMore;
+    const loadMorePosts = () => this.setState({ zumraShowMore: true });
+    const morePosts = [
+      { initial: 'RK', color: '#19C2D0', author: 'Rokia Koïta', role: 'Membre ZUMRA · Bamako', time: 'Il y a 6 jours', likes: 5, hasImage: false, text: 'Belle progression du studio de formation numérique cette semaine, merci aux contributeurs.' },
+      { initial: 'TS', color: '#F5B942', author: 'Tapé Serge', role: 'Membre ZUMRA · Abidjan', time: 'Il y a 8 jours', likes: 3, hasImage: false, text: 'Premier bilan transparent du point d’eau communautaire publié dans le fil.' },
+    ];
+
+    const rawProjects = [
+      { name: 'Atelier de couture collectif', pct: 68 },
+      { name: 'Point d’eau communautaire', pct: 42 },
+      { name: 'Studio de formation numérique', pct: 25 },
+    ];
+    const projects = rawProjects.map(p => ({
+      name: p.name,
+      barStyle: { height: '100%', width: p.pct + '%', background: '#21C87A' },
+      progress: p.pct + '% financé par la communauté',
+    }));
+
+    const previewNavDefs = [
+      { key: 'login', label: 'Connexion' },
+      { key: 'espace', label: 'Mon espace' },
+      { key: 'zumra', label: 'ZUMRA' },
+    ];
+    const previewNav = previewNavDefs.map(p => ({
+      label: p.label,
+      onSelect: setScreen(p.key),
+      style: {
+        border: 'none', borderRadius: '999px', padding: '8px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+        background: screen === p.key ? '#061F35' : 'transparent',
+        color: screen === p.key ? '#fff' : '#334452',
+      },
+    }));
+
+    return {
+      isLogin, isEspace, isZumra, email, password, remember,
+      setEmail: e => this.setState({ email: e.target.value }),
+      setPassword: e => this.setState({ password: e.target.value }),
+      toggleRemember: () => this.setState(s => ({ remember: !s.remember })),
+      goEspace, goZumra, goLogin,
+      espaceNav, zumraNav, activity, satellites, projects, previewNav,
+      isDashboard, isProfil, isDevis, isSatellites, isParametres,
+      showEspaceNotif, showAccountMenu, espaceNotifs, notifCount, toggleEspaceNotif, toggleAccountMenu, goProfilMenu, goParamsMenu,
+      profileBio, setProfileBio, skills, emailNotif, pushNotif, toggleEmailNotif, togglePushNotif,
+      devisList, satellitesFull,
+      zumraLoading, zumraNotLoading: !zumraLoading, zumraDraft, setZumraDraft, publishPost,
+      feedPosts: [...zumraExtraPosts, ...zumraPosts, ...(zumraShowMore ? morePosts : [])],
+      zumraShowMoreBtn: !zumraShowMore, loadMorePosts,
+      people: peopleWithFollow,
+    };
+  }
+}
+</script>
+</body>
+</html>

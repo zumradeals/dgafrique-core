@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#F4F8FB}
+a{color:#0877C9;text-decoration:none}
+a:hover{color:#19C2D0}
+input::placeholder{color:#8592a3}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#F4F8FB;position:relative">
+
+  <header style="position:sticky;top:0;z-index:30;background:#061F35;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:12px 24px;gap:14px">
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:36px;height:36px;border-radius:9px;background:#19C2D0;color:#061F35;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex-shrink:0">G</div>
+        <span style="font-weight:800;font-size:16px;color:#fff;white-space:nowrap">DG Afrique</span>
+      </div>
+      <nav style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+        <a href="#" style="color:#fff;font-size:13px;font-weight:600;opacity:0.9">Entreprises</a>
+        <a href="#" style="color:#fff;font-size:13px;font-weight:600;opacity:0.9">Talents</a>
+        <a href="#" style="color:#fff;font-size:13px;font-weight:600;opacity:0.9">Emploi</a>
+        <span style="display:flex;align-items:center;gap:5px;color:#fff;font-size:13px;font-weight:600;opacity:0.9;cursor:pointer">Services<span style="width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #fff;opacity:0.8"></span></span>
+      </nav>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <button style="background:#F5B942;color:#061F35;border:none;border-radius:20px;padding:9px 18px;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap">Booster ma visibilité</button>
+      <div style="position:relative">
+        <button onClick="{{ toggleApps }}" style="width:34px;height:34px;border-radius:8px;border:none;background:rgba(255,255,255,0.08);display:grid;grid-template-columns:5px 5px;grid-template-rows:5px 5px;gap:3px;align-content:center;justify-content:center;cursor:pointer">
+          <span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px"></span><span style="background:#fff;border-radius:1px"></span>
+        </button>
+        <sc-if value="{{ showApps }}">
+          <div style="position:absolute;top:44px;right:0;width:260px;background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(6,31,53,0.22);padding:10px;display:flex;flex-direction:column;gap:2px">
+            <div style="font-size:12px;font-weight:700;color:#7C8A9A;padding:6px 8px">Ouvrir un satellite</div>
+            <sc-for list="{{ satellites }}" as="sat" hint-placeholder-count="6">
+              <div style="display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;cursor:pointer">
+                <div style="width:30px;height:30px;border-radius:8px;background:{{ sat.accent }};color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ sat.initial }}</div>
+                <span style="flex:1;min-width:0;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#061F35">{{ sat.name }}<span style="{{ sat.badgeStyle }}">{{ sat.badgeLabel }}</span></span>
+                <sc-if value="{{ sat.showNotify }}"><a href="#" onClick="{{ sat.onNotify }}" style="font-size:11px;font-weight:700;color:#0877C9;flex-shrink:0">{{ sat.notifyLabel }}</a></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+      <button onClick="{{ toggleNotif }}" style="position:relative;width:34px;height:34px;border-radius:8px;border:none;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <div style="width:13px;height:14px;border-radius:50% 50% 0 0;border:2px solid #fff;border-bottom:none"></div>
+        <div style="position:absolute;bottom:9px;width:6px;height:2px;background:#fff;border-radius:1px"></div>
+        <div style="position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;background:#F5B942;border:2px solid #061F35"></div>
+      </button>
+      <sc-if value="{{ showNotif }}">
+        <div style="position:absolute;top:56px;right:70px;width:280px;background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(6,31,53,0.22);overflow:hidden;z-index:40">
+          <div style="padding:12px 16px;font-weight:700;font-size:13px;color:#061F35;border-bottom:1px solid #F0F3F7">Notifications</div>
+          <sc-for list="{{ notifications }}" as="notif" hint-placeholder-count="3">
+            <div style="padding:12px 16px;border-bottom:1px solid #F4F8FB">
+              <div style="font-size:13px;font-weight:600;color:#061F35">{{ notif.title }}</div>
+              <div style="font-size:11px;color:#9AA6B2;margin-top:2px">{{ notif.time }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button onClick="{{ toggleLogin }}" style="{{ loginBtnStyle }}">{{ loginBtnLabel }}</button>
+    </div>
+  </header>
+
+  <section style="position:relative;padding:64px 24px 88px;overflow:hidden">
+    <div style="position:absolute;inset:0;background:repeating-linear-gradient(120deg,#0B2C4A 0 14px,#0E355A 14px 28px)"></div>
+    <div style="position:absolute;inset:0;background:rgba(6,31,53,0.55);display:flex;align-items:flex-end;justify-content:flex-end;padding:12px">
+      <span style="font-family:monospace;font-size:11px;color:rgba(255,255,255,0.5)">photo de couverture</span>
+    </div>
+    <div style="position:relative;max-width:760px;margin:0 auto;text-align:center;color:#fff">
+      <h1 style="font-size:34px;font-weight:800;margin:0 0 10px;letter-spacing:-0.01em;line-height:1.25">Votre réseau <span style="color:#F5B942">d'opportunités numériques</span> en Afrique</h1>
+      <p style="font-size:15px;color:#D7E1EA;max-width:560px;margin:0 auto 24px">Nous connectons particuliers, professionnels et entreprises aux satellites de l'écosystème GAMAD.</p>
+
+      <div style="display:inline-flex;gap:22px;margin-bottom:18px">
+        <sc-for list="{{ heroTabs }}" as="tab" hint-placeholder-count="4">
+          <span onClick="{{ tab.onSelect }}" style="{{ tab.style }}">{{ tab.label }}</span>
+        </sc-for>
+      </div>
+
+      <div style="background:#fff;border-radius:14px;padding:12px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;box-shadow:0 16px 40px rgba(6,31,53,0.3)">
+        <div style="flex:2;min-width:220px;text-align:left;padding:4px 12px;border-right:1px solid #E4EBF1">
+          <div style="font-size:11px;color:#9AA6B2;font-weight:700">QUOI, QUI ?</div>
+          <input value="{{ query }}" onChange="{{ setQuery }}" placeholder="Nom d'un service, d'un satellite, d'une offre…" style="border:none;outline:none;font-size:14px;color:#061F35;width:100%;background:transparent" />
+        </div>
+        <div style="flex:1;min-width:160px;text-align:left;padding:4px 12px">
+          <div style="font-size:11px;color:#9AA6B2;font-weight:700">OÙ ?</div>
+          <input value="{{ where }}" onChange="{{ setWhere }}" placeholder="Pays, ville…" style="border:none;outline:none;font-size:14px;color:#061F35;width:100%;background:transparent" />
+        </div>
+        <button onClick="{{ runSearch }}" style="background:#F5B942;color:#061F35;border:none;border-radius:10px;padding:14px 28px;font-size:14px;font-weight:800;cursor:pointer;flex-shrink:0">Rechercher</button>
+      </div>
+      <sc-if value="{{ searchSubmitted }}"><div style="margin-top:12px;font-size:12px;color:#D7E1EA">La recherche unifiée arrive bientôt — votre demande sera prise en compte dès son ouverture.</div></sc-if>
+    </div>
+  </section>
+
+  <main style="flex:1;display:flex;flex-direction:column;gap:64px;padding-bottom:64px">
+
+    <section style="max-width:1180px;width:100%;margin:0 auto;padding:0 24px;position:relative;z-index:2">
+      <div style="text-align:center;margin-bottom:28px">
+        <h2 style="font-size:24px;font-weight:800;color:#061F35;margin:0 0 8px">Quel est votre besoin <span style="color:#0877C9">numérique</span> ?</h2>
+        <p style="font-size:14px;color:#7C8A9A;margin:0">Nous vous mettons en relation avec les satellites, contenus et équipes qu'il vous faut.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+        <sc-for list="{{ needCards }}" as="card" hint-placeholder-count="6">
+          <div style="{{ card.wrapStyle }}">
+            <sc-if value="{{ card.badge }}"><span style="{{ card.badgeStyle }}">{{ card.badge }}</span></sc-if>
+            <div style="{{ card.iconStyle }}"></div>
+            <div style="{{ card.titleStyle }}">{{ card.title }}</div>
+            <div style="{{ card.descStyle }}">{{ card.desc }}</div>
+            <a href="#" style="{{ card.ctaStyle }}">{{ card.cta }} →</a>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="background:#061F35;padding:48px 24px">
+      <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:40px;align-items:center">
+        <div style="color:#fff">
+          <h2 style="font-size:24px;font-weight:800;margin:0 0 14px;line-height:1.35">Nous ne créons pas seulement des connexions.<br/><span style="color:#19C2D0">Nous bâtissons des opportunités, avec ZUMRA.</span></h2>
+          <p style="font-size:14px;color:#B9C6D4;margin:0 0 24px;max-width:460px">ZUMRA, le réseau social d'action de l'écosystème GAMAD, transforme l'adhésion et la contribution mensuelle de ses membres en projets concrets et suivis.</p>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:24px">
+            <sc-for list="{{ stats }}" as="stat" hint-placeholder-count="4">
+              <div>
+                <div style="font-size:24px;font-weight:800;color:{{ stat.color }}">{{ stat.value }}</div>
+                <div style="font-size:12px;color:#B9C6D4">{{ stat.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:rgba(255,255,255,0.06);border-radius:14px;padding:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div style="display:flex">
+              <sc-for list="{{ joiners }}" as="j" hint-placeholder-count="4">
+                <div style="{{ j.style }}">{{ j.initial }}</div>
+              </sc-for>
+            </div>
+            <div style="flex:1;min-width:160px;font-size:13px;color:#fff;font-weight:600">Entrez dans ZUMRA, le plus grand réseau d'action d'Afrique.</div>
+            <button style="background:#F5B942;color:#061F35;border:none;border-radius:20px;padding:10px 18px;font-size:13px;font-weight:800;cursor:pointer">Rejoindre ZUMRA</button>
+          </div>
+        </div>
+        <div style="position:relative;height:280px">
+          <div style="position:absolute;top:0;left:20px;width:60%;height:70%;border-radius:16px;background:repeating-linear-gradient(135deg,#123A5E 0 10px,#173F63 10px 20px);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-family:monospace;font-size:11px">portrait</div>
+          <div style="position:absolute;bottom:0;right:10px;width:55%;height:65%;border-radius:16px;background:repeating-linear-gradient(135deg,#0E355A 0 10px,#123A5E 10px 20px);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-family:monospace;font-size:11px;box-shadow:0 16px 30px rgba(0,0,0,0.3)">portrait</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1180px;width:100%;margin:0 auto;padding:0 24px;text-align:center">
+      <h2 style="font-size:20px;font-weight:800;color:#061F35;margin:0 0 6px">Ils nous font <span style="color:#21C87A">confiance</span></h2>
+      <p style="font-size:13px;color:#7C8A9A;margin:0 0 24px">Des structures qui gagnent en visibilité grâce aux satellites de l'écosystème GAMAD.</p>
+      <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:20px">
+        <sc-for list="{{ trustLogos }}" as="logo" hint-placeholder-count="5">
+          <div style="width:140px;height:56px;border-radius:10px;background:#fff;border:1px solid #E4EBF1;display:flex;align-items:center;justify-content:center;color:#9AA6B2;font-family:monospace;font-size:10px">{{ logo }}</div>
+        </sc-for>
+      </div>
+      <button style="background:#F5B942;color:#061F35;border:none;border-radius:20px;padding:10px 20px;font-size:13px;font-weight:800;cursor:pointer">Plus de visibilité digitale ? Cliquez ici !</button>
+    </section>
+
+    <section style="max-width:1180px;width:100%;margin:0 auto;padding:0 24px">
+      <div style="text-align:center;margin-bottom:32px">
+        <h2 style="font-size:22px;font-weight:800;color:#061F35;margin:0 0 6px">Ça bouge sur <span style="color:#21C87A">ZUMRA</span></h2>
+        <p style="font-size:13px;color:#7C8A9A;margin:0 auto;max-width:520px">Le fil ZUMRA en direct, visible depuis le portail DG Afrique.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;align-items:start">
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#061F35;margin-bottom:12px">Satellites les plus suivis</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ satellites }}" as="sat" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #E4EBF1;border-radius:12px;padding:10px 12px">
+                <div style="width:30px;height:30px;border-radius:8px;background:{{ sat.accent }};color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ sat.initial }}</div>
+                <span style="font-size:12px;font-weight:600;color:#061F35">{{ sat.name }}</span>
+                <span style="{{ sat.badgeStyle }}">{{ sat.badgeLabel }}</span>
+                <sc-if value="{{ sat.isZumra }}"><span style="font-size:9px;font-weight:800;color:#21C87A;background:#E3F7ED;border-radius:999px;padding:2px 7px;margin-left:2px">Actif</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            <span style="width:24px;height:24px;border-radius:7px;background:#21C87A;color:#fff;font-weight:800;font-size:11px;display:flex;align-items:center;justify-content:center">Z</span>
+            <span style="font-size:13px;font-weight:800;color:#061F35">Fil ZUMRA — publications tendances</span>
+          </div>
+          <sc-for list="{{ posts }}" as="post" hint-placeholder-count="2">
+            <div style="background:#fff;border:1px solid #E4EBF1;border-radius:16px;padding:18px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <div style="width:36px;height:36px;border-radius:50%;background:#0877C9;color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center">{{ post.initial }}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#061F35">{{ post.author }}</div>
+                  <div style="font-size:11px;color:#9AA6B2">{{ post.role }} · {{ post.time }}</div>
+                </div>
+              </div>
+              <p style="font-size:13px;color:#334452;margin:0 0 12px;line-height:1.5">{{ post.text }}</p>
+              <div style="height:120px;border-radius:10px;background:repeating-linear-gradient(135deg,#EDF2F7 0 10px,#F7FAFC 10px 20px);display:flex;align-items:center;justify-content:center;color:#9AA6B2;font-family:monospace;font-size:11px;margin-bottom:12px">image publication</div>
+              <div style="display:flex;gap:18px;font-size:12px;color:#7C8A9A;font-weight:600">
+                <span>J'aime</span><span>Commenter</span><span>Partager</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div>
+          <div style="font-size:13px;font-weight:800;color:#061F35;margin-bottom:12px">Professionnels les plus suivis</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ people }}" as="p" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:34px;height:34px;border-radius:50%;background:#F4F8FB;border:1px solid #E4EBF1;color:#7C8A9A;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ p.initial }}</div>
+                <div>
+                  <div style="font-size:12px;font-weight:700;color:#061F35">{{ p.name }}</div>
+                  <div style="font-size:11px;color:#9AA6B2">{{ p.role }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section style="max-width:1180px;width:100%;margin:0 auto;padding:0 24px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px">
+        <h2 style="font-size:20px;font-weight:800;color:#061F35;margin:0">Nos derniers articles</h2>
+        <a href="#" style="font-size:13px;font-weight:700">Voir tous les articles →</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">
+        <sc-for list="{{ articles }}" as="a" hint-placeholder-count="4">
+          <div style="background:#fff;border:1px solid #E4EBF1;border-radius:14px;overflow:hidden">
+            <div style="height:110px;background:repeating-linear-gradient(135deg,#EDF2F7 0 10px,#F7FAFC 10px 20px);display:flex;align-items:center;justify-content:center;color:#9AA6B2;font-family:monospace;font-size:11px">image article</div>
+            <div style="padding:14px">
+              <div style="font-weight:700;font-size:13px;color:#061F35;margin-bottom:6px;line-height:1.35">{{ a.title }}</div>
+              <div style="font-size:12px;color:#9AA6B2">{{ a.excerpt }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="max-width:1180px;width:100%;margin:0 auto;padding:0 24px;text-align:center">
+      <p style="font-size:12px;color:#9AA6B2;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin:0 0 14px">Découvrez aussi nos plateformes</p>
+      <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
+        <sc-for list="{{ satellites }}" as="sat" hint-placeholder-count="6">
+          <span style="{{ sat.pillStyle }}">
+            <span style="width:8px;height:8px;border-radius:50%;background:{{ sat.accent }}"></span>{{ sat.name }}{{ sat.pillSuffix }}
+          </span>
+        </sc-for>
+      </div>
+    </section>
+
+  </main>
+
+  <footer style="background:#061F35;color:#B9C6D4;padding:48px 24px 24px">
+    <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:28px">
+      <div>
+        <div style="color:#fff;font-weight:800;font-size:16px;margin-bottom:10px">DG Afrique</div>
+        <div style="font-size:13px;line-height:1.6;margin-bottom:14px">Le portail humain de l'écosystème GAMAD, 100% pensé pour les réalités africaines.</div>
+        <div style="display:flex;gap:10px">
+          <sc-for list="{{ socials }}" as="s" hint-placeholder-count="4">
+            <span style="width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff">{{ s }}</span>
+          </sc-for>
+        </div>
+      </div>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:13px;margin-bottom:10px">Écosystème GAMAD</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+          <a href="#" style="color:#B9C6D4">ZUMRA</a>
+          <a href="#" style="color:#B9C6D4">GamaDrive</a>
+          <a href="#" style="color:#B9C6D4">Wasplex</a>
+          <a href="#" style="color:#B9C6D4">G-Market</a>
+        </div>
+      </div>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:13px;margin-bottom:10px">Infos &amp; liens</div>
+        <div style="display:flex;flex-direction:column;gap:6px;font-size:13px">
+          <a href="#" style="color:#B9C6D4">Qui sommes-nous ?</a>
+          <a href="#" style="color:#B9C6D4">FAQ</a>
+          <a href="#" style="color:#B9C6D4">Politique de confidentialité</a>
+          <a href="#" style="color:#B9C6D4">Contact</a>
+        </div>
+      </div>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:13px;margin-bottom:10px">Présents en</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <sc-for list="{{ countries }}" as="c" hint-placeholder-count="5">
+            <span style="font-size:12px;background:rgba(255,255,255,0.06);border-radius:999px;padding:5px 10px;color:#D7E1EA">{{ c }}</span>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="max-width:1180px;margin:32px auto 0;border-top:1px solid rgba(255,255,255,0.12);padding-top:16px;font-size:12px;text-align:center;color:#8899AA">Un satellite de l'écosystème GAMAD.</div>
+  </footer>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{
+  &quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 1000},
+  &quot;startLoggedIn&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: false, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportement&quot;}
+}">
+class Component extends DCLogic {
+  renderVals() {
+    const loggedIn = this.state.loggedIn ?? this.props.startLoggedIn ?? false;
+    const showNotif = !!this.state.showNotif;
+    const showApps = !!this.state.showApps;
+    const query = this.state.query ?? '';
+    const where = this.state.where ?? '';
+    const heroTab = this.state.heroTab ?? 'services';
+
+    const loginBtnStyle = loggedIn
+      ? { width: '34px', height: '34px', borderRadius: '50%', background: '#0877C9', color: '#fff', border: 'none', fontWeight: 700, fontSize: '12px', cursor: 'pointer' }
+      : { background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none', borderRadius: '18px', padding: '8px 16px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' };
+    const loginBtnLabel = loggedIn ? 'MK' : 'Connexion';
+
+    const tabDefs = [
+      { key: 'services', label: 'Services' },
+      { key: 'pro', label: 'Professionnels' },
+      { key: 'satellites', label: 'Satellites' },
+      { key: 'emploi', label: 'Emploi' },
+    ];
+    const heroTabs = tabDefs.map(t => ({
+      label: t.label,
+      onSelect: () => this.setState({ heroTab: t.key }),
+      style: {
+        cursor: 'pointer', fontSize: '13px', fontWeight: 700, paddingBottom: '6px',
+        color: heroTab === t.key ? '#fff' : '#B9C6D4',
+        borderBottom: heroTab === t.key ? '2px solid #F5B942' : '2px solid transparent',
+      },
+    }));
+
+    const rawNeeds = [
+      { title: 'Trouver un prestataire', desc: 'Recherchez parmi des milliers de profils et de demandes.', cta: 'Annuaire' },
+      { title: 'Recruter ou trouver une mission', desc: 'Publiez une offre ou postulez aux annonces de l’écosystème.', cta: 'Emploi' },
+      { title: 'Gagner en visibilité', desc: 'Boostez votre visibilité et recevez des demandes qualifiées.', cta: 'Voir les offres', highlight: true, badge: 'Mise en avant' },
+      { title: 'Rejoindre ZUMRA', desc: 'Contribuez au réseau social d’action et à ses projets soutenus.', cta: 'Réseau ZUMRA' },
+      { title: 'Ouvrir un satellite', desc: 'Accédez à GamaDrive, Wasplex, G-Market et plus encore.', cta: 'Tous les outils' },
+      { title: 'Suivre l’actualité', desc: 'Plus de 100 articles sur le numérique et l’écosystème GAMAD.', cta: 'Blog' },
+    ];
+    const needCards = rawNeeds.map(n => ({
+      ...n,
+      wrapStyle: {
+        position: 'relative', borderRadius: '16px', padding: '22px', display: 'flex', flexDirection: 'column', gap: '8px',
+        background: n.highlight ? '#061F35' : '#fff',
+        border: n.highlight ? 'none' : '1px solid #E4EBF1',
+      },
+      badgeStyle: { position: 'absolute', top: '14px', right: '14px', background: '#F5B942', color: '#061F35', fontSize: '10px', fontWeight: 800, borderRadius: '999px', padding: '3px 9px' },
+      iconStyle: { width: '38px', height: '38px', borderRadius: '10px', background: n.highlight ? 'rgba(255,255,255,0.12)' : '#F4F8FB', marginBottom: '4px' },
+      titleStyle: { fontWeight: 700, fontSize: '15px', color: n.highlight ? '#fff' : '#061F35' },
+      descStyle: { fontSize: '13px', color: n.highlight ? '#B9C6D4' : '#7C8A9A', flex: 1 },
+      ctaStyle: { fontSize: '13px', fontWeight: 700, color: n.highlight ? '#F5B942' : '#0877C9' },
+    }));
+
+    const stats = [
+      { value: '4 250', label: 'membres actifs', color: '#19C2D0' },
+      { value: '860', label: 'entreprises inscrites', color: '#21C87A' },
+      { value: '1,2 million', label: 'pages vues / mois', color: '#F5B942' },
+      { value: '6', label: 'satellites connectés', color: '#0877C9' },
+    ];
+    const joinerColors = ['#0877C9', '#21C87A', '#19C2D0', '#F5B942'];
+    const joiners = ['A', 'K', 'M', 'S'].map((initial, i) => ({
+      initial,
+      style: { width: '30px', height: '30px', borderRadius: '50%', background: joinerColors[i], color: '#061F35', fontWeight: 700, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: i ? '-8px' : '0', border: '2px solid #061F35' },
+    }));
+
+    const trustLogos = ['Partenaire A', 'Partenaire B', 'Partenaire C', 'Partenaire D', 'Partenaire E'];
+
+    const accents = ['#0877C9', '#21C87A', '#19C2D0', '#F5B942'];
+    const rawSatellites = [
+      { name: 'DG Afrique', status: 'actif' },
+      { name: 'ZUMRA', status: 'actif' },
+      { name: 'GamaDrive', status: 'bientot' },
+      { name: 'Wasplex', status: 'bientot' },
+      { name: 'G-Market', status: 'bientot' },
+      { name: 'G-POS', status: 'bientot' },
+    ];
+    const notified = this.state.notified ?? {};
+    const satellites = rawSatellites.map((s, i) => {
+      const isBientot = s.status === 'bientot';
+      const isNotified = !!notified[s.name];
+      return {
+        ...s, initial: s.name[0], accent: accents[i % accents.length], isZumra: s.name === 'ZUMRA',
+        badgeLabel: isBientot ? 'Bientôt' : 'Actif',
+        badgeStyle: { fontSize: '9px', fontWeight: 800, borderRadius: '999px', padding: '2px 7px', background: isBientot ? '#FDF1DC' : '#E3F7ED', color: isBientot ? '#B8842E' : '#21C87A' },
+        showNotify: isBientot,
+        notifyLabel: isNotified ? 'Inscrit' : 'Être notifié',
+        onNotify: e => { e.preventDefault(); this.setState(s2 => ({ notified: { ...(s2.notified ?? {}), [s.name]: true } })); },
+        pillStyle: { display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#fff', border: '1px solid #E4EBF1', borderRadius: '999px', padding: '8px 16px', fontSize: '13px', fontWeight: 700, color: '#061F35', opacity: isBientot ? 0.6 : 1 },
+        pillSuffix: isBientot ? ' · bientôt' : '',
+      };
+    });
+    const searchSubmitted = !!this.state.searchSubmitted;
+    const runSearch = () => this.setState({ searchSubmitted: true });
+
+    const posts = [
+      { initial: 'LK', author: 'Laëtice Kouamé', role: 'Membre ZUMRA · Abidjan', time: 'Hier', text: 'Grâce aux contributions du mois, le projet d’atelier de couture collectif à Yopougon a reçu son premier décaissement. Preuve à l’appui dans le fil ZUMRA.' },
+      { initial: 'MD', author: 'Moussa Diallo', role: 'Membre ZUMRA · Bamako', time: 'Il y a 2 jours', text: 'J’ai rejoint ZUMRA ce mois-ci : comprendre ce que la communauté peut financer avec ses propres moyens avant les partenaires, ça change tout.' },
+    ];
+    const people = [
+      { initial: 'MK', name: 'Mariam Koné', role: 'Développeuse web · Abidjan' },
+      { initial: 'CB', name: 'Christian Bamba', role: 'Community manager · Dakar' },
+      { initial: 'AE', name: 'Aïcha Ehui', role: 'Formatrice numérique · Bamako' },
+      { initial: 'TS', name: 'Tapé Serge', role: 'Entrepreneur · Abidjan' },
+      { initial: 'FN', name: 'Florence N’Guessan', role: 'Designer produit · Conakry' },
+    ];
+    const articles = [
+      { title: 'Comment ouvrir un compte entreprise en Côte d’Ivoire ?', excerpt: 'Les étapes clés pour démarrer sereinement.' },
+      { title: 'Bien démarrer avec le numérique en 2026', excerpt: 'Les bases pour équiper son activité.' },
+      { title: 'Comprendre la contribution mensuelle ZUMRA', excerpt: 'Ce que la communauté peut financer.' },
+      { title: 'Choisir le bon hébergement pour son activité', excerpt: 'Les critères qui comptent vraiment.' },
+    ];
+    const socials = ['f', 'in', 'ig', 'yt'];
+    const countries = ['Côte d’Ivoire', 'Sénégal', 'Mali', 'Guinée', 'Bénin'];
+    const notifications = [
+      { title: 'Votre devis a été reçu par notre équipe', time: 'Il y a 2 heures' },
+      { title: 'Nouvelle publication sur le blog', time: 'Hier' },
+      { title: 'ZUMRA : rapport mensuel disponible', time: 'Il y a 3 jours' },
+    ];
+
+    return {
+      loggedIn, showNotif, showApps, query, where, heroTabs,
+      toggleNotif: () => this.setState(s => ({ showNotif: !s.showNotif, showApps: false })),
+      toggleApps: () => this.setState(s => ({ showApps: !s.showApps, showNotif: false })),
+      toggleLogin: () => this.setState(s => ({ loggedIn: !(s.loggedIn ?? this.props.startLoggedIn ?? false) })),
+      setQuery: e => this.setState({ query: e.target.value }),
+      setWhere: e => this.setState({ where: e.target.value }),
+      searchSubmitted, runSearch,
+      loginBtnStyle, loginBtnLabel,
+      needCards, stats, joiners, trustLogos, satellites, posts, people, articles, socials, countries, notifications,
+    };
+  }
+}
+</script>
+</body>
+</html>
