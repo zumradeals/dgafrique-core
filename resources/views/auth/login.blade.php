@@ -2,28 +2,27 @@
     <main class="login-shell">
         <section class="login-story" aria-label="DG Afrique">
             <a class="brand" href="/" aria-label="Accueil DG Afrique">
-                <span class="brand-mark">DG</span>
+                <span class="brand-mark">G</span>
                 <span>DG Afrique</span>
             </a>
 
             <div class="login-promise">
-                <p class="eyebrow">Un portail de l’écosystème GAMAD</p>
+                <p class="eyebrow">Un satellite de l’écosystème GAMAD</p>
                 <h1>Le numérique qui fait avancer vos projets.</h1>
                 <p>Connectez-vous pour accéder à votre espace, suivre vos demandes et rejoindre ZUMRA.</p>
             </div>
 
-            <p class="login-foot">African First · Propulsé par GAMAD</p>
+            <p class="login-foot">© DG Afrique · Écosystème GAMAD</p>
         </section>
 
         <section class="login-form-panel">
             <div class="login-form-wrap">
                 <a class="mobile-brand" href="/">
-                    <span class="brand-mark">DG</span><span>DG Afrique</span>
+                    <span class="brand-mark">G</span><span>DG Afrique</span>
                 </a>
 
-                <p class="eyebrow dark">Votre espace personnel</p>
                 <h2>Connexion</h2>
-                <p class="form-intro">Accédez à votre espace DG Afrique avec votre Compte GAMAD.</p>
+                <p class="form-intro">Accédez à votre espace DG Afrique.</p>
 
                 @if (session('status'))
                     <div class="alert success" role="status">{{ session('status') }}</div>
@@ -37,7 +36,7 @@
                     @csrf
                     <input type="hidden" name="next" value="{{ old('next', $next) }}">
 
-                    <label for="identifier">E-mail, téléphone ou référence GAMAD</label>
+                    <label for="identifier">E-mail ou téléphone</label>
                     <input
                         id="identifier"
                         name="identifier"
@@ -50,10 +49,7 @@
                         autofocus
                     >
 
-                    <div class="label-row">
-                        <label for="secret">Mot de passe</label>
-                        <span class="future-link" title="Disponible dans un prochain lot">Mot de passe oublié ?</span>
-                    </div>
+                    <label for="secret">Mot de passe</label>
                     <input
                         id="secret"
                         name="secret"
@@ -64,6 +60,14 @@
                         required
                     >
 
+                    <div class="auth-options">
+                        <label class="remember-choice">
+                            <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
+                            <span>Se souvenir de moi</span>
+                        </label>
+                        <span class="future-link" title="Disponible dans un prochain lot">Mot de passe oublié ?</span>
+                    </div>
+
                     <button class="primary-button" type="submit">Se connecter</button>
                 </form>
 
@@ -71,7 +75,7 @@
                     Continuer avec WhatsApp <small>— bientôt</small>
                 </button>
 
-                <p class="create-account">Pas encore de compte ? <a href="{{ route('register') }}">Créer gratuitement mon compte</a></p>
+                <p class="create-account">Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
                 <p class="identity-note">Votre Compte GAMAD reste distinct de l’adhésion au Programme ZUMRA.</p>
             </div>
         </section>
