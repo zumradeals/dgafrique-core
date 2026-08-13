@@ -21,7 +21,8 @@ final class IdentityAuthorityGuardTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('DG Afrique se reconstruit.')
-            ->assertSee('GAMAD Core');
+            ->assertSee('Vos capacités méritent un espace')
+            ->assertSee('Créer gratuitement mon espace')
+            ->assertSee('ZUMRA est le programme communautaire');
     }
 }
