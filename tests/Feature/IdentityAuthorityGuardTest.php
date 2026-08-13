@@ -10,8 +10,9 @@ final class IdentityAuthorityGuardTest extends TestCase
 {
     public function test_laravel_has_no_parallel_member_identity_provider(): void
     {
-        self::assertSame([], config('auth.guards'));
-        self::assertSame([], config('auth.providers'));
+        self::assertSame(['web' => null], config('auth.guards'));
+        self::assertSame(['users' => null], config('auth.providers'));
+        self::assertSame(['users' => null], config('auth.passwords'));
         self::assertFileDoesNotExist(app_path('Models/User.php'));
         self::assertFileDoesNotExist(database_path('migrations/0001_01_01_000000_create_users_table.php'));
     }

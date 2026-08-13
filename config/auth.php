@@ -34,7 +34,9 @@ return [
     |
     */
 
-    'guards' => [],
+    // Laravel 13 fusionne cette section avec ses valeurs framework.
+    // La sentinelle null neutralise explicitement le guard local par défaut.
+    'guards' => ['web' => null],
 
     /*
     |--------------------------------------------------------------------------
@@ -53,7 +55,8 @@ return [
     |
     */
 
-    'providers' => [],
+    // GAMAD Core reste l'unique autorité d'identité membre.
+    'providers' => ['users' => null],
 
     /*
     |--------------------------------------------------------------------------
@@ -74,7 +77,7 @@ return [
     |
     */
 
-    'passwords' => [],
+    'passwords' => ['users' => null],
 
     /*
     |--------------------------------------------------------------------------
