@@ -6,6 +6,7 @@ namespace App\Infrastructure\GamadCore;
 
 use App\Domain\Identity\CoreIdentity;
 use App\Domain\Identity\CoreIdentityProof;
+use App\Domain\Identity\CoreAuthenticatedIdentity;
 use App\Domain\Identity\CoreSession;
 use App\Infrastructure\GamadCore\Exceptions\CoreIdentityNotFoundException;
 use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
@@ -31,6 +32,43 @@ final readonly class GamadCoreClient
         $this->assertUsable($response);
 
         return CoreSession::fromCurrentPayload($this->jsonObject($response));
+    }
+
+    public function authenticate(string $identifier, #[\SensitiveParameter] string $secret): CoreAuthenticatedIdentity
+    {
+        $identifier = trim($identifier);
+        if ($identifier === '' || $secret === '') {
+            throw new CoreSessionRejectedException('Identifiant ou moyen d’accès absent.');
+        }
+
+        $credentials = str_contains($identifier, '-GAMAD-')
+            ? ['entite' => $identifier, 'secret' => $secret]
+            : ['identifiant' => $identifier, 'secret' => $secret];
+
+        $response = $this->post('/sessions', $credentials);
+        $this->assertUsable($response);
+        $payload = $this->jsonObject($response);
+
+        foreach (['jeton', 'entite', 'assurance', 'expire_le'] as $field) {
+            if (!isset($payload[$field]) || !is_string($payload[$field]) || trim($payload[$field]) === '') {
+                throw new CoreProtocolException("Champ d’authentification Core manquant : {$field}.");
+            }
+        }
+
+        $token = $payload['jeton'];
+        try {
+            $session = CoreSession::fromCurrentPayload([
+                'entite' => $payload['entite'],
+                'assurance' => $payload['assurance'],
+                'expire_le' => $payload['expire_le'],
+            ]);
+            $identity = $this->resolveIdentity($session->entity, $token);
+        } catch (\Throwable $exception) {
+            $this->revokeSession($token);
+            throw $exception;
+        }
+
+        return new CoreAuthenticatedIdentity($identity, $session, $token);
     }
 
     public function proveIdentity(string $entity, string $secret): CoreIdentityProof
@@ -113,7 +151,7 @@ final readonly class GamadCoreClient
         }
     }
 
-    private function revokeSession(string $bearerToken): void
+    public function revokeSession(string $bearerToken): void
     {
         try {
             $response = $this->request($bearerToken)->delete('/sessions/current');
