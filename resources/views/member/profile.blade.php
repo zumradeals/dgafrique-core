@@ -16,7 +16,7 @@
             <div class="space-search">⌕ <span>Rechercher…</span></div>
         </header>
         <div class="space-layout">
-            <aside class="space-sidebar"><nav><a class="nav-blue" href="{{ route('member.space') }}">Tableau de bord</a><a class="active nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a><span class="nav-green">ZUMRA <small>à venir</small></span><span class="nav-amber">Mes demandes <small>à venir</small></span><span class="nav-blue">Satellites <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span></nav></aside>
+            <aside class="space-sidebar"><nav><a class="nav-blue" href="{{ route('member.space') }}">Tableau de bord</a><a class="active nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a><a class="nav-green" href="{{ route('zumra.index') }}">ZUMRA <small>aperçu</small></a><span class="nav-amber">Mes demandes <small>à venir</small></span><span class="nav-blue">Satellites <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span></nav></aside>
             <main class="space-content profile-content">
                 <div class="profile-heading"><div><p class="eyebrow dark">Profil de capacités</p><h1>{{ $profileConfiguration['title'] }}</h1><p class="space-lead">{{ $profileConfiguration['introduction'] }}</p></div><div class="profile-avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</div></div>
                 <section class="identity-strip"><div><small>Identité reconnue par GAMAD Core</small><strong>{{ $identity->label }}</strong></div><code>{{ $identity->reference }}</code><span>Identité attestée</span></section>

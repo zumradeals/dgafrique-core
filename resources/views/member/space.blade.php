@@ -29,7 +29,7 @@
                 <nav aria-label="Navigation Mon espace">
                     <a class="active nav-blue" href="{{ route('member.space') }}">Tableau de bord</a>
                     <a class="nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a>
-                    <span class="nav-green">ZUMRA <small>à venir</small></span>
+                    <a class="nav-green" href="{{ route('zumra.index') }}">ZUMRA <small>aperçu</small></a>
                     <span class="nav-amber">Mes demandes <small>à venir</small></span>
                     <span class="nav-blue">Satellites <small>à venir</small></span>
                     <span class="nav-gray">Paramètres <small>à venir</small></span>
@@ -70,7 +70,7 @@
                     <article class="zumra-action">
                         <h2>Ouvrir ZUMRA</h2>
                         <p>Fil, contribution et projets soutenus.</p>
-                        <span>Disponible après validation →</span>
+                        <a href="{{ route('zumra.index') }}">Ouvrir l’aperçu →</a>
                     </article>
                     <article>
                         <h2>Faire une demande</h2>

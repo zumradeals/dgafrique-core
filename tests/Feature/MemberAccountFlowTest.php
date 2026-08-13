@@ -103,6 +103,22 @@ final class MemberAccountFlowTest extends TestCase
             ->assertSessionMissing('_old_input.secret');
     }
 
+    public function test_an_authenticated_member_can_open_the_honest_zumra_preview(): void
+    {
+        $this->fakeSuccessfulAuthentication();
+        $this->post('/connexion', [
+            'identifier' => 'AUT-GAMAD-001',
+            'secret' => 'member-secret',
+        ])->assertRedirect('/espace');
+
+        $this->get('/zumra')
+            ->assertOk()
+            ->assertSee('ZUMRA')
+            ->assertSee('Aucune publication fictive')
+            ->assertDontSee('Contribution à jour')
+            ->assertDontSee('24 J’aime');
+    }
+
     private function fakeSuccessfulAuthentication(int $currentSessionStatus = 200): void
     {
         Http::fake([
