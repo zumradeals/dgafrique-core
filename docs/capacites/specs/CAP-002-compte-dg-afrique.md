@@ -2,7 +2,7 @@
 
 ## Statut
 
-**LOT A VALIDÉ PRÉPRODUCTION — 2026-08-13. LOT B À SPÉCIFIER.**
+**LOT A VALIDÉ PRÉPRODUCTION — 2026-08-13. LOT B EN DÉVELOPPEMENT.**
 
 CAP-001 est validé en préproduction. CAP-003 à CAP-084 restent bloqués.
 
@@ -42,10 +42,20 @@ d'accès dans PostgreSQL.
 
 ### CAP-002B — Création et vérification gratuite
 
-À spécifier après inspection des contrats Core d'inscription et de vérification.
-Aucun faux formulaire local ne sera créé. WhatsApp, oubli du mot de passe et
-création restent explicitement « bientôt » tant que leurs contrats ne sont pas
-livrés et éprouvés.
+Contrats inspectés sur `zumradeals/gamad-core/main` :
+
+- `POST /comptes` sous session produit : création et livraison souveraine ;
+- `POST /comptes/verifications` : consommation du code à six chiffres ;
+- `POST /comptes/verifications/renvoi` : nouveau défi borné par Core.
+
+Le formulaire Laravel transmet le mot de passe directement au Core et ne le
+persiste jamais. Le code arrive directement au canal humain et n'est ni reçu
+ni conservé par DG Afrique. Seules les références de reprise, la destination,
+le canal et l'échéance Core restent dans la session Redis chiffrée.
+
+Le premier périmètre réel est EMAIL. TELEPHONE sera activé lorsque le canal SMS
+Core sera confirmé livrable en préproduction. WhatsApp et mot de passe oublié
+restent hors périmètre sans contrat dédié.
 
 ## Stockage de session
 

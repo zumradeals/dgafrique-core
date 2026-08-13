@@ -19,6 +19,8 @@ final class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(GamadCoreClient::class, static fn (): GamadCoreClient => new GamadCoreClient(
             baseUrl: (string) config('gamad-core.base_url'),
+            productReference: config('gamad-core.product_reference'),
+            connectSecret: config('gamad-core.connect_secret'),
             timeoutSeconds: (int) config('gamad-core.timeout_seconds'),
             connectTimeoutSeconds: (int) config('gamad-core.connect_timeout_seconds'),
         ));
@@ -38,5 +40,9 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('member-logout', static fn (Request $request): Limit =>
             Limit::perMinute(10)->by($request->ip())
         );
+
+        RateLimiter::for('account-create', static fn (Request $request): Limit => Limit::perHour(5)->by($request->ip()));
+        RateLimiter::for('account-verify', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('account-resend', static fn (Request $request): Limit => Limit::perMinute(3)->by($request->ip()));
     }
 }

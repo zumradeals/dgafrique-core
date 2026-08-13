@@ -8,6 +8,8 @@ use App\Domain\Identity\CoreIdentity;
 use App\Domain\Identity\CoreIdentityProof;
 use App\Domain\Identity\CoreAuthenticatedIdentity;
 use App\Domain\Identity\CoreSession;
+use App\Domain\Identity\PendingAccountVerification;
+use App\Infrastructure\GamadCore\Exceptions\CoreAccountException;
 use App\Infrastructure\GamadCore\Exceptions\CoreIdentityNotFoundException;
 use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
 use App\Infrastructure\GamadCore\Exceptions\CoreSessionRejectedException;
@@ -22,9 +24,59 @@ final readonly class GamadCoreClient
 {
     public function __construct(
         private string $baseUrl,
+        private ?string $productReference = null,
+        #[\SensitiveParameter]
+        private ?string $connectSecret = null,
         private int $timeoutSeconds = 8,
         private int $connectTimeoutSeconds = 3,
     ) {}
+
+    public function createAccount(string $name, string $channel, string $identifier, #[\SensitiveParameter] string $password): PendingAccountVerification
+    {
+        return $this->withProductSession(function (string $bearer) use ($name, $channel, $identifier, $password): PendingAccountVerification {
+            $response = $this->post('/comptes', [
+                'nom' => $name,
+                'type_identifiant' => $channel,
+                'identifiant' => $identifier,
+                'mot_de_passe' => $password,
+            ], $bearer);
+
+            return $this->pendingVerificationFromResponse($response, $identifier, $channel);
+        });
+    }
+
+    public function verifyAccount(PendingAccountVerification $pending, #[\SensitiveParameter] string $code): void
+    {
+        $this->withProductSession(function (string $bearer) use ($pending, $code): null {
+            $response = $this->post('/comptes/verifications', [
+                'identite' => $pending->identity,
+                'identifiant_reference' => $pending->identifierReference,
+                'verification_reference' => $pending->verificationReference,
+                'code' => $code,
+            ], $bearer);
+            $this->assertAccountUsable($response);
+
+            return null;
+        });
+    }
+
+    public function resendAccountVerification(PendingAccountVerification $pending): PendingAccountVerification
+    {
+        return $this->withProductSession(function (string $bearer) use ($pending): PendingAccountVerification {
+            $response = $this->post('/comptes/verifications/renvoi', [
+                'identifiant_reference' => $pending->identifierReference,
+                'destination' => $pending->destination,
+            ], $bearer);
+            $this->assertAccountUsable($response);
+            $payload = $this->jsonObject($response);
+            $verification = $payload['verification'] ?? null;
+            if (!is_array($verification)) {
+                throw new CoreProtocolException('Réponse de renvoi Core incomplète.');
+            }
+
+            return $this->buildPending($pending->identity, $pending->identifierReference, $verification, $pending->destination, $pending->channel, true);
+        });
+    }
 
     public function currentSession(string $bearerToken): CoreSession
     {
@@ -138,17 +190,101 @@ final readonly class GamadCoreClient
     }
 
     /** @param array<string, string> $payload */
-    private function post(string $path, array $payload): Response
+    private function post(string $path, array $payload, ?string $bearerToken = null): Response
     {
         if (trim($this->baseUrl) === '') {
             throw new CoreUnavailableException('GAMAD Core n’est pas configuré.');
         }
 
         try {
-            return $this->request()->post($path, $payload);
+            return $this->request($bearerToken)->post($path, $payload);
         } catch (ConnectionException $exception) {
             throw new CoreUnavailableException('GAMAD Core est temporairement injoignable.', previous: $exception);
         }
+    }
+
+    private function withProductSession(callable $operation): mixed
+    {
+        $product = trim((string) $this->productReference);
+        $secret = (string) $this->connectSecret;
+        if ($product === '' || $secret === '') {
+            throw new CoreUnavailableException('Le raccordement produit GAMAD Core est incomplet.');
+        }
+
+        $response = $this->post('/sessions', ['entite' => $product, 'secret' => $secret]);
+        $this->assertUsable($response);
+        $token = $this->jsonObject($response)['jeton'] ?? null;
+        if (!is_string($token) || $token === '') {
+            throw new CoreProtocolException('Core n’a pas remis de session produit.');
+        }
+
+        try {
+            return $operation($token);
+        } finally {
+            try {
+                $this->revokeSession($token);
+            } catch (CoreUnavailableException) {
+                // La session produit est courte et n'est jamais conservée par le portail.
+            }
+        }
+    }
+
+    private function pendingVerificationFromResponse(Response $response, string $destination, string $channel): PendingAccountVerification
+    {
+        $payload = $this->jsonObject($response);
+        $delivered = $response->successful();
+        if (!$delivered && !($response->status() === 503 && ($payload['erreur'] ?? null) === 'VERIFICATION_NON_LIVREE')) {
+            $this->throwAccountException($response, $payload);
+        }
+
+        $account = $payload['compte'] ?? null;
+        $verification = $payload['verification'] ?? null;
+        if (!is_array($account) || !is_array($verification)) {
+            throw new CoreProtocolException('Réponse de création Core incomplète.');
+        }
+
+        return $this->buildPending(
+            (string) ($account['identite'] ?? ''),
+            (string) ($account['identifiant_reference'] ?? ''),
+            $verification,
+            $destination,
+            $channel,
+            $delivered && (($verification['livraison']['livree'] ?? false) === true),
+        );
+    }
+
+    /** @param array<string, mixed> $verification */
+    private function buildPending(string $identity, string $identifierReference, array $verification, string $destination, string $channel, bool $delivered): PendingAccountVerification
+    {
+        $reference = $verification['reference'] ?? null;
+        $expires = $verification['expire_le'] ?? null;
+        if ($identity === '' || $identifierReference === '' || !is_string($reference) || $reference === '' || !is_string($expires)) {
+            throw new CoreProtocolException('Références de vérification Core absentes.');
+        }
+
+        try {
+            $expiresAt = new \DateTimeImmutable($expires);
+        } catch (\Throwable $exception) {
+            throw new CoreProtocolException('Échéance de vérification Core invalide.', previous: $exception);
+        }
+
+        return new PendingAccountVerification($identity, $identifierReference, $reference, $destination, $channel, $expiresAt, $delivered);
+    }
+
+    private function assertAccountUsable(Response $response): void
+    {
+        if (!$response->successful()) {
+            $this->throwAccountException($response, $this->jsonObject($response));
+        }
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function throwAccountException(Response $response, array $payload): never
+    {
+        $reason = is_string($payload['erreur'] ?? null) ? $payload['erreur'] : 'ERREUR_COMPTE_CORE';
+        $message = is_string($payload['message'] ?? null) ? $payload['message'] : 'L’opération sur le compte a échoué.';
+        $retry = is_numeric($payload['reessayer_dans'] ?? null) ? (int) $payload['reessayer_dans'] : null;
+        throw new CoreAccountException($reason, $response->status(), $message, $retry);
     }
 
     public function revokeSession(string $bearerToken): void

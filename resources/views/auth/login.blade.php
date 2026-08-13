@@ -71,7 +71,7 @@
                     Continuer avec WhatsApp <small>— bientôt</small>
                 </button>
 
-                <p class="create-account">Pas encore de compte ? <span>La création gratuite arrive au lot CAP‑002B.</span></p>
+                <p class="create-account">Pas encore de compte ? <a href="{{ route('register') }}">Créer gratuitement mon compte</a></p>
                 <p class="identity-note">Votre Compte GAMAD reste distinct de l’adhésion au Programme ZUMRA.</p>
             </div>
         </section>

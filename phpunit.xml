@@ -30,6 +30,8 @@
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="GAMAD_CORE_BASE_URL" value="https://core.test/api/v1"/>
+        <env name="GAMAD_CORE_PRODUCT_REF" value="PRD-GAMAD-005"/>
+        <env name="GAMAD_CORE_CONNECT_SECRET" value="product-connect-secret"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
