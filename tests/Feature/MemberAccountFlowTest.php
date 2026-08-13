@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 final class MemberAccountFlowTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_a_member_can_sign_in_and_enter_the_personal_space(): void
     {
         $this->fakeSuccessfulAuthentication();

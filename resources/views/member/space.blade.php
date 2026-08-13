@@ -19,7 +19,7 @@
             <aside class="space-sidebar">
                 <nav aria-label="Navigation Mon espace">
                     <a class="active" href="{{ route('member.space') }}">Tableau de bord</a>
-                    <span>Mon profil <small>CAP‑003</small></span>
+                    <a href="{{ route('member.profile.edit') }}">Mon profil <small>CAP‑003</small></a>
                     <span>ZUMRA <small>à venir</small></span>
                     <span>Mes demandes <small>à venir</small></span>
                     <span>Satellites <small>à venir</small></span>
@@ -53,10 +53,10 @@
                 <section class="next-section">
                     <div>
                         <p class="eyebrow dark">Prochaine étape</p>
-                        <h2>Construire votre profil de capacités</h2>
-                        <p>Les informations métier resteront dans DG Afrique et seront rattachées à votre référence Core, sans modifier votre identité canonique.</p>
+                        <h2>{{ $profile ? 'Enrichir votre profil de capacités' : 'Construire votre profil de capacités' }}</h2>
+                        <p>{{ $profile ? 'Votre profil est enregistré. Vous pouvez le compléter à votre rythme.' : 'Les informations métier resteront dans DG Afrique et seront rattachées à votre référence Core, sans modifier votre identité canonique.' }}</p>
                     </div>
-                    <span class="next-badge">CAP‑003 bloqué jusqu’à validation CAP‑002</span>
+                    <a class="next-badge profile-action" href="{{ route('member.profile.edit') }}">{{ $profile ? 'Mettre à jour mon profil' : 'Commencer mon profil' }}</a>
                 </section>
             </main>
         </div>

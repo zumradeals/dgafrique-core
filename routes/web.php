@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AccountRegistrationController;
+use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
-use App\Http\Controllers\AccountRegistrationController;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('foundation');
@@ -25,3 +26,7 @@ Route::post('/verifier-le-compte/renvoi', [AccountRegistrationController::class,
 
 Route::get('/espace', MemberSpaceController::class)
     ->middleware('core.member')->name('member.space');
+Route::get('/espace/profil', [MemberProfileController::class, 'edit'])
+    ->middleware('core.member')->name('member.profile.edit');
+Route::put('/espace/profil', [MemberProfileController::class, 'update'])
+    ->middleware(['core.member', 'throttle:profile-update'])->name('member.profile.update');
