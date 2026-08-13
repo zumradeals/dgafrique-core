@@ -34,13 +34,11 @@ final class MemberAccountFlowTest extends TestCase
 
     public function test_a_rejected_core_session_is_destroyed_and_returns_to_login(): void
     {
-        $this->fakeSuccessfulAuthentication();
+        $this->fakeSuccessfulAuthentication(currentSessionStatus: 401);
         $this->post('/connexion', [
             'identifier' => 'AUT-GAMAD-001',
             'secret' => 'member-secret',
         ])->assertRedirect('/espace');
-
-        Http::fake(['core.test/api/v1/sessions/current' => Http::response([], 401)]);
 
         $this->get('/espace')
             ->assertRedirect('/connexion')
@@ -49,13 +47,11 @@ final class MemberAccountFlowTest extends TestCase
 
     public function test_a_transient_core_failure_preserves_the_portal_session(): void
     {
-        $this->fakeSuccessfulAuthentication();
+        $this->fakeSuccessfulAuthentication(currentSessionStatus: 503);
         $this->post('/connexion', [
             'identifier' => 'AUT-GAMAD-001',
             'secret' => 'member-secret',
         ])->assertRedirect('/espace');
-
-        Http::fake(['core.test/api/v1/sessions/current' => Http::response([], 503)]);
 
         $this->get('/espace')
             ->assertStatus(503)
@@ -104,7 +100,7 @@ final class MemberAccountFlowTest extends TestCase
             ->assertSessionMissing('_old_input.secret');
     }
 
-    private function fakeSuccessfulAuthentication(): void
+    private function fakeSuccessfulAuthentication(int $currentSessionStatus = 200): void
     {
         Http::fake([
             'core.test/api/v1/sessions' => Http::response([
@@ -125,7 +121,7 @@ final class MemberAccountFlowTest extends TestCase
                 'entite' => 'AUT-GAMAD-001',
                 'assurance' => 'AS1 — FACTEUR UNIQUE',
                 'expire_le' => '2026-08-14T03:42:19+00:00',
-            ]),
+            ], $currentSessionStatus),
         ]);
     }
 }
