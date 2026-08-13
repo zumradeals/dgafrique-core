@@ -84,3 +84,31 @@
 .claude-footer{padding:48px 24px 24px;color:#b9c6d4;background:var(--navy)}.footer-grid{max-width:1180px;margin:auto;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:28px}.footer-grid>div{display:flex;flex-direction:column;align-items:flex-start;gap:6px}.footer-grid h3{margin:0 0 4px;color:#fff;font-size:13px}.footer-grid>div:first-child h3{font-size:16px}.footer-grid p,.footer-grid span{margin:0;color:#b9c6d4;font-size:13px;line-height:1.6}.social-placeholders{display:flex;gap:10px;margin-top:8px}.social-placeholders span{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;color:#fff;background:rgba(255,255,255,.08);font-size:11px;font-weight:700}.footer-bottom{max-width:1180px;margin:32px auto 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);color:#8899aa;font-size:12px;text-align:center}
 @media(max-width:900px){.claude-header{align-items:flex-start}.claude-header nav{display:none}.claude-header-actions{margin-left:auto}.visibility-cta{display:none}.claude-needs-grid,.trends-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.trends-grid .feed-empty{grid-column:1/-1;grid-row:1}.articles-grid,.footer-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.claude-header{padding:10px 12px}.claude-brand strong{font-size:14px}.notification-placeholder{display:none}.claude-login{padding:8px 12px}.claude-hero{padding:44px 14px 60px}.claude-hero h1{font-size:28px}.claude-search{align-items:stretch;flex-direction:column}.claude-search>div:first-child{border-right:0;border-bottom:1px solid var(--line)}.claude-search>a{text-align:center}.search-tabs{width:100%;justify-content:space-between;gap:8px;overflow:auto}.claude-main-flow{gap:48px}.claude-section{padding:0 14px}.claude-needs-grid,.trends-grid,.articles-grid{grid-template-columns:1fr}.zumra-inner{grid-template-columns:1fr}.zumra-collage{height:220px}.trust-grid div{width:calc(50% - 8px)}.articles-title{align-items:flex-start;flex-direction:column;gap:6px}.platforms-section span{font-size:12px}.footer-grid{grid-template-columns:1fr 1fr}.footer-grid>div:first-child{grid-column:1/-1}}
+
+/* Amélioration grands écrans : fidélité Claude, occupation plus généreuse */
+@media(min-width:1440px){
+    .claude-header{min-height:72px;padding:14px clamp(28px,3vw,58px)}
+    .claude-brand>span{width:42px;height:42px;font-size:20px}.claude-brand strong{font-size:18px}
+    .claude-header nav a,.claude-header nav span,.claude-login,.visibility-cta{font-size:14px}
+    .claude-hero{min-height:465px;display:grid;align-items:center;padding:70px 4vw 92px}
+    .claude-hero-inner{width:min(1080px,82vw);max-width:none}
+    .claude-hero h1{max-width:900px;margin:0 auto 14px;font-size:clamp(42px,2.65vw,54px)}
+    .claude-hero-inner>p:not(.search-honesty){max-width:760px;font-size:17px}
+    .search-tabs a,.search-tabs span{font-size:14px}.claude-search{padding:15px;border-radius:17px}
+    .claude-search>div{padding:7px 18px}.claude-search small{font-size:12px}.claude-search span{font-size:16px}
+    .claude-search>a{padding:17px 38px;font-size:16px}.search-honesty{font-size:12px!important}
+    .claude-main-flow{gap:82px;padding-bottom:82px}
+    .claude-section,.zumra-inner,.footer-grid,.footer-bottom{width:min(1600px,88vw);max-width:none}
+    .needs-section{padding-top:4px}.claude-heading{margin-bottom:34px}.claude-heading h2{font-size:30px}.claude-heading p{font-size:16px}
+    .claude-needs-grid{gap:22px}.claude-needs-grid article{min-height:230px;padding:28px;border-radius:19px}
+    .claude-needs-grid article>i{width:46px;height:46px}.claude-needs-grid h3{font-size:18px}.claude-needs-grid p{font-size:15px}.claude-needs-grid a,.claude-needs-grid article>span{font-size:14px}
+    .claude-zumra{padding:70px 4vw}.zumra-inner{gap:72px}.zumra-text h2{font-size:32px}.zumra-text>p{max-width:650px;font-size:16px}
+    .zumra-states strong{font-size:25px}.zumra-states small{font-size:14px}.zumra-join p,.zumra-join>span{font-size:14px}.zumra-collage{height:360px}
+    .trust-section .claude-heading h2,.articles-title h2{font-size:26px}.trust-section .claude-heading p,.trends-section .claude-heading p{font-size:15px}
+    .trust-grid{gap:22px}.trust-grid div{width:190px;height:72px}.trends-section .claude-heading h2{font-size:28px}
+    .trends-grid{gap:34px}.trends-grid h3{font-size:15px}.sat-row{padding:13px 15px}.sat-row span{font-size:14px}
+    .feed-empty article{min-height:310px;padding:22px}.feed-empty article>p{font-size:15px}.media-placeholder{height:165px}
+    .articles-grid{gap:22px}.articles-grid article>div{height:155px}.articles-grid h3{font-size:15px}.articles-grid p{font-size:13px}
+    .platforms-section span{padding:10px 20px;font-size:14px}
+    .claude-footer{padding:60px 4vw 28px}.footer-grid{gap:48px}.footer-grid h3{font-size:15px}.footer-grid>div:first-child h3{font-size:19px}.footer-grid p,.footer-grid span{font-size:14px}
+}
