@@ -41,7 +41,7 @@ final class ZumraProgramMembershipTest extends TestCase
         self::assertNull($membership->activated_at);
         self::assertSame('DOSSIER_SUBMITTED', ZumraProgramMembershipEvent::query()->sole()->event);
 
-        $this->get('/zumra/adhesion')->assertOk()->assertSee('Aucun débit en attente')->assertSee('Paiement bientôt disponible');
+        $this->get('/zumra/adhesion')->assertOk()->assertSee('Aucun débit en attente')->assertSee('Paiement temporairement indisponible');
     }
 
     public function test_acceptance_is_bound_to_the_submitted_published_charter(): void

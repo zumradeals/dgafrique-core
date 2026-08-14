@@ -41,7 +41,7 @@ final class ZumraProgramConfigurationController
 
         PortalSetting::query()->updateOrCreate(
             ['key' => ZumraProgramConfiguration::KEY],
-            ['value' => $data + ['payment_enabled' => false], 'updated_by_core_reference' => $identity->reference],
+            ['value' => $data, 'updated_by_core_reference' => $identity->reference],
         );
 
         return back()->with('status', 'Présentation du Programme ZUMRA enregistrée.');

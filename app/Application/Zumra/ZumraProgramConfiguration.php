@@ -12,7 +12,12 @@ final class ZumraProgramConfiguration
 
     public function get(): array
     {
-        return array_replace($this->defaults(), PortalSetting::query()->find(self::KEY)?->value ?? []);
+        $configuration = array_replace($this->defaults(), PortalSetting::query()->find(self::KEY)?->value ?? []);
+        // Ce commutateur est opérationnel et secret : l’administration éditoriale
+        // ne peut ni ouvrir ni fermer un prestataire financier.
+        $configuration['payment_enabled'] = (bool) config('payments.membership.enabled');
+
+        return $configuration;
     }
 
     public function defaults(): array
@@ -22,11 +27,11 @@ final class ZumraProgramConfiguration
             'introduction' => 'Un engagement unique pour apprendre, transmettre et construire avec d’autres.',
             'commitment_notice' => 'L’adhésion est acquise une seule fois. Les contributions mensuelles restent entièrement facultatives.',
             'pending_payment_title' => 'Votre dossier est prêt',
-            'pending_payment_help' => 'Le paiement sécurisé sera ouvert dès que le moyen de paiement officiel sera raccordé.',
+            'pending_payment_help' => 'Finalisez le paiement unique pour activer votre adhésion.',
             'accept_label' => 'J’ai lu et j’accepte cette charte.',
             'submit_label' => 'Préparer mon adhésion',
-            'payment_enabled' => false,
-            'payment_unavailable_notice' => 'Le paiement n’est pas encore disponible. Aucun débit ne sera effectué.',
+            'payment_enabled' => (bool) config('payments.membership.enabled'),
+            'payment_unavailable_notice' => 'Le paiement est temporairement indisponible. Aucun débit ne sera effectué.',
         ];
     }
 }

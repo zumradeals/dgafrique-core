@@ -9,7 +9,17 @@
 
             @if ($membership)
                 <section class="membership-state {{ strtolower($membership->status) }}"><span class="state-mark"></span><div><small>ÉTAT DU DOSSIER</small><h2>{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_title'] : match($membership->status) {'ACTIVE' => 'Adhésion active', 'SUSPENDED' => 'Adhésion suspendue', 'CLOSED' => 'Adhésion fermée', default => $membership->status} }}</h2><p>{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_help'] : 'Votre historique d’adhésion reste conservé.' }}</p><dl><div><dt>Charte acceptée</dt><dd>{{ $membership->accepted_charter_version }}</dd></div><div><dt>Dossier créé</dt><dd>{{ $membership->submitted_at->format('d/m/Y à H:i') }}</dd></div><div><dt>Paiement</dt><dd>{{ $membership->status === 'PENDING_PAYMENT' ? 'Non effectué' : 'Voir preuve' }}</dd></div></dl></div></section>
-                @if ($membership->status === 'PENDING_PAYMENT')<div class="payment-honesty"><strong>Aucun débit en attente</strong><p>{{ $configuration['payment_unavailable_notice'] }}</p><button disabled>Paiement bientôt disponible</button></div>@endif
+                @if ($membership->status === 'PENDING_PAYMENT')
+                    <div class="payment-honesty">
+                        @if ($configuration['payment_enabled'])
+                            <strong>Paiement sécurisé · 500 FCFA</strong>
+                            <p>L’activation intervient uniquement après vérification directe du paiement par DG Afrique. Un retour navigateur ne vaut jamais confirmation.</p>
+                            <form method="POST" action="{{ route('zumra.payment.store') }}">@csrf<button type="submit">Payer mon adhésion</button></form>
+                        @else
+                            <strong>Aucun débit en attente</strong><p>{{ $configuration['payment_unavailable_notice'] }}</p><button disabled>Paiement temporairement indisponible</button>
+                        @endif
+                    </div>
+                @endif
             @elseif ($charter)
                 <div class="membership-grid">
                     <section class="charter-card"><div class="charter-heading"><div><small>CHARTE EN VIGUEUR</small><h2>{{ $charter->title }}</h2></div><span>Version {{ $charter->version }}</span></div><div class="charter-body">{!! nl2br(e($charter->body)) !!}</div></section>

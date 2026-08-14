@@ -7,7 +7,8 @@ CAP-007 est reconstruit en deux lots :
 - **CAP-007A** : dossier, charte, états et administration ;
 - **CAP-007B** : paiement réel, confirmation, reçu et activation.
 
-Le présent lot n'encaisse rien et n'active aucune adhésion.
+CAP-007A prépare le dossier sans encaisser. CAP-007B ajoute le registre de
+paiement live, la confirmation serveur, le reçu et l'activation atomique.
 
 ## Invariants
 
@@ -26,11 +27,12 @@ Le présent lot n'encaisse rien et n'active aucune adhésion.
 | État | Signification |
 |---|---|
 | `PENDING_PAYMENT` | dossier et charte valides, aucun paiement confirmé |
-| `ACTIVE` | réservé à CAP-007B après paiement attesté |
+| `ACTIVE` | paiement d'adhésion attesté par vérification serveur |
 | `SUSPENDED` | accès limité, historique conservé |
 | `CLOSED` | dossier fermé, historique conservé |
 
-CAP-007A ne possède aucun chemin applicatif vers `ACTIVE`.
+Le seul chemin applicatif vers `ACTIVE` appartient au rapprochement CAP-007B.
+Le retour navigateur n'est jamais une preuve.
 
 ## Administration
 
@@ -40,8 +42,8 @@ Sans déploiement, un administrateur autorisé peut :
 - publier une nouvelle version de charte ;
 - consulter l'historique des versions.
 
-La disponibilité du paiement demeure désactivée dans CAP-007A. Les montants
-canoniques ne sont pas un réglage éditorial ordinaire.
+La disponibilité du paiement et ses secrets sont des réglages d'exploitation,
+jamais des réglages éditoriaux. Le prix canonique n'est pas administrable.
 
 ## Critères de preuve
 
@@ -51,3 +53,6 @@ canoniques ne sont pas un réglage éditorial ordinaire.
 4. une charte retirée ne peut être acceptée ;
 5. les versions antérieures restent en base ;
 6. chaque dossier est isolé par identité canonique.
+7. un état distant non final ne peut pas activer l'adhésion ;
+8. une confirmation répétée ne crée qu'un événement et un reçu ;
+9. le reçu n'est lisible que par son identité canonique.

@@ -10,6 +10,7 @@ use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
 use App\Http\Controllers\ZumraSpaceController;
 use App\Http\Controllers\ZumraProgramMembershipController;
+use App\Http\Controllers\ZumraMembershipPaymentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -40,6 +41,12 @@ Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
     ->middleware('core.member')->name('zumra.membership.show');
 Route::post('/zumra/adhesion', [ZumraProgramMembershipController::class, 'store'])
     ->middleware(['core.member', 'throttle:zumra-membership'])->name('zumra.membership.store');
+Route::post('/zumra/adhesion/paiement', [ZumraMembershipPaymentController::class, 'store'])
+    ->middleware(['core.member', 'throttle:zumra-payment'])->name('zumra.payment.store');
+Route::get('/zumra/adhesion/paiement/retour', [ZumraMembershipPaymentController::class, 'returned'])
+    ->middleware(['core.member', 'throttle:zumra-payment-status'])->name('zumra.payment.return');
+Route::get('/zumra/adhesion/recus/{receipt}', [ZumraMembershipPaymentController::class, 'receipt'])
+    ->middleware('core.member')->name('zumra.payment.receipt');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
