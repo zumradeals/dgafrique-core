@@ -2,7 +2,7 @@
     <main class="login-shell">
         <section class="login-story">
             <a href="/" class="brand"><span class="brand-mark">DG</span><span>DG Afrique</span></a>
-            <div class="login-promise"><p class="eyebrow">Une porte d’entrée gratuite</p><h1>Créez votre espace personnel.</h1><p>Votre identité reste gouvernée par GAMAD Core. Le compte ne vous inscrit pas automatiquement au Programme ZUMRA.</p></div>
+            <div class="login-promise"><p class="eyebrow">Une porte d’entrée gratuite</p><h1>Créez votre espace personnel.</h1><p>Votre identité est protégée par le service de confiance de DG Afrique. Le compte ne vous inscrit pas automatiquement au Programme ZUMRA.</p></div>
             <p class="login-foot">Identité souveraine · Mot de passe jamais stocké par DG Afrique</p>
         </section>
         <section class="login-form-panel">

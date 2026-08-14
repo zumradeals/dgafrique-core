@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 final class IdentityAuthorityGuardTest extends TestCase
@@ -28,5 +29,16 @@ final class IdentityAuthorityGuardTest extends TestCase
             ->assertSee('Une ZUMRA peut bâtir.')
             ->assertDontSee('4 250')
             ->assertDontSee('1,2 million');
+    }
+
+    public function test_the_invisible_institution_is_never_named_in_user_interfaces(): void
+    {
+        foreach (File::allFiles(resource_path('views')) as $view) {
+            self::assertDoesNotMatchRegularExpression(
+                '/\\bGAMAD\\b/ui',
+                $view->getContents(),
+                "Le nom institutionnel réservé est exposé dans {$view->getRelativePathname()}."
+            );
+        }
     }
 }

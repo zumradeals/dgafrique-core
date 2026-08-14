@@ -19,7 +19,7 @@
             <aside class="space-sidebar"><nav><a class="nav-blue" href="{{ route('member.space') }}">Tableau de bord</a><a class="active nav-cyan" href="{{ route('member.profile.edit') }}">Mon profil</a><a class="nav-green" href="{{ route('zumra.index') }}">ZUMRA <small>aperçu</small></a><span class="nav-amber">Mes demandes <small>à venir</small></span><span class="nav-blue">Satellites <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span></nav></aside>
             <main class="space-content profile-content">
                 <div class="profile-heading"><div><p class="eyebrow dark">Profil de capacités</p><h1>{{ $profileConfiguration['title'] }}</h1><p class="space-lead">{{ $profileConfiguration['introduction'] }}</p></div><div class="profile-avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</div></div>
-                <section class="identity-strip"><div><small>Identité reconnue par GAMAD Core</small><strong>{{ $identity->label }}</strong></div><code>{{ $identity->reference }}</code><span>Identité attestée</span></section>
+                <section class="identity-strip"><div><small>Identité reconnue par DG Afrique</small><strong>{{ $identity->label }}</strong></div><code>Référence interne protégée</code><span>Identité attestée</span></section>
                 @if (session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if ($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
                 <form method="POST" action="{{ route('member.profile.update') }}" class="profile-form">@csrf @method('PUT')
                     @foreach($sections as $sectionKey => $section)

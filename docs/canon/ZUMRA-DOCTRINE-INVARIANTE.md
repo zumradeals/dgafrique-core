@@ -3,7 +3,7 @@
 ## Statut du document
 
 - Statut : **CANONIQUE - ADOPTÉ**
-- Version : **1.0**
+- Version : **1.1**
 - Date d'adoption : **14 août 2026**
 - Autorité produit : **GAMAD**
 - Portail d'application : **DG Afrique**
@@ -14,6 +14,14 @@ Ce document fixe la définition, les principes et les règles invariantes du Pro
 Il résulte de la vision du fondateur, des Statuts et du Règlement intérieur du Mouvement GAMAD, puis des décisions produit explicitement adoptées pour leur transposition numérique. Il ne remplace pas les textes juridiques de GAMAD. Une contradiction juridique doit être soumise à l'autorité GAMAD compétente ; elle ne peut pas être résolue silencieusement dans le code.
 
 En cas de contradiction avec une ancienne note produit, une maquette, un prototype ou un comportement historique, le présent document prévaut pour ZUMRA.
+
+### Invariant de confidentialité institutionnelle
+
+**DG Afrique est l'unique vitrine visible de l'écosystème.** L'institution fondatrice et l'infrastructure de confiance appartiennent au monde invisible. Leur nom, leur sigle développé, leur architecture et leur rôle ne doivent jamais apparaître dans une page publique, un espace membre, un message d'erreur, un courriel, une notification, une métadonnée éditoriale ou tout autre contenu destiné aux utilisateurs.
+
+Les interfaces parlent exclusivement de **DG Afrique**, de **ZUMRA**, des satellites autorisés et, lorsque cela est nécessaire, de formulations neutres telles que « service d'identité », « service de confiance » ou « autorité compétente ».
+
+Cette confidentialité ne masque pas aux membres les règles, décisions, montants, droits ou recours qui les concernent. Elle protège uniquement l'identité et l'architecture institutionnelles du monde invisible.
 
 ---
 
@@ -603,29 +611,27 @@ Les consentements sont spécifiques, compréhensibles, révocables et historisé
 
 ---
 
-## 22. Architecture de marque GAMAD
+## 22. Architecture de marque et confidentialité
 
-### 22.1 Marques officielles
+### 22.1 Marque visible
 
-Les noms commençant directement par **GAMAD** sont réservés aux structures officiellement créées ou autorisées, par exemple GAMAD TV, GAMAD Technology ou GAMAD Santé.
-
-Ils exigent une validation humaine de l'autorité GAMAD et peuvent recevoir le badge **Structure officielle GAMAD**.
+DG Afrique est la seule vitrine institutionnelle visible. Le portail ne publie pas le nom de l'institution fondatrice, celui de son infrastructure de confiance, leur sigle développé ni des badges qui les révéleraient.
 
 ### 22.2 Produits et satellites
 
-DG Afrique, ZUMRA, GamaDrive, Wasplex, G-Market et G-POS peuvent porter le badge **Produit de l'écosystème GAMAD** lorsqu'ils sont officiellement reconnus.
+ZUMRA, GamaDrive, Wasplex, G-Market et G-POS peuvent être présentés comme **satellites de DG Afrique** lorsqu'ils sont officiellement raccordés. Cette présentation ne révèle pas l'autorité mère invisible.
 
 ### 22.3 ZUMRA et projets communautaires
 
-Une ZUMRA choisit librement un nom distinctif conforme. Elle peut porter le badge **ZUMRA validée du Programme GAMAD**.
+Une ZUMRA choisit librement un nom distinctif conforme. Elle peut porter le badge **ZUMRA validée**.
 
 Elle ne peut employer librement « GAMAD », « Gama », un logo officiel ou une identité créant une confusion avec une structure institutionnelle. Cet usage exige une autorisation particulière.
 
-Le badge **Projet soutenu par GAMAD** signifie accompagnement ou soutien ; il ne signifie pas propriété ou actionnariat.
+Le badge **Projet soutenu** signifie accompagnement ou soutien ; il ne signifie pas propriété ou actionnariat. Le détail visible du soutien est limité aux acteurs dont la publication a été expressément autorisée.
 
 ### 22.4 Registre
 
-Un Registre GAMAD des marques, structures et projets conserve : nom, catégorie, porteur, territoire d'usage, domaine, logo, validation, autorité, droit d'usage, statut et historique.
+Un registre interne des marques, structures et projets conserve : nom, catégorie, porteur, territoire d'usage, domaine, logo, validation, autorité, droit d'usage, statut et historique.
 
 Un nom ordinaire conforme peut être contrôlé automatiquement. Un nom réservé, ambigu ou ressemblant à une marque officielle exige une décision humaine.
 
@@ -654,6 +660,7 @@ Le code et l'administration ne peuvent contredire silencieusement :
 - l'explicabilité et la neutralité financière du matching ;
 - la conservation de l'historique d'une ZUMRA suspendue ;
 - la protection de la marque GAMAD.
+- l'interdiction absolue d'exposer le nom ou l'architecture du monde institutionnel invisible dans une interface destinée aux utilisateurs.
 
 Toute modification de ces principes exige une nouvelle décision canonique explicite, versionnée et adoptée par l'autorité GAMAD compétente.
 
@@ -692,6 +699,7 @@ Chaque changement sensible est attribué, daté, versionné et assorti d'une dat
 8. Toute automatisation sensible prévoit explication, exception et intervention humaine.
 9. Les écrans doivent couvrir les états vide, chargement, erreur, refus, suspension et permission insuffisante.
 10. La sécurité et la confidentialité prévalent sur la commodité sociale.
+11. Un test automatisé interdit le nom institutionnel réservé dans toutes les vues rendues aux utilisateurs.
 
 ---
 

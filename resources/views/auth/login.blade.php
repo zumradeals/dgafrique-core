@@ -7,12 +7,12 @@
             </a>
 
             <div class="login-promise">
-                <p class="eyebrow">Un satellite de l’écosystème GAMAD</p>
+                <p class="eyebrow">Le portail numérique DG Afrique</p>
                 <h1>Le numérique qui fait avancer vos projets.</h1>
                 <p>Connectez-vous pour accéder à votre espace, suivre vos demandes et rejoindre ZUMRA.</p>
             </div>
 
-            <p class="login-foot">© DG Afrique · Écosystème GAMAD</p>
+            <p class="login-foot">© DG Afrique · Tous droits réservés</p>
         </section>
 
         <section class="login-form-panel">
@@ -76,7 +76,7 @@
                 </button>
 
                 <p class="create-account">Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
-                <p class="identity-note">Votre Compte GAMAD reste distinct de l’adhésion au Programme ZUMRA.</p>
+                <p class="identity-note">Votre Compte DG Afrique reste distinct de l’adhésion au Programme ZUMRA.</p>
             </div>
         </section>
     </main>
