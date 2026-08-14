@@ -10,12 +10,17 @@ use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProgramMembershipEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 final class ZumraMembershipPaymentTest extends TestCase
 {
     use RefreshDatabase;
+
+    private string $providerStatus = 'pending';
+    private string $coreReference = 'IDN-PER-000000008';
+    private bool $httpIsFaked = false;
 
     protected function setUp(): void
     {
@@ -111,15 +116,28 @@ final class ZumraMembershipPaymentTest extends TestCase
 
     private function fakeRequests(string $reference = 'IDN-PER-000000008', string $providerStatus = 'pending'): void
     {
-        Http::fake([
-            'core.test/api/v1/sessions' => Http::response(['jeton' => 'bearer', 'entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00'], 201),
-            'core.test/api/v1/identites/*' => Http::response(['reference' => $reference, 'type' => 'personne', 'libelle' => 'Membre ZUMRA', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']),
-            'core.test/api/v1/sessions/current' => Http::response(['entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00']),
-            // Une seule règle couvre la création et la lecture. Une règle exacte
-            // placée avant celle-ci interceptait aussi /payments/{reference}
-            // dans le fake Laravel et maintenait artificiellement l'état pending.
-            'https://geniuspay.ci/api/v1/merchant/payments*' => Http::response(['success' => true, 'data' => $this->providerPayload($providerStatus)]),
-        ]);
+        $this->coreReference = $reference;
+        $this->providerStatus = $providerStatus;
+        if ($this->httpIsFaked) return;
+
+        $this->httpIsFaked = true;
+        Http::fake(function (ClientRequest $request) {
+            $url = $request->url();
+            if (str_ends_with($url, '/sessions/current')) {
+                return Http::response(['entite' => $this->coreReference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00']);
+            }
+            if (str_ends_with($url, '/sessions')) {
+                return Http::response(['jeton' => 'bearer', 'entite' => $this->coreReference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00'], 201);
+            }
+            if (str_contains($url, '/identites/')) {
+                return Http::response(['reference' => $this->coreReference, 'type' => 'personne', 'libelle' => 'Membre ZUMRA', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']);
+            }
+            if (str_contains($url, '/payments')) {
+                return Http::response(['success' => true, 'data' => $this->providerPayload($this->providerStatus)]);
+            }
+
+            return Http::response(['error' => 'UNEXPECTED_TEST_REQUEST'], 500);
+        });
     }
 
     private function providerPayload(string $status): array
