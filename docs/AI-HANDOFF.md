@@ -2,6 +2,9 @@
 
 > Lire ce document avant toute modification.
 
+Pour toute capacité liée à ZUMRA, lire également et respecter intégralement
+[`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`](canon/ZUMRA-DOCTRINE-INVARIANTE.md).
+
 ## Projet canonique
 
 - dépôt : `zumradeals/dgafrique-core` ;
