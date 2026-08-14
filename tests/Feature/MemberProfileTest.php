@@ -137,6 +137,10 @@ final class MemberProfileTest extends TestCase
         $this->signIn();
         $this->put('/espace/profil', ['existing_skills_text' => 'Cuisine']);
 
+        $this->post('/deconnexion')
+            ->assertRedirect('/connexion')
+            ->assertSessionMissing('dg_core_member');
+
         $this->signIn('IDN-PER-000000006', 'Membre Deux');
         $this->put('/espace/profil', ['existing_skills_text' => 'Menuiserie']);
 
