@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
+use App\Models\ZumraProgramMembership;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -18,12 +19,13 @@ final class MemberSpaceController
         $identity = $request->attributes->get('dg_identity');
 
         $profile = PersonProfile::query()->find($identity->reference);
+        $zumraMembership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
         $greetingName = preg_split('/\s+/u', trim($identity->label))[0] ?? $identity->label;
         $profileCompletion = $this->profileCompletion($profile);
 
         return view('member.space', compact(
-            'identity', 'profile', 'isAdministrator', 'greetingName', 'profileCompletion'
+            'identity', 'profile', 'zumraMembership', 'isAdministrator', 'greetingName', 'profileCompletion'
         ));
     }
 

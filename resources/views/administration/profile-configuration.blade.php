@@ -1,6 +1,6 @@
 <x-layouts.portal title="Administration — DG Afrique">
     <main class="admin-content">
-        <div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique</p><h1>Configurer le profil de capacités</h1><p>Ces modifications s’appliquent au formulaire membre sans déploiement.</p></div><a href="{{ route('member.space') }}">Retour à Mon espace</a></div>
+        <div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique</p><h1>Configurer le profil de capacités</h1><p>Ces modifications s’appliquent au formulaire membre sans déploiement.</p></div><div class="admin-links"><a href="{{ route('administration.zumra.edit') }}">Programme ZUMRA</a><a href="{{ route('member.space') }}">Mon espace</a></div></div>
         @if (session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if ($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
         <form method="POST" action="{{ route('administration.profile.update') }}" class="admin-form">@csrf @method('PUT')
             <section><h2>Présentation</h2><label>Titre<input name="title" value="{{ old('title', $configuration['title']) }}" required></label><label>Introduction<textarea name="introduction" rows="3" required>{{ old('introduction', $configuration['introduction']) }}</textarea></label></section>

@@ -8,7 +8,7 @@
             <div class="zumra-branding">
                 <a href="{{ route('member.space') }}">← Mon espace</a>
                 <strong><i>Z</i> ZUMRA</strong>
-                <span>Réseau en préparation</span>
+                <span>{{ $membership?->status === 'ACTIVE' ? 'Membre actif' : 'Réseau en préparation' }}</span>
             </div>
             <div class="zumra-search">⌕ <span>Rechercher dans ZUMRA…</span></div>
             <div class="zumra-member"><span>{{ $initial }}</span><strong>{{ $identity->label }}</strong></div>
@@ -18,6 +18,7 @@
             <aside class="zumra-sidebar">
                 <nav aria-label="Navigation ZUMRA">
                     <a class="active" href="{{ route('zumra.index') }}">Fil</a>
+                    <a href="{{ route('zumra.membership.show') }}">Mon adhésion <small>{{ $membership ? ($membership->status === 'PENDING_PAYMENT' ? 'à finaliser' : strtolower($membership->status)) : 'à commencer' }}</small></a>
                     <span>Ma contribution <small>à raccorder</small></span>
                     <span>Projets soutenus <small>à raccorder</small></span>
                     <span>Messages <small>à raccorder</small></span>
@@ -37,7 +38,8 @@
                     <p class="eyebrow dark">Fil ZUMRA</p>
                     <h1>Le réseau se construit sur des données réelles.</h1>
                     <p>Aucune publication fictive n’est affichée. Le fil s’ouvrira lorsque les contrats de membre, publication et modération seront raccordés.</p>
-                    <div class="zumra-gates"><span>Membre à attester</span><span>Contribution à vérifier</span><span>Publication à raccorder</span></div>
+                    <div class="zumra-gates"><span>{{ $membership ? ($membership->status === 'PENDING_PAYMENT' ? 'Dossier préparé' : 'Adhésion '.strtolower($membership->status)) : 'Adhésion à commencer' }}</span><span>Publication à raccorder</span></div>
+                    <a class="zumra-membership-cta" href="{{ route('zumra.membership.show') }}">{{ $membership ? 'Voir mon adhésion' : 'Découvrir le Programme ZUMRA' }} →</a>
                 </section>
             </main>
 
@@ -46,7 +48,7 @@
                     <span class="zumra-avatar large">{{ $initial }}</span>
                     <h2>{{ $identity->label }}</h2>
                     <p>{{ $location ?: 'Localisation non renseignée' }}</p>
-                    <small>Compte DG Afrique reconnu</small>
+                    <small>{{ $membership?->status === 'ACTIVE' ? 'Membre du Programme ZUMRA' : 'Compte DG Afrique reconnu' }}</small>
                     <div><span><strong>—</strong> contributions</span><span><strong>—</strong> projets suivis</span></div>
                 </section>
                 <section class="zumra-side-empty"><h2>Profils à suivre</h2><p>Ils apparaîtront à partir de profils ZUMRA attestés.</p><i></i><i></i><i></i></section>
