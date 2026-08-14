@@ -134,12 +134,12 @@ final class MemberProfileTest extends TestCase
 
     public function test_another_identity_cannot_modify_capability_statements(): void
     {
-        $this->signIn();
-        $this->put('/espace/profil', ['existing_skills_text' => 'Cuisine']);
-
-        $this->post('/deconnexion')
-            ->assertRedirect('/connexion')
-            ->assertSessionMissing('dg_core_member');
+        CapabilityStatement::query()->create([
+            'core_identity_reference' => 'IDN-PER-000000005',
+            'kind' => CapabilityStatement::KIND_POSSESSED,
+            'label' => 'Cuisine',
+            'normalized_label' => 'cuisine',
+        ]);
 
         $this->signIn('IDN-PER-000000006', 'Membre Deux');
         $this->put('/espace/profil', ['existing_skills_text' => 'Menuiserie']);
