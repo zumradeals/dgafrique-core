@@ -36,9 +36,12 @@ final class MemberProfileController
         $fieldSections = [
             'country_code' => 'situation', 'city' => 'situation', 'phone' => 'situation',
             'current_activity' => 'situation', 'education_level' => 'situation',
-            'existing_skills_text' => 'skills', 'learning_goals_text' => 'learning',
-            'interest_domains_text' => 'intentions', 'intentions_text' => 'intentions',
-            'participation_mode' => 'intentions',
+            'existing_skills_text' => 'skills', 'transmission_offers_text' => 'transmission',
+            'learning_goals_text' => 'learning', 'experience_highlights_text' => 'experience',
+            'experience_proofs_text' => 'experience', 'declared_needs_text' => 'needs',
+            'interest_domains_text' => 'needs', 'intentions_text' => 'needs',
+            'participation_mode' => 'collaboration',
+            'collaboration_preferences_text' => 'collaboration',
         ];
         $presence = static function (string $field) use ($profileConfiguration, $fieldSections): string {
             $section = $fieldSections[$field];
@@ -54,10 +57,15 @@ final class MemberProfileController
             'education_level' => [$presence('education_level'), 'string', 'max:160'],
             'existing_skills_text' => [$presence('existing_skills_text'), 'string', 'max:3000'],
             'starts_without_skill' => ['nullable', 'boolean'],
+            'transmission_offers_text' => [$presence('transmission_offers_text'), 'string', 'max:3000'],
             'learning_goals_text' => [$presence('learning_goals_text'), 'string', 'max:3000'],
+            'experience_highlights_text' => [$presence('experience_highlights_text'), 'string', 'max:3000'],
+            'experience_proofs_text' => [$presence('experience_proofs_text'), 'string', 'max:3000'],
+            'declared_needs_text' => [$presence('declared_needs_text'), 'string', 'max:3000'],
             'interest_domains_text' => [$presence('interest_domains_text'), 'string', 'max:3000'],
             'intentions_text' => [$presence('intentions_text'), 'string', 'max:3000'],
             'participation_mode' => [$presence('participation_mode'), Rule::in($allowedModes)],
+            'collaboration_preferences_text' => [$presence('collaboration_preferences_text'), 'string', 'max:3000'],
             'orientation_consent' => ['nullable', 'boolean'],
         ]);
 
@@ -79,15 +87,30 @@ final class MemberProfileController
                 'starts_without_skill' => $skills === [] && $request->boolean('starts_without_skill'),
             ];
         }
+        if ($enabled('transmission')) {
+            $attributes['transmission_offers'] = ProfileList::fromText($data['transmission_offers_text'] ?? null);
+        }
         if ($enabled('learning')) {
             $attributes['learning_goals'] = ProfileList::fromText($data['learning_goals_text'] ?? null);
         }
-        if ($enabled('intentions')) {
-            $consent = $request->boolean('orientation_consent');
+        if ($enabled('experience')) {
             $attributes += [
+                'experience_highlights' => ProfileList::fromText($data['experience_highlights_text'] ?? null),
+                'experience_proofs' => ProfileList::fromText($data['experience_proofs_text'] ?? null),
+            ];
+        }
+        if ($enabled('needs')) {
+            $attributes += [
+                'declared_needs' => ProfileList::fromText($data['declared_needs_text'] ?? null),
                 'interest_domains' => ProfileList::fromText($data['interest_domains_text'] ?? null),
                 'intentions' => ProfileList::fromText($data['intentions_text'] ?? null),
+            ];
+        }
+        if ($enabled('collaboration')) {
+            $consent = $request->boolean('orientation_consent');
+            $attributes += [
                 'participation_mode' => $data['participation_mode'] ?? null,
+                'collaboration_preferences' => ProfileList::fromText($data['collaboration_preferences_text'] ?? null),
                 'orientation_consent' => $consent,
             ];
         }

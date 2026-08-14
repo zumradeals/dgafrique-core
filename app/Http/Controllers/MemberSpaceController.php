@@ -39,10 +39,14 @@ final class MemberSpaceController
             filled($profile->current_activity),
             filled($profile->education_level),
             filled($profile->existing_skills) || $profile->starts_without_skill,
+            filled($profile->transmission_offers),
             filled($profile->learning_goals),
+            filled($profile->experience_highlights) || filled($profile->experience_proofs),
+            filled($profile->declared_needs),
             filled($profile->interest_domains),
             filled($profile->intentions),
             filled($profile->participation_mode),
+            filled($profile->collaboration_preferences),
             $profile->orientation_consent,
         ];
 

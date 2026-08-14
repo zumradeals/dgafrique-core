@@ -16,8 +16,10 @@ final class PersonProfile extends Model
     protected $fillable = [
         'core_identity_reference', 'country_code', 'city', 'phone',
         'current_activity', 'education_level', 'existing_skills',
-        'starts_without_skill', 'learning_goals', 'interest_domains',
-        'intentions', 'participation_mode', 'orientation_consent',
+        'starts_without_skill', 'transmission_offers', 'learning_goals',
+        'experience_highlights', 'experience_proofs', 'declared_needs',
+        'interest_domains', 'intentions', 'participation_mode',
+        'collaboration_preferences', 'orientation_consent',
         'orientation_consented_at',
     ];
 
@@ -26,9 +28,14 @@ final class PersonProfile extends Model
         return [
             'existing_skills' => 'array',
             'starts_without_skill' => 'boolean',
+            'transmission_offers' => 'array',
             'learning_goals' => 'array',
+            'experience_highlights' => 'array',
+            'experience_proofs' => 'array',
+            'declared_needs' => 'array',
             'interest_domains' => 'array',
             'intentions' => 'array',
+            'collaboration_preferences' => 'array',
             'orientation_consent' => 'boolean',
             'orientation_consented_at' => 'immutable_datetime',
         ];

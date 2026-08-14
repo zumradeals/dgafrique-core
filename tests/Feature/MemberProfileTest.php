@@ -23,10 +23,15 @@ final class MemberProfileTest extends TestCase
             'city' => 'Abidjan',
             'current_activity' => 'Artisane',
             'existing_skills_text' => "Couture\nGestion de caisse",
+            'transmission_offers_text' => "Bases de la couture\nOrganisation d’un atelier",
             'learning_goals_text' => "Marketing numérique\nComptabilité",
+            'experience_highlights_text' => "Trois ans dans un atelier\nFormation de deux apprenties",
+            'experience_proofs_text' => 'https://exemple.test/portfolio',
+            'declared_needs_text' => "Trouver un mentor\nAccéder à un espace de travail",
             'interest_domains_text' => "Entrepreneuriat\nNumérique",
             'intentions_text' => "Développer mon atelier\nFormer deux jeunes",
             'participation_mode' => 'HYBRIDE',
+            'collaboration_preferences_text' => "Disponible le week-end\nPetits groupes",
             'orientation_consent' => '1',
             'core_identity_reference' => 'IDN-PER-ATTAQUANT',
         ])->assertRedirect('/espace/profil');
@@ -34,12 +39,24 @@ final class MemberProfileTest extends TestCase
         $profile = PersonProfile::query()->sole();
         self::assertSame('IDN-PER-000000005', $profile->core_identity_reference);
         self::assertSame(['Couture', 'Gestion de caisse'], $profile->existing_skills);
+        self::assertSame(['Bases de la couture', 'Organisation d’un atelier'], $profile->transmission_offers);
+        self::assertSame(['Trois ans dans un atelier', 'Formation de deux apprenties'], $profile->experience_highlights);
+        self::assertSame(['Trouver un mentor', 'Accéder à un espace de travail'], $profile->declared_needs);
+        self::assertSame(['Disponible le week-end', 'Petits groupes'], $profile->collaboration_preferences);
         self::assertTrue($profile->orientation_consent);
         self::assertNotNull($profile->orientation_consented_at);
         self::assertFalse(Schema::hasTable('zumra_memberships'));
         self::assertFalse(Schema::hasColumn('dg_person_profiles', 'score'));
 
-        $this->get('/espace/profil')->assertOk()->assertSee('Artisane')->assertSee('Couture');
+        $this->get('/espace/profil')
+            ->assertOk()
+            ->assertSee('Artisane')
+            ->assertSee('Couture')
+            ->assertSee('Ce que vous pouvez transmettre')
+            ->assertSee('Vos expériences et preuves')
+            ->assertSee('Vos besoins et objectifs')
+            ->assertSee('Vos préférences de collaboration')
+            ->assertDontSee('GAMAD');
     }
 
     public function test_a_member_can_explicitly_start_without_a_declared_skill(): void

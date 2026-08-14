@@ -54,6 +54,28 @@ final class PortalAdministrationTest extends TestCase
         $this->put('/espace/profil', [])->assertSessionHasErrors('city');
     }
 
+    public function test_an_older_configuration_inherits_new_progressive_sections(): void
+    {
+        PortalSetting::query()->create([
+            'key' => ProfileConfiguration::KEY,
+            'value' => [
+                'title' => 'Titre historique',
+                'sections' => [
+                    'skills' => ['enabled' => true, 'order' => 5, 'title' => 'Talents historiques', 'help' => 'Conservé'],
+                ],
+            ],
+        ]);
+
+        $configuration = (new ProfileConfiguration())->get();
+
+        self::assertSame('Titre historique', $configuration['title']);
+        self::assertSame('Talents historiques', $configuration['sections']['skills']['title']);
+        self::assertTrue($configuration['sections']['transmission']['enabled']);
+        self::assertTrue($configuration['sections']['experience']['enabled']);
+        self::assertTrue($configuration['sections']['needs']['enabled']);
+        self::assertTrue($configuration['sections']['collaboration']['enabled']);
+    }
+
     private function signIn(string $reference): void
     {
         Http::fake([
