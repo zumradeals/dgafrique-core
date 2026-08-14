@@ -2,10 +2,10 @@
 
 ## Statut
 
-**EN DÉVELOPPEMENT — GATE ACTIF.**
+**IMPLÉMENTÉ — PREUVE PRÉPRODUCTION REQUISE.**
 
-CAP-001 et CAP-002 sont validés en préproduction. CAP-004 à CAP-084 restent
-bloqués.
+CAP-001 et CAP-002 sont validés en préproduction. CAP-004, CAP-005 et CAP-006
+disposent désormais de leur socle normalisé ; CAP-007 et suivants restent bloqués.
 
 ## Finalité
 
@@ -26,14 +26,18 @@ biographique ou à un score.
 - pays et ville/localité ;
 - activité actuelle, téléphone facultatif et parcours de formation ;
 - savoir-faire existants ou déclaration explicite de démarrage sans compétence ;
+- connaissances proposées en transmission ;
 - objectifs d'apprentissage ;
+- expériences, preuves facultatives et besoins déclarés ;
 - domaines d'intérêt ;
 - intentions libres ;
 - mode de participation préféré ;
 - consentement révocable aux orientations.
 
-Les listes sont simples et bornées à douze éléments par dimension. CAP-004,
-CAP-023, CAP-024 et CAP-026 porteront les modèles sémantiques plus riches.
+Les listes de saisie restent simples et bornées à douze éléments par dimension.
+Les savoir-faire, apprentissages et transmissions sont synchronisés vers les
+déclarations normalisées de CAP-004 à CAP-006. CAP-023, CAP-024 et CAP-026
+porteront les modèles sémantiques plus riches.
 
 ## Invariants
 
@@ -45,7 +49,7 @@ CAP-023, CAP-024 et CAP-026 porteront les modèles sémantiques plus riches.
 6. Aucun score global ou jugement de valeur n'est stocké ou affiché.
 7. Le consentement d'orientation est daté lorsqu'il est accordé et effacé
    lorsqu'il est retiré.
-8. Les champs avancés restent des listes libres sans prétendre valider CAP-004.
+8. Une liste libre ne vaut jamais vérification ou attestation de capacité.
 
 ## Critères de validation
 

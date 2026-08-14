@@ -2,6 +2,11 @@
     @php
         $sections = collect($profileConfiguration['sections'] ?? [])->filter(fn ($section) => $section['enabled'] ?? false)->sortBy('order');
         $modes = $profileConfiguration['participation_modes'] ?? [];
+        $capabilityKinds = [
+            'skills' => \App\Models\CapabilityStatement::KIND_POSSESSED,
+            'learning' => \App\Models\CapabilityStatement::KIND_LEARNING,
+            'transmission' => \App\Models\CapabilityStatement::KIND_TRANSMISSION,
+        ];
         $errorSections = [
             'situation' => ['country_code', 'city', 'phone', 'current_activity', 'education_level'],
             'skills' => ['existing_skills_text', 'starts_without_skill'],
@@ -42,7 +47,7 @@
                     <form method="POST" action="{{ route('member.profile.update') }}" class="profile-form progressive-form" data-profile-steps data-profile-initial="{{ $initialStep }}">@csrf @method('PUT')
                         <nav class="profile-stepper" aria-label="Étapes du profil">
                             @foreach($sections as $sectionKey => $section)
-                                <button type="button" data-profile-step-target="{{ $loop->index }}" @class(['active' => $loop->index === $initialStep])><span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><strong>{{ $section['title'] }}</strong></button>
+                                <button type="button" data-profile-step-target="{{ $loop->index }}" @class(['active' => $loop->index === $initialStep])><span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span><strong>{{ $section['title'] }}@if(isset($capabilityKinds[$sectionKey]))<small>{{ $capabilitySummary[$capabilityKinds[$sectionKey]] ?? 0 }} déclaration(s)</small>@endif</strong></button>
                             @endforeach
                         </nav>
 

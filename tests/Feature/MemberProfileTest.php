@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -43,6 +44,13 @@ final class MemberProfileTest extends TestCase
         self::assertSame(['Trois ans dans un atelier', 'Formation de deux apprenties'], $profile->experience_highlights);
         self::assertSame(['Trouver un mentor', 'Accéder à un espace de travail'], $profile->declared_needs);
         self::assertSame(['Disponible le week-end', 'Petits groupes'], $profile->collaboration_preferences);
+        self::assertSame(6, CapabilityStatement::query()->whereNull('archived_at')->count());
+        self::assertSame(2, CapabilityStatement::query()->where('kind', CapabilityStatement::KIND_POSSESSED)->count());
+        self::assertSame(2, CapabilityStatement::query()->where('kind', CapabilityStatement::KIND_LEARNING)->count());
+        self::assertSame(2, CapabilityStatement::query()->where('kind', CapabilityStatement::KIND_TRANSMISSION)->count());
+        self::assertSame(0, CapabilityStatement::query()->where('status', '!=', CapabilityStatement::STATUS_DECLARED)->count());
+        self::assertSame(0, CapabilityStatement::query()->where('visibility', '!=', CapabilityStatement::VISIBILITY_PRIVATE)->count());
+        self::assertSame(0, CapabilityStatement::query()->where('matching_consent', false)->count());
         self::assertTrue($profile->orientation_consent);
         self::assertNotNull($profile->orientation_consented_at);
         self::assertFalse(Schema::hasTable('zumra_memberships'));
@@ -92,6 +100,54 @@ final class MemberProfileTest extends TestCase
         $profile = PersonProfile::query()->sole();
         self::assertFalse($profile->orientation_consent);
         self::assertNull($profile->orientation_consented_at);
+    }
+
+    public function test_capability_statements_are_archived_and_reactivated_without_duplication(): void
+    {
+        $this->signIn();
+
+        $this->put('/espace/profil', [
+            'existing_skills_text' => "Couture\n couture ",
+        ]);
+
+        $statement = CapabilityStatement::query()->sole();
+        self::assertSame(CapabilityStatement::KIND_POSSESSED, $statement->kind);
+        self::assertSame(CapabilityStatement::STATUS_DECLARED, $statement->status);
+        self::assertSame(CapabilityStatement::VISIBILITY_PRIVATE, $statement->visibility);
+        self::assertFalse($statement->matching_consent);
+
+        $this->put('/espace/profil', []);
+        self::assertNotNull($statement->fresh()->archived_at);
+        self::assertFalse($statement->fresh()->matching_consent);
+
+        $this->put('/espace/profil', [
+            'existing_skills_text' => 'COUTURE',
+            'orientation_consent' => '1',
+        ]);
+
+        self::assertSame(1, CapabilityStatement::query()->count());
+        $reactivated = CapabilityStatement::query()->sole();
+        self::assertSame($statement->id, $reactivated->id);
+        self::assertNull($reactivated->archived_at);
+        self::assertTrue($reactivated->matching_consent);
+    }
+
+    public function test_another_identity_cannot_modify_capability_statements(): void
+    {
+        $this->signIn();
+        $this->put('/espace/profil', ['existing_skills_text' => 'Cuisine']);
+
+        $this->signIn('IDN-PER-000000006', 'Membre Deux');
+        $this->put('/espace/profil', ['existing_skills_text' => 'Menuiserie']);
+
+        self::assertSame(
+            ['Cuisine'],
+            CapabilityStatement::query()->where('core_identity_reference', 'IDN-PER-000000005')->pluck('label')->all(),
+        );
+        self::assertSame(
+            ['Menuiserie'],
+            CapabilityStatement::query()->where('core_identity_reference', 'IDN-PER-000000006')->pluck('label')->all(),
+        );
     }
 
     public function test_another_core_identity_cannot_overwrite_the_first_profile(): void

@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Profile\ProfileList;
 use App\Application\Profile\ProfileConfiguration;
+use App\Application\Profile\ProfileList;
+use App\Application\Profile\CapabilityStatementSynchronizer;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,11 +25,23 @@ final class MemberProfileController
         $profile = PersonProfile::query()->find($identity->reference);
 
         $profileConfiguration = $configuration->get();
+        $capabilitySummary = CapabilityStatement::query()
+            ->where('core_identity_reference', $identity->reference)
+            ->whereNull('archived_at')
+            ->selectRaw('kind, count(*) as aggregate')
+            ->groupBy('kind')
+            ->pluck('aggregate', 'kind')
+            ->map(static fn (mixed $count): int => (int) $count)
+            ->all();
 
-        return view('member.profile', compact('identity', 'profile', 'profileConfiguration'));
+        return view('member.profile', compact('identity', 'profile', 'profileConfiguration', 'capabilitySummary'));
     }
 
-    public function update(Request $request, ProfileConfiguration $configuration): RedirectResponse
+    public function update(
+        Request $request,
+        ProfileConfiguration $configuration,
+        CapabilityStatementSynchronizer $statementSynchronizer,
+    ): RedirectResponse
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -115,7 +129,18 @@ final class MemberProfileController
             ];
         }
 
-        DB::transaction(function () use ($identity, $attributes): void {
+        $capabilityDimensions = [];
+        if ($enabled('skills')) {
+            $capabilityDimensions[CapabilityStatement::KIND_POSSESSED] = $attributes['existing_skills'];
+        }
+        if ($enabled('learning')) {
+            $capabilityDimensions[CapabilityStatement::KIND_LEARNING] = $attributes['learning_goals'];
+        }
+        if ($enabled('transmission')) {
+            $capabilityDimensions[CapabilityStatement::KIND_TRANSMISSION] = $attributes['transmission_offers'];
+        }
+
+        DB::transaction(function () use ($identity, $attributes, $capabilityDimensions, $statementSynchronizer): void {
             $profile = PersonProfile::query()->firstOrNew(['core_identity_reference' => $identity->reference]);
             if (array_key_exists('orientation_consent', $attributes)) {
                 $attributes['orientation_consented_at'] = $attributes['orientation_consent']
@@ -123,6 +148,12 @@ final class MemberProfileController
             }
             $profile->fill($attributes);
             $profile->save();
+
+            $statementSynchronizer->sync(
+                $identity->reference,
+                $capabilityDimensions,
+                (bool) $profile->orientation_consent,
+            );
         });
 
         return redirect()->route('member.profile.edit')->with('status', 'Votre profil de capacités est enregistré.');
