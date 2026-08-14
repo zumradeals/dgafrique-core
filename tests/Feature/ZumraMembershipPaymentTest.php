@@ -115,8 +115,10 @@ final class ZumraMembershipPaymentTest extends TestCase
             'core.test/api/v1/sessions' => Http::response(['jeton' => 'bearer', 'entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00'], 201),
             'core.test/api/v1/identites/*' => Http::response(['reference' => $reference, 'type' => 'personne', 'libelle' => 'Membre ZUMRA', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']),
             'core.test/api/v1/sessions/current' => Http::response(['entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-15T23:59:00+00:00']),
-            'https://geniuspay.ci/api/v1/merchant/payments' => Http::response(['success' => true, 'data' => $this->providerPayload('pending')], 201),
-            'https://geniuspay.ci/api/v1/merchant/payments/*' => Http::response(['success' => true, 'data' => $this->providerPayload($providerStatus)]),
+            // Une seule règle couvre la création et la lecture. Une règle exacte
+            // placée avant celle-ci interceptait aussi /payments/{reference}
+            // dans le fake Laravel et maintenait artificiellement l'état pending.
+            'https://geniuspay.ci/api/v1/merchant/payments*' => Http::response(['success' => true, 'data' => $this->providerPayload($providerStatus)]),
         ]);
     }
 
