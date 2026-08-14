@@ -44,7 +44,18 @@ final class ZumraMembershipPaymentController
         $payment = ZumraPayment::query()->where('membership_id', $membership->id)->latest()->first();
         $verificationUnavailable = false;
         if ($payment && $membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
-            try { $payment = $payments->reconcile($payment); } catch (Throwable $exception) { report($exception); $verificationUnavailable = true; }
+            try {
+                $payment = $payments->reconcile($payment);
+            } catch (Throwable $exception) {
+                // En production, ne jamais divulguer un incident financier au navigateur.
+                // En test, l'exception doit rester visible afin qu'aucune régression
+                // d'activation ou de reçu ne puisse être masquée par l'interface sûre.
+                if (app()->runningUnitTests()) {
+                    throw $exception;
+                }
+                report($exception);
+                $verificationUnavailable = true;
+            }
             $membership->refresh();
         }
         $receipt = $payment ? ZumraPaymentReceipt::query()->where('payment_id', $payment->id)->first() : null;
