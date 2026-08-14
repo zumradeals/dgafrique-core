@@ -27,7 +27,12 @@ final class MemberAccountFlowTest extends TestCase
         $this->get('/espace')
             ->assertOk()
             ->assertSee('Membre Démo')
-            ->assertSee('AUT-GAMAD-001');
+            ->assertSee('AUT-GAMAD-001')
+            ->assertSee('MES PARCOURS')
+            ->assertSee('Présenter mes capacités')
+            ->assertSee('Exprimer un besoin')
+            ->assertSee('Explorer les opportunités')
+            ->assertSee('Agir avec ZUMRA');
 
         Http::assertSent(fn ($request): bool =>
             $request->url() === 'https://core.test/api/v1/sessions/current'
