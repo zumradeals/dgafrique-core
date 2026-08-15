@@ -11,6 +11,7 @@ use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
+use App\Http\Controllers\Administration\ProjectConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ZumraGroupController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\NeedController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -62,6 +64,11 @@ Route::get('/besoins/exprimer', [NeedController::class, 'create'])->middleware('
 Route::post('/besoins', [NeedController::class, 'store'])->middleware(['core.member', 'throttle:need-write'])->name('needs.store');
 Route::get('/besoins/{need}', [NeedController::class, 'show'])->whereUuid('need')->middleware('core.member')->name('needs.show');
 Route::put('/besoins/{need}/etat', [NeedController::class, 'transition'])->whereUuid('need')->middleware(['core.member', 'throttle:need-transition'])->name('needs.transition');
+Route::get('/projets', [ProjectController::class, 'index'])->middleware('core.member')->name('projects.index');
+Route::get('/projets/proposer', [ProjectController::class, 'create'])->middleware('core.member')->name('projects.create');
+Route::post('/projets', [ProjectController::class, 'store'])->middleware(['core.member', 'throttle:project-write'])->name('projects.store');
+Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid('project')->middleware('core.member')->name('projects.show');
+Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -127,4 +134,6 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/besoins', [NeedConfigurationController::class, 'edit'])->name('administration.needs.edit');
     Route::put('/besoins', [NeedConfigurationController::class, 'update'])
         ->middleware('throttle:need-configuration')->name('administration.needs.update');
+    Route::get('/projets', [ProjectConfigurationController::class, 'edit'])->name('administration.projects.edit');
+    Route::put('/projets', [ProjectConfigurationController::class, 'update'])->middleware('throttle:project-configuration')->name('administration.projects.update');
 });

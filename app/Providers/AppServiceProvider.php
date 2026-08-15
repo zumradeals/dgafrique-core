@@ -65,5 +65,8 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('need-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('need-transition', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('need-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('project-write', static fn (Request $request): Limit => Limit::perMinute(8)->by($request->ip()));
+        RateLimiter::for('project-transition', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
+        RateLimiter::for('project-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
     }
 }

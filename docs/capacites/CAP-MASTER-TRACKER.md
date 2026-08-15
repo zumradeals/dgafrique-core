@@ -19,7 +19,8 @@
 | CAP-011 | ZUMRA / GROUPE HUMAIN | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-011-2026-08-15.md` |
 | CAP-012 | CAPACITÉ COLLECTIVE | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-012-2026-08-15.md` |
 | CAP-013 | BESOIN | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-013-2026-08-15.md` |
-| CAP-014 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-014 | PROJET | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | — |
+| CAP-015 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

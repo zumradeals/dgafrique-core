@@ -1,0 +1,9 @@
+<?php
+declare(strict_types=1);
+namespace App\Http\Controllers\Administration;
+use App\Application\Projects\ProjectConfiguration; use App\Domain\Identity\CoreIdentity; use App\Models\PortalSetting; use Illuminate\Http\RedirectResponse; use Illuminate\Http\Request; use Illuminate\View\View;
+final class ProjectConfigurationController
+{
+    public function edit(ProjectConfiguration $c):View{return view('administration.projects',['configuration'=>$c->get()]);}
+    public function update(Request $request):RedirectResponse{/** @var CoreIdentity $identity */$identity=$request->attributes->get('dg_identity');$d=$request->validate(['directory_title'=>['required','string','max:180'],'directory_intro'=>['required','string','max:700'],'creation_title'=>['required','string','max:180'],'domain_codes'=>['required','array','min:1','max:24'],'domain_codes.*'=>['required','regex:/^[A-Z][A-Z0-9_]{1,39}$/','distinct'],'domain_labels'=>['required','array'],'domain_labels.*'=>['required','string','max:120'],'max_active_personal_projects'=>['required','integer','min:1','max:100'],'max_active_group_projects'=>['required','integer','min:1','max:300'],'directory_page_size'=>['required','integer','min:6','max:60']]);abort_unless(count($d['domain_codes'])===count($d['domain_labels']),422);$domains=[];foreach($d['domain_codes'] as $i=>$code)$domains[$code]=$d['domain_labels'][$i];PortalSetting::query()->updateOrCreate(['key'=>ProjectConfiguration::KEY],['value'=>['directory_title'=>$d['directory_title'],'directory_intro'=>$d['directory_intro'],'creation_title'=>$d['creation_title'],'domains'=>$domains,'max_active_personal_projects'=>$d['max_active_personal_projects'],'max_active_group_projects'=>$d['max_active_group_projects'],'directory_page_size'=>$d['directory_page_size']],'updated_by_core_reference'=>$identity->reference]);return back()->with('status','Configuration CAP‑014 enregistrée.');}
+}
