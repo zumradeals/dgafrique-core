@@ -20,6 +20,7 @@
                     <a class="active" href="{{ route('zumra.index') }}">Fil</a>
                     <a href="{{ route('zumra.membership.show') }}">Mon adhésion <small>{{ $membership ? ($membership->status === 'PENDING_PAYMENT' ? 'à finaliser' : strtolower($membership->status)) : 'à commencer' }}</small></a>
                     <a href="{{ route('zumra.card.show') }}">Ma Carte ZUMRA <small>{{ $membership?->status === 'ACTIVE' ? 'disponible' : 'conditionnée' }}</small></a>
+                    <a href="{{ route('zumra.groups.index') }}">Les ZUMRA <small>{{ $membership?->status === 'ACTIVE' ? 'découvrir' : 'adhésion requise' }}</small></a>
                     <span>Ma contribution <small>à raccorder</small></span>
                     <span>Projets soutenus <small>à raccorder</small></span>
                     <span>Messages <small>à raccorder</small></span>

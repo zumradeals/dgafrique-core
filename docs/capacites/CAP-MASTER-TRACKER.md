@@ -16,7 +16,8 @@
 | CAP-008 | CARTE ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-008-2026-08-15.md` |
 | CAP-009 | DÉCOUVERTE DE PERSONNES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-009-2026-08-15.md` |
 | CAP-010 | RECOMMANDATION | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-010-2026-08-15.md` |
-| CAP-011 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-011 | ZUMRA / GROUPE HUMAIN | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | Entité, constitution, appartenance et gouvernance fondatrice |
+| CAP-012 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

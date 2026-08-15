@@ -8,6 +8,7 @@ use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
 use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\Administration\RecommendationConfigurationController;
+use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\ZumraMembershipPaymentController;
 use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ZumraGroupController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -67,6 +69,24 @@ Route::get('/zumra/carte', [ZumraCardController::class, 'show'])
     ->middleware('core.member')->name('zumra.card.show');
 Route::get('/verifier/carte-zumra/{card}', [ZumraCardController::class, 'verify'])
     ->middleware(['signed', 'throttle:zumra-card-verification'])->name('zumra.card.verify');
+Route::get('/zumra/groupes', [ZumraGroupController::class, 'index'])
+    ->middleware('core.member')->name('zumra.groups.index');
+Route::get('/zumra/groupes/proposer', [ZumraGroupController::class, 'create'])
+    ->middleware('core.member')->name('zumra.groups.create');
+Route::post('/zumra/groupes', [ZumraGroupController::class, 'store'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.store');
+Route::get('/zumra/groupes/{group}', [ZumraGroupController::class, 'show'])
+    ->middleware('core.member')->name('zumra.groups.show');
+Route::post('/zumra/groupes/{group}/demande', [ZumraGroupController::class, 'requestToJoin'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.request');
+Route::post('/zumra/groupes/{group}/invitation', [ZumraGroupController::class, 'invite'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invite');
+Route::post('/zumra/groupes/{group}/invitation/accepter', [ZumraGroupController::class, 'acceptInvitation'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invitation.accept');
+Route::post('/zumra/groupes/{group}/demandes/{membership}/approuver', [ZumraGroupController::class, 'approveRequest'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
+Route::post('/zumra/groupes/{group}/quitter', [ZumraGroupController::class, 'leave'])
+    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
@@ -87,4 +107,7 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->middleware('throttle:zumra-charter-publish')->name('administration.zumra.charter.publish');
     Route::post('/programme-zumra/cartes/{card}/revoquer', [AdministrationZumraCardController::class, 'revoke'])
         ->middleware('throttle:zumra-card-revoke')->name('administration.zumra.card.revoke');
+    Route::get('/groupes-zumra', [ZumraGroupConfigurationController::class, 'edit'])->name('administration.zumra.groups.edit');
+    Route::put('/groupes-zumra', [ZumraGroupConfigurationController::class, 'update'])
+        ->middleware('throttle:zumra-group-configuration')->name('administration.zumra.groups.update');
 });

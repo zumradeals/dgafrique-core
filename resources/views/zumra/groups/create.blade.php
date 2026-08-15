@@ -1,0 +1,16 @@
+<x-layouts.portal title="Proposer une ZUMRA — DG Afrique">
+    <div class="group-page">
+        <header class="membership-topbar"><a href="{{ route('zumra.groups.index') }}">← Les ZUMRA</a><strong><i>Z</i> Nouvelle équipe</strong><a href="{{ route('member.space') }}">Mon espace</a></header>
+        <main class="group-create-content">
+            <section class="group-create-intro"><p class="eyebrow dark">CAP‑011 · GROUPE HUMAIN</p><h1>{{ $configuration['creation_title'] }}</h1><p>Donnez une identité claire à l’équipe. La création ouvre une constitution : elle ne produit ni validation, ni financement, ni nomination automatique.</p><div><strong>5 personnes distinctes</strong><span>doivent accepter les cinq responsabilités fondatrices avant que la ZUMRA soit prête à valider.</span></div></section>
+            <form method="POST" action="{{ route('zumra.groups.store') }}" class="group-create-form">@csrf
+                @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
+                <section><span>01</span><div><h2>Identité fondatrice</h2><p>Cette identité doit rester cohérente pendant la vie de la ZUMRA.</p><label>Nom de la ZUMRA<input name="name" value="{{ old('name') }}" maxlength="140" required></label><label>Domaine principal<input name="domain" value="{{ old('domain') }}" maxlength="140" placeholder="Ex. Couture, numérique, agriculture…" required></label><label>Objectif fondateur<textarea name="founding_objective" rows="5" minlength="40" maxlength="1800" required>{{ old('founding_objective') }}</textarea><small>Décrivez ce que l’équipe veut apprendre, transmettre, construire ou résoudre.</small></label></div></section>
+                <section><span>02</span><div><h2>Mode de présence</h2><p>Une ZUMRA peut agir localement, en ligne ou dans les deux espaces.</p><div class="group-mode-options">@foreach(['PHYSICAL'=>'Physique','DIGITAL'=>'Numérique','HYBRID'=>'Hybride'] as $value=>$label)<label><input type="radio" name="participation_mode" value="{{ $value }}" @checked(old('participation_mode','HYBRID')===$value)><strong>{{ $label }}</strong></label>@endforeach</div></div></section>
+                <section><span>03</span><div><h2>Charte interne</h2><p>Elle organise l’équipe sans pouvoir contredire la Charte générale ZUMRA.</p><label>Règles fondatrices<textarea name="internal_charter" rows="8" minlength="80" maxlength="6000" required>{{ old('internal_charter') }}</textarea><small>Précisez la mission, le respect mutuel, la hiérarchie, les décisions, l’admission, le départ et l’exclusion.</small></label></div></section>
+                <section><span>04</span><div><h2>Votre responsabilité</h2><p>Vous pouvez lancer l’idée sans vous attribuer automatiquement la direction.</p><label class="group-lead-choice"><input type="checkbox" name="assume_primary_lead" value="1" @checked(old('assume_primary_lead'))><span><strong>J’accepte d’être le premier responsable.</strong><small>Ce choix est explicite. Les quatre autres sièges resteront vacants jusqu’à de vraies acceptations.</small></span></label></div></section>
+                <button class="primary-button" type="submit">Créer le dossier de constitution</button>
+            </form>
+        </main>
+    </div>
+</x-layouts.portal>
