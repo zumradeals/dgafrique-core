@@ -128,8 +128,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         self::assertSame(1, ProjectAutonomyPathway::query()->count());
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), '/organisations'));
 
-        PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-ADMIN']);
-        $this->signIn('IDN-ADMIN');
+        PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-MATURE']);
 
         $this->get('/administration/lanceur-satellites')
             ->assertOk()
