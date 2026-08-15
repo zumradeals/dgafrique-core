@@ -10,6 +10,7 @@ use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
+use App\Http\Controllers\Administration\NeedConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ZumraGroupController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
+use App\Http\Controllers\NeedController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -55,6 +57,11 @@ Route::post('/recommandations/personnes/{reference}/masquer', [RecommendationCon
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.hide');
 Route::post('/recommandations/personnes/{reference}/restaurer', [RecommendationController::class, 'restore'])
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.restore');
+Route::get('/besoins', [NeedController::class, 'index'])->middleware('core.member')->name('needs.index');
+Route::get('/besoins/exprimer', [NeedController::class, 'create'])->middleware('core.member')->name('needs.create');
+Route::post('/besoins', [NeedController::class, 'store'])->middleware(['core.member', 'throttle:need-write'])->name('needs.store');
+Route::get('/besoins/{need}', [NeedController::class, 'show'])->whereUuid('need')->middleware('core.member')->name('needs.show');
+Route::put('/besoins/{need}/etat', [NeedController::class, 'transition'])->whereUuid('need')->middleware(['core.member', 'throttle:need-transition'])->name('needs.transition');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -117,4 +124,7 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
+    Route::get('/besoins', [NeedConfigurationController::class, 'edit'])->name('administration.needs.edit');
+    Route::put('/besoins', [NeedConfigurationController::class, 'update'])
+        ->middleware('throttle:need-configuration')->name('administration.needs.update');
 });

@@ -62,5 +62,8 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('zumra-group-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('collective-capability-consent', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('collective-capability-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('need-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('need-transition', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
+        RateLimiter::for('need-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
     }
 }
