@@ -29,6 +29,7 @@ final class ZumraGroupTest extends TestCase
         $this->get('/zumra/groupes/proposer')->assertNotFound();
 
         $this->programMember('IDN-ACTIVE');
+        session()->flush();
         $this->signIn('IDN-ACTIVE');
         $this->get('/zumra/groupes/proposer')->assertOk()->assertSee('Proposer une nouvelle ZUMRA');
     }
@@ -58,6 +59,7 @@ final class ZumraGroupTest extends TestCase
     {
         $group = $this->group('IDN-LEADER');
         $this->programMember('IDN-APPLICANT');
+        session()->flush();
         $this->signIn('IDN-APPLICANT');
         $this->post(route('zumra.groups.request', $group), ['motivation' => 'Je souhaite apprendre et participer au projet.'])->assertRedirect();
 
@@ -65,6 +67,7 @@ final class ZumraGroupTest extends TestCase
         self::assertSame(ZumraGroupMembership::STATUS_REQUESTED, $request->status);
         self::assertSame(1, $group->refresh()->active_member_count);
 
+        session()->flush();
         $this->signIn('IDN-LEADER');
         $this->post(route('zumra.groups.requests.approve', [$group, $request->id]))->assertRedirect();
         self::assertSame(ZumraGroupMembership::STATUS_ACTIVE, $request->refresh()->status);
@@ -83,6 +86,7 @@ final class ZumraGroupTest extends TestCase
         self::assertSame(ZumraGroupMembership::STATUS_INVITED, $invitation->status);
         self::assertSame(1, $group->refresh()->active_member_count);
 
+        session()->flush();
         $this->signIn('IDN-INVITED');
         $this->post(route('zumra.groups.invitation.accept', $group))->assertRedirect();
         self::assertSame(ZumraGroupMembership::STATUS_ACTIVE, $invitation->refresh()->status);
@@ -96,10 +100,12 @@ final class ZumraGroupTest extends TestCase
         ZumraGroupMembership::query()->create(['zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-MEMBER', 'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST', 'initiated_by_core_reference' => 'IDN-MEMBER', 'joined_at' => now()]);
         $group->update(['active_member_count' => 2]);
 
+        session()->flush();
         $this->signIn('IDN-MEMBER');
         $this->post(route('zumra.groups.leave', $group))->assertRedirect(route('zumra.groups.index'));
         self::assertSame(ZumraGroupMembership::STATUS_LEFT, ZumraGroupMembership::query()->where('core_identity_reference', 'IDN-MEMBER')->sole()->status);
 
+        session()->flush();
         $this->signIn('IDN-LEADER');
         $this->post(route('zumra.groups.leave', $group))->assertStatus(409);
     }

@@ -76,17 +76,17 @@ Route::get('/zumra/groupes/proposer', [ZumraGroupController::class, 'create'])
 Route::post('/zumra/groupes', [ZumraGroupController::class, 'store'])
     ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.store');
 Route::get('/zumra/groupes/{group}', [ZumraGroupController::class, 'show'])
-    ->middleware('core.member')->name('zumra.groups.show');
+    ->whereUuid('group')->middleware('core.member')->name('zumra.groups.show');
 Route::post('/zumra/groupes/{group}/demande', [ZumraGroupController::class, 'requestToJoin'])
-    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.request');
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.request');
 Route::post('/zumra/groupes/{group}/invitation', [ZumraGroupController::class, 'invite'])
-    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invite');
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invite');
 Route::post('/zumra/groupes/{group}/invitation/accepter', [ZumraGroupController::class, 'acceptInvitation'])
-    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invitation.accept');
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.invitation.accept');
 Route::post('/zumra/groupes/{group}/demandes/{membership}/approuver', [ZumraGroupController::class, 'approveRequest'])
-    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
+    ->whereUuid('group')->whereUuid('membership')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
 Route::post('/zumra/groupes/{group}/quitter', [ZumraGroupController::class, 'leave'])
-    ->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
