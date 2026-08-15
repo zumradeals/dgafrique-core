@@ -15,4 +15,5 @@ final class Project extends Model
     public function milestones(): HasMany { return $this->hasMany(ProjectMilestone::class)->orderBy('position'); }
     public function events(): HasMany { return $this->hasMany(ProjectEvent::class); }
     public function accompaniment(): HasOne { return $this->hasOne(ProjectAccompaniment::class); }
+    public function autonomyPathway(): HasOne { return $this->hasOne(ProjectAutonomyPathway::class); }
 }
