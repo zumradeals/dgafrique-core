@@ -63,6 +63,6 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('project-accompaniment-admin', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('project-accompaniment-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
 
-        require base_path('routes/cap016.php');
+        $this->loadRoutesFrom(base_path('routes/cap016.php'));
     }
 }
