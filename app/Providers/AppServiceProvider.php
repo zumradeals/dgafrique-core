@@ -12,9 +12,6 @@ use Illuminate\Support\ServiceProvider;
 
 final class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         $this->app->singleton(GamadCoreClient::class, static fn (): GamadCoreClient => new GamadCoreClient(
@@ -26,21 +23,12 @@ final class AppServiceProvider extends ServiceProvider
         ));
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         // Ces limiteurs ne consultent jamais Request::user() : GAMAD Core reste
         // l'unique autorité d'identité et aucun guard Laravel local n'est requis.
-        RateLimiter::for('member-login', static fn (Request $request): Limit =>
-            Limit::perMinute(5)->by($request->ip())
-        );
-
-        RateLimiter::for('member-logout', static fn (Request $request): Limit =>
-            Limit::perMinute(10)->by($request->ip())
-        );
-
+        RateLimiter::for('member-login', static fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('member-logout', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('account-create', static fn (Request $request): Limit => Limit::perHour(5)->by($request->ip()));
         RateLimiter::for('account-verify', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('account-resend', static fn (Request $request): Limit => Limit::perMinute(3)->by($request->ip()));
@@ -71,5 +59,10 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('project-matching', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('project-match-decisions', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('project-matching-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+        RateLimiter::for('project-accompaniment', static fn (Request $request): Limit => Limit::perMinute(12)->by($request->ip()));
+        RateLimiter::for('project-accompaniment-admin', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
+        RateLimiter::for('project-accompaniment-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+
+        require base_path('routes/cap016.php');
     }
 }
