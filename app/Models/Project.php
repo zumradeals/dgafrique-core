@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace App\Models;
-use Illuminate\Database\Eloquent\Concerns\HasUuids; use Illuminate\Database\Eloquent\Model; use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Concerns\HasUuids; use Illuminate\Database\Eloquent\Model; use Illuminate\Database\Eloquent\Relations\HasMany; use Illuminate\Database\Eloquent\Relations\HasOne;
 final class Project extends Model
 {
     use HasUuids;
@@ -14,4 +14,5 @@ final class Project extends Model
     public function getRouteKeyName(): string { return 'public_reference'; }
     public function milestones(): HasMany { return $this->hasMany(ProjectMilestone::class)->orderBy('position'); }
     public function events(): HasMany { return $this->hasMany(ProjectEvent::class); }
+    public function accompaniment(): HasOne { return $this->hasOne(ProjectAccompaniment::class); }
 }
