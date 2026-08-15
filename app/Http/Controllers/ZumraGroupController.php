@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Application\Zumra\ZumraGroupConfiguration;
 use App\Application\Zumra\ZumraGroupService;
+use App\Application\Zumra\CollectiveCapabilityConfiguration;
+use App\Application\Zumra\CollectiveCapabilityProfile;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
 use App\Models\ZumraGroup;
@@ -58,7 +60,7 @@ final class ZumraGroupController
         return redirect()->route('zumra.groups.show', $group)->with('status', 'Votre ZUMRA est créée en constitution. Aucun rôle vacant n’a été attribué automatiquement.');
     }
 
-    public function show(Request $request, ZumraGroup $group, ZumraGroupService $service): View
+    public function show(Request $request, ZumraGroup $group, ZumraGroupService $service, CollectiveCapabilityConfiguration $capabilityConfiguration, CollectiveCapabilityProfile $capabilityProfile): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -70,8 +72,10 @@ final class ZumraGroupController
             ? $group->memberships()->where('status', ZumraGroupMembership::STATUS_REQUESTED)->oldest('requested_at')->get()
             : collect();
         $requestProfiles = PersonProfile::query()->whereIn('core_identity_reference', $pendingRequests->pluck('core_identity_reference'))->get()->keyBy('core_identity_reference');
+        $collectiveCapabilitySettings = $capabilityConfiguration->get();
+        $collectiveCapabilities = $capabilityProfile->forGroup($group, $collectiveCapabilitySettings);
 
-        return view('zumra.groups.show', compact('identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles') + ['isLeader' => $service->isLeader($group, $identity->reference)]);
+        return view('zumra.groups.show', compact('identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles', 'collectiveCapabilitySettings', 'collectiveCapabilities') + ['isLeader' => $service->isLeader($group, $identity->reference)]);
     }
 
     public function requestToJoin(Request $request, ZumraGroup $group, ZumraGroupService $service): RedirectResponse

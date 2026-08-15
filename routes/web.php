@@ -9,6 +9,7 @@ use App\Http\Controllers\Administration\ZumraCardController as AdministrationZum
 use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
+use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ZumraGroupController;
+use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -87,6 +89,8 @@ Route::post('/zumra/groupes/{group}/demandes/{membership}/approuver', [ZumraGrou
     ->whereUuid('group')->whereUuid('membership')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
 Route::post('/zumra/groupes/{group}/quitter', [ZumraGroupController::class, 'leave'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
+Route::put('/zumra/groupes/{group}/capacites-collectives/consentement', [ZumraCollectiveCapabilityController::class, 'consent'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:collective-capability-consent'])->name('zumra.groups.collective-capabilities.consent');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
@@ -110,4 +114,7 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/groupes-zumra', [ZumraGroupConfigurationController::class, 'edit'])->name('administration.zumra.groups.edit');
     Route::put('/groupes-zumra', [ZumraGroupConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-group-configuration')->name('administration.zumra.groups.update');
+    Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
+    Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
+        ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
 });

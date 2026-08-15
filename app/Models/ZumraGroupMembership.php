@@ -24,10 +24,16 @@ final class ZumraGroupMembership extends Model
         'zumra_group_id', 'core_identity_reference', 'status', 'entry_mode',
         'initiated_by_core_reference', 'motivation', 'decision_reason',
         'requested_at', 'invited_at', 'joined_at', 'left_at',
+        'collective_capability_consent', 'collective_capability_consented_at',
     ];
 
     protected function casts(): array
     {
-        return ['requested_at' => 'immutable_datetime', 'invited_at' => 'immutable_datetime', 'joined_at' => 'immutable_datetime', 'left_at' => 'immutable_datetime'];
+        return [
+            'requested_at' => 'immutable_datetime', 'invited_at' => 'immutable_datetime',
+            'joined_at' => 'immutable_datetime', 'left_at' => 'immutable_datetime',
+            'collective_capability_consent' => 'boolean',
+            'collective_capability_consented_at' => 'immutable_datetime',
+        ];
     }
 }

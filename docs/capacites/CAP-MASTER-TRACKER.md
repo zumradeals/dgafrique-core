@@ -17,7 +17,8 @@
 | CAP-009 | DÉCOUVERTE DE PERSONNES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-009-2026-08-15.md` |
 | CAP-010 | RECOMMANDATION | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-010-2026-08-15.md` |
 | CAP-011 | ZUMRA / GROUPE HUMAIN | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-011-2026-08-15.md` |
-| CAP-012 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-012 | CAPACITÉ COLLECTIVE | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | Agrégation consentie des forces réellement mobilisables |
+| CAP-013 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
