@@ -110,7 +110,7 @@ final class CollectiveCapabilityTest extends TestCase
     private function group(string $founder): ZumraGroup
     {
         return app(ZumraGroupService::class)->create($founder, [
-            'name' => 'ZUMRA '.$founder,
+            'name' => 'ZUMRA équipe '.substr(hash('sha256', $founder), 0, 8),
             'domain' => 'Développement',
             'founding_objective' => 'Réunir des capacités réelles pour transmettre, apprendre et construire ensemble des solutions utiles.',
             'participation_mode' => 'HYBRID',
