@@ -12,6 +12,7 @@ use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
 use App\Http\Controllers\Administration\ProjectConfigurationController;
+use App\Http\Controllers\Administration\ProjectMatchingConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\ZumraGroupController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\NeedController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectMatchingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -69,6 +71,8 @@ Route::get('/projets/proposer', [ProjectController::class, 'create'])->middlewar
 Route::post('/projets', [ProjectController::class, 'store'])->middleware(['core.member', 'throttle:project-write'])->name('projects.store');
 Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid('project')->middleware('core.member')->name('projects.show');
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
+Route::get('/projets/{project}/correspondances', [ProjectMatchingController::class, 'index'])->whereUuid('project')->middleware(['core.member', 'throttle:project-matching'])->name('projects.matching');
+Route::post('/projets/{project}/correspondances/{profile}/masquer', [ProjectMatchingController::class, 'hide'])->whereUuid('project')->whereUuid('profile')->middleware(['core.member', 'throttle:project-match-decisions'])->name('projects.matching.hide');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -136,4 +140,6 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->middleware('throttle:need-configuration')->name('administration.needs.update');
     Route::get('/projets', [ProjectConfigurationController::class, 'edit'])->name('administration.projects.edit');
     Route::put('/projets', [ProjectConfigurationController::class, 'update'])->middleware('throttle:project-configuration')->name('administration.projects.update');
+    Route::get('/correspondances-projets', [ProjectMatchingConfigurationController::class, 'edit'])->name('administration.project-matching.edit');
+    Route::put('/correspondances-projets', [ProjectMatchingConfigurationController::class, 'update'])->middleware('throttle:project-matching-configuration')->name('administration.project-matching.update');
 });

@@ -1,0 +1,3 @@
+<?php
+declare(strict_types=1);namespace App\Application\Projects;use App\Models\PortalSetting;
+final class ProjectMatchingConfiguration{public const KEY='project_matching.configuration';public function get():array{return array_replace($this->defaults(),PortalSetting::query()->find(self::KEY)?->value??[]);}public function defaults():array{return ['page_title'=>'Les capacités qui peuvent faire avancer ce projet.','page_intro'=>'Ces rapprochements sont des pistes expliquées, jamais des affectations automatiques.','candidate_pool'=>120,'max_results'=>18,'max_reasons'=>4,'location_context'=>true,'participation_context'=>true];}}

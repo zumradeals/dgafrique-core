@@ -20,7 +20,8 @@
 | CAP-012 | CAPACITÉ COLLECTIVE | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-012-2026-08-15.md` |
 | CAP-013 | BESOIN | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-013-2026-08-15.md` |
 | CAP-014 | PROJET | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-014-2026-08-15.md` |
-| CAP-015 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-015 | MISE EN RELATION PROJET ↔ COMPÉTENCES | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | — |
+| CAP-016 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
