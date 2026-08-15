@@ -19,7 +19,7 @@ final class ProfileConfiguration
             return $defaults;
         }
 
-        foreach (['title', 'introduction', 'orientation_consent_label', 'orientation_consent_help', 'submit_label', 'no_score_notice'] as $key) {
+        foreach (['title', 'introduction', 'orientation_consent_label', 'orientation_consent_help', 'discovery_consent_label', 'discovery_consent_help', 'submit_label', 'no_score_notice'] as $key) {
             if (array_key_exists($key, $stored)) {
                 $defaults[$key] = $stored[$key];
             }
@@ -78,6 +78,8 @@ final class ProfileConfiguration
                 'intentions' => 'Ce que vous cherchez à accomplir',
                 'participation_mode' => 'Mode de participation préféré',
                 'collaboration_preferences' => 'Types de collaboration qui vous conviennent',
+                'discovery_display_name' => 'Nom visible dans la découverte',
+                'discovery_bio' => 'Courte présentation visible',
             ],
             'required_fields' => [
                 'country_code' => false, 'city' => false, 'current_activity' => false,
@@ -87,9 +89,12 @@ final class ProfileConfiguration
                 'declared_needs_text' => false, 'interest_domains_text' => false,
                 'intentions_text' => false, 'participation_mode' => false,
                 'collaboration_preferences_text' => false,
+                'discovery_display_name' => false, 'discovery_bio' => false,
             ],
             'orientation_consent_label' => 'Recevoir des orientations utiles',
             'orientation_consent_help' => 'J’accepte que DG Afrique utilise ce profil pour me proposer des apprentissages ou prochaines actions. Ce choix est révocable.',
+            'discovery_consent_label' => 'Permettre aux membres de me découvrir',
+            'discovery_consent_help' => 'Seuls votre nom public choisi, votre présentation, votre contexte et vos capacités autorisées seront visibles. Votre téléphone, vos preuves et votre référence d’identité restent privés.',
             'submit_label' => 'Enregistrer mon profil',
             'no_score_notice' => 'Aucun score de valeur personnelle ne sera calculé.',
         ];

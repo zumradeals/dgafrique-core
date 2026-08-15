@@ -12,20 +12,23 @@ final class CapabilityStatementSynchronizer
     /**
      * @param array<string, list<string>> $dimensions
      */
-    public function sync(string $identityReference, array $dimensions, bool $matchingConsent): void
+    public function sync(string $identityReference, array $dimensions, bool $matchingConsent, bool $discoveryConsent): void
     {
+        $visibility = $matchingConsent && $discoveryConsent
+            ? CapabilityStatement::VISIBILITY_DISCOVERABLE
+            : CapabilityStatement::VISIBILITY_PRIVATE;
+
         CapabilityStatement::query()
             ->where('core_identity_reference', $identityReference)
-            ->where('matching_consent', '!=', $matchingConsent)
-            ->update(['matching_consent' => $matchingConsent]);
+            ->update(['matching_consent' => $matchingConsent, 'visibility' => $visibility]);
 
         foreach ($dimensions as $kind => $labels) {
-            $this->syncDimension($identityReference, $kind, $labels, $matchingConsent);
+            $this->syncDimension($identityReference, $kind, $labels, $matchingConsent, $visibility);
         }
     }
 
     /** @param list<string> $labels */
-    private function syncDimension(string $identityReference, string $kind, array $labels, bool $matchingConsent): void
+    private function syncDimension(string $identityReference, string $kind, array $labels, bool $matchingConsent, string $visibility): void
     {
         if (! in_array($kind, [
             CapabilityStatement::KIND_POSSESSED,
@@ -53,6 +56,7 @@ final class CapabilityStatementSynchronizer
                 [
                     'label' => $cleanLabel,
                     'matching_consent' => $matchingConsent,
+                    'visibility' => $visibility,
                     'archived_at' => null,
                 ],
             );

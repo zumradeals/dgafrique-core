@@ -20,6 +20,7 @@ final class CapabilityStatement extends Model
     public const STATUS_ATTESTED = 'ATTESTED';
 
     public const VISIBILITY_PRIVATE = 'PRIVATE';
+    public const VISIBILITY_DISCOVERABLE = 'DISCOVERABLE';
 
     protected $table = 'dg_capability_statements';
     public $incrementing = false;

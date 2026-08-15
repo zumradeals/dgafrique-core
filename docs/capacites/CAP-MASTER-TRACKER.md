@@ -14,7 +14,8 @@
 | CAP-006 | TRANSMISSION | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-003-006-2026-08-14.md` |
 | CAP-007 | PROGRAMME ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-007AB-2026-08-14.md` · ouverture marchande live encore fermée |
 | CAP-008 | CARTE ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-008-2026-08-15.md` |
-| CAP-009 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-009 | DÉCOUVERTE DE PERSONNES | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | Consentement distinct, recherche explicable et retrait immédiat |
+| CAP-010 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

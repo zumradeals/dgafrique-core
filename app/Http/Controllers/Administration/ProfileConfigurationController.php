@@ -40,6 +40,8 @@ final class ProfileConfigurationController
             'required_fields.*' => ['nullable', 'boolean'],
             'orientation_consent_label' => ['required', 'string', 'max:160'],
             'orientation_consent_help' => ['required', 'string', 'max:600'],
+            'discovery_consent_label' => ['nullable', 'string', 'max:160'],
+            'discovery_consent_help' => ['nullable', 'string', 'max:600'],
             'submit_label' => ['required', 'string', 'max:100'],
             'no_score_notice' => ['required', 'string', 'max:300'],
         ]);
@@ -67,7 +69,7 @@ final class ProfileConfigurationController
             $requiredFields[$field] = filter_var($data['required_fields'][$field] ?? false, FILTER_VALIDATE_BOOL);
         }
 
-        DB::transaction(static function () use ($data, $sections, $modes, $countries, $fieldLabels, $requiredFields, $identity): void {
+        DB::transaction(static function () use ($data, $sections, $modes, $countries, $fieldLabels, $requiredFields, $identity, $defaults): void {
             PortalSetting::query()->updateOrCreate(
                 ['key' => ProfileConfiguration::KEY],
                 ['value' => [
@@ -80,6 +82,8 @@ final class ProfileConfigurationController
                     'required_fields' => $requiredFields,
                     'orientation_consent_label' => $data['orientation_consent_label'],
                     'orientation_consent_help' => $data['orientation_consent_help'],
+                    'discovery_consent_label' => $data['discovery_consent_label'] ?? $defaults['discovery_consent_label'],
+                    'discovery_consent_help' => $data['discovery_consent_help'] ?? $defaults['discovery_consent_help'],
                     'submit_label' => $data['submit_label'],
                     'no_score_notice' => $data['no_score_notice'],
                 ], 'updated_by_core_reference' => $identity->reference],

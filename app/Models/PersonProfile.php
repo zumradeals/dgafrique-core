@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
 
 final class PersonProfile extends Model
@@ -20,7 +21,9 @@ final class PersonProfile extends Model
         'experience_highlights', 'experience_proofs', 'declared_needs',
         'interest_domains', 'intentions', 'participation_mode',
         'collaboration_preferences', 'orientation_consent',
-        'orientation_consented_at',
+        'orientation_consented_at', 'discovery_reference',
+        'discovery_display_name', 'discovery_bio', 'discovery_consent',
+        'discovery_consented_at',
     ];
 
     protected function casts(): array
@@ -38,6 +41,13 @@ final class PersonProfile extends Model
             'collaboration_preferences' => 'array',
             'orientation_consent' => 'boolean',
             'orientation_consented_at' => 'immutable_datetime',
+            'discovery_consent' => 'boolean',
+            'discovery_consented_at' => 'immutable_datetime',
         ];
+    }
+
+    public function capabilityStatements(): HasMany
+    {
+        return $this->hasMany(CapabilityStatement::class, 'core_identity_reference', 'core_identity_reference');
     }
 }

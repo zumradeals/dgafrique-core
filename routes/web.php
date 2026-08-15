@@ -6,6 +6,7 @@ use App\Http\Controllers\AccountRegistrationController;
 use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
+use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\ZumraSpaceController;
 use App\Http\Controllers\ZumraProgramMembershipController;
 use App\Http\Controllers\ZumraMembershipPaymentController;
 use App\Http\Controllers\ZumraCardController;
+use App\Http\Controllers\PeopleDiscoveryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -37,6 +39,10 @@ Route::get('/espace/profil', [MemberProfileController::class, 'edit'])
     ->middleware('core.member')->name('member.profile.edit');
 Route::put('/espace/profil', [MemberProfileController::class, 'update'])
     ->middleware(['core.member', 'throttle:profile-update'])->name('member.profile.update');
+Route::get('/personnes', [PeopleDiscoveryController::class, 'index'])
+    ->middleware(['core.member', 'throttle:people-discovery'])->name('people.index');
+Route::get('/personnes/{reference}', [PeopleDiscoveryController::class, 'show'])
+    ->whereUuid('reference')->middleware(['core.member', 'throttle:people-discovery'])->name('people.show');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -58,6 +64,10 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
     Route::put('/profil-capacites', [ProfileConfigurationController::class, 'update'])
         ->middleware('throttle:profile-configuration')->name('administration.profile.update');
+    Route::get('/decouverte-personnes', [PeopleDiscoveryConfigurationController::class, 'edit'])
+        ->name('administration.discovery.edit');
+    Route::put('/decouverte-personnes', [PeopleDiscoveryConfigurationController::class, 'update'])
+        ->middleware('throttle:discovery-configuration')->name('administration.discovery.update');
     Route::get('/programme-zumra', [ZumraProgramConfigurationController::class, 'edit'])->name('administration.zumra.edit');
     Route::put('/programme-zumra', [ZumraProgramConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-configuration')->name('administration.zumra.update');

@@ -1,0 +1,12 @@
+<x-layouts.portal title="Administration de la découverte — DG Afrique">
+    <main class="admin-content">
+        <div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique</p><h1>Configurer la découverte de personnes</h1><p>Les textes, filtres et limites évoluent sans nouveau déploiement.</p></div><div class="admin-links"><a href="{{ route('administration.profile.edit') }}">Profil de capacités</a><a href="{{ route('people.index') }}">Voir la découverte</a><a href="{{ route('member.space') }}">Mon espace</a></div></div>
+        @if (session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if ($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
+        <form method="POST" action="{{ route('administration.discovery.update') }}" class="admin-form">@csrf @method('PUT')
+            <section><h2>Présentation</h2><label>Titre<input name="title" value="{{ old('title', $configuration['title']) }}" required></label><label>Introduction<textarea name="introduction" rows="3" required>{{ old('introduction', $configuration['introduction']) }}</textarea></label><label>Notice de confidentialité<textarea name="privacy_notice" rows="3" required>{{ old('privacy_notice', $configuration['privacy_notice']) }}</textarea></label></section>
+            <section><h2>Résultats</h2><label>Titre lorsque la liste est vide<input name="empty_title" value="{{ old('empty_title', $configuration['empty_title']) }}" required></label><label>Explication lorsque la liste est vide<textarea name="empty_text" rows="3" required>{{ old('empty_text', $configuration['empty_text']) }}</textarea></label><label>Libellé du bouton<input name="detail_button" value="{{ old('detail_button', $configuration['detail_button']) }}" required></label><label>Profils par page<input type="number" name="page_size" min="6" max="24" value="{{ old('page_size', $configuration['page_size']) }}" required></label></section>
+            <section><h2>Filtres</h2><label class="check-row"><input type="checkbox" name="country_filter" value="1" @checked(old('country_filter', $configuration['country_filter']))> Filtre par pays</label><label class="check-row"><input type="checkbox" name="mode_filter" value="1" @checked(old('mode_filter', $configuration['mode_filter']))> Filtre par mode de participation</label></section>
+            <button class="primary-button" type="submit">Enregistrer la configuration</button>
+        </form>
+    </main>
+</x-layouts.portal>

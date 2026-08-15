@@ -13,6 +13,8 @@ use App\Models\PersonProfile;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -56,6 +58,7 @@ final class MemberProfileController
             'interest_domains_text' => 'needs', 'intentions_text' => 'needs',
             'participation_mode' => 'collaboration',
             'collaboration_preferences_text' => 'collaboration',
+            'discovery_display_name' => 'collaboration', 'discovery_bio' => 'collaboration',
         ];
         $presence = static function (string $field) use ($profileConfiguration, $fieldSections): string {
             $section = $fieldSections[$field];
@@ -81,7 +84,19 @@ final class MemberProfileController
             'participation_mode' => [$presence('participation_mode'), Rule::in($allowedModes)],
             'collaboration_preferences_text' => [$presence('collaboration_preferences_text'), 'string', 'max:3000'],
             'orientation_consent' => ['nullable', 'boolean'],
+            'discovery_display_name' => ['nullable', 'string', 'max:120'],
+            'discovery_bio' => ['nullable', 'string', 'max:600'],
+            'discovery_consent' => ['nullable', 'boolean'],
         ]);
+
+        $discoveryConsent = $request->boolean('orientation_consent') && $request->boolean('discovery_consent');
+        $discoveryErrors = [];
+        if ($discoveryConsent && trim((string) ($data['discovery_display_name'] ?? '')) === '') {
+            $discoveryErrors['discovery_display_name'] = 'Choisissez le nom sous lequel les autres membres vous découvriront.';
+        }
+        if ($discoveryErrors !== []) {
+            throw ValidationException::withMessages($discoveryErrors);
+        }
 
         $attributes = [];
         $enabled = static fn (string $section): bool => (bool) ($profileConfiguration['sections'][$section]['enabled'] ?? false);
@@ -126,6 +141,9 @@ final class MemberProfileController
                 'participation_mode' => $data['participation_mode'] ?? null,
                 'collaboration_preferences' => ProfileList::fromText($data['collaboration_preferences_text'] ?? null),
                 'orientation_consent' => $consent,
+                'discovery_display_name' => $data['discovery_display_name'] ?? null,
+                'discovery_bio' => $data['discovery_bio'] ?? null,
+                'discovery_consent' => $discoveryConsent,
             ];
         }
 
@@ -146,6 +164,13 @@ final class MemberProfileController
                 $attributes['orientation_consented_at'] = $attributes['orientation_consent']
                     ? ($profile->orientation_consented_at ?? now()) : null;
             }
+            if (array_key_exists('discovery_consent', $attributes)) {
+                $attributes['discovery_consented_at'] = $attributes['discovery_consent']
+                    ? ($profile->discovery_consented_at ?? now()) : null;
+                if ($attributes['discovery_consent'] && ! $profile->discovery_reference) {
+                    $attributes['discovery_reference'] = (string) Str::uuid();
+                }
+            }
             $profile->fill($attributes);
             $profile->save();
 
@@ -153,6 +178,7 @@ final class MemberProfileController
                 $identity->reference,
                 $capabilityDimensions,
                 (bool) $profile->orientation_consent,
+                (bool) $profile->discovery_consent,
             );
         });
 
