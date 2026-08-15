@@ -8,6 +8,7 @@ use App\Application\Zumra\ZumraProgramConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PortalSetting;
 use App\Models\ZumraCharter;
+use App\Models\ZumraCard;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,7 @@ final class ZumraProgramConfigurationController
             'configuration' => $configuration->get(),
             'activeCharter' => ZumraCharter::query()->where('status', ZumraCharter::STATUS_PUBLISHED)->latest('published_at')->first(),
             'charters' => ZumraCharter::query()->latest('published_at')->limit(20)->get(),
+            'cards' => ZumraCard::query()->latest('issued_at')->limit(30)->get(),
         ]);
     }
 

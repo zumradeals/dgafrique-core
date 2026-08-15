@@ -5,12 +5,14 @@ declare(strict_types=1);
 use App\Http\Controllers\AccountRegistrationController;
 use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
+use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
 use App\Http\Controllers\ZumraSpaceController;
 use App\Http\Controllers\ZumraProgramMembershipController;
 use App\Http\Controllers\ZumraMembershipPaymentController;
+use App\Http\Controllers\ZumraCardController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -47,6 +49,10 @@ Route::get('/zumra/adhesion/paiement/retour', [ZumraMembershipPaymentController:
     ->middleware(['core.member', 'throttle:zumra-payment-status'])->name('zumra.payment.return');
 Route::get('/zumra/adhesion/recus/{receipt}', [ZumraMembershipPaymentController::class, 'receipt'])
     ->middleware('core.member')->name('zumra.payment.receipt');
+Route::get('/zumra/carte', [ZumraCardController::class, 'show'])
+    ->middleware('core.member')->name('zumra.card.show');
+Route::get('/verifier/carte-zumra/{card}', [ZumraCardController::class, 'verify'])
+    ->middleware(['signed', 'throttle:zumra-card-verification'])->name('zumra.card.verify');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
@@ -57,4 +63,6 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->middleware('throttle:zumra-configuration')->name('administration.zumra.update');
     Route::post('/programme-zumra/charte', [ZumraProgramConfigurationController::class, 'publishCharter'])
         ->middleware('throttle:zumra-charter-publish')->name('administration.zumra.charter.publish');
+    Route::post('/programme-zumra/cartes/{card}/revoquer', [AdministrationZumraCardController::class, 'revoke'])
+        ->middleware('throttle:zumra-card-revoke')->name('administration.zumra.card.revoke');
 });

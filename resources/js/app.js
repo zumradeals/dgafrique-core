@@ -1,5 +1,19 @@
 const progressiveProfile = document.querySelector('[data-profile-steps]');
 
+const zumraQrTargets = [...document.querySelectorAll('[data-zumra-qr]')];
+if (zumraQrTargets.length) {
+    import('qrcode').then(({ default: QRCode }) => {
+        zumraQrTargets.forEach((canvas) => QRCode.toCanvas(canvas, canvas.dataset.zumraQr, {
+            width: 190,
+            margin: 1,
+            errorCorrectionLevel: 'M',
+            color: { dark: '#061f35', light: '#ffffff' },
+        }));
+    }).catch(() => {
+        zumraQrTargets.forEach((canvas) => canvas.replaceWith(document.createTextNode('QR temporairement indisponible')));
+    });
+}
+
 if (progressiveProfile) {
     const stages = [...progressiveProfile.querySelectorAll('[data-profile-step]')];
     const targets = [...progressiveProfile.querySelectorAll('[data-profile-step-target]')];

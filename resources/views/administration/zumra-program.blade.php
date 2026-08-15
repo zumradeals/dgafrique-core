@@ -14,5 +14,7 @@
         </form>
 
         <section class="charter-history"><h2>Historique des versions</h2>@forelse($charters as $charter)<article><div><strong>{{ $charter->version }}</strong><span>{{ $charter->title }}</span></div><div><small>{{ $charter->published_at->format('d/m/Y H:i') }}</small><b class="{{ strtolower($charter->status) }}">{{ $charter->status === 'PUBLISHED' ? 'En vigueur' : 'Conservée' }}</b></div></article>@empty<p>Aucune charte n’est encore publiée.</p>@endforelse</section>
+
+        <section class="charter-history"><h2>Cartes ZUMRA délivrées</h2><p class="admin-notice">Une révocation est motivée et conservée. Si l’adhésion reste active, le membre pourra recevoir une nouvelle carte sans effacer l’ancienne.</p>@forelse($cards as $card)<article><div><strong>{{ $card->public_reference }}</strong><span>{{ $card->holder_label }} · {{ $card->core_identity_reference }}</span></div><div><small>{{ $card->issued_at->format('d/m/Y H:i') }}</small><b class="{{ strtolower($card->status) }}">{{ $card->status === 'ACTIVE' ? 'Active' : 'Révoquée' }}</b>@if($card->status === 'ACTIVE')<form method="POST" action="{{ route('administration.zumra.card.revoke', $card) }}">@csrf<label>Motif<input name="reason" minlength="10" maxlength="500" required></label><button type="submit">Révoquer</button></form>@endif</div></article>@empty<p>Aucune carte n’est encore délivrée.</p>@endforelse</section>
     </main>
 </x-layouts.portal>

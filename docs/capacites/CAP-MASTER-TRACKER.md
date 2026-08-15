@@ -13,7 +13,8 @@
 | CAP-005 | APPRENTISSAGE | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-003-006-2026-08-14.md` |
 | CAP-006 | TRANSMISSION | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-003-006-2026-08-14.md` |
 | CAP-007 | PROGRAMME ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-007AB-2026-08-14.md` · ouverture marchande live encore fermée |
-| CAP-008 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-008 | CARTE ZUMRA | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | Carte privée, QR signé, vérification publique et états réels |
+| CAP-009 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

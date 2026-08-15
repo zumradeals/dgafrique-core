@@ -49,6 +49,8 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('zumra-membership', static fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('zumra-payment', static fn (Request $request): Limit => Limit::perMinute(3)->by($request->ip()));
         RateLimiter::for('zumra-payment-status', static fn (Request $request): Limit => Limit::perMinute(12)->by($request->ip()));
+        RateLimiter::for('zumra-card-verification', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));
+        RateLimiter::for('zumra-card-revoke', static fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));
         RateLimiter::for('zumra-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('zumra-charter-publish', static fn (Request $request): Limit => Limit::perHour(10)->by($request->ip()));
     }
