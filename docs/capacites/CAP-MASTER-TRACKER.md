@@ -22,7 +22,8 @@
 | CAP-014 | PROJET | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-014-2026-08-15.md` |
 | CAP-015 | MISE EN RELATION PROJET ↔ COMPÉTENCES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-015-2026-08-15.md` |
 | CAP-016 | ACCOMPAGNEMENT DG AFRIQUE | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-016-2026-08-15.md` |
-| CAP-017 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-017 | MATURITÉ | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | — |
+| CAP-018 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
