@@ -7,6 +7,7 @@ use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
 use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
+use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\ZumraProgramMembershipController;
 use App\Http\Controllers\ZumraMembershipPaymentController;
 use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\PeopleDiscoveryController;
+use App\Http\Controllers\RecommendationController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,6 +45,12 @@ Route::get('/personnes', [PeopleDiscoveryController::class, 'index'])
     ->middleware(['core.member', 'throttle:people-discovery'])->name('people.index');
 Route::get('/personnes/{reference}', [PeopleDiscoveryController::class, 'show'])
     ->whereUuid('reference')->middleware(['core.member', 'throttle:people-discovery'])->name('people.show');
+Route::get('/recommandations', [RecommendationController::class, 'index'])
+    ->middleware(['core.member', 'throttle:recommendations'])->name('recommendations.index');
+Route::post('/recommandations/personnes/{reference}/masquer', [RecommendationController::class, 'hide'])
+    ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.hide');
+Route::post('/recommandations/personnes/{reference}/restaurer', [RecommendationController::class, 'restore'])
+    ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.restore');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -68,6 +76,10 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->name('administration.discovery.edit');
     Route::put('/decouverte-personnes', [PeopleDiscoveryConfigurationController::class, 'update'])
         ->middleware('throttle:discovery-configuration')->name('administration.discovery.update');
+    Route::get('/recommandations', [RecommendationConfigurationController::class, 'edit'])
+        ->name('administration.recommendations.edit');
+    Route::put('/recommandations', [RecommendationConfigurationController::class, 'update'])
+        ->middleware('throttle:recommendation-configuration')->name('administration.recommendations.update');
     Route::get('/programme-zumra', [ZumraProgramConfigurationController::class, 'edit'])->name('administration.zumra.edit');
     Route::put('/programme-zumra', [ZumraProgramConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-configuration')->name('administration.zumra.update');

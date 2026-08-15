@@ -15,7 +15,8 @@
 | CAP-007 | PROGRAMME ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-14** | `proofs/CAP-007AB-2026-08-14.md` · ouverture marchande live encore fermée |
 | CAP-008 | CARTE ZUMRA | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-008-2026-08-15.md` |
 | CAP-009 | DÉCOUVERTE DE PERSONNES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-009-2026-08-15.md` |
-| CAP-010 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-010 | RECOMMANDATION | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | Correspondances contextuelles, raisons visibles et contrôle membre |
+| CAP-011 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
