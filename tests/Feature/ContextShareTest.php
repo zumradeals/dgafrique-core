@@ -159,7 +159,7 @@ final class ContextShareTest extends TestCase
         self::assertSame(1, Project::query()->count());
     }
 
-    public function test_member_routes_render_contextual_sharing_without_popularity_mechanics(): void
+    public function test_member_share_routes_render_and_store_without_popularity_mechanics(): void
     {
         $need = $this->need('Besoin partageable par route', Need::VISIBILITY_PUBLIC);
         $target = $this->discoverableProfile('IDN-TARGET', 'Awa Visible');
@@ -191,11 +191,20 @@ final class ContextShareTest extends TestCase
             'target_reference' => 'IDN-TARGET',
             'context_note' => 'Ce besoin peut correspondre à ce que vous cherchez à faire.',
         ]);
+    }
 
-        Http::fake([
-            'core.test/api/v1/sessions/current' => Http::response([], 204),
-        ]);
-        $this->post('/deconnexion')->assertRedirect(route('login'));
+    public function test_member_inbox_route_renders_received_share_with_source_context(): void
+    {
+        $need = $this->need('Besoin partageable par route', Need::VISIBILITY_PUBLIC);
+        $target = $this->discoverableProfile('IDN-TARGET', 'Awa Visible');
+
+        app(ContextShareService::class)->shareNeed(
+            $need,
+            'IDN-OWNER',
+            ContextShare::TARGET_PERSON,
+            $target->discovery_reference,
+            'Ce besoin peut correspondre à ce que vous cherchez à faire.',
+        );
 
         $this->signIn('IDN-TARGET');
         $this->get(route('shares.index'))
