@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Activity\ActivityFeedService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
@@ -13,7 +14,7 @@ use Illuminate\View\View;
 
 final class MemberSpaceController
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ActivityFeedService $activity): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -23,9 +24,10 @@ final class MemberSpaceController
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
         $greetingName = preg_split('/\s+/u', trim($identity->label))[0] ?? $identity->label;
         $profileCompletion = $this->profileCompletion($profile);
+        $activityPreview = $activity->preview($identity->reference, 3);
 
         return view('member.space', compact(
-            'identity', 'profile', 'zumraMembership', 'isAdministrator', 'greetingName', 'profileCompletion'
+            'identity', 'profile', 'zumraMembership', 'isAdministrator', 'greetingName', 'profileCompletion', 'activityPreview'
         ));
     }
 
