@@ -76,7 +76,7 @@ final class ContextCommentTest extends TestCase
         self::assertSame(1, ContextComment::query()->where('context_type', ContextComment::CONTEXT_PROJECT)->count());
     }
 
-    public function test_archived_context_is_read_only_for_authorized_identity_and_hidden_from_outsider(): void
+    public function test_archived_context_is_read_only_for_authorized_identity(): void
     {
         $need = $this->need('Besoin archivé', Need::VISIBILITY_PUBLIC);
         app(ContextCommentService::class)->addNeed($need, 'IDN-OWNER', 'COORDINATION', 'Dernière action avant archivage.');
@@ -91,13 +91,20 @@ final class ContextCommentTest extends TestCase
             'purpose' => 'PRECISION',
             'body' => 'Tentative après archivage.',
         ])->assertStatus(409);
+    }
 
-        $this->post('/deconnexion')
-            ->assertRedirect('/connexion')
-            ->assertSessionMissing('dg_core_member');
-
+    public function test_archived_context_is_hidden_from_outsider(): void
+    {
+        $need = $this->need('Besoin archivé outsider', Need::VISIBILITY_PUBLIC);
+        app(ContextCommentService::class)->addNeed($need, 'IDN-OWNER', 'COORDINATION', 'Dernière action avant archivage.');
+        $need->update(['status' => Need::STATUS_ARCHIVED, 'archived_at' => now()]);
         $this->signIn('IDN-OUTSIDER');
+
         $this->get(route('comments.need', $need))->assertNotFound();
+        $this->post(route('comments.need.store', $need), [
+            'purpose' => 'QUESTION',
+            'body' => 'Tentative outsider après archivage.',
+        ])->assertNotFound();
     }
 
     public function test_suspended_zumra_hides_its_activity_comment_thread(): void
