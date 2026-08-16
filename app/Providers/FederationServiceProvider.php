@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Infrastructure\GamadCore\FederatedProductGateway;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 final class FederationServiceProvider extends ServiceProvider
@@ -20,6 +23,10 @@ final class FederationServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // DG Afrique n'utilise aucun guard Laravel local : la limitation doit
+        // donc rester indépendante de Request::user() et se borner à l'IP.
+        RateLimiter::for('federation-continue', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
+
         $this->loadRoutesFrom(base_path('routes/federation.php'));
     }
 }
