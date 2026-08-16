@@ -57,9 +57,12 @@
                                 <p class="mt-3 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-semibold leading-5 text-slate-600">{{ $item['context'] }}</p>
                             @endif
 
-                            <footer class="mt-5 flex items-center justify-between gap-4 border-t border-slate-100 pt-4">
+                            <footer class="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 pt-4">
                                 <span class="text-xs font-semibold text-slate-400">Information issue d’un événement métier DG Afrique</span>
-                                <a class="shrink-0 text-sm font-black text-sky-700 hover:text-sky-900" href="{{ $item['action_url'] }}">{{ $item['action_label'] }} →</a>
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <a class="text-sm font-black text-emerald-700 hover:text-emerald-900" href="{{ $item['comment_url'] }}">Contribuer →</a>
+                                    <a class="text-sm font-black text-sky-700 hover:text-sky-900" href="{{ $item['action_url'] }}">{{ $item['action_label'] }} →</a>
+                                </div>
                             </footer>
                         </article>
                     @endforeach

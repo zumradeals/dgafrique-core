@@ -26,7 +26,8 @@
 | CAP-018 | LANCEUR DE SATELLITES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-018-2026-08-15.md` |
 | CAP-019 | FIL D’ACTIVITÉ | **VALIDÉ PRÉPRODUCTION — 2026-08-16** | `proofs/CAP-019-2026-08-16.md` |
 | CAP-020 | MESSAGERIE | **VALIDÉ PRÉPRODUCTION — 2026-08-16** | `proofs/CAP-020-2026-08-16.md` |
-| CAP-021 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-021 | COMMENTAIRE | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | — |
+| CAP-022 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 

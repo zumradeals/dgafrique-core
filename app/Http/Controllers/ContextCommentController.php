@@ -1,0 +1,74 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers;
+
+use App\Application\Comments\ContextCommentService;
+use App\Domain\Identity\CoreIdentity;
+use App\Models\ContextComment;
+use App\Models\Need;
+use App\Models\Project;
+use App\Models\ZumraGroup;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+
+final class ContextCommentController
+{
+    public function need(Request $request, Need $need, ContextCommentService $comments): View
+    {
+        return view('comments.context', $comments->needThread($need, $this->identity($request)->reference));
+    }
+
+    public function storeNeed(Request $request, Need $need, ContextCommentService $comments): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $comments->addNeed($need, $this->identity($request)->reference, $data['purpose'], $data['body']);
+
+        return redirect()->route('comments.need', $need)->with('status', 'Contribution ajoutée à ce besoin.');
+    }
+
+    public function project(Request $request, Project $project, ContextCommentService $comments): View
+    {
+        return view('comments.context', $comments->projectThread($project, $this->identity($request)->reference));
+    }
+
+    public function storeProject(Request $request, Project $project, ContextCommentService $comments): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $comments->addProject($project, $this->identity($request)->reference, $data['purpose'], $data['body']);
+
+        return redirect()->route('comments.project', $project)->with('status', 'Contribution ajoutée à ce projet.');
+    }
+
+    public function zumraActivity(Request $request, ZumraGroup $group, ContextCommentService $comments): View
+    {
+        return view('comments.context', $comments->zumraActivityThread($group, $this->identity($request)->reference));
+    }
+
+    public function storeZumraActivity(Request $request, ZumraGroup $group, ContextCommentService $comments): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $comments->addZumraActivity($group, $this->identity($request)->reference, $data['purpose'], $data['body']);
+
+        return redirect()->route('comments.zumra-activity', $group)->with('status', 'Contribution ajoutée à cette activité ZUMRA.');
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'purpose' => ['required', 'string', Rule::in(array_keys(ContextComment::PURPOSES))],
+            'body' => ['required', 'string', 'min:2', 'max:'.ContextCommentService::MAX_BODY_LENGTH],
+        ]);
+    }
+
+    private function identity(Request $request): CoreIdentity
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+
+        return $identity;
+    }
+}

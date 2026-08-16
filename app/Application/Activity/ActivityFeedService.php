@@ -142,6 +142,7 @@ final class ActivityFeedService
                 'context' => $need->capability_label ? 'Capacité recherchée : '.$need->capability_label : null,
                 'action_label' => 'Voir le besoin',
                 'action_url' => route('needs.show', $need),
+                'comment_url' => route('comments.need', $need),
                 'occurred_at' => $event->occurred_at,
             ]);
         }
@@ -201,6 +202,7 @@ final class ActivityFeedService
                 'context' => $context,
                 'action_label' => 'Voir le projet',
                 'action_url' => route('projects.show', $project),
+                'comment_url' => route('comments.project', $project),
                 'occurred_at' => $event->occurred_at,
             ]);
         }
@@ -250,6 +252,7 @@ final class ActivityFeedService
                 'context' => $group->active_member_count > 0 ? $group->active_member_count.' membre(s) actif(s)' : null,
                 'action_label' => 'Voir la ZUMRA',
                 'action_url' => route('zumra.groups.show', $group),
+                'comment_url' => route('comments.zumra-activity', $group),
                 'occurred_at' => $event->occurred_at,
             ]);
         }
