@@ -68,11 +68,14 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('messaging-read', static fn (Request $request): Limit => Limit::perMinute(120)->by($request->ip()));
         RateLimiter::for('messaging-open', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
         RateLimiter::for('messaging-write', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));
+        RateLimiter::for('comments-read', static fn (Request $request): Limit => Limit::perMinute(90)->by($request->ip()));
+        RateLimiter::for('comments-write', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
 
         $this->loadRoutesFrom(base_path('routes/cap016.php'));
         $this->loadRoutesFrom(base_path('routes/cap017.php'));
         $this->loadRoutesFrom(base_path('routes/cap018.php'));
         $this->loadRoutesFrom(base_path('routes/cap019.php'));
         $this->loadRoutesFrom(base_path('routes/cap020.php'));
+        $this->loadRoutesFrom(base_path('routes/cap021.php'));
     }
 }
