@@ -5,6 +5,12 @@
 Pour toute capacité liée à ZUMRA, lire également et respecter intégralement
 [`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`](canon/ZUMRA-DOCTRINE-INVARIANTE.md).
 
+Pour toute modification d’interface, de navigation ou de design, lire **avant de coder** :
+
+- [`docs/design/DESIGN-INVARIANTS.md`](design/DESIGN-INVARIANTS.md) ;
+- [`docs/design/reference/claude-2026-08-16/README.md`](design/reference/claude-2026-08-16/README.md) ;
+- [`docs/design/reference/claude-2026-08-16/DECISIONS.md`](design/reference/claude-2026-08-16/DECISIONS.md).
+
 ## Projet canonique
 
 - dépôt : `zumradeals/dgafrique-core` ;
@@ -12,7 +18,7 @@ Pour toute capacité liée à ZUMRA, lire également et respecter intégralement
 - stack : Laravel, PHP 8.4, PostgreSQL, Blade/Livewire, Tailwind, Alpine.js, Redis ;
 - identité et fédération : GAMAD Core ;
 - paiement : GeniusPay lorsque le CAP concerné l'autorise ;
-- design : dossier `Design/`, référence visuelle haute fidélité à adapter au produit réel.
+- design : `docs/design/DESIGN-INVARIANTS.md` + référence haute fidélité versionnée sous `docs/design/reference/`.
 
 ## Décision de reconstruction
 
@@ -37,16 +43,36 @@ Le produit repart sur une nouvelle implémentation. Par conséquent, aucun CAP n
 5. déployer en préproduction VPS ;
 6. ne marquer VALIDÉ PROD qu'après preuve sur la nouvelle application.
 
-## Design
+## Design — invariant adopté le 16 août 2026
 
-Le handoff Claude fixe la direction visuelle. L'implémentation doit :
+La référence actuelle n’est plus une simple inspiration : elle est un **invariant de produit versionné**.
+
+- DG Afrique est un **réseau social d’action**, pas un lanceur de modules ;
+- ZUMRA est le moteur humain et collectif ;
+- GamaDrive et les futurs satellites sont des **outils spécialisés secondaires**, accessibles sous « Mes outils » ou contextuellement ;
+- Landing, Mon espace et Fil ZUMRA sont les trois interfaces fondatrices ;
+- la palette ivoire / vert profond / cuivre / nuit / safran, la typographie et les matières sont définies dans la référence adoptée ;
+- le blanc pur ne redevient pas le fond structurel dominant ;
+- Mon espace affiche une priorité claire avant les éléments secondaires ;
+- le Fil explique la pertinence et privilégie les actions réelles plutôt que les métriques sociales ;
+- aucune interface ne doit réintroduire likes, followers, score humain ou mécanisme de popularité comme signal de valeur ;
+- les données de démonstration sont conservées comme scénarios UX de référence, mais ne sont jamais seedées ni présentées comme réelles ; elles ne peuvent être rendues qu’en mode Exemple/Démonstration explicitement marqué en environnement non productif.
+
+Le handoff Claude complet est archivé de manière reproductible dans :
+
+`docs/design/reference/claude-2026-08-16/archive/`
+
+Son intégrité est documentée dans `SOURCE-MANIFEST.md`.
+
+Toute divergence substantielle doit être une décision explicite et versionnée ; ne jamais remplacer implicitement la direction par une nouvelle maquette, une préférence ponctuelle ou un commit isolé.
+
+L'implémentation doit également :
 
 - occuper intelligemment les écrans larges au lieu de rester dans une colonne étroite ;
-- utiliser des largeurs de contenu adaptées par section, jusqu'à environ 1600–1760 px lorsque pertinent ;
-- conserver une excellente lisibilité ;
-- proposer de vrais comportements mobile (navigation condensée, drawers, grilles adaptées) ;
-- remplacer tous les placeholders par des états vides honnêtes ou des actifs réels ;
-- ne jamais injecter de faux membres, montants, likes, projets ou partenaires.
+- conserver une excellente lisibilité et de vraies hiérarchies ;
+- proposer de vrais comportements mobile ;
+- afficher des états vides honnêtes lorsque les données réelles sont absentes ;
+- ne jamais injecter de faux membres, montants, paiements, projets ou partenaires dans le métier.
 
 ## Premier gate
 
