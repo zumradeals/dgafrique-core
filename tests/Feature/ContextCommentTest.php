@@ -92,6 +92,10 @@ final class ContextCommentTest extends TestCase
             'body' => 'Tentative après archivage.',
         ])->assertStatus(409);
 
+        $this->post('/deconnexion')
+            ->assertRedirect('/connexion')
+            ->assertSessionMissing('dg_core_member');
+
         $this->signIn('IDN-OUTSIDER');
         $this->get(route('comments.need', $need))->assertNotFound();
     }
