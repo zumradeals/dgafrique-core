@@ -7,6 +7,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
     Route::get('/federation/continue/gamadrive', FederationContinuationController::class)
-        ->middleware(['core.member', 'throttle:10,1'])
+        ->middleware(['core.member', 'throttle:federation-continue'])
         ->name('federation.continue.gamadrive');
 });
