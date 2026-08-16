@@ -183,6 +183,20 @@ final class ContextShareTest extends TestCase
             'context_note' => 'Ce besoin peut correspondre à ce que vous cherchez à faire.',
         ])->assertRedirect(route('shares.need', $need));
 
+        $this->assertDatabaseHas('dg_context_shares', [
+            'source_type' => ContextShare::SOURCE_NEED,
+            'source_reference' => $need->public_reference,
+            'sharer_core_reference' => 'IDN-OWNER',
+            'target_type' => ContextShare::TARGET_PERSON,
+            'target_reference' => 'IDN-TARGET',
+            'context_note' => 'Ce besoin peut correspondre à ce que vous cherchez à faire.',
+        ]);
+
+        Http::fake([
+            'core.test/api/v1/sessions/current' => Http::response([], 204),
+        ]);
+        $this->post('/deconnexion')->assertRedirect(route('login'));
+
         $this->signIn('IDN-TARGET');
         $this->get(route('shares.index'))
             ->assertOk()
