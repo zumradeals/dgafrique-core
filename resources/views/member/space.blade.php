@@ -7,7 +7,7 @@
         </header>
 
         <div class="space-layout">
-            <aside class="space-sidebar"><nav aria-label="Navigation Mon espace"><a class="active nav-blue" href="{{ route('member.space') }}">Vue d’ensemble</a><a class="nav-cyan" href="{{ route('member.profile.edit') }}">Mes capacités</a><a class="nav-blue" href="{{ route('people.index') }}">Découvrir des personnes</a><a class="nav-cyan" href="{{ route('recommendations.index') }}">Mes recommandations</a><a class="nav-amber" href="{{ route('needs.index') }}">Mes besoins</a><span class="nav-blue">Opportunités <small>à venir</small></span><a class="nav-green" href="{{ route('zumra.index') }}">Mes ZUMRA <small>aperçu</small></a><a class="nav-green" href="{{ route('zumra.membership.show') }}">Adhésion ZUMRA</a><a class="nav-green" href="{{ route('zumra.card.show') }}">Ma Carte ZUMRA</a><a class="nav-amber" href="{{ route('projects.index') }}">Mes projets</a><span class="nav-gray">Messages <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span>@if($isAdministrator)<a class="nav-cyan" href="{{ route('administration.profile.edit') }}">Administration</a>@endif</nav></aside>
+            <aside class="space-sidebar"><nav aria-label="Navigation Mon espace"><a class="active nav-blue" href="{{ route('member.space') }}">Vue d’ensemble</a><a class="nav-cyan" href="{{ route('member.profile.edit') }}">Mes capacités</a><a class="nav-blue" href="{{ route('people.index') }}">Découvrir des personnes</a><a class="nav-cyan" href="{{ route('recommendations.index') }}">Mes recommandations</a><a class="nav-cyan" href="{{ route('activity.index') }}">Activité utile</a><a class="nav-amber" href="{{ route('needs.index') }}">Mes besoins</a><span class="nav-blue">Opportunités <small>à venir</small></span><a class="nav-green" href="{{ route('zumra.index') }}">Mes ZUMRA <small>aperçu</small></a><a class="nav-green" href="{{ route('zumra.membership.show') }}">Adhésion ZUMRA</a><a class="nav-green" href="{{ route('zumra.card.show') }}">Ma Carte ZUMRA</a><a class="nav-amber" href="{{ route('projects.index') }}">Mes projets</a><span class="nav-gray">Messages <small>à venir</small></span><span class="nav-gray">Paramètres <small>à venir</small></span>@if($isAdministrator)<a class="nav-cyan" href="{{ route('administration.profile.edit') }}">Administration</a>@endif</nav></aside>
 
             <main class="space-content doctrine-space-content">
                 <section class="dashboard-welcome"><div><p class="eyebrow dark">MON ESPACE D’ACTION</p><h1>Bonjour, {{ $greetingName }}</h1><p>Faites connaître vos capacités, exprimez vos besoins et avancez vers les bonnes opportunités.</p></div><div class="dashboard-identity"><span>Identité reconnue par DG Afrique</span><strong>Compte vérifié</strong></div></section>
@@ -28,7 +28,26 @@
                             <a class="action-card zumra" href="{{ route('zumra.index') }}"><i>Z</i><div><h3>Agir avec ZUMRA</h3><p>Rejoindre une équipe, transmettre et construire un projet collectif.</p><span>Ouvrir l’aperçu →</span></div></a>
                         </div>
 
-                        <section class="activity-empty"><div><span class="section-label">ACTIVITÉ</span><h2>Votre mouvement commencera ici</h2><p>Demandes, invitations, projets et opportunités apparaîtront lorsqu’ils seront réellement raccordés à votre identité.</p></div><div class="activity-lines"><i></i><i></i><i></i></div></section>
+                        <section class="mt-5 rounded-[1.2rem] border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                            <div class="flex flex-wrap items-end justify-between gap-3">
+                                <div><span class="section-label">ACTIVITÉ UTILE</span><h2 class="mt-1 text-xl font-black text-slate-950">Ce qui peut vous faire avancer</h2><p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500">Le fil remonte des événements métier réels et respecte les mêmes droits de visibilité que les besoins et projets.</p></div>
+                                <a class="text-sm font-black text-sky-700 no-underline" href="{{ route('activity.index') }}">Voir toute l’activité →</a>
+                            </div>
+
+                            @if($activityPreview->isEmpty())
+                                <div class="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm leading-6 text-slate-500">Aucun mouvement utile n’est visible pour vous pour le moment. Le fil ne crée pas de contenu artificiel.</div>
+                            @else
+                                <div class="mt-5 grid gap-3">
+                                    @foreach($activityPreview as $item)
+                                        <a class="block rounded-2xl border border-slate-100 bg-slate-50 p-4 no-underline transition hover:border-sky-200 hover:bg-sky-50/40" href="{{ $item['action_url'] }}">
+                                            <div class="flex flex-wrap items-center justify-between gap-2"><span class="text-xs font-black uppercase tracking-wide {{ $item['kind'] === 'NEEDS' ? 'text-amber-700' : ($item['kind'] === 'PROJECTS' ? 'text-sky-700' : 'text-emerald-700') }}">{{ $item['kind_label'] }} · {{ $item['event_label'] }}</span><time class="text-xs font-semibold text-slate-400">{{ $item['occurred_at']->locale('fr')->diffForHumans() }}</time></div>
+                                            <strong class="mt-2 block text-sm text-slate-900">{{ $item['title'] }}</strong>
+                                            <span class="mt-1 block text-xs leading-5 text-slate-500">{{ $item['summary'] }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </section>
                     </section>
 
                     <aside class="dashboard-side-column">

@@ -1,0 +1,259 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Application\Activity;
+
+use App\Application\Needs\NeedService;
+use App\Application\Projects\ProjectMaturityService;
+use App\Application\Projects\ProjectService;
+use App\Models\Need;
+use App\Models\NeedEvent;
+use App\Models\Project;
+use App\Models\ProjectEvent;
+use App\Models\ZumraGroup;
+use App\Models\ZumraGroupEvent;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+
+final class ActivityFeedService
+{
+    public const FILTERS = [
+        'ALL' => 'Tout',
+        'NEEDS' => 'Besoins',
+        'PROJECTS' => 'Projets',
+        'ZUMRA' => 'ZUMRA',
+    ];
+
+    private const PER_PAGE = 12;
+    private const SOURCE_LIMIT = 80;
+
+    private const NEED_EVENTS = [
+        'NEED_PUBLISHED' => ['priority' => 300, 'label' => 'Besoin ouvert'],
+        'NEED_STARTED' => ['priority' => 260, 'label' => 'Besoin en action'],
+        'NEED_RESOLVED' => ['priority' => 120, 'label' => 'Besoin résolu'],
+    ];
+
+    private const PROJECT_EVENTS = [
+        'PROJECT_PROPOSED' => ['priority' => 250, 'label' => 'Nouveau projet'],
+        'PROJECT_ADOPTED' => ['priority' => 240, 'label' => 'Projet adopté'],
+        'PROJECT_IN_PROGRESS' => ['priority' => 230, 'label' => 'Projet en action'],
+        'ACCOMPANIMENT_ACTION_RECORDED' => ['priority' => 220, 'label' => 'Accompagnement réalisé'],
+        'PROJECT_MATURITY_CHANGED' => ['priority' => 210, 'label' => 'Repère de maturité'],
+        'AUTONOMY_PATHWAY_OPENED' => ['priority' => 200, 'label' => 'Préparation à l’autonomie'],
+        'ACCOMPANIMENT_ACTIVATED' => ['priority' => 180, 'label' => 'Accompagnement ouvert'],
+        'PROJECT_COMPLETED' => ['priority' => 130, 'label' => 'Projet terminé'],
+    ];
+
+    private const ZUMRA_EVENTS = [
+        'GROUP_PROPOSED' => ['priority' => 190, 'label' => 'Nouvelle ZUMRA'],
+        'INVITATION_ACCEPTED' => ['priority' => 160, 'label' => 'ZUMRA en mouvement'],
+        'MEMBERSHIP_APPROVED' => ['priority' => 160, 'label' => 'ZUMRA en mouvement'],
+    ];
+
+    public function __construct(
+        private readonly NeedService $needs,
+        private readonly ProjectService $projects,
+    ) {
+    }
+
+    public function paginate(string $actor, string $filter = 'ALL', int $page = 1): LengthAwarePaginator
+    {
+        $filter = isset(self::FILTERS[$filter]) ? $filter : 'ALL';
+        $page = max(1, $page);
+        $items = $this->items($actor, $filter);
+
+        return new LengthAwarePaginator(
+            $items->slice(($page - 1) * self::PER_PAGE, self::PER_PAGE)->values(),
+            $items->count(),
+            self::PER_PAGE,
+            $page,
+            ['path' => route('activity.index'), 'pageName' => 'page'],
+        );
+    }
+
+    public function preview(string $actor, int $limit = 3): Collection
+    {
+        return $this->items($actor, 'ALL', 20)->take(max(1, min($limit, 6)))->values();
+    }
+
+    private function items(string $actor, string $filter, int $sourceLimit = self::SOURCE_LIMIT): Collection
+    {
+        $items = collect();
+
+        if (in_array($filter, ['ALL', 'NEEDS'], true)) {
+            $items = $items->concat($this->needItems($actor, $sourceLimit));
+        }
+        if (in_array($filter, ['ALL', 'PROJECTS'], true)) {
+            $items = $items->concat($this->projectItems($actor, $sourceLimit));
+        }
+        if (in_array($filter, ['ALL', 'ZUMRA'], true)) {
+            $items = $items->concat($this->zumraItems($sourceLimit));
+        }
+
+        return $items->sort(static function (array $left, array $right): int {
+            $priority = $right['priority'] <=> $left['priority'];
+
+            return $priority !== 0
+                ? $priority
+                : $right['occurred_at']->getTimestamp() <=> $left['occurred_at']->getTimestamp();
+        })->values();
+    }
+
+    private function needItems(string $actor, int $limit): Collection
+    {
+        $events = NeedEvent::query()
+            ->whereIn('event', array_keys(self::NEED_EVENTS))
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $needs = Need::query()
+            ->whereIn('id', $events->pluck('need_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->need_id])) {
+                continue;
+            }
+            $seen[$event->need_id] = true;
+
+            /** @var Need|null $need */
+            $need = $needs->get($event->need_id);
+            if (! $need || $need->status === Need::STATUS_ARCHIVED || ! $this->needs->canView($need, $actor)) {
+                continue;
+            }
+
+            $meta = self::NEED_EVENTS[$event->event];
+            $items->push([
+                'key' => 'need:'.$need->id,
+                'kind' => 'NEEDS',
+                'kind_label' => 'Besoin',
+                'event' => $event->event,
+                'event_label' => $meta['label'],
+                'priority' => $meta['priority'],
+                'title' => $need->title,
+                'summary' => Str::limit(trim($need->context), 180),
+                'context' => $need->capability_label ? 'Capacité recherchée : '.$need->capability_label : null,
+                'action_label' => 'Voir le besoin',
+                'action_url' => route('needs.show', $need),
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+
+    private function projectItems(string $actor, int $limit): Collection
+    {
+        $events = ProjectEvent::query()
+            ->whereIn('event', array_keys(self::PROJECT_EVENTS))
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $projects = Project::query()
+            ->whereIn('id', $events->pluck('project_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->project_id])) {
+                continue;
+            }
+            $seen[$event->project_id] = true;
+
+            /** @var Project|null $project */
+            $project = $projects->get($event->project_id);
+            if (! $project || $project->status === Project::STATUS_ARCHIVED || ! $this->projects->canView($project, $actor)) {
+                continue;
+            }
+
+            $meta = self::PROJECT_EVENTS[$event->event];
+            $context = null;
+
+            if ($event->event === 'PROJECT_MATURITY_CHANGED') {
+                $stage = (string) ($event->context['to'] ?? '');
+                $context = isset(ProjectMaturityService::STAGES[$stage])
+                    ? 'Repère actuel : '.ProjectMaturityService::STAGES[$stage]
+                    : null;
+            } elseif ($event->event === 'AUTONOMY_PATHWAY_OPENED') {
+                $context = 'Une structuration autonome est explorée, sans création automatique de satellite.';
+            }
+
+            $items->push([
+                'key' => 'project:'.$project->id,
+                'kind' => 'PROJECTS',
+                'kind_label' => 'Projet',
+                'event' => $event->event,
+                'event_label' => $meta['label'],
+                'priority' => $meta['priority'],
+                'title' => $project->name,
+                'summary' => Str::limit(trim($project->summary), 180),
+                'context' => $context,
+                'action_label' => 'Voir le projet',
+                'action_url' => route('projects.show', $project),
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+
+    private function zumraItems(int $limit): Collection
+    {
+        $events = ZumraGroupEvent::query()
+            ->whereIn('event', array_keys(self::ZUMRA_EVENTS))
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $groups = ZumraGroup::query()
+            ->whereIn('id', $events->pluck('zumra_group_id')->unique())
+            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->zumra_group_id])) {
+                continue;
+            }
+            $seen[$event->zumra_group_id] = true;
+
+            /** @var ZumraGroup|null $group */
+            $group = $groups->get($event->zumra_group_id);
+            if (! $group) {
+                continue;
+            }
+
+            $meta = self::ZUMRA_EVENTS[$event->event];
+            $items->push([
+                'key' => 'zumra:'.$group->id,
+                'kind' => 'ZUMRA',
+                'kind_label' => 'ZUMRA',
+                'event' => $event->event,
+                'event_label' => $meta['label'],
+                'priority' => $meta['priority'],
+                'title' => $group->name,
+                'summary' => Str::limit(trim($group->founding_objective), 180),
+                'context' => $group->active_member_count > 0 ? $group->active_member_count.' membre(s) actif(s)' : null,
+                'action_label' => 'Voir la ZUMRA',
+                'action_url' => route('zumra.groups.show', $group),
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+}

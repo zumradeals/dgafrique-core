@@ -24,7 +24,8 @@
 | CAP-016 | ACCOMPAGNEMENT DG AFRIQUE | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-016-2026-08-15.md` |
 | CAP-017 | MATURITÉ | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-017-2026-08-15.md` |
 | CAP-018 | LANCEUR DE SATELLITES | **VALIDÉ PRÉPRODUCTION — 2026-08-15** | `proofs/CAP-018-2026-08-15.md` |
-| CAP-019 à CAP-084 | Voir index canonique | BLOQUÉS | — |
+| CAP-019 | FIL D’ACTIVITÉ | **IMPLÉMENTÉ — PREUVE VPS REQUISE** | — |
+| CAP-020 à CAP-084 | Voir index canonique | BLOQUÉS | — |
 
 ## Règles
 
