@@ -26,10 +26,13 @@ final class FederationContinuationTest extends TestCase
             ->assertSee('Ouverture de GamaDrive')
             ->assertSee('action="https://gamadrive.dgafrique.com/federation/callback"', false)
             ->assertSee('name="jeton" value="FED-DEMO-TOKEN"', false)
-            ->assertHeader('Cache-Control', 'no-store, max-age=0')
             ->assertHeader('Referrer-Policy', 'no-referrer')
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
             ->assertDontSee('GAMAD Core');
+
+        $cacheControl = (string) $response->headers->get('Cache-Control');
+        $this->assertStringContainsString('no-store', $cacheControl);
+        $this->assertStringContainsString('max-age=0', $cacheControl);
 
         Http::assertSent(fn ($request): bool =>
             $request->method() === 'POST'
