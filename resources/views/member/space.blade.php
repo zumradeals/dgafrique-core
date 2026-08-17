@@ -162,6 +162,13 @@
 
                     <div class="dg-stack--tool">
                         <x-dg.label style="color:#7C8B9C">Mes outils</x-dg.label>
+                        <a href="{{ route('missions.index') }}" style="width:100%;display:flex;align-items:flex-start;gap:12px;text-align:left">
+                            <span class="dg-tool__mark">M</span>
+                            <span>
+                                <strong style="display:block;font-size:15px;color:var(--dg-night)">Mes Missions</strong>
+                                <span class="dg-meta" style="line-height:1.55">À décider, invitations, engagements, à valider, terminées.</span>
+                            </span>
+                        </a>
                         <form method="POST" action="{{ route('federation.continue.gamadrive') }}">
                             @csrf
                             <button type="submit" style="width:100%;display:flex;align-items:flex-start;gap:12px;border:0;background:transparent;text-align:left;font:inherit;cursor:pointer">

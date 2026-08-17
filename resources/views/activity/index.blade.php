@@ -63,7 +63,9 @@
                     <div class="dg-band">Vous ne voyez que ce que votre identité est autorisée à consulter. Un objet privé reste privé, une ZUMRA suspendue n’apparaît pas.</div>
                 @else
                     @foreach($feed as $item)
-                        @if($item['kind'] === 'NEEDS' && $item['event'] === 'NEED_RESOLVED')
+                        @if(($item['card'] ?? null) === 'mission')
+                            <x-dg.feed.mission :item="$item" />
+                        @elseif($item['kind'] === 'NEEDS' && $item['event'] === 'NEED_RESOLVED')
                             <x-dg.feed.resolved :item="$item" />
                         @elseif($item['kind'] === 'NEEDS')
                             <x-dg.feed.need :item="$item" />

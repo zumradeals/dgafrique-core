@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Activity;
 
+use App\Application\Missions\MissionContextRegistry;
+use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectMaturityService;
 use App\Application\Projects\ProjectService;
+use App\Models\Mission;
+use App\Models\MissionAssignment;
+use App\Models\MissionEvent;
 use App\Models\Need;
 use App\Models\NeedEvent;
 use App\Models\Project;
@@ -54,9 +59,17 @@ final class ActivityFeedService
         'MEMBERSHIP_APPROVED' => ['priority' => 160, 'label' => 'ZUMRA en mouvement'],
     ];
 
+    // CAP-069 : événements Mission éligibles au Fil (v0.4 §15). Pas de bruit pour chaque
+    // checklist/édition mineure — seuls ces trois événements de la machine d'états sont projetés.
+    private const MISSION_EVENTS = ['MISSION_OFFICIALIZED', 'MISSION_BLOCKED', 'MISSION_COMPLETED'];
+
+    private const MISSION_CONTEXT_FILTER = ['PROJECT' => 'PROJECTS', 'ZUMRA' => 'ZUMRA', 'NEED' => 'NEEDS'];
+
     public function __construct(
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
+        private readonly MissionContextRegistry $missionContexts,
+        private readonly MissionVisibilityService $missionVisibility,
     ) {
     }
 
@@ -93,6 +106,7 @@ final class ActivityFeedService
         if (in_array($filter, ['ALL', 'ZUMRA'], true)) {
             $items = $items->concat($this->zumraItems($actor, $sourceLimit));
         }
+        $items = $items->concat($this->missionItems($actor, $sourceLimit, $filter));
 
         return $items->sort(static function (array $left, array $right): int {
             $priority = $right['priority'] <=> $left['priority'];
@@ -274,6 +288,84 @@ final class ActivityFeedService
                 'is_active_member' => $memberships->get($group->id) === ZumraGroupMembership::STATUS_ACTIVE,
                 'is_pending' => in_array($memberships->get($group->id), [ZumraGroupMembership::STATUS_REQUESTED, ZumraGroupMembership::STATUS_INVITED], true),
                 'seats' => $this->seats($group),
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * MISSIONS s'intègre au Fil unique : jamais un Fil Missions séparé. Chaque Mission se
+     * range dans le filtre de son contexte d'origine (Projet/ZUMRA/Besoin) ; la visibilité
+     * est revalidée à la projection, jamais héritée d'un état mis en cache.
+     */
+    private function missionItems(string $actor, int $limit, string $filter): Collection
+    {
+        $events = MissionEvent::query()
+            ->whereIn('event', self::MISSION_EVENTS)
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $missions = Mission::query()
+            ->whereIn('id', $events->pluck('mission_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->mission_id])) {
+                continue;
+            }
+            $seen[$event->mission_id] = true;
+
+            /** @var Mission|null $mission */
+            $mission = $missions->get($event->mission_id);
+            if (! $mission || ! $this->missionContexts->has($mission->context_type)) {
+                continue;
+            }
+
+            $kind = self::MISSION_CONTEXT_FILTER[$mission->context_type] ?? null;
+            if ($kind === null || ($filter !== 'ALL' && $filter !== $kind)) {
+                continue;
+            }
+            if (! $this->missionVisibility->canViewMission($mission, $actor)) {
+                continue;
+            }
+
+            $acceptedExecutors = MissionAssignment::query()
+                ->where('mission_id', $mission->id)
+                ->where('status', MissionAssignment::STATUS_ACCEPTED)
+                ->whereIn('role', MissionAssignment::EXECUTION_ROLES)
+                ->count();
+
+            [$label, $priority] = match (true) {
+                $event->event === 'MISSION_BLOCKED' => ['Mission bloquée', 270],
+                $event->event === 'MISSION_COMPLETED' => ['Mission terminée', 130],
+                $mission->status === Mission::STATUS_OPEN && $acceptedExecutors < $mission->min_executors => ['Mission cherche des exécutants', 250],
+                default => ['Mission officialisée', 210],
+            };
+
+            $items->push([
+                'key' => 'mission:'.$mission->id,
+                'kind' => $kind,
+                'kind_label' => 'Mission',
+                'card' => 'mission',
+                'event' => $event->event,
+                'event_label' => $label,
+                'badge_tone' => Mission::STATUS_BADGE_TONES[$mission->status] ?? 'neutral',
+                'priority' => $priority,
+                'title' => $mission->title,
+                'summary' => Str::limit(trim($mission->description), 180),
+                'context' => null,
+                'action_label' => 'Voir la Mission',
+                'action_url' => route('missions.show', $mission),
+                'comment_url' => route('comments.mission', $mission),
+                'share_url' => route('shares.mission', $mission),
+                'can_decide' => false,
                 'occurred_at' => $event->occurred_at,
             ]);
         }
