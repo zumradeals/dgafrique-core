@@ -260,6 +260,12 @@ final class TransmissionWorkflowTest extends TestCase
         $transmission = $workflow->start($transmission, 'IDN-TEACH');
         $this->assertAborts(403, fn () => $workflow->validateByContext($transmission, 'IDN-STRANGER'));
 
+        // Sans trace réelle (aucune contribution, aucune evidence_context), la validation
+        // contextuelle est refusée — même par une autorité légitime.
+        $this->assertAborts(409, fn () => $workflow->validateByContext($transmission, 'IDN-DECIDER'), 'Aucune trace : validation contextuelle refusée.');
+
+        app(\App\Application\Transmission\TransmissionService::class)->addContribution($transmission, 'IDN-TEACH', 'Séance de suivi budgétaire réalisée avec le budget du projet.');
+
         $transmission = $workflow->validateByContext($transmission, 'IDN-DECIDER', 'Réalisation confirmée par le porteur du projet.');
         self::assertSame(Transmission::STATUS_COMPLETED_BY_CONTEXT, $transmission->status);
         self::assertSame('IDN-DECIDER', $transmission->context_validated_by_core_reference);
@@ -285,6 +291,93 @@ final class TransmissionWorkflowTest extends TestCase
         $this->assertAborts(403, fn () => $workflow->officializeContext($transmission, 'IDN-TEACH'), 'Le transmetteur n’est pas responsable de la ZUMRA.');
         $transmission = $workflow->officializeContext($transmission, 'IDN-LEADER');
         self::assertSame('IDN-LEADER', $transmission->context_officialized_by_core_reference);
+    }
+
+    public function test_zumra_participant_loses_operational_access_after_leaving_the_group(): void
+    {
+        $this->activateProgram('IDN-LEADER');
+        $group = $this->group('IDN-LEADER');
+        $teachMembership = ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-TEACH',
+            'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-TEACH', 'joined_at' => now(),
+        ]);
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-LEARN',
+            'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-LEARN', 'joined_at' => now(),
+        ]);
+        $learnerRef = $this->discoverableProfile('IDN-LEARN', 'Apprenant ZUMRA');
+
+        $workflow = app(TransmissionWorkflow::class);
+        $participation = app(TransmissionParticipationService::class);
+        $visibility = app(TransmissionVisibilityService::class);
+
+        $transmission = $workflow->create('IDN-TEACH', TransmissionParticipant::ROLE_TRANSMITTER, [
+            'capability_label' => 'Médiation de conflit', 'learning_objective' => 'Médiatiser un désaccord simple.',
+            'origin_type' => Transmission::ORIGIN_ZUMRA, 'context_type' => Transmission::CONTEXT_ZUMRA, 'context_reference' => $group->public_reference,
+        ]);
+        $p = $participation->invite($transmission, 'IDN-TEACH', $learnerRef, TransmissionParticipant::ROLE_LEARNER);
+        $participation->acceptInvitation($transmission, 'IDN-LEARN', $p);
+        $transmission = $transmission->fresh();
+        self::assertSame(Transmission::STATUS_ACCEPTED, $transmission->status);
+        self::assertTrue($visibility->canView($transmission, 'IDN-TEACH'));
+
+        // IDN-TEACH quitte la ZUMRA rattachée : reste ACCEPTED en base, mais perd l'accès
+        // opérationnel — le raccourci participant/initiateur ne doit jamais contourner ça.
+        $teachMembership->update(['status' => ZumraGroupMembership::STATUS_LEFT]);
+
+        self::assertFalse($visibility->canView($transmission, 'IDN-TEACH'), 'La perte d’accès au contexte porteur retire aussi la visibilité, malgré le statut ACCEPTED en base.');
+        $this->assertAborts(403, fn () => $workflow->start($transmission, 'IDN-TEACH'));
+
+        // Mais quitter proprement reste toujours possible : la sortie n'est jamais bloquée.
+        $ownParticipant = $transmission->participants()->where('core_identity_reference', 'IDN-TEACH')->firstOrFail();
+        $participation->leave($transmission, 'IDN-TEACH', $ownParticipant);
+        self::assertSame(TransmissionParticipant::STATUS_WITHDRAWN, $ownParticipant->fresh()->status);
+    }
+
+    public function test_zumra_outsider_cannot_be_invited_to_a_zumra_context_transmission(): void
+    {
+        $this->activateProgram('IDN-LEADER');
+        $group = $this->group('IDN-LEADER');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-TEACH',
+            'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-TEACH', 'joined_at' => now(),
+        ]);
+        $outsiderRef = $this->discoverableProfile('IDN-OUTSIDER', 'Étranger à la ZUMRA');
+
+        $workflow = app(TransmissionWorkflow::class);
+        $participation = app(TransmissionParticipationService::class);
+
+        $transmission = $workflow->create('IDN-TEACH', TransmissionParticipant::ROLE_TRANSMITTER, [
+            'capability_label' => 'Gestion de conflit', 'learning_objective' => 'Gérer un désaccord au sein du groupe.',
+            'origin_type' => Transmission::ORIGIN_ZUMRA, 'context_type' => Transmission::CONTEXT_ZUMRA, 'context_reference' => $group->public_reference,
+        ]);
+
+        // Une invitation ne fabrique jamais un accès ZUMRA : un outsider non membre reste refusé.
+        $this->assertAborts(422, fn () => $participation->invite($transmission, 'IDN-TEACH', $outsiderRef, TransmissionParticipant::ROLE_LEARNER));
+    }
+
+    public function test_standalone_transmission_without_context_keeps_working_normally(): void
+    {
+        $workflow = app(TransmissionWorkflow::class);
+        $participation = app(TransmissionParticipationService::class);
+        $learnerRef = $this->discoverableProfile('IDN-LSTAND', 'Apprenant Autonome');
+
+        $transmission = $workflow->create('IDN-TSTAND', TransmissionParticipant::ROLE_TRANSMITTER, [
+            'capability_label' => 'Chant traditionnel', 'learning_objective' => 'Chanter un morceau traditionnel simple.',
+            'origin_type' => Transmission::ORIGIN_NONE,
+        ]);
+        self::assertNull($transmission->context_type);
+
+        $p = $participation->invite($transmission, 'IDN-TSTAND', $learnerRef, TransmissionParticipant::ROLE_LEARNER);
+        $participation->acceptInvitation($transmission, 'IDN-LSTAND', $p);
+        $transmission = $workflow->start($transmission->fresh(), 'IDN-TSTAND');
+        $workflow->declareDone($transmission, 'IDN-TSTAND');
+        $workflow->declareDone($transmission, 'IDN-LSTAND');
+        $transmission = $workflow->confirmCompletion($transmission, 'IDN-LSTAND', 'Le morceau a été appris et chanté ensemble.');
+        self::assertSame(Transmission::STATUS_COMPLETED_CONFIRMED, $transmission->status);
     }
 
     public function test_mission_context_link_and_need_context_visibility_only(): void

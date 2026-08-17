@@ -218,9 +218,10 @@ final class TransmissionService
         return $participants->filter(fn (TransmissionParticipant $p): bool => $p->transmission && $this->visibility->canView($p->transmission, $actor));
     }
 
+    /** Participation acceptée ET visibilité courante (fiche §16) — jamais l'une sans l'autre. */
     private function assertAcceptedParticipant(Transmission $transmission, string $actor): void
     {
-        abort_unless($this->workflow->isAcceptedParticipant($transmission, $actor), 403);
+        $this->workflow->assertCurrentAccess($transmission, $actor);
     }
 
     private function lockAndAssertNotTerminal(Transmission $transmission): Transmission

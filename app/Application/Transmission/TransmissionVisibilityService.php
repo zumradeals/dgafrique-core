@@ -16,13 +16,19 @@ final class TransmissionVisibilityService
 {
     public function __construct(private readonly TransmissionContextService $contexts) {}
 
+    /**
+     * Fiche §16 : context.canView(actor) ET visibilité propre, jamais l'un sans l'autre. Le
+     * contexte est revalidé EN PREMIER quand il existe : un participant ou l'initiateur ne
+     * contourne jamais une perte d'accès au contexte porteur (ex. quitter la ZUMRA rattachée)
+     * via le raccourci participant/initiateur.
+     */
     public function canView(Transmission $transmission, string $actor): bool
     {
-        if ($this->isParticipant($transmission, $actor) || hash_equals($transmission->proposed_by_core_reference, $actor)) {
-            return true;
-        }
-
         if ($transmission->context_type === null) {
+            if ($this->isParticipant($transmission, $actor) || hash_equals($transmission->proposed_by_core_reference, $actor)) {
+                return true;
+            }
+
             // Sans contexte, seule la visibilité PROGRAM a un sens (audience = Programme
             // ZUMRA) ; CONTEXT n'a pas de contexte à rejoindre, donc jamais vraie ici.
             return $transmission->visibility === Transmission::VISIBILITY_PROGRAM && $this->hasActiveProgramMembership($actor);
@@ -31,6 +37,10 @@ final class TransmissionVisibilityService
         $context = $this->contexts->resolve($transmission->context_type, $transmission->context_reference);
         if (! $this->contexts->canView($transmission->context_type, $context, $actor)) {
             return false;
+        }
+
+        if ($this->isParticipant($transmission, $actor) || hash_equals($transmission->proposed_by_core_reference, $actor)) {
+            return true;
         }
 
         return match ($transmission->visibility) {

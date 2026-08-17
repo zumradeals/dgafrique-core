@@ -21,6 +21,7 @@ final class TransmissionParticipationService
     public function __construct(
         private readonly TransmissionVisibilityService $visibility,
         private readonly TransmissionWorkflow $workflow,
+        private readonly TransmissionContextService $contexts,
     ) {}
 
     public function offer(Transmission $transmission, string $actor, string $role): TransmissionParticipant
@@ -62,6 +63,18 @@ final class TransmissionParticipationService
 
         $subject = $this->resolveInvitableSubject($subjectDiscoveryReference);
         abort_if($subject === $actor, 422, 'Vous ne pouvez pas vous inviter vous-même.');
+
+        // Une invitation ne fabrique jamais un accès Projet/ZUMRA/Mission/Besoin : la
+        // personne résolue doit déjà pouvoir voir le contexte rattaché, sinon l'invitation
+        // est refusée (même garde-fou que MissionAssignmentService::invite()).
+        if ($transmission->context_type !== null) {
+            $context = $this->contexts->resolve($transmission->context_type, $transmission->context_reference);
+            abort_unless(
+                $this->contexts->canView($transmission->context_type, $context, $subject),
+                422,
+                'Cette personne n’a pas accès au contexte de cette Transmission : une invitation ne peut pas lui fabriquer ce droit.'
+            );
+        }
 
         return DB::transaction(function () use ($transmission, $actor, $subject, $role): TransmissionParticipant {
             $locked = Transmission::query()->whereKey($transmission->id)->lockForUpdate()->firstOrFail();

@@ -32,7 +32,7 @@ final class TransmissionMatchingEngine
     public function recommend(Transmission $transmission, string $viewer, string $wantedRole): array
     {
         abort_unless(in_array($wantedRole, TransmissionParticipant::ROLES, true), 422, 'Rôle recherché invalide.');
-        abort_unless($this->workflow->isAcceptedParticipant($transmission, $viewer), 403);
+        $this->workflow->assertCurrentAccess($transmission, $viewer);
 
         $searchedKind = $wantedRole === TransmissionParticipant::ROLE_TRANSMITTER
             ? CapabilityStatement::KIND_TRANSMISSION
@@ -87,7 +87,7 @@ final class TransmissionMatchingEngine
 
     public function hide(Transmission $transmission, string $viewer, string $subjectDiscoveryReference): void
     {
-        abort_unless($this->workflow->isAcceptedParticipant($transmission, $viewer), 403);
+        $this->workflow->assertCurrentAccess($transmission, $viewer);
 
         $profile = PersonProfile::query()
             ->where('discovery_reference', $subjectDiscoveryReference)

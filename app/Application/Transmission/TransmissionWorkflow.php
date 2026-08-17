@@ -22,7 +22,10 @@ use Illuminate\Support\Str;
  */
 final class TransmissionWorkflow
 {
-    public function __construct(private readonly TransmissionContextService $contexts) {}
+    public function __construct(
+        private readonly TransmissionContextService $contexts,
+        private readonly TransmissionVisibilityService $visibility,
+    ) {}
 
     public function create(string $actor, string $initiatorRole, array $data): Transmission
     {
@@ -106,7 +109,7 @@ final class TransmissionWorkflow
         return $this->applyTransition(
             $transmission, $actor, [Transmission::STATUS_ACCEPTED], Transmission::STATUS_IN_PROGRESS, 'TRANSMISSION_STARTED',
             authorize: function (Transmission $t, string $a): void {
-                abort_unless($this->isAcceptedParticipant($t, $a), 403);
+                $this->assertCurrentAccess($t, $a);
             },
             mutate: static fn (): array => ['started_at' => now()],
         );
@@ -142,6 +145,8 @@ final class TransmissionWorkflow
     /** Déclarer sa part terminée ne clôture jamais seul la Transmission (§10, §5.E). */
     public function declareDone(Transmission $transmission, string $actor, ?string $note = null): TransmissionParticipant
     {
+        $this->assertCurrentAccess($transmission, $actor);
+
         return DB::transaction(function () use ($transmission, $actor, $note): TransmissionParticipant {
             $locked = Transmission::query()->whereKey($transmission->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === Transmission::STATUS_IN_PROGRESS, 409, 'Cette Transmission n’est pas en cours.');
@@ -169,13 +174,18 @@ final class TransmissionWorkflow
         return $this->applyTransition(
             $transmission, $actor, [Transmission::STATUS_IN_PROGRESS], Transmission::STATUS_COMPLETED_CONFIRMED, 'TRANSMISSION_COMPLETED',
             authorize: function (Transmission $t, string $a): void {
-                abort_unless($this->isAcceptedParticipant($t, $a), 403);
+                $this->assertCurrentAccess($t, $a);
                 abort_unless($this->hasCompletionQuorum($t), 409, 'Au moins un transmetteur et un apprenant doivent avoir déclaré leur part terminée avant de confirmer.');
             },
             mutate: static fn (): array => ['completed_at' => now(), 'completion_summary' => $summary],
         );
     }
 
+    /**
+     * Validation par le contexte (fiche §5.E) : exige au minimum une trace réelle — une
+     * contribution déposée ou une preuve de contexte — sinon 409. Ne certifie jamais rien
+     * automatiquement ; ceci reste une exigence de trace minimale, pas une preuve garantie.
+     */
     public function validateByContext(Transmission $transmission, string $actor, ?string $note = null): Transmission
     {
         return $this->applyTransition(
@@ -184,6 +194,11 @@ final class TransmissionWorkflow
                 abort_unless(in_array($t->context_type, Transmission::OFFICIALIZABLE_CONTEXTS, true), 422, 'Cette Transmission n’a pas de contexte pouvant valider sa réalisation.');
                 $context = $this->contexts->resolve($t->context_type, $t->context_reference);
                 abort_unless($this->contexts->canOfficialize($t->context_type, $context, $a), 403);
+                abort_unless(
+                    $t->contributions()->exists() || ! empty($t->evidence_context),
+                    409,
+                    'Aucune trace n’existe encore pour cette Transmission : au moins une contribution ou une preuve de contexte est requise avant validation.'
+                );
             },
             mutate: static fn (): array => [
                 'completed_at' => now(),
@@ -235,6 +250,19 @@ final class TransmissionWorkflow
             'context' => $context,
             'occurred_at' => now(),
         ]);
+    }
+
+    /**
+     * Vérification d'accès courant centrale (fiche §16, revue post-implémentation) pour les
+     * mutations opérationnelles principales : participation acceptée ET visibilité actuelle,
+     * jamais l'une sans l'autre. Un participant qui a perdu l'accès au contexte porteur (ex.
+     * a quitté la ZUMRA rattachée) ne peut plus agir normalement, même encore ACCEPTED en
+     * base — mais reste libre de decline/withdraw/leave (jamais gated ici, fiche §16).
+     */
+    public function assertCurrentAccess(Transmission $transmission, string $actor, ?string $role = null): void
+    {
+        abort_unless($this->isAcceptedParticipant($transmission, $actor, $role), 403);
+        abort_unless($this->visibility->canView($transmission, $actor), 403);
     }
 
     public function isAcceptedParticipant(Transmission $transmission, string $actor, ?string $role = null): bool
