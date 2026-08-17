@@ -105,7 +105,7 @@
                         </x-dg.fieldset>
                     @endif
 
-                    @if(in_array($mission->status, ['IN_PROGRESS'], true))
+                    @if($mission->status === 'IN_PROGRESS' && $canReportBlocker)
                         <x-dg.fieldset>
                             <legend><x-dg.label>Signaler un blocage</x-dg.label></legend>
                             <form method="POST" action="{{ route('missions.block', $mission) }}" style="display:flex;flex-direction:column;gap:10px">
@@ -124,7 +124,9 @@
                                 <button type="submit" class="dg-btn dg-btn--quiet" style="align-self:flex-start">Signaler ce blocage</button>
                             </form>
                         </x-dg.fieldset>
+                    @endif
 
+                    @if($mission->status === 'IN_PROGRESS' && $canConsolidateSubmission)
                         <x-dg.fieldset>
                             <legend><x-dg.label>Soumettre le résultat</x-dg.label></legend>
                             <p class="dg-hint">S’il existe un coordinateur accepté, lui seul consolide et soumet. Sinon, tout exécutant accepté peut soumettre.</p>
@@ -144,14 +146,16 @@
                                     <div class="dg-note">
                                         <strong style="color:var(--dg-ink)">{{ $blocker->type }}</strong>
                                         <p style="margin:6px 0">{{ $blocker->description }}</p>
-                                        <div style="display:flex;gap:10px;flex-wrap:wrap">
-                                            <form method="POST" action="{{ route('missions.blockers.resolve', [$mission, $blocker]) }}" style="display:flex;gap:8px;align-items:center;flex:1;min-width:220px">
-                                                @csrf
-                                                <input type="text" name="resolution_note" class="dg-input" placeholder="Note de résolution (facultatif)" style="flex:1">
-                                                <button type="submit" class="dg-btn dg-btn--primary">Résoudre</button>
-                                            </form>
-                                            <a href="{{ route('missions.blockers.express-need.create', [$mission, $blocker]) }}" class="dg-btn dg-btn--quiet">Exprimer ce manque comme besoin →</a>
-                                        </div>
+                                        @if($canReportBlocker)
+                                            <div style="display:flex;gap:10px;flex-wrap:wrap">
+                                                <form method="POST" action="{{ route('missions.blockers.resolve', [$mission, $blocker]) }}" style="display:flex;gap:8px;align-items:center;flex:1;min-width:220px">
+                                                    @csrf
+                                                    <input type="text" name="resolution_note" class="dg-input" placeholder="Note de résolution (facultatif)" style="flex:1">
+                                                    <button type="submit" class="dg-btn dg-btn--primary">Résoudre</button>
+                                                </form>
+                                                <a href="{{ route('missions.blockers.express-need.create', [$mission, $blocker]) }}" class="dg-btn dg-btn--quiet">Exprimer ce manque comme besoin →</a>
+                                            </div>
+                                        @endif
                                     </div>
                                 @empty
                                     <x-dg.empty><span>Aucun blocage actif enregistré.</span></x-dg.empty>
@@ -271,13 +275,19 @@
                         <p class="dg-hint" style="margin-top:6px">La checklist ne clôture jamais automatiquement la Mission, même complétée à 100 %.</p>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
                             @forelse($mission->checklistItems->sortBy('position') as $item)
-                                <form method="PUT" action="{{ route('missions.checklist.update', [$mission, $item]) }}" style="display:flex;align-items:center;gap:10px">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="completed" value="{{ $item->completed_at ? '0' : '1' }}">
-                                    <button type="submit" class="dg-btn dg-btn--quiet" style="padding:6px 10px">{{ $item->completed_at ? '✓' : '—' }}</button>
+                                <div style="display:flex;align-items:center;gap:10px">
+                                    @if($canToggleChecklist)
+                                        <form method="PUT" action="{{ route('missions.checklist.update', [$mission, $item]) }}" style="display:contents">
+                                            @csrf @method('PUT')
+                                            <input type="hidden" name="completed" value="{{ $item->completed_at ? '0' : '1' }}">
+                                            <button type="submit" class="dg-btn dg-btn--quiet" style="padding:6px 10px">{{ $item->completed_at ? '✓' : '—' }}</button>
+                                        </form>
+                                    @else
+                                        <span style="padding:6px 10px">{{ $item->completed_at ? '✓' : '—' }}</span>
+                                    @endif
                                     <span style="font-size:14px;{{ $item->completed_at ? 'color:var(--dg-faint);text-decoration:line-through' : 'color:var(--dg-ink)' }}">{{ $item->label }}</span>
                                     @if($item->is_required)<span class="dg-meta">obligatoire</span>@endif
-                                </form>
+                                </div>
                             @empty
                                 <x-dg.empty><span>Aucun élément de checklist.</span></x-dg.empty>
                             @endforelse

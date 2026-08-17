@@ -50,6 +50,24 @@ final class MissionController
             : null;
         $myAssignment = $mission->assignments->firstWhere('core_identity_reference', $identity->reference);
 
+        // CAP-072 : la fiche ne montre un formulaire d'action que si l'acteur peut
+        // réellement l'exécuter — ces indicateurs reflètent exactement les autorités
+        // vérifiées côté service (MissionBlockerService/MissionNeedLinkService/
+        // MissionSubmissionService), sans devenir une deuxième source d'autorité : le
+        // backend reste la seule décision réelle, ceci n'est qu'un affichage cohérent.
+        $canOfficialize = $adapter->canOfficialize($context, $identity->reference);
+        $canManageAssignments = $adapter->canManageAssignments($context, $identity->reference);
+        $isAcceptedExecutionRole = $myAssignment?->status === 'ACCEPTED'
+            && in_array($myAssignment->role, ['EXECUTOR', 'CO_EXECUTOR', 'COORDINATOR'], true);
+        $canReportBlocker = $canManageAssignments || $isAcceptedExecutionRole;
+
+        $hasAcceptedCoordinator = $mission->assignments->contains(fn ($a): bool => $a->status === 'ACCEPTED' && $a->role === 'COORDINATOR');
+        $canConsolidateSubmission = $hasAcceptedCoordinator
+            ? ($myAssignment?->status === 'ACCEPTED' && $myAssignment->role === 'COORDINATOR')
+            : ($myAssignment?->status === 'ACCEPTED' && in_array($myAssignment->role, ['EXECUTOR', 'CO_EXECUTOR'], true));
+
+        $canToggleChecklist = $canOfficialize || $myAssignment?->status === 'ACCEPTED';
+
         $participantLabels = [];
         foreach ($mission->assignments as $assignment) {
             $reference = $assignment->core_identity_reference;
@@ -71,11 +89,14 @@ final class MissionController
             'mission' => $mission,
             'contextLabel' => $adapter->label($context),
             'contextUrl' => $this->contextUrl($mission->context_type, $context),
-            'canOfficialize' => $adapter->canOfficialize($context, $identity->reference),
-            'canManageAssignments' => $adapter->canManageAssignments($context, $identity->reference),
+            'canOfficialize' => $canOfficialize,
+            'canManageAssignments' => $canManageAssignments,
             'canValidate' => $adapter->canValidate($context, $identity->reference),
             'canCancel' => $adapter->canCancel($context, $identity->reference),
             'canReopen' => $adapter->canReopen($context, $identity->reference),
+            'canReportBlocker' => $canReportBlocker,
+            'canConsolidateSubmission' => $canConsolidateSubmission,
+            'canToggleChecklist' => $canToggleChecklist,
             'children' => $children,
         ]);
     }
