@@ -6,6 +6,7 @@ namespace App\Application\Sharing;
 
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
+use App\Application\Proof\ProofVisibilityService;
 use App\Application\Projects\ProjectService;
 use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\ContextShare;
@@ -13,6 +14,7 @@ use App\Models\Mission;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\Project;
+use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
@@ -31,6 +33,7 @@ final class ContextShareService
         private readonly ProjectService $projects,
         private readonly MissionVisibilityService $missionVisibility,
         private readonly TransmissionVisibilityService $transmissionVisibility,
+        private readonly ProofVisibilityService $proofVisibility,
     ) {}
 
     public function needComposer(Need $need, string $actor): array
@@ -69,6 +72,18 @@ final class ContextShareService
     public function shareTransmission(Transmission $transmission, string $actor, string $targetType, string $targetReference, string $context): ContextShare
     {
         return $this->share($transmission, $actor, $targetType, $targetReference, $context);
+    }
+
+    public function proofComposer(Proof $proof, string $actor): array
+    {
+        $this->assertShareable($proof, $actor);
+
+        return $this->composer($proof, $actor, route('shares.proof.store', $proof));
+    }
+
+    public function shareProof(Proof $proof, string $actor, string $targetType, string $targetReference, string $context): ContextShare
+    {
+        return $this->share($proof, $actor, $targetType, $targetReference, $context);
     }
 
     public function shareNeed(Need $need, string $actor, string $targetType, string $targetReference, string $context): ContextShare
@@ -120,7 +135,7 @@ final class ContextShareService
         ];
     }
 
-    private function composer(Need|Project|Mission|Transmission $source, string $actor, string $storeUrl): array
+    private function composer(Need|Project|Mission|Transmission|Proof $source, string $actor, string $storeUrl): array
     {
         $people = PersonProfile::query()
             ->where('core_identity_reference', '!=', $actor)
@@ -160,7 +175,7 @@ final class ContextShareService
         ];
     }
 
-    private function share(Need|Project|Mission|Transmission $source, string $actor, string $targetType, string $targetReference, string $context): ContextShare
+    private function share(Need|Project|Mission|Transmission|Proof $source, string $actor, string $targetType, string $targetReference, string $context): ContextShare
     {
         $this->assertShareable($source, $actor);
 
@@ -193,7 +208,7 @@ final class ContextShareService
         ]);
     }
 
-    private function personTarget(Need|Project|Mission|Transmission $source, string $actor, string $publicReference): string
+    private function personTarget(Need|Project|Mission|Transmission|Proof $source, string $actor, string $publicReference): string
     {
         $profile = PersonProfile::query()
             ->where('discovery_reference', $publicReference)
@@ -219,7 +234,7 @@ final class ContextShareService
         return $group->public_reference;
     }
 
-    private function assertShareable(Need|Project|Mission|Transmission $source, string $actor): void
+    private function assertShareable(Need|Project|Mission|Transmission|Proof $source, string $actor): void
     {
         abort_unless($this->canView($source, $actor), 404);
 
@@ -229,22 +244,25 @@ final class ContextShareService
             abort_if($source->status === Project::STATUS_ARCHIVED, 409, 'Un projet archivé ne circule plus comme possibilité d’action.');
         } elseif ($source instanceof Mission) {
             abort_if(in_array($source->status, Mission::TERMINAL_STATUSES, true) && $source->status !== Mission::STATUS_COMPLETED, 409, 'Cette Mission ne circule plus comme possibilité d’action.');
-        } else {
+        } elseif ($source instanceof Transmission) {
             abort_if(
                 in_array($source->status, Transmission::TERMINAL_STATUSES, true) && ! in_array($source->status, [Transmission::STATUS_COMPLETED_CONFIRMED, Transmission::STATUS_COMPLETED_BY_CONTEXT], true),
                 409,
                 'Cette Transmission ne circule plus comme possibilité d’action.'
             );
+        } else {
+            abort_if($source->archived_at !== null, 409, 'Cette preuve archivée ne circule plus comme possibilité d’action.');
         }
     }
 
-    private function canView(Need|Project|Mission|Transmission $source, string $actor): bool
+    private function canView(Need|Project|Mission|Transmission|Proof $source, string $actor): bool
     {
         return match (true) {
             $source instanceof Need => $this->needs->canView($source, $actor),
             $source instanceof Project => $this->projects->canView($source, $actor),
             $source instanceof Mission => $this->missionVisibility->canViewMission($source, $actor),
-            default => $this->transmissionVisibility->canView($source, $actor),
+            $source instanceof Transmission => $this->transmissionVisibility->canView($source, $actor),
+            default => $this->proofVisibility->canView($source, $actor),
         };
     }
 
@@ -263,10 +281,11 @@ final class ContextShareService
             ContextShare::SOURCE_PROJECT => Project::query()->where('public_reference', $share->source_reference)->first(),
             ContextShare::SOURCE_MISSION => Mission::query()->where('public_reference', $share->source_reference)->first(),
             ContextShare::SOURCE_TRANSMISSION => Transmission::query()->where('public_reference', $share->source_reference)->first(),
+            ContextShare::SOURCE_PROOF => Proof::query()->where('public_reference', $share->source_reference)->first(),
             default => null,
         };
 
-        if (!$source instanceof Need && !$source instanceof Project && !$source instanceof Mission && !$source instanceof Transmission) {
+        if (!$source instanceof Need && !$source instanceof Project && !$source instanceof Mission && !$source instanceof Transmission && !$source instanceof Proof) {
             return null;
         }
         if (!$this->canView($source, $actor)) {
@@ -288,7 +307,7 @@ final class ContextShareService
         ];
     }
 
-    private function descriptor(Need|Project|Mission|Transmission $source): array
+    private function descriptor(Need|Project|Mission|Transmission|Proof $source): array
     {
         if ($source instanceof Need) {
             return [
@@ -323,13 +342,24 @@ final class ContextShareService
             ];
         }
 
+        if ($source instanceof Transmission) {
+            return [
+                'type' => ContextShare::SOURCE_TRANSMISSION,
+                'reference' => $source->public_reference,
+                'label' => 'Transmission',
+                'title' => $source->capability_label,
+                'summary' => Str::limit(trim($source->learning_objective), 260),
+                'url' => route('transmissions.show', $source),
+            ];
+        }
+
         return [
-            'type' => ContextShare::SOURCE_TRANSMISSION,
+            'type' => ContextShare::SOURCE_PROOF,
             'reference' => $source->public_reference,
-            'label' => 'Transmission',
-            'title' => $source->capability_label,
-            'summary' => Str::limit(trim($source->learning_objective), 260),
-            'url' => route('transmissions.show', $source),
+            'label' => 'Preuve',
+            'title' => $source->title,
+            'summary' => Str::limit(trim($source->description), 260),
+            'url' => route('proofs.show', $source),
         ];
     }
 

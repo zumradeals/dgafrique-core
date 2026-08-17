@@ -10,6 +10,7 @@ use App\Models\ContextComment;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
+use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Http\RedirectResponse;
@@ -82,6 +83,19 @@ final class ContextCommentController
         $comments->addTransmission($transmission, $this->identity($request)->reference, $data['purpose'], $data['body']);
 
         return redirect()->route('comments.transmission', $transmission)->with('status', 'Contribution ajoutée à cette Transmission.');
+    }
+
+    public function proof(Request $request, Proof $proof, ContextCommentService $comments): View
+    {
+        return view('comments.context', $comments->proofThread($proof, $this->identity($request)->reference));
+    }
+
+    public function storeProof(Request $request, Proof $proof, ContextCommentService $comments): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $comments->addProof($proof, $this->identity($request)->reference, $data['purpose'], $data['body']);
+
+        return redirect()->route('comments.proof', $proof)->with('status', 'Contribution ajoutée à cette preuve.');
     }
 
     private function validated(Request $request): array
