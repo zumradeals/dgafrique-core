@@ -9,6 +9,7 @@ use App\Application\Missions\MissionService;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Application\Sharing\ContextShareService;
+use App\Application\Transmission\TransmissionService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Need;
 use App\Models\PersonProfile;
@@ -30,6 +31,7 @@ final class MemberSpaceController
         RecommendationConfiguration $recommendationConfiguration,
         ContextShareService $shares,
         MissionService $missions,
+        TransmissionService $transmissions,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -59,8 +61,9 @@ final class MemberSpaceController
             ->first();
 
         $nextMissionAction = $missions->nextAction($identity->reference);
+        $nextTransmissionAction = $transmissions->nextAction($identity->reference);
 
-        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $activityPreview, $profile);
+        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $nextTransmissionAction, $activityPreview, $profile);
 
         $usedKey = $priority['source_key'] ?? null;
         $rest = $activityPreview->reject(fn (array $item): bool => $item['key'] === $usedKey);
@@ -108,6 +111,7 @@ final class MemberSpaceController
         ?Project $ownProject,
         ?ZumraProgramMembership $zumraMembership,
         ?array $nextMissionAction,
+        ?array $nextTransmissionAction,
         Collection $activityPreview,
         ?PersonProfile $profile,
     ): ?array {
@@ -147,6 +151,16 @@ final class MemberSpaceController
                 'heading' => $nextMissionAction['heading'],
                 'body' => $nextMissionAction['body'],
                 'primary' => $nextMissionAction['primary'],
+                'secondary' => null,
+            ];
+        }
+
+        if ($nextTransmissionAction) {
+            return [
+                'label' => 'Aujourd’hui — une seule chose compte',
+                'heading' => $nextTransmissionAction['heading'],
+                'body' => $nextTransmissionAction['body'],
+                'primary' => $nextTransmissionAction['primary'],
                 'secondary' => null,
             ];
         }

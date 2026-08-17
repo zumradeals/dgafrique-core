@@ -7,11 +7,13 @@ namespace App\Application\Comments;
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
+use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\ContextComment;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\Project;
+use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -25,6 +27,7 @@ final class ContextCommentService
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
         private readonly MissionVisibilityService $missionVisibility,
+        private readonly TransmissionVisibilityService $transmissionVisibility,
     ) {
     }
 
@@ -99,6 +102,30 @@ final class ContextCommentService
     public function addMission(Mission $mission, string $actor, string $purpose, string $body): ContextComment
     {
         $thread = $this->missionThread($mission, $actor);
+
+        return $this->add($thread['context'], $actor, $purpose, $body);
+    }
+
+    public function transmissionThread(Transmission $transmission, string $actor): array
+    {
+        abort_unless($this->transmissionVisibility->canView($transmission, $actor), 404);
+
+        return $this->thread([
+            'type' => ContextComment::CONTEXT_TRANSMISSION,
+            'reference' => $transmission->public_reference,
+            'label' => 'Transmission',
+            'title' => $transmission->capability_label,
+            'summary' => Str::limit(trim($transmission->learning_objective), 240),
+            'back_url' => route('transmissions.show', $transmission),
+            'back_label' => 'Retour à la Transmission',
+            'can_comment' => ! in_array($transmission->status, Transmission::TERMINAL_STATUSES, true),
+            'closed_text' => 'Cette Transmission est terminée : les contributions existantes restent lisibles aux personnes encore autorisées, mais le fil est en lecture seule.',
+        ], $actor);
+    }
+
+    public function addTransmission(Transmission $transmission, string $actor, string $purpose, string $body): ContextComment
+    {
+        $thread = $this->transmissionThread($transmission, $actor);
 
         return $this->add($thread['context'], $actor, $purpose, $body);
     }

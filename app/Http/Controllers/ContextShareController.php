@@ -10,6 +10,7 @@ use App\Models\ContextShare;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
+use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -97,6 +98,30 @@ final class ContextShareController
             $share->wasRecentlyCreated
                 ? 'Partage transmis avec son contexte d’origine.'
                 : 'Cette Mission avait déjà été transmise à cette destination. Aucun doublon n’a été créé.',
+        );
+    }
+
+    public function transmission(Request $request, Transmission $transmission, ContextShareService $shares): View
+    {
+        return view('shares.create', $shares->transmissionComposer($transmission, $this->identity($request)->reference));
+    }
+
+    public function storeTransmission(Request $request, Transmission $transmission, ContextShareService $shares): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $share = $shares->shareTransmission(
+            $transmission,
+            $this->identity($request)->reference,
+            $data['target_type'],
+            $data['target_reference'],
+            $data['context_note'],
+        );
+
+        return redirect()->route('shares.transmission', $transmission)->with(
+            'status',
+            $share->wasRecentlyCreated
+                ? 'Partage transmis avec son contexte d’origine.'
+                : 'Cette Transmission avait déjà été transmise à cette destination. Aucun doublon n’a été créé.',
         );
     }
 

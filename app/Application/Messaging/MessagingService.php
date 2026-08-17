@@ -7,6 +7,7 @@ namespace App\Application\Messaging;
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
+use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\MessageConversation;
 use App\Models\MessageEntry;
 use App\Models\MessageParticipant;
@@ -16,6 +17,8 @@ use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
+use App\Models\Transmission;
+use App\Models\TransmissionParticipant;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -33,6 +36,7 @@ final class MessagingService
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
         private readonly MissionVisibilityService $missionVisibility,
+        private readonly TransmissionVisibilityService $transmissionVisibility,
     ) {
     }
 
@@ -175,6 +179,38 @@ final class MessagingService
             'Mission · '.$mission->title,
             MessageConversation::CONTEXT_MISSION,
             $mission->public_reference,
+            $actor,
+            true,
+        );
+    }
+
+    /**
+     * La conversation garde le contexte Transmission mais ne devient jamais la source de
+     * vérité de son statut (fiche §21) : elle coordonne, elle ne statue pas.
+     */
+    public function openTransmission(string $actor, Transmission $transmission): MessageConversation
+    {
+        abort_unless($this->transmissionVisibility->canView($transmission, $actor), 404);
+        abort_if(in_array($transmission->status, Transmission::TERMINAL_STATUSES, true), 409, 'Cette Transmission est terminée.');
+
+        $participants = TransmissionParticipant::query()
+            ->where('transmission_id', $transmission->id)
+            ->where('status', TransmissionParticipant::STATUS_ACCEPTED)
+            ->pluck('core_identity_reference')
+            ->push($transmission->proposed_by_core_reference)
+            ->push($actor)
+            ->filter()
+            ->unique()
+            ->values();
+
+        abort_if($participants->count() < 2, 409, 'Aucun autre interlocuteur n’est disponible pour cette Transmission.');
+
+        return $this->ensureConversation(
+            MessageConversation::KIND_GROUP,
+            $participants->all(),
+            'Transmission · '.$transmission->capability_label,
+            MessageConversation::CONTEXT_TRANSMISSION,
+            $transmission->public_reference,
             $actor,
             true,
         );
@@ -327,6 +363,7 @@ final class MessagingService
             MessageConversation::CONTEXT_INVITATION => $this->canAccessInvitationContext($conversation, $actor),
             MessageConversation::CONTEXT_PROJECT => $this->canAccessProjectContext($conversation, $actor),
             MessageConversation::CONTEXT_MISSION => $this->canAccessMissionContext($conversation, $actor),
+            MessageConversation::CONTEXT_TRANSMISSION => $this->canAccessTransmissionContext($conversation, $actor),
             MessageConversation::CONTEXT_DG_AFRIQUE => $this->canAccessSupportContext($conversation, $actor),
             null => true,
             default => false,
@@ -446,6 +483,13 @@ final class MessagingService
         return $mission !== null && $this->missionVisibility->canViewMission($mission, $actor);
     }
 
+    private function canAccessTransmissionContext(MessageConversation $conversation, string $actor): bool
+    {
+        $transmission = Transmission::query()->where('public_reference', $conversation->context_reference)->first();
+
+        return $transmission !== null && $this->transmissionVisibility->canView($transmission, $actor);
+    }
+
     private function canAccessSupportContext(MessageConversation $conversation, string $actor): bool
     {
         return $conversation->context_reference === $actor
@@ -478,6 +522,10 @@ final class MessagingService
         if ($conversation->context_type === MessageConversation::CONTEXT_MISSION) {
             $mission = Mission::query()->where('public_reference', $conversation->context_reference)->first();
             return ['label' => $mission ? 'Mission · '.$mission->title : 'Mission', 'url' => $mission ? route('missions.show', $mission) : null, 'can_manage_participants' => false];
+        }
+        if ($conversation->context_type === MessageConversation::CONTEXT_TRANSMISSION) {
+            $transmission = Transmission::query()->where('public_reference', $conversation->context_reference)->first();
+            return ['label' => $transmission ? 'Transmission · '.$transmission->capability_label : 'Transmission', 'url' => $transmission ? route('transmissions.show', $transmission) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_DG_AFRIQUE) {
             return ['label' => 'DG Afrique', 'url' => route('member.space'), 'can_manage_participants' => false];

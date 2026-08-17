@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Profile;
 
 use App\Models\CapabilityStatement;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 final class CapabilityStatementSynchronizer
@@ -78,5 +79,23 @@ final class CapabilityStatementSynchronizer
     public static function normalize(string $label): string
     {
         return mb_substr(Str::of($label)->ascii()->lower()->squish()->toString(), 0, 200);
+    }
+
+    /**
+     * Apparie deux collections de CapabilityStatement par normalized_label — utilisé par
+     * PersonRecommendationEngine (CAP-010) et TransmissionMatchingEngine (Transmission §14)
+     * pour ne jamais dupliquer la même logique d'appariement LEARNING/TRANSMISSION.
+     *
+     * @param Collection<int, CapabilityStatement> $left
+     * @param Collection<int, CapabilityStatement> $right
+     * @return list<string>
+     */
+    public static function matchingLabels(Collection $left, Collection $right): array
+    {
+        $rightLabels = $right->pluck('label', 'normalized_label');
+
+        return $left->filter(static fn (CapabilityStatement $statement): bool => $rightLabels->has($statement->normalized_label))
+            ->map(static fn (CapabilityStatement $statement): string => (string) $rightLabels->get($statement->normalized_label))
+            ->unique()->values()->all();
     }
 }

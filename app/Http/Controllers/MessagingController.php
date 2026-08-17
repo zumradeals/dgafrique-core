@@ -10,6 +10,7 @@ use App\Models\MessageConversation;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
+use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +63,13 @@ final class MessagingController
     public function openMission(Request $request, Mission $mission, MessagingService $messaging): RedirectResponse
     {
         $conversation = $messaging->openMission($this->identity($request)->reference, $mission);
+
+        return redirect()->route('messages.show', $conversation);
+    }
+
+    public function openTransmission(Request $request, Transmission $transmission, MessagingService $messaging): RedirectResponse
+    {
+        $conversation = $messaging->openTransmission($this->identity($request)->reference, $transmission);
 
         return redirect()->route('messages.show', $conversation);
     }

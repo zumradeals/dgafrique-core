@@ -9,6 +9,7 @@ use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectMaturityService;
 use App\Application\Projects\ProjectService;
+use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionEvent;
@@ -16,6 +17,8 @@ use App\Models\Need;
 use App\Models\NeedEvent;
 use App\Models\Project;
 use App\Models\ProjectEvent;
+use App\Models\Transmission;
+use App\Models\TransmissionEvent;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupEvent;
 use App\Models\ZumraGroupMembership;
@@ -65,11 +68,20 @@ final class ActivityFeedService
 
     private const MISSION_CONTEXT_FILTER = ['PROJECT' => 'PROJECTS', 'ZUMRA' => 'ZUMRA', 'NEED' => 'NEEDS'];
 
+    // Transmission (CAP-006) : mêmes trois événements-charnière que Missions (fiche §19),
+    // repliés dans le filtre de leur contexte porteur. Une Transmission sans contexte
+    // rattaché (context_type = null) reste réelle mais n'a pas de bucket de Fil à rejoindre
+    // — elle est visible via Mon espace/le lien direct, pas dans le Fil partagé.
+    private const TRANSMISSION_EVENTS = ['TRANSMISSION_PROPOSED', 'TRANSMISSION_ACCEPTED', 'TRANSMISSION_COMPLETED'];
+
+    private const TRANSMISSION_CONTEXT_FILTER = ['PROJECT' => 'PROJECTS', 'ZUMRA' => 'ZUMRA', 'NEED' => 'NEEDS'];
+
     public function __construct(
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
         private readonly MissionContextRegistry $missionContexts,
         private readonly MissionVisibilityService $missionVisibility,
+        private readonly TransmissionVisibilityService $transmissionVisibility,
     ) {
     }
 
@@ -107,6 +119,7 @@ final class ActivityFeedService
             $items = $items->concat($this->zumraItems($actor, $sourceLimit));
         }
         $items = $items->concat($this->missionItems($actor, $sourceLimit, $filter));
+        $items = $items->concat($this->transmissionItems($actor, $sourceLimit, $filter));
 
         return $items->sort(static function (array $left, array $right): int {
             $priority = $right['priority'] <=> $left['priority'];
@@ -365,6 +378,77 @@ final class ActivityFeedService
                 'action_url' => route('missions.show', $mission),
                 'comment_url' => route('comments.mission', $mission),
                 'share_url' => route('shares.mission', $mission),
+                'can_decide' => false,
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * TRANSMISSION s'intègre au Fil unique : jamais un Fil Transmission séparé (fiche §19).
+     * Chaque Transmission rattachée à un contexte se range dans le filtre de ce contexte ;
+     * la visibilité est revalidée à la projection, jamais héritée d'un état mis en cache.
+     */
+    private function transmissionItems(string $actor, int $limit, string $filter): Collection
+    {
+        $events = TransmissionEvent::query()
+            ->whereIn('event', self::TRANSMISSION_EVENTS)
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $transmissions = Transmission::query()
+            ->whereIn('id', $events->pluck('transmission_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->transmission_id])) {
+                continue;
+            }
+            $seen[$event->transmission_id] = true;
+
+            /** @var Transmission|null $transmission */
+            $transmission = $transmissions->get($event->transmission_id);
+            if (! $transmission || $transmission->context_type === null) {
+                continue;
+            }
+
+            $kind = self::TRANSMISSION_CONTEXT_FILTER[$transmission->context_type] ?? null;
+            if ($kind === null || ($filter !== 'ALL' && $filter !== $kind)) {
+                continue;
+            }
+            if (! $this->transmissionVisibility->canView($transmission, $actor)) {
+                continue;
+            }
+
+            [$label, $priority] = match ($event->event) {
+                'TRANSMISSION_ACCEPTED' => ['Transmission acceptée', 220],
+                'TRANSMISSION_COMPLETED' => ['Transmission terminée', 130],
+                default => ['Transmission proposée', 240],
+            };
+
+            $items->push([
+                'key' => 'transmission:'.$transmission->id,
+                'kind' => $kind,
+                'kind_label' => 'Transmission',
+                'card' => 'transmission',
+                'event' => $event->event,
+                'event_label' => $label,
+                'badge_tone' => Transmission::STATUS_BADGE_TONES[$transmission->status] ?? 'neutral',
+                'priority' => $priority,
+                'title' => $transmission->capability_label,
+                'summary' => Str::limit(trim($transmission->learning_objective), 180),
+                'context' => null,
+                'action_label' => 'Voir la Transmission',
+                'action_url' => route('transmissions.show', $transmission),
+                'comment_url' => route('comments.transmission', $transmission),
+                'share_url' => route('shares.transmission', $transmission),
                 'can_decide' => false,
                 'occurred_at' => $event->occurred_at,
             ]);

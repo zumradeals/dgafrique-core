@@ -15,6 +15,7 @@ final class ContextComment extends Model
     public const CONTEXT_PROJECT = 'PROJECT';
     public const CONTEXT_ZUMRA_ACTIVITY = 'ZUMRA_ACTIVITY';
     public const CONTEXT_MISSION = 'MISSION';
+    public const CONTEXT_TRANSMISSION = 'TRANSMISSION';
 
     public const PURPOSES = [
         'QUESTION' => 'Question',

@@ -65,6 +65,8 @@
                     @foreach($feed as $item)
                         @if(($item['card'] ?? null) === 'mission')
                             <x-dg.feed.mission :item="$item" />
+                        @elseif(($item['card'] ?? null) === 'transmission')
+                            <x-dg.feed.transmission :item="$item" />
                         @elseif($item['kind'] === 'NEEDS' && $item['event'] === 'NEED_RESOLVED')
                             <x-dg.feed.resolved :item="$item" />
                         @elseif($item['kind'] === 'NEEDS')

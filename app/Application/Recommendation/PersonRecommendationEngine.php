@@ -82,19 +82,19 @@ final class PersonRecommendationEngine
         $priority = 999;
 
         if ($configuration['learning_transmission']) {
-            foreach ($this->matchingLabels($viewerByKind->get(CapabilityStatement::KIND_LEARNING, collect()), $candidateByKind->get(CapabilityStatement::KIND_TRANSMISSION, collect())) as $label) {
+            foreach (CapabilityStatementSynchronizer::matchingLabels($viewerByKind->get(CapabilityStatement::KIND_LEARNING, collect()), $candidateByKind->get(CapabilityStatement::KIND_TRANSMISSION, collect())) as $label) {
                 $reasons[] = "Vous souhaitez apprendre « {$label} » et cette personne propose de le transmettre.";
                 $priority = min($priority, 10);
             }
         }
         if ($configuration['transmission_learning']) {
-            foreach ($this->matchingLabels($viewerByKind->get(CapabilityStatement::KIND_TRANSMISSION, collect()), $candidateByKind->get(CapabilityStatement::KIND_LEARNING, collect())) as $label) {
+            foreach (CapabilityStatementSynchronizer::matchingLabels($viewerByKind->get(CapabilityStatement::KIND_TRANSMISSION, collect()), $candidateByKind->get(CapabilityStatement::KIND_LEARNING, collect())) as $label) {
                 $reasons[] = "Vous proposez de transmettre « {$label} » et cette personne souhaite l’apprendre.";
                 $priority = min($priority, 20);
             }
         }
         if ($configuration['shared_capability']) {
-            foreach ($this->matchingLabels($viewerByKind->get(CapabilityStatement::KIND_POSSESSED, collect()), $candidateByKind->get(CapabilityStatement::KIND_POSSESSED, collect())) as $label) {
+            foreach (CapabilityStatementSynchronizer::matchingLabels($viewerByKind->get(CapabilityStatement::KIND_POSSESSED, collect()), $candidateByKind->get(CapabilityStatement::KIND_POSSESSED, collect())) as $label) {
                 $reasons[] = "Vous partagez la capacité « {$label} » et pourriez échanger vos expériences.";
                 $priority = min($priority, 30);
             }
@@ -117,16 +117,6 @@ final class PersonRecommendationEngine
         }
 
         return [array_values(array_unique($reasons)), $priority];
-    }
-
-    /** @return list<string> */
-    private function matchingLabels(Collection $left, Collection $right): array
-    {
-        $rightLabels = $right->pluck('label', 'normalized_label');
-
-        return $left->filter(static fn (CapabilityStatement $statement): bool => $rightLabels->has($statement->normalized_label))
-            ->map(static fn (CapabilityStatement $statement): string => (string) $rightLabels->get($statement->normalized_label))
-            ->unique()->values()->all();
     }
 
     /** @param list<string> $left @param list<string> $right @return list<string> */
