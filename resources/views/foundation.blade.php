@@ -7,26 +7,28 @@
 <x-layouts.portal title="DG Afrique — le réseau où les capacités deviennent des actions">
 <div class="dg">
     <header class="dg-topbar" style="border-radius:0">
-        <a href="{{ route('landing') }}" class="flex items-center gap-2.5" style="color:inherit">
-            <span class="dg-topbar__mark">D</span>
-            <strong style="font-size:16px">DG Afrique</strong>
-        </a>
-        <nav aria-label="Navigation" class="hidden md:flex" style="margin-left:8px">
-            <a href="#reseau">Le réseau</a>
-            <a href="#zumra">ZUMRA</a>
-            <a href="#besoins-projets">Besoins et projets</a>
-            <a href="#outils">Outils</a>
-        </nav>
-        <div class="ml-auto flex items-center gap-3.5">
-            <a href="{{ route('login') }}" style="color:#EFE6D6;font-size:14px;font-weight:600">Se connecter</a>
-            <x-dg.btn variant="saffron" :href="route('register')">Créer mon compte</x-dg.btn>
+        <div class="dg-landing-container flex items-center" style="gap:28px">
+            <a href="{{ route('landing') }}" class="flex items-center gap-2.5" style="color:inherit">
+                <span class="dg-topbar__mark">D</span>
+                <strong style="font-size:16px">DG Afrique</strong>
+            </a>
+            <nav aria-label="Navigation" class="hidden md:flex" style="margin-left:8px">
+                <a href="#reseau">Le réseau</a>
+                <a href="#zumra">ZUMRA</a>
+                <a href="#besoins-projets">Besoins et projets</a>
+                <a href="#outils">Outils</a>
+            </nav>
+            <div class="ml-auto flex items-center gap-3.5">
+                <a href="{{ route('login') }}" style="color:#EFE6D6;font-size:14px;font-weight:600">Se connecter</a>
+                <x-dg.btn variant="saffron" :href="route('register')">Créer mon compte</x-dg.btn>
+            </div>
         </div>
     </header>
 
     {{-- Hero --}}
     <section style="position:relative;background:var(--dg-forest);color:var(--dg-on-deep-text);overflow:hidden">
         <div style="position:absolute;inset:0;background:var(--dg-motif-deep)"></div>
-        <div class="grid gap-10 lg:gap-14 lg:!grid-cols-[1.05fr_.95fr] lg:!items-center lg:!py-24 lg:!px-10" style="position:relative;padding:44px 20px 56px">
+        <div class="grid gap-10 lg:gap-14 lg:!grid-cols-[1.05fr_.95fr] lg:!items-center lg:!py-24 lg:!px-10 dg-landing-container" style="position:relative;padding:44px 20px 56px">
             <div class="flex flex-col gap-5 lg:gap-6.5">
                 <x-dg.label tone="saffron">Développement Global Afrique</x-dg.label>
                 <h1 class="dg-display dg-display--hero" style="color:var(--dg-on-deep-title);max-width:14ch">Vos capacités deviennent des actions.</h1>
@@ -44,7 +46,7 @@
     </section>
 
     {{-- Comment une capacité devient une action --}}
-    <section id="reseau" style="padding:56px 20px 20px" class="lg:!py-20 lg:!px-10">
+    <section id="reseau" style="padding:56px 20px 20px" class="lg:!py-20 lg:!px-10 dg-landing-container">
         <div class="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-4" style="margin-bottom:32px">
             <h2 class="dg-display dg-display--section" style="max-width:20ch">Comment une capacité devient une action</h2>
             <span style="font-size:15px;color:var(--dg-muted);max-width:40ch" class="lg:text-right">Un seul mouvement, six moments. Chacun existe déjà comme objet réel du produit.</span>
@@ -68,7 +70,7 @@
     </section>
 
     {{-- Exemples --}}
-    <section id="besoins-projets" style="padding:40px 20px" class="lg:!py-16 lg:!px-10">
+    <section id="besoins-projets" style="padding:40px 20px" class="lg:!py-16 lg:!px-10 dg-landing-container">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             <x-dg.card>
                 <div style="display:flex;flex-direction:column;gap:14px">
@@ -98,7 +100,7 @@
     {{-- ZUMRA --}}
     <section id="zumra" style="position:relative;background:var(--dg-forest);color:var(--dg-on-deep-text);overflow:hidden">
         <div style="position:absolute;inset:0;background:var(--dg-motif-deep)"></div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 lg:!py-24 lg:!px-10" style="position:relative;padding:56px 20px">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 lg:!py-24 lg:!px-10 dg-landing-container" style="position:relative;padding:56px 20px">
             <div class="flex flex-col gap-5">
                 <x-dg.label tone="saffron">Le moteur humain</x-dg.label>
                 <h2 class="dg-display dg-display--section" style="color:var(--dg-on-deep-title);max-width:16ch">Une ZUMRA, c’est une équipe qui s’engage vraiment.</h2>
@@ -130,30 +132,32 @@
 
     {{-- Outils --}}
     <section id="outils" style="padding:56px 20px;background:var(--dg-sand)" class="lg:!py-16 lg:!px-10">
-        <div class="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-3" style="margin-bottom:24px">
-            <h2 class="dg-display lg:!text-[38px]" style="font-size:32px">Des outils, quand l’action en a besoin</h2>
-            <span style="font-size:14px;color:var(--dg-muted);max-width:44ch" class="lg:text-right">Les outils spécialisés ne sont pas le produit. Ils s’ouvrent depuis un projet, au moment où il en a réellement besoin.</span>
-        </div>
-        <div class="flex flex-col sm:flex-row gap-4">
-            <div style="flex:1;min-width:260px;background:var(--dg-card);border:1px solid var(--dg-line);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px">
-                <span class="dg-tool__mark" style="width:44px;height:44px;border-radius:13px;font-size:14px">GD</span>
-                <div>
-                    <strong style="display:block;font-size:15px;color:var(--dg-forest)">GamaDrive</strong>
-                    <span class="dg-meta">Les documents d’un projet, à leur place</span>
-                </div>
+        <div class="dg-landing-container">
+            <div class="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-3" style="margin-bottom:24px">
+                <h2 class="dg-display lg:!text-[38px]" style="font-size:32px">Des outils, quand l’action en a besoin</h2>
+                <span style="font-size:14px;color:var(--dg-muted);max-width:44ch" class="lg:text-right">Les outils spécialisés ne sont pas le produit. Ils s’ouvrent depuis un projet, au moment où il en a réellement besoin.</span>
             </div>
-            <div style="flex:1;min-width:260px;border:1px dashed var(--dg-line-dashed);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px;color:var(--dg-faint)">
-                <span style="width:44px;height:44px;border-radius:13px;border:1px dashed var(--dg-line-dashed)"></span>
-                <div>
-                    <strong style="display:block;font-size:15px">Futurs outils</strong>
-                    <span style="font-size:13px">Ajoutés lorsqu’un besoin réel les appelle</span>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <div style="flex:1;min-width:260px;background:var(--dg-card);border:1px solid var(--dg-line);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px">
+                    <span class="dg-tool__mark" style="width:44px;height:44px;border-radius:13px;font-size:14px">GD</span>
+                    <div>
+                        <strong style="display:block;font-size:15px;color:var(--dg-forest)">GamaDrive</strong>
+                        <span class="dg-meta">Les documents d’un projet, à leur place</span>
+                    </div>
+                </div>
+                <div style="flex:1;min-width:260px;border:1px dashed var(--dg-line-dashed);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px;color:var(--dg-faint)">
+                    <span style="width:44px;height:44px;border-radius:13px;border:1px dashed var(--dg-line-dashed)"></span>
+                    <div>
+                        <strong style="display:block;font-size:15px">Futurs outils</strong>
+                        <span style="font-size:13px">Ajoutés lorsqu’un besoin réel les appelle</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     {{-- Ce que nous ne ferons pas --}}
-    <section style="padding:56px 20px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center" class="lg:!py-24">
+    <section style="padding:56px 20px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center" class="lg:!py-24 dg-landing-container">
         <x-dg.label tone="copper">Ce que nous ne ferons pas</x-dg.label>
         <h2 class="dg-display lg:!text-[52px]" style="font-size:34px;line-height:1.1;max-width:20ch">Pas de likes. Pas de classement. Pas de course à l’attention.</h2>
         <p style="margin:0;font-size:16px;line-height:1.7;color:var(--dg-text);max-width:64ch">Personne n’est noté ici. Le fil s’arrête quand il n’a plus rien d’utile à dire. Ce qui compte, c’est qu’une capacité rencontre un besoin et qu’il en sorte quelque chose de réel.</p>
@@ -162,32 +166,34 @@
 
     {{-- Footer --}}
     <footer style="padding:44px 20px 32px;background:var(--dg-forest);color:var(--dg-on-deep-muted)" class="lg:!py-14 lg:!px-10">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            <div style="grid-column:1 / -1" class="lg:!col-span-1">
-                <div class="flex items-center gap-2.5" style="margin-bottom:10px">
-                    <span class="dg-topbar__mark" style="width:28px;height:28px;font-size:15px">D</span>
-                    <strong style="font-size:15px;color:var(--dg-on-deep-title)">DG Afrique</strong>
+        <div class="dg-landing-container">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div style="grid-column:1 / -1" class="lg:!col-span-1">
+                    <div class="flex items-center gap-2.5" style="margin-bottom:10px">
+                        <span class="dg-topbar__mark" style="width:28px;height:28px;font-size:15px">D</span>
+                        <strong style="font-size:15px;color:var(--dg-on-deep-title)">DG Afrique</strong>
+                    </div>
+                    <span style="font-size:13px;line-height:1.6;max-width:30ch;display:block">Le réseau où les capacités deviennent des actions.</span>
                 </div>
-                <span style="font-size:13px;line-height:1.6;max-width:30ch;display:block">Le réseau où les capacités deviennent des actions.</span>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">Le réseau</strong>
+                    <a href="{{ route('login', ['next' => route('people.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Personnes</a>
+                    <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Besoins</a>
+                    <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Projets</a>
+                </div>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">ZUMRA</strong>
+                    <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Le programme</a>
+                    <a href="{{ route('login', ['next' => route('zumra.groups.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Les ZUMRA</a>
+                </div>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">Compte</strong>
+                    <a href="{{ route('register') }}" style="color:var(--dg-on-deep-muted)">Créer mon compte</a>
+                    <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Se connecter</a>
+                </div>
             </div>
-            <div class="flex flex-col gap-2" style="font-size:13px">
-                <strong style="color:var(--dg-on-deep-title)">Le réseau</strong>
-                <a href="{{ route('login', ['next' => route('people.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Personnes</a>
-                <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Besoins</a>
-                <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Projets</a>
-            </div>
-            <div class="flex flex-col gap-2" style="font-size:13px">
-                <strong style="color:var(--dg-on-deep-title)">ZUMRA</strong>
-                <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Le programme</a>
-                <a href="{{ route('login', ['next' => route('zumra.groups.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Les ZUMRA</a>
-            </div>
-            <div class="flex flex-col gap-2" style="font-size:13px">
-                <strong style="color:var(--dg-on-deep-title)">Compte</strong>
-                <a href="{{ route('register') }}" style="color:var(--dg-on-deep-muted)">Créer mon compte</a>
-                <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Se connecter</a>
-            </div>
+            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
         </div>
-        <div style="max-width:1600px;margin:28px auto 0;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
     </footer>
 </div>
 </x-layouts.portal>

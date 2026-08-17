@@ -288,6 +288,15 @@
 .dg-maturity i[data-state='done'] { background: var(--dg-forest-action); }
 .dg-maturity i[data-state='current'] { background: var(--dg-saffron); }
 
+/* ---------- Landing — conteneur desktop (Phase 2 correction) ----------
+   Les fonds de section restent full-width ; ce conteneur borne uniquement le contenu.
+   Sans effet sous 1200px (mobile inchangé) : max-width dépasse toujours la largeur d'écran. */
+
+.dg-landing-container { max-width: 1200px; margin-left: auto; margin-right: auto; width: 100%; }
+@media (min-width: 1280px) {
+    .dg-landing-container { max-width: 1240px; }
+}
+
 /* ---------- Pages (liste / fiche) — phase 2 ---------- */
 
 .dg-page { max-width: 1600px; margin: 0 auto; padding: 28px 20px 48px; }
