@@ -40,6 +40,11 @@ Route::middleware('web')->group(function (): void {
         ->middleware(['core.member', 'throttle:messaging-open'])
         ->name('messages.mission');
 
+    Route::post('/messages/transmissions/{transmission}', [MessagingController::class, 'openTransmission'])
+        ->whereUuid('transmission')
+        ->middleware(['core.member', 'throttle:messaging-open'])
+        ->name('messages.transmission');
+
     Route::post('/messages/dg-afrique', [MessagingController::class, 'openSupport'])
         ->middleware(['core.member', 'throttle:messaging-open'])
         ->name('messages.support');

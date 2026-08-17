@@ -44,4 +44,14 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('mission')
         ->middleware(['core.member', 'throttle:shares-write'])
         ->name('shares.mission.store');
+
+    Route::get('/partages/transmissions/{transmission}', [ContextShareController::class, 'transmission'])
+        ->whereUuid('transmission')
+        ->middleware(['core.member', 'throttle:shares-read'])
+        ->name('shares.transmission');
+
+    Route::post('/partages/transmissions/{transmission}', [ContextShareController::class, 'storeTransmission'])
+        ->whereUuid('transmission')
+        ->middleware(['core.member', 'throttle:shares-write'])
+        ->name('shares.transmission.store');
 });

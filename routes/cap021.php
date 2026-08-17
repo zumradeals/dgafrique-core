@@ -45,4 +45,14 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('mission')
         ->middleware(['core.member', 'throttle:comments-write'])
         ->name('comments.mission.store');
+
+    Route::get('/commentaires/transmissions/{transmission}', [ContextCommentController::class, 'transmission'])
+        ->whereUuid('transmission')
+        ->middleware(['core.member', 'throttle:comments-read'])
+        ->name('comments.transmission');
+
+    Route::post('/commentaires/transmissions/{transmission}', [ContextCommentController::class, 'storeTransmission'])
+        ->whereUuid('transmission')
+        ->middleware(['core.member', 'throttle:comments-write'])
+        ->name('comments.transmission.store');
 });
