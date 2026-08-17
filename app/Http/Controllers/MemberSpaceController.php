@@ -171,6 +171,9 @@ final class MemberSpaceController
             return 0;
         }
 
+        // Le consentement d'orientation est volontaire et révocable (CAP-004) : il ne fait pas
+        // partie des critères de complétion, pour qu'un refus ou un retrait ne réduise jamais ce
+        // pourcentage informatif.
         $completed = [
             filled($profile->country_code) || filled($profile->city),
             filled($profile->phone),
@@ -185,7 +188,6 @@ final class MemberSpaceController
             filled($profile->intentions),
             filled($profile->participation_mode),
             filled($profile->collaboration_preferences),
-            $profile->orientation_consent,
         ];
 
         return (int) round((count(array_filter($completed)) / count($completed)) * 100);

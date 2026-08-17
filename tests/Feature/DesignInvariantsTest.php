@@ -138,6 +138,9 @@ final class DesignInvariantsTest extends TestCase
         $this->get('/espace')
             ->assertOk()
             ->assertSee('Rien ne réclame une décision maintenant.')
+            // Le consentement d'orientation ne fait pas partie des critères de complétion : avec
+            // tous les autres champs du fixture remplis, le profil reste affiché comme complet.
+            ->assertSee('profil 100 %')
             ->assertDontSee('Continuer votre profil')
             ->assertDontSee('Continuer mon profil')
             ->assertDontSee('Déclarez une chose que vous savez faire.')
