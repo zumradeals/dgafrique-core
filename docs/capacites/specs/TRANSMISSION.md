@@ -1,14 +1,14 @@
 # FICHE D'IMPLÉMENTATION TRANSVERSALE — TRANSMISSION
 
-**Statut :** CONCEPTION
-**Version :** 0.1
+**Statut :** READY FOR IMPLEMENTATION
+**Version :** 1.0
 **Racine référentielle :** CAP-006 — TRANSMISSION
 **Expression produit :** TRANSMISSION
 **Nouveau CAP :** non
 **Nature :** module transversal natif de DG Afrique, construit sur la déclaration existante CAP-005/CAP-006
-**Base de conception :** référentiel des 84 capacités, doctrine canonique ZUMRA (`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`), invariants de design (`docs/design/DESIGN-INVARIANTS.md`), fiches courtes existantes `CAP-005-apprentissage.md` / `CAP-006-transmission.md`, et le précédent architectural MISSIONS (`docs/capacites/specs/MISSIONS.md`, `MISSIONS-v0.5-FINAL.md`).
+**Base de conception :** référentiel des 84 capacités, doctrine canonique ZUMRA (`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`), invariants de design (`docs/design/DESIGN-INVARIANTS.md`), fiches courtes existantes `CAP-005-apprentissage.md` / `CAP-006-transmission.md`, le précédent architectural MISSIONS (`docs/capacites/specs/MISSIONS.md`), et les 5 décisions métier validées le 2026-08-17.
 
-Ce document est un **contrat d'implémentation**, pas une source d'inspiration. Il ne contient encore aucun code : il prépare le module complet avant tout codage, conformément à la nouvelle règle de vitesse (doctrine → fiche → code → tests → une revue → merge).
+Ce document est un **contrat d'implémentation**. Les 5 points laissés ouverts en version CONCEPTION (0.1) sont tranchés ci-dessous. L'implémentation peut démarrer.
 
 ---
 
@@ -18,168 +18,201 @@ CAP-005 et CAP-006 existent déjà et sont validés en préproduction, mais **se
 
 TRANSMISSION est le module qui transforme cette paire de déclarations en **rencontre humaine organisée** :
 
-> Une personne possède une capacité. Une autre veut apprendre. DG Afrique permet leur rencontre, organise une transmission humaine et relie cette transmission à une action réelle.
+> **Une Transmission est une relation humaine volontaire par laquelle une capacité, un savoir ou une pratique est transmis dans un contexte réel. DG Afrique organise la rencontre, l'engagement et la trace ; il ne transforme ni l'apprentissage en score, ni la transmission en autorité, ni la participation en certification automatique.**
+
+Chaîne produit à préserver de bout en bout dans l'implémentation :
+
+```text
+Je veux apprendre → rencontre → accord mutuel → Transmission → pratique réelle → trace/preuve → éventuellement capacité enrichie
+```
 
 Une Transmission répond au minimum à quatre questions :
 
 1. Qui transmet, qui apprend, sur quoi ?
 2. Dans quel contexte cette transmission a-t-elle un sens (une capacité isolée, un besoin, une Mission, un Projet, une ZUMRA) ?
-3. Les deux personnes ont-elles réellement consenti à cette rencontre précise ?
+3. Les participants ont-ils réellement, individuellement, consenti à cette rencontre précise ?
 4. Que s'est-il passé, et qui en a gardé une trace ?
-
-Doctrine courte :
-
-> **Une Transmission organise une rencontre humaine autour d'une capacité. Elle ne transforme jamais une compétence en note, un enseignement en promesse de diplôme, ni une relation humaine en service automatisé.**
 
 Distinctions invariantes (même famille que MISSIONS §1) :
 
-> **Savoir faire n'est pas accepter de transmettre. Proposer d'apprendre n'est pas être accepté. Accepter une rencontre n'est pas la réaliser. Réaliser une transmission n'est pas la certifier.**
+> **Savoir faire n'est pas accepter de transmettre. Proposer d'apprendre n'est pas être accepté. Accepter une rencontre n'est pas la réaliser. Réaliser une transmission n'est pas la certifier. Officialiser une Transmission n'est pas accepter à la place des participants. Déclarer terminé n'est pas valider la Transmission.**
 
 ## 2. Ce que TRANSMISSION n'est pas
 
-Rappel explicite, non négociable, car c'est le risque de dérive le plus probable de ce module :
-
-- **pas** une plateforme de cours en ligne ;
-- **pas** un LMS (Learning Management System) ;
-- **pas** un Udemy, un Coursera ou un Moodle DG Afrique ;
+- **pas** une plateforme de cours en ligne, **pas** un LMS, **pas** un Udemy/Coursera/Moodle DG Afrique ;
 - **pas** un catalogue de formations déconnecté des personnes ;
 - **pas** un système de badges, diplômes ou certifications automatiques ;
-- **pas** un classement de « meilleurs formateurs » ni un score de qualité pédagogique.
+- **pas** un classement de « meilleurs formateurs » ni un score de qualité pédagogique ;
+- même en mode collectif (§9), **pas** une classe virtuelle générique : le moteur reste centré sur une relation humaine réelle, jamais sur une salle de cours anonyme.
 
-Il n'y a pas de « cours », pas de « module e-learning », pas de vidéo hébergée par DG Afrique, pas de quiz noté. S'il existe un contenu pédagogique, il vit ailleurs (GamaDrive, un lien externe) et TRANSMISSION s'y réfère par preuve/document, jamais ne le produit ni ne l'héberge.
+Il n'y a pas de « cours », pas de vidéo hébergée par DG Afrique, pas de quiz noté. Un contenu pédagogique éventuel vit ailleurs (GamaDrive, un lien externe) et TRANSMISSION s'y réfère par preuve/document, jamais ne le produit ni ne l'héberge.
 
 ## 3. Position dans le référentiel
 
-TRANSMISSION approfondit CAP-006 (et sa contrepartie CAP-005) sans modifier le référentiel V0.1 ni créer un nouveau numéro CAP.
+Rattachements principaux, inchangés depuis la version CONCEPTION :
 
-Rattachements principaux, par ordre d'intensité de dépendance :
+- **CAP-004 — Compétences** : `dg_capability_statements` / `dg_capability_catalog` restent l'unique source de vérité du **quoi**.
+- **CAP-005/CAP-006** : la déclaration reste l'expression d'une intention durable et privée par défaut. Une Transmission (le module) est un **engagement daté entre des personnes précises**, distinct de la déclaration (voir §8).
+- **CAP-009/CAP-010** : `PersonRecommendationEngine` reste la source du mécanisme d'explicabilité `LEARNING`↔`TRANSMISSION` (voir §14).
+- **CAP-019/020/021/022** : mêmes extensions que MISSIONS, mêmes invariants.
+- **CAP-025 — Disponibilité** : contrat minimal (`availability_note`), pas d'implémentation complète.
+- **CAP-027** : branchement manuel dans `MemberSpaceController::priority()`, comme Missions.
+- **CAP-030/CAP-031** : quatrième moteur bespoke, explicable, sans facteur de score humain.
+- **CAP-035/CAP-036** : point d'intégration seulement (voir §13).
+- **CAP-069 — Missions** : honore la promesse `MISSIONS.md §12` (voir §12).
 
-- **CAP-004 — Compétences** : `dg_capability_statements` / `dg_capability_catalog` restent l'unique source de vérité du **quoi** (le libellé de capacité). TRANSMISSION ne recrée jamais un second référentiel de compétences.
-- **CAP-005 — Apprentissage** et **CAP-006 — Transmission** : la déclaration `LEARNING`/`TRANSMISSION` reste l'expression d'une **intention durable et privée par défaut**. Une Transmission (le module) est un **engagement daté entre deux personnes précises**, distinct de la déclaration mais pouvant s'en inspirer (voir §8).
-- **CAP-009 — Découverte de personnes** et **CAP-010 — Recommandation** : `PersonRecommendationEngine` produit déjà des raisons `learning_transmission`/`transmission_learning`. TRANSMISSION doit réutiliser ce même mécanisme d'explicabilité plutôt qu'en inventer un second (voir §14).
-- **CAP-019/020/021/022 — Fil, Messagerie, Commentaire, Partage** : mêmes extensions que MISSIONS, mêmes invariants (append-only, visibilité revalidée, pas de duplication d'accès).
-- **CAP-025 — Disponibilité** : n'existe pas en code aujourd'hui. TRANSMISSION ne peut pas attendre CAP-025 complet ; il expose un contrat minimal (voir §9) sans se substituer à une future capacité Disponibilité transversale.
-- **CAP-027 — Prochaine action** : aucun agrégateur générique n'existe ; comme Missions, TRANSMISSION se branche à la main dans `MemberSpaceController::priority()`.
-- **CAP-030 — Moteur de correspondance** et **CAP-031 — Explicabilité** : aucune abstraction partagée n'existe entre `PersonRecommendationEngine`, `ProjectMatchingEngine` et `MissionMatchingEngine`. TRANSMISSION ajoute un quatrième moteur bespoke suivant le même moule (explicable, jamais un score de valeur humaine), sans tenter de factoriser les trois existants dans cette fiche — ce serait un chantier transversal séparé, hors périmètre ici.
-- **CAP-035 — Mémoire d'expérience** et **CAP-036 — Preuve de capacité** : doctrine seule, aucun code. TRANSMISSION expose un point d'intégration (référence de preuve) sans les implémenter (voir §13).
-- **CAP-069 — Missions** : Missions expose déjà le rôle `LEARNER` et déclare explicitement (`MISSIONS.md §12`) : *« MISSIONS expose un point d'intégration pour LEARNER et les futures relations de Transmission, mais n'implémente pas à lui seul le workflow Transmission. »* Cette fiche honore cette promesse (voir §12).
-
-TRANSMISSION ne remplace ni Besoin, ni Projet, ni Mission, ni Preuve, ni Messagerie, ni Commentaire, ni Partage. Il s'y intègre.
+TRANSMISSION ne remplace ni Besoin, ni Projet, ni Mission, ni Preuve, ni Messagerie, ni Commentaire, ni Partage. Il s'y intègre. Aucun nouveau numéro CAP n'est créé.
 
 ## 4. Doctrine à ne jamais casser
 
-1. **L'humain transmet. DG Afrique organise la rencontre et le contexte. L'IA peut aider à structurer, expliquer et préparer — jamais remplacer la relation humaine.**
-2. Savoir faire ne signifie pas accepter d'enseigner (CAP-006 invariant 1) — jamais d'obligation de transmettre déduite d'une capacité possédée.
-3. Une intention d'apprentissage ne signifie ni incapacité ni infériorité (CAP-005 invariant 2).
-4. Aucune acceptation silencieuse : proposer une transmission n'est pas être accepté ; accepter n'est pas commencer ; commencer n'est pas terminer.
-5. Aucun score humain, aucun classement de transmetteurs, aucune note pédagogique. La progression se décrit, elle ne se chiffre pas (§10).
-6. Aucun paiement, rang ou badge ne transforme une déclaration ou une transmission réalisée en certification (CAP-006 invariant 4).
+1. L'humain transmet. DG Afrique organise la rencontre et le contexte. L'IA aide à structurer, expliquer, préparer — jamais à remplacer la relation humaine (§21).
+2. Savoir faire ne signifie pas accepter d'enseigner — aucune obligation de transmettre déduite d'une capacité possédée.
+3. Une intention d'apprentissage ne signifie ni incapacité ni infériorité.
+4. **Aucune acceptation silencieuse, jamais.** Proposer n'est pas être accepté. Officialiser un rattachement contextuel n'est pas accepter à la place d'un participant. Déclarer sa part terminée n'est pas valider la Transmission.
+5. Aucun score humain, aucun classement de transmetteurs, aucune note pédagogique.
+6. Aucun paiement, rang ou badge ne transforme une déclaration ou une transmission réalisée en certification.
 7. Privé par défaut ; le matching et la découverte n'utilisent que ce qui est explicitement consenti.
-8. Aucune donnée de démonstration réelle : pas de faux transmetteur, faux apprenant, fausse séance.
-9. Il n'existe qu'un seul Fil DG Afrique (précédent établi par MISSIONS §15, repris ici à l'identique).
-10. Aucun rôle ZUMRA/Projet n'est créé par TRANSMISSION. Aucune finance n'est créée par TRANSMISSION.
+8. Aucune donnée de démonstration réelle.
+9. Il n'existe qu'un seul Fil DG Afrique.
+10. Aucun rôle ZUMRA/Projet n'est créé par TRANSMISSION. Aucune finance n'est créée par TRANSMISSION. Aucune `CapabilityStatement` n'est créée ou modifiée silencieusement (§8, §13).
 
-## 5. Acteurs
+## 5. Décisions métier validées (2026-08-17)
 
-- **Transmetteur** : la personne qui accepte de transmettre une capacité précise, à une ou plusieurs personnes précises, sur une période donnée.
-- **Apprenant** : la personne qui souhaite recevoir cette transmission.
-- **Autorité contextuelle** (optionnelle) : si la Transmission est rattachée à un Projet, une ZUMRA ou une Mission, l'autorité de ce contexte (réutilisée telle quelle — `ProjectService::canDecide`, `ZumraGroupService::isLeader`, l'officialisateur de la Mission — jamais une nouvelle autorité) peut avoir un rôle d'officialisation contextuelle (voir §19, point à trancher).
-- **DG Afrique (le produit)** : n'est jamais un acteur pédagogique. Il propose des rencontres explicables, structure un espace d'échange, et conserve la trace. Il ne note rien, ne certifie rien seul.
+### A. Autorité contextuelle
 
-Un même compte peut être transmetteur sur une capacité et apprenant sur une autre, y compris simultanément.
+Une Transmission peut être purement personne ↔ personne, sans autorité extérieure.
 
-## 6. Déclencheurs (points d'entrée)
+Si elle est rattachée à un Projet, une ZUMRA ou une Mission :
+
+- l'autorité du contexte (réutilisée telle quelle : autorité de décision du Projet, responsable de la ZUMRA, officialisateur de la Mission — jamais une nouvelle autorité créée) peut **officialiser le rattachement au contexte** ;
+- elle peut gérer la **visibilité** de la Transmission dans ce contexte et sa **reconnaissance comme activité** du Projet/ZUMRA/Mission ;
+- elle ne peut **jamais** accepter une Transmission à la place d'un transmetteur ou d'un apprenant.
+
+Invariant : **officialiser la Transmission ≠ accepter à la place des participants.** Chaque participant accepte explicitement sa propre participation, quoi que décide l'autorité contextuelle.
+
+### B. Transmission collective
+
+Le module implémenté est complet, pas un sous-ensemble :
+
+- 1 transmetteur ↔ 1 apprenant ;
+- 1 transmetteur ↔ plusieurs apprenants ;
+- plusieurs transmetteurs ↔ plusieurs apprenants.
+
+Tous les participants (transmetteurs et apprenants) passent par la même mécanique de participation individuelle et de consentement explicite (§9). Le moteur reste centré sur une relation humaine réelle — voir garde-fous anti-LMS §2.
+
+### C. Déclaration CAP-005/CAP-006 préalable
+
+**Non obligatoire.** Une Transmission peut naître directement depuis une Mission, un Projet, un Besoin, une ZUMRA, une interaction humaine, une recommandation, ou une intention ponctuelle, même si aucune déclaration `LEARNING`/`TRANSMISSION` n'existe déjà dans le profil des participants.
+
+Après la clôture d'une Transmission, DG Afrique **peut proposer** — jamais imposer ni exécuter silencieusement — de rendre l'intention durable dans le profil (« Voulez-vous rendre cette intention durable dans votre profil ? »). Cette proposition est une **suggestion d'interface**, jamais une écriture automatique : elle redirige vers le formulaire de profil existant (CAP-003/005/006), qui reste l'unique point d'écriture de `dg_capability_statements`.
+
+### D. Preuve / progression de capacité
+
+Une Transmission terminée :
+
+- peut créer une trace d'expérience (`TransmissionContribution`, §15) ;
+- peut référencer des preuves ou livrables par lien/document (`evidence_context`) ;
+- peut produire une confirmation contextualisée (`COMPLETED_BY_CONTEXT`, §10) ;
+- peut **proposer** une évolution de `CapabilityStatement` (même logique de suggestion qu'au point C : lien vers le profil, jamais une écriture directe).
+
+Elle ne doit **jamais** : certifier automatiquement une compétence, transformer automatiquement un apprenant en compétent, modifier automatiquement le niveau ou le statut d'une `CapabilityStatement`. La progression reste humaine, explicite et contextualisée.
+
+### E. Clôture
+
+Pas de clôture automatique par silence. Quatre issues finales distinctes :
+
+- **`COMPLETED_CONFIRMED`** — résultat confirmé selon le workflow humain défini (§10) : au moins un transmetteur et un apprenant ont individuellement déclaré leur part terminée, puis un participant accepté déclenche explicitement la confirmation de clôture. Deux actions distinctes, jamais fusionnées.
+- **`COMPLETED_BY_CONTEXT`** — dans un Projet/ZUMRA/Mission, l'autorité contextuelle valide la réalisation après soumission d'une trace, une fois la Transmission `IN_PROGRESS`.
+- **`ENDED`** — la Transmission est arrêtée sans prétendre que l'objectif a été atteint.
+- **`CANCELLED`** — annulée avant réalisation (avant tout passage en `IN_PROGRESS`).
+
+Invariant (même famille que Missions) : **déclarer sa part terminée ≠ valider la Transmission.** Une personne peut déclarer sa part terminée sans que cela rende automatiquement la Transmission « réussie ».
+
+## 6. Acteurs
+
+- **Transmetteur** (rôle `TRANSMITTER`) : personne qui accepte de transmettre une capacité précise.
+- **Apprenant** (rôle `LEARNER`) : personne qui souhaite recevoir cette transmission.
+- **Autorité contextuelle** (optionnelle, §5.A) : autorité déjà existante du Projet/ZUMRA/Mission rattaché — jamais une nouvelle autorité.
+- **DG Afrique (le produit)** : jamais un acteur pédagogique. Il propose des rencontres explicables, structure un espace d'échange, conserve la trace. Il ne note rien, ne certifie rien seul.
+
+Un même compte peut être `TRANSMITTER` sur une Transmission et `LEARNER` sur une autre, y compris simultanément. Sur une même Transmission, une personne tient un seul rôle.
+
+## 7. Déclencheurs (points d'entrée)
 
 Une Transmission peut être initiée depuis, au minimum :
 
-1. **« Je veux apprendre »** sur une capacité, depuis un profil ou une fiche de capacité — l'apprenant initie.
-2. **Une proposition volontaire de transmettre** — le transmetteur initie, en identifiant une personne précise qui a déclaré vouloir apprendre cette capacité (ou en réponse à une recommandation).
-3. **Un besoin de compétence** (Besoin CAP-013 dont la catégorie relève d'une capacité manquante) — la Transmission devient une réponse possible à ce Besoin, jamais automatique (cf. CAP-034 doctrine : « apprentissage comme réponse à un besoin »).
-4. **Une Mission** — un rôle `LEARNER` accepté sur une Mission peut proposer/recevoir une Transmission rattachée à cette Mission (voir §12).
-5. **Un Projet** — un Projet peut faire apparaître une capacité manquante comme besoin de transmission interne à l'équipe.
-6. **Une ZUMRA** — une ZUMRA peut organiser une transmission collective entre membres (voir §9).
-7. **Une recommandation** (`PersonRecommendationEngine`) — la raison `learning_transmission`/`transmission_learning` porte un bouton d'action direct vers la proposition.
+1. **« Je veux apprendre »** sur une capacité — l'apprenant initie.
+2. **Une proposition volontaire de transmettre** — le transmetteur initie.
+3. **Un besoin de compétence** (Besoin CAP-013) — réponse possible, jamais automatique (doctrine CAP-034).
+4. **Une Mission** — un rôle `LEARNER` accepté sur une Mission peut proposer/recevoir une Transmission rattachée à cette Mission (§12).
+5. **Un Projet** — capacité manquante identifiée dans l'équipe.
+6. **Une ZUMRA** — transmission collective organisée entre membres (§9).
+7. **Une recommandation** (`PersonRecommendationEngine`) — la raison `learning_transmission`/`transmission_learning` porte un bouton d'action direct.
+8. **Une interaction humaine ponctuelle** — aucune source structurée préalable (`origin_type = INTERACTION`).
 
-Dans tous les cas, l'origine (`origin_type`/`origin_reference`, ex. `NEED`, `MISSION`, `PROJECT`, `ZUMRA`, `RECOMMENDATION`, `PROFILE`) est conservée pour l'explicabilité et l'audit, mais **ne conditionne jamais** l'autorité de base (consentement mutuel, voir §7).
-
-## 7. Proposition, demande, acceptation — jamais de consentement silencieux
-
-Deux chemins symétriques, jamais fusionnés en une seule action :
-
-- **Offre du transmetteur → Demande d'acceptation à l'apprenant.**
-- **Demande de l'apprenant → Demande d'acceptation au transmetteur.**
-
-Dans les deux cas :
-
-- l'initiateur ne devient jamais automatiquement engagé tant que l'autre partie n'a pas explicitement répondu ;
-- **silence ne vaut pas acceptation** (même invariant que Missions §6) ;
-- refuser est toujours possible, sans justification obligatoire, sans pénalité visible ;
-- retirer une proposition avant réponse est toujours possible par son auteur ;
-- accepter n'entraîne aucune conséquence institutionnelle (aucun rôle, aucune finance).
-
-État minimal de la relation (voir §17 pour le modèle complet) : `PROPOSED → ACCEPTED | DECLINED | WITHDRAWN`, puis `ACCEPTED → IN_PROGRESS → COMPLETED | INTERRUPTED`.
+L'origine (`origin_type`/`origin_reference`) est conservée pour l'explicabilité et l'audit, mais ne conditionne jamais l'autorité de base (consentement individuel de chaque participant).
 
 ## 8. Lien avec la déclaration CAP-005/CAP-006
 
-Une Transmission **peut** partir d'une déclaration existante (`dg_capability_statements` de nature `LEARNING` côté apprenant, `TRANSMISSION` côté transmetteur) mais **ne l'exige pas structurellement** : un déclenchement depuis une Mission (rôle `LEARNER`) ou un Besoin peut initier une Transmission sans qu'aucune des deux personnes n'ait pré-déclaré son profil dans ce sens.
+Non obligatoire (§5.C). La Transmission porte son propre `capability_label`/`normalized_label`, avec une référence optionnelle vers `dg_capability_catalog.id` quand elle existe. Aucune création ou modification automatique de `CapabilityStatement` — la seule action possible est une suggestion d'interface pointant vers le formulaire de profil existant.
 
-La Transmission porte donc son propre `capability_label`/`normalized_label` (comme `MissionCapabilityRequirement` le fait déjà pour les Missions), avec une référence optionnelle vers `dg_capability_catalog.id` quand elle existe. **Aucune création automatique** de `CapabilityStatement` n'est déclenchée par une Transmission — voir point à trancher §22.
+## 9. Participation, contexte, disponibilité
 
-## 9. Contexte, disponibilité, individuel ou collectif
+### Participation individuelle et collective
+
+Tout participant (`TRANSMITTER` ou `LEARNER`) suit le même cycle de consentement explicite :
+
+```text
+INVITED  --(accepte)--> ACCEPTED
+INVITED  --(refuse)--> DECLINED
+OFFERED  --(accepte)--> ACCEPTED       -- une personne se propose elle-même
+OFFERED  --(retire)--> WITHDRAWN
+ACCEPTED --(se retire)--> WITHDRAWN
+ACCEPTED --(retiré par l'organisateur)--> REMOVED
+```
+
+`INVITED` = désigné par un autre participant/l'organisateur, doit répondre. `OFFERED` = se propose spontanément, doit être accepté par au moins un `TRANSMITTER` déjà `ACCEPTED` (ou par l'initiateur si aucun `TRANSMITTER` n'est encore accepté). Aucun statut ne bascule vers `ACCEPTED` sans action de la personne concernée elle-même (jamais un tiers qui accepte « pour » quelqu'un — même en mode collectif).
+
+Une Transmission passe de `PROPOSED` à `ACCEPTED` (niveau Transmission, §10) dès qu'elle compte **au moins un `TRANSMITTER` et un `LEARNER`** à l'état `ACCEPTED`. Au-delà de ce quorum minimal, la liste de participants reste ouverte (nouvelles invitations/offres possibles) tant que la Transmission n'est pas `IN_PROGRESS`.
 
 ### Contexte (rattachement optionnel)
 
-Une Transmission est **toujours valide de manière autonome** (deux personnes, une capacité, un accord) et **peut en plus** être rattachée à un contexte porteur : `NONE` (autonome), `NEED`, `MISSION`, `PROJECT`, `ZUMRA`.
-
-Contrairement à Missions, ce rattachement **n'est pas un registre fail-closed d'autorité institutionnelle** — il n'est pas nécessaire de passer par une autorité de Projet/ZUMRA pour que deux personnes s'organisent une transmission. Le rattachement sert à :
-
-- l'explicabilité (« cette transmission répond au besoin de compétence de X ») ;
-- la visibilité contextuelle (visible aux membres de la ZUMRA plutôt que privée) ;
-- l'intégration au Fil/Mon espace du contexte porteur.
-
-Voir §19 pour le rôle exact de l'autorité contextuelle quand un rattachement existe (point à trancher).
+Une Transmission est **toujours valide de manière autonome** et **peut en plus** être rattachée à un contexte porteur : `NONE` (autonome), `NEED`, `MISSION`, `PROJECT`, `ZUMRA`. Ce rattachement n'est **pas** un registre fail-closed d'autorité obligatoire comme pour Missions — il sert l'explicabilité, la visibilité contextuelle et l'intégration au Fil/Mon espace du contexte porteur. L'officialisation par l'autorité contextuelle (§5.A) n'est disponible et pertinente que pour `PROJECT`, `ZUMRA` et `MISSION`, qui portent chacun une autorité déjà implémentée ; un rattachement `NEED` reste une référence de visibilité sans étape d'officialisation formelle (le Besoin n'a pas d'autorité contextuelle dédiée dans le référentiel actuel).
 
 ### Disponibilité (CAP-025 — contrat minimal)
 
-CAP-025 n'a aucune implémentation. TRANSMISSION ne peut pas construire un calendrier de disponibilité générique ici. Contrat minimal proposé : un champ libre `availability_note` (texte court, ex. « mardis soir », « selon accord mutuel ») porté par chaque déclaration `LEARNING`/`TRANSMISSION` existante ou par la Transmission elle-même — jamais un moteur de créneaux. Une vraie capacité Disponibilité transversale reste un chantier séparé.
-
-### Individuelle ou collective
-
-- **Transmission individuelle** : un transmetteur, un apprenant. Périmètre v1 certain.
-- **Transmission collective** : un transmetteur, plusieurs apprenants (ex. une ZUMRA organise une session pour ses membres intéressés). Périmètre v1 incertain — voir point à trancher §22. Si retenue, elle réutilise la même mécanique de participation que Missions (offres/invitations/acceptations par apprenant, jamais un « auto-inscription silencieuse »).
+Champ libre `availability_note` (texte court) porté par la Transmission. Pas de moteur de créneaux — CAP-025 transversal reste un chantier séparé.
 
 ## 10. Objectifs, étapes, progression — sans score humain
 
-- **Objectif d'apprentissage** : un texte court obligatoire à l'acceptation (« ce que l'apprenant doit pouvoir faire à la fin »), rédigé conjointement ou proposé par l'initiateur puis confirmé par l'autre partie.
-- **Étapes/séances** : **optionnelles**, jamais un moteur de planning. Une Transmission peut porter une liste plate de jalons (`TransmissionMilestone` : libellé, position, complété/non complété — même forme que `MissionChecklistItem`), utile pour les transmissions longues, ignorable pour une rencontre unique. Compléter 100 % des jalons **ne clôture jamais automatiquement** la Transmission (même invariant que la checklist Missions).
-- **Progression** : représentée par le **statut** de la Transmission (`PROPOSED`/`ACCEPTED`/`IN_PROGRESS`/`COMPLETED`/`INTERRUPTED`) et, optionnellement, par les jalons complétés — jamais par un pourcentage de maîtrise, une note, un niveau ou un badge. Si un niveau de maîtrise doit être exprimé, c'est uniquement via le champ `proficiency` déjà existant sur `CapabilityStatement`, déclaré par la personne elle-même, jamais calculé par DG Afrique.
+- **Objectif d'apprentissage** : texte court obligatoire à la création (`learning_objective`).
+- **Étapes/séances** : optionnelles (`TransmissionMilestone`, même forme que `MissionChecklistItem` : libellé, position, complété/non complété). Compléter 100 % des jalons ne clôture jamais automatiquement la Transmission.
+- **Progression** : représentée par le statut de la Transmission et, optionnellement, les jalons complétés — jamais un pourcentage de maîtrise, une note ou un badge. Un niveau de maîtrise éventuel reste le champ `proficiency` de `CapabilityStatement`, déclaré par la personne elle-même (§5.D), jamais calculé par DG Afrique.
+- **Workflow humain de clôture confirmée** (détail de `COMPLETED_CONFIRMED`, §5.E) : chaque participant `ACCEPTED` peut `declareDone()` individuellement (horodaté, avec note optionnelle). Dès qu'au moins un `TRANSMITTER` et un `LEARNER` ont déclaré leur part terminée, n'importe quel participant `ACCEPTED` peut appeler `confirmCompletion()`, qui est l'action distincte qui fait réellement basculer la Transmission en `COMPLETED_CONFIRMED` avec un résumé court obligatoire.
 
 ## 11. Fin et interruption
 
-- **Fin normale** : `IN_PROGRESS → COMPLETED`, décidée conjointement (les deux parties confirment, ou une confirmation + une fenêtre de non-contestation — voir point à trancher §22) avec un résumé court obligatoire de ce qui a été transmis.
-- **Interruption** : `ACCEPTED`/`IN_PROGRESS → INTERRUPTED`, par l'une ou l'autre partie, avec une raison optionnelle. Jamais présentée comme un échec chiffré. N'empêche pas une nouvelle Transmission ultérieure entre les mêmes personnes.
-- Aucune suppression destructive depuis l'UI — même invariant append-only que Missions/Besoins/Projets.
+- **`COMPLETED_CONFIRMED`** / **`COMPLETED_BY_CONTEXT`** : voir §5.E, §10.
+- **`ENDED`** : depuis `ACCEPTED` ou `IN_PROGRESS`, par n'importe quel participant `ACCEPTED`, raison optionnelle. N'empêche pas une nouvelle Transmission ultérieure entre les mêmes personnes.
+- **`CANCELLED`** : depuis `PROPOSED` ou `ACCEPTED`, avant tout passage en `IN_PROGRESS`, par l'initiateur ou un `TRANSMITTER` accepté.
+- Aucune suppression destructive depuis l'UI — invariant append-only.
 
 ## 12. Intégration Missions (CAP-069)
 
-Point d'intégration déjà annoncé par `MISSIONS.md §12`. Contrat :
-
-- Un rôle `LEARNER` accepté sur une Mission peut, depuis la fiche Mission, proposer ou recevoir une Transmission rattachée à cette Mission (`origin_type = MISSION`).
+- Un rôle `LEARNER` accepté sur une Mission peut, depuis la fiche Mission, proposer ou recevoir une Transmission rattachée à cette Mission (`origin_type = MISSION`, `context_type = MISSION` si un rattachement visible est souhaité).
 - La Transmission reste un objet séparé de `MissionAssignment` : accepter un rôle `LEARNER` sur une Mission n'accepte pas automatiquement une Transmission, et réciproquement.
-- Le retrait d'un `LEARNER` d'une Mission n'interrompt pas automatiquement une Transmission déjà `IN_PROGRESS` liée à cette Mission — décision humaine séparée requise (même doctrine que « retirer un exécutant n'est jamais un événement silencieux »).
-- Missions ne gagne aucune nouvelle capacité ; c'est TRANSMISSION qui référence `mission_id`/`mission_public_reference` en `origin_reference`, jamais l'inverse.
+- Le retrait d'un `LEARNER` d'une Mission n'interrompt pas automatiquement une Transmission déjà `IN_PROGRESS` liée à cette Mission — décision humaine séparée requise.
+- Missions ne gagne aucune nouvelle capacité ; TRANSMISSION référence `mission_id`/`mission_public_reference` en `origin_reference`/`context_reference`, jamais l'inverse. L'officialisateur de Mission (autorité déjà existante) est l'autorité contextuelle réutilisée pour `context_type = MISSION` (§5.A).
 
 ## 13. Intégration Carnet de preuves / GamaDrive
 
-Ni le Carnet de preuves (CAP-036) ni une capacité de preuve transversale n'existent en code. Comme `MissionSubmission.evidence_context`, une Transmission expose un champ `evidence_context` (json libre : notes, références documentaires, liens GamaDrive fédérés) sur sa clôture. **TRANSMISSION ne certifie jamais automatiquement une preuve** et ne devient pas un stockage documentaire généraliste. Le jour où le Carnet de preuves existe, ce champ devient son point de rattachement naturel — non construit ici.
+Ni le Carnet de preuves (CAP-036) ni une capacité de preuve transversale n'existent en code. `TransmissionContribution.evidence_context` (json libre : notes, références documentaires, liens GamaDrive fédérés) est le point de rattachement futur. TRANSMISSION ne certifie jamais automatiquement une preuve et ne devient pas un stockage documentaire généraliste.
 
 ## 14. Matching explicable
 
-Service proposé : `TransmissionMatchingEngine`, même moule que `MissionMatchingEngine`/`ProjectMatchingEngine` — pas de classe abstraite partagée inventée dans cette fiche (voir §3).
+Service : `TransmissionMatchingEngine`, même moule que `MissionMatchingEngine`/`ProjectMatchingEngine`. Réutilise directement la logique d'appariement `LEARNING`↔`TRANSMISSION` déjà existante et validée dans `PersonRecommendationEngine` (extraction d'une fonction utilitaire partagée plutôt que duplication).
 
-Réutilise directement la logique déjà existante et validée dans `PersonRecommendationEngine::score()` (raisons `learning_transmission`/`transmission_learning`) plutôt que de la dupliquer : ces deux moteurs doivent soit partager une fonction utilitaire d'appariement `LEARNING`↔`TRANSMISSION`, soit `TransmissionMatchingEngine` délègue explicitement une partie de son calcul à un service extrait de `PersonRecommendationEngine`. Le choix technique précis (extraction vs délégation) se décide à l'implémentation, pas ici — l'invariant est : **ne pas réécrire une seconde fois la logique d'appariement `LEARNING`/`TRANSMISSION`.**
-
-Sources autorisées : `dg_capability_statements` de nature `LEARNING`/`TRANSMISSION` avec `visibility = DISCOVERABLE` et `matching_consent = true`, `orientation_consent`/`discovery_consent` du profil, contexte porteur le cas échéant.
+Sources autorisées : `dg_capability_statements` `DISCOVERABLE` + `matching_consent = true`, `orientation_consent`/`discovery_consent` du profil, contexte porteur le cas échéant.
 
 Sortie : recommandations explicables, jamais un classement de personnes.
 
@@ -191,187 +224,144 @@ Sortie : recommandations explicables, jamais un classement de personnes.
 - contexte partagé (même ZUMRA / même Projet / même Mission)
 ```
 
-Interdits : auto-jumelage (« matching automatique » qui créerait la Transmission sans proposition explicite), « meilleur transmetteur », score de qualité pédagogique. Le membre peut masquer une suggestion, scoppé à lui et à la capacité concernée (même mécanique que `MissionMatchingHide`).
+Interdits : auto-jumelage, « meilleur transmetteur », score de qualité pédagogique. Une suggestion peut être masquée, scoppée à la personne et à la capacité concernée.
 
-## 15. Modèle de données proposé
-
-Nomenclature alignée sur Missions (`dg_mission_*` → `dg_transmission_*`), tables UUID, `HasUuids`, `public_reference` pour le binding de route.
+## 15. Modèle de données
 
 ```text
 dg_transmissions
   id, public_reference,
-  transmitter_core_reference, learner_core_reference,
   capability_label, normalized_label, catalog_item_id (nullable, FK dg_capability_catalog),
   learning_objective (text),
-  origin_type (NONE|NEED|MISSION|PROJECT|ZUMRA|RECOMMENDATION|PROFILE), origin_reference (nullable),
-  context_type (nullable: PROJECT|ZUMRA), context_reference (nullable),  -- visibilité contextuelle uniquement, voir §9/§19
-  mode (INDIVIDUAL|COLLECTIVE),
-  visibility (PRIVATE|CONTEXT|PROGRAM),   -- jamais PUBLIC par défaut, voir §16
-  status (PROPOSED|ACCEPTED|DECLINED|WITHDRAWN|IN_PROGRESS|COMPLETED|INTERRUPTED),
+  origin_type (NONE|NEED|MISSION|PROJECT|ZUMRA|RECOMMENDATION|PROFILE|INTERACTION), origin_reference (nullable),
+  context_type (nullable: NEED|MISSION|PROJECT|ZUMRA), context_reference (nullable),
+  visibility (PRIVATE|CONTEXT|PROGRAM) default PRIVATE,
+  status (PROPOSED|ACCEPTED|IN_PROGRESS|COMPLETED_CONFIRMED|COMPLETED_BY_CONTEXT|ENDED|CANCELLED),
   availability_note (nullable text),
   proposed_by_core_reference, proposed_at,
-  accepted_at, declined_at, withdrawn_at, started_at, completed_at, interrupted_at,
+  accepted_at, started_at, completed_at, ended_at, cancelled_at,
+  completion_summary (nullable text),
+  context_officialized_by_core_reference (nullable), context_officialized_at (nullable),
+  context_validated_by_core_reference (nullable), context_validated_at (nullable),
   evidence_context (json, nullable),
   timestamps
 
-dg_transmission_participants        -- réservé au mode COLLECTIVE (voir §9/§22)
-  id, transmission_id, core_identity_reference, role (LEARNER),
+dg_transmission_participants
+  id, transmission_id, core_identity_reference,
+  role (TRANSMITTER|LEARNER),
   status (INVITED|OFFERED|ACCEPTED|DECLINED|WITHDRAWN|REMOVED),
+  invited_by_core_reference (nullable),
+  responded_at (nullable),
+  declared_done_at (nullable), declared_done_note (nullable text),
   timestamps
+  -- unique(transmission_id, core_identity_reference)
 
 dg_transmission_milestones
   id, transmission_id, label, position, is_required,
   completed_by_core_reference (nullable), completed_at (nullable),
   timestamps
 
-dg_transmission_events              -- append-only, même famille que dg_mission_events
+dg_transmission_contributions
+  id, transmission_id, core_identity_reference,
+  note (text), evidence_context (json, nullable), occurred_at,
+  timestamps
+
+dg_transmission_events              -- append-only
   id, transmission_id, event, actor_core_reference,
   from_state (nullable), to_state (nullable), context (json), occurred_at,
   timestamps
 ```
 
-Contraintes notables : `unique(public_reference)` ; index sur `(transmitter_core_reference)`, `(learner_core_reference)`, `(context_type, context_reference)`, `(origin_type, origin_reference)` ; `dg_transmission_participants` unique sur `(transmission_id, core_identity_reference)` (même garde-fou qu'`dg_mission_assignments`).
-
 ## 16. Visibilité et confidentialité
 
-Une Transmission est **privée par défaut** (visible seulement du transmetteur, de l'apprenant, et de l'autorité contextuelle si rattachement + officialisation — voir §19). Elle ne devient visible plus largement (`CONTEXT`, `PROGRAM`) que par choix explicite au rattachement, jamais `PUBLIC` en v1 : une transmission reste une relation entre personnes, pas une annonce. Toute revalidation de visibilité suit le même schéma que `MissionVisibilityService::canViewMission()` : accès du contexte porteur (si rattaché) **ET** visibilité propre de la Transmission, jamais l'un sans l'autre.
+Privée par défaut (visible du/des transmetteur(s), du/des apprenant(s), et de l'autorité contextuelle si rattachement + officialisation). `CONTEXT`/`PROGRAM` uniquement par choix explicite au rattachement, jamais `PUBLIC` en v1. Revalidation systématique à la lecture : accès du contexte porteur (si rattaché) **ET** visibilité propre de la Transmission, jamais l'un sans l'autre.
 
 ## 17. Machine d'état
 
 ```text
-PROPOSED --(accepte)--> ACCEPTED --(démarre)--> IN_PROGRESS --(clôture conjointe)--> COMPLETED
-PROPOSED --(refuse)--> DECLINED
-PROPOSED --(retire, par l'auteur)--> WITHDRAWN
-ACCEPTED --(interrompt)--> INTERRUPTED
-IN_PROGRESS --(interrompt)--> INTERRUPTED
+PROPOSED --(quorum ≥1 TRANSMITTER + ≥1 LEARNER acceptés)--> ACCEPTED
+PROPOSED --(annule, avant IN_PROGRESS)--> CANCELLED
+ACCEPTED --(annule, avant IN_PROGRESS)--> CANCELLED
+ACCEPTED --(démarre)--> IN_PROGRESS
+ACCEPTED --(arrête)--> ENDED
+IN_PROGRESS --(confirmation conjointe explicite)--> COMPLETED_CONFIRMED
+IN_PROGRESS --(validation autorité contextuelle après trace)--> COMPLETED_BY_CONTEXT
+IN_PROGRESS --(arrête)--> ENDED
 ```
 
-Aucun raccourci : `PROPOSED → COMPLETED` directement est interdit, même par une seule autorité — chaque transition reste distincte et auditée (même doctrine que Missions §5, avec une machine plus courte car il n'y a pas d'officialisation institutionnelle obligatoire par défaut).
-
-Toute transition sensible : verrouillage de ligne (`lockForUpdate`) sur la Transmission, vérification d'état source, vérification d'autorité, mutation, événement append-only — même primitive partagée que `MissionWorkflow::applyTransition()` (`TransmissionWorkflow::applyTransition()` à construire sur le même moule).
+Aucun raccourci : `PROPOSED → COMPLETED_*` directement est interdit. Chaque transition reste distincte et auditée. Verrouillage de ligne (`lockForUpdate`) sur la Transmission pour toute transition sensible, vérification d'état source, vérification d'autorité, mutation, événement append-only — même primitive que `MissionWorkflow::applyTransition()`.
 
 ## 18. Permissions et consentement
 
-- **Proposer** : toute personne membre (avec compte GAMAD Core actif), sous réserve de consentement d'orientation si la cible provient d'une recommandation/découverte.
-- **Accepter/refuser** : exclusivement la personne destinataire de la proposition — jamais l'initiateur, jamais une autorité tierce.
-- **Retirer avant réponse** : exclusivement l'auteur de la proposition.
-- **Démarrer (`ACCEPTED → IN_PROGRESS`)** : l'une ou l'autre partie, dès lors que les deux ont accepté.
-- **Interrompre** : l'une ou l'autre partie, à tout moment après acceptation.
-- **Clôturer (`IN_PROGRESS → COMPLETED`)** : voir point à trancher §22 (confirmation conjointe vs confirmation + fenêtre de non-contestation).
-- **Gérer les jalons** : transmetteur et apprenant, tous deux (pas de hiérarchie pédagogique imposée).
-- **Autorité contextuelle** (Projet/ZUMRA) : jamais un droit de forcer l'acceptation ou la clôture ; au mieux un droit de visibilité et, si retenu (§19), un droit d'officialisation de la visibilité contextuelle uniquement.
+- **Proposer** : toute personne membre.
+- **Inviter/offrir une participation** : l'initiateur, puis tout `TRANSMITTER` `ACCEPTED` (pour inviter d'autres `TRANSMITTER`/`LEARNER`).
+- **Accepter/refuser/se retirer sa propre participation** : exclusivement la personne concernée.
+- **Retirer un autre participant (`REMOVED`)** : un `TRANSMITTER` `ACCEPTED`, jamais un `LEARNER` sur un autre `LEARNER`, jamais l'autorité contextuelle.
+- **Officialiser le rattachement contextuel** : l'autorité contextuelle réelle du Projet/ZUMRA/Mission — jamais un droit d'accepter à la place d'un participant (§5.A).
+- **Démarrer (`ACCEPTED → IN_PROGRESS`)** : tout participant `ACCEPTED`.
+- **Déclarer sa part terminée** : tout participant `ACCEPTED`, pour lui-même uniquement.
+- **Confirmer la clôture (`COMPLETED_CONFIRMED`)** : tout participant `ACCEPTED`, une fois le quorum de déclarations atteint (§10).
+- **Valider par le contexte (`COMPLETED_BY_CONTEXT`)** : l'autorité contextuelle réelle, uniquement si un rattachement `PROJECT`/`ZUMRA`/`MISSION` existe et que la Transmission est `IN_PROGRESS`.
+- **Arrêter (`ENDED`)** : tout participant `ACCEPTED`.
+- **Annuler (`CANCELLED`)** : l'initiateur ou un `TRANSMITTER` `ACCEPTED`, avant `IN_PROGRESS`.
+- **Gérer les jalons, ajouter une contribution** : tout participant `ACCEPTED`.
 
-Identité toujours via le mécanisme GAMAD Core existant, jamais un garde Laravel local. Comme pour l'invitation Missions (durcissement CAP-069), toute désignation d'un tiers dans l'UI passe par une `discovery_reference` consentie — **jamais une saisie ou un affichage direct de `core_identity_reference`**.
+Identité toujours via GAMAD Core, jamais un garde Laravel local. Toute désignation d'un tiers dans l'UI passe par une `discovery_reference` consentie — jamais une saisie ou un affichage direct de `core_identity_reference`.
 
 ## 19. Fil unique
 
-Un seul Fil DG Afrique (§4.9). Événements Transmission éligibles :
+Un seul Fil DG Afrique. Événements Transmission éligibles :
 
 ```text
-TRANSMISSION_PROPOSED     -- uniquement si rattachée à un contexte visible (ZUMRA/Projet), jamais bruit privé
+TRANSMISSION_PROPOSED     -- uniquement si rattachée à un contexte visible (ZUMRA/Projet/Mission)
 TRANSMISSION_ACCEPTED
-TRANSMISSION_COMPLETED
+TRANSMISSION_COMPLETED    -- COMPLETED_CONFIRMED ou COMPLETED_BY_CONTEXT
 ```
 
-Pas de Fil Transmission autonome (aucune tentation de recréer le « Fil Transmission » évoqué par la doctrine v1.1 §14 — ce point a déjà été tranché pour Missions et vaut identiquement ici : un seul Fil, `ActivityFeedService` revalide la visibilité à la projection). Pas d'événement pour chaque jalon coché.
-
-`ActivityFeedService` gagne une méthode privée `transmissionItems()` suivant exactement le patron `missionItems()` (constantes d'événements éligibles, filtre replié dans les buckets existants ALL/NEEDS/PROJECTS/ZUMRA selon le `context_type` porté, jamais un 5ᵉ filtre).
+Pas de Fil Transmission autonome. `ActivityFeedService` gagne une méthode privée `transmissionItems()` suivant le patron `missionItems()`, repliée dans les buckets existants selon le `context_type` porté.
 
 ## 20. Mon espace
 
-Route globale proposée :
+Route globale : `GET /transmissions`.
 
-```text
-GET /transmissions
-```
+Sections : **Propositions reçues** (à répondre), **Mes demandes** (envoyées, en attente), **En cours — je transmets**, **En cours — j'apprends**, **Terminées**.
 
-Sections proposées, même esprit que « Mes Missions », construites depuis l'empreinte propre de l'acteur (jamais un balayage global) :
+`MemberSpaceController::priority()` gagne une prochaine action Transmission (proposition/invitation reçue à traiter, part à déclarer terminée, clôture en attente de confirmation), injectée dans la même chaîne if/elseif qu'aujourd'hui, jamais un second système de priorité. Pas de mur de statistiques.
 
-- **Propositions reçues** (à répondre) ;
-- **Mes demandes** (envoyées, en attente) ;
-- **En cours — je transmets** ;
-- **En cours — j'apprends** ;
-- **Terminées**.
+## 21. Notifications, commentaires, partage, messagerie, IA
 
-`MemberSpaceController::priority()` gagne une prochaine action Transmission (proposition reçue à traiter, transmission en cours sans nouvelle depuis longtemps — à définir précisément à l'implémentation), injectée dans la même chaîne if/elseif qu'aujourd'hui pour Missions, jamais un second système de priorité. Pas de mur de statistiques, pas de compteur de transmissions réalisées présenté comme un score.
+- **CAP-054** : aucune primitive Notification n'existe. Pas de second système parallèle ; ce qui exige attention reste visible via Mon espace/Fil.
+- **CAP-021** : `ContextComment` gagne `CONTEXT_TRANSMISSION`, même patron que `CONTEXT_MISSION`.
+- **CAP-022** : `ContextShare` gagne `SOURCE_TRANSMISSION`, même patron que `SOURCE_MISSION`.
+- **CAP-020** : `MessageConversation` gagne `CONTEXT_TRANSMISSION`. La conversation n'est jamais la source de vérité du statut.
+- **IA** : peut aider à formuler un objectif d'apprentissage, suggérer des jalons raisonnables, expliquer une recommandation de matching, préparer un résumé de clôture proposé (jamais imposé). Elle ne décide jamais à la place des personnes, ne note jamais une transmission, ne choisit jamais qui doit apprendre de qui.
 
-## 21. Notifications, commentaires, partage, messagerie
+## 22. Audit
 
-- **CAP-054 (Notifications)** : aucune primitive Notification n'existe dans ce dépôt (confirmé lors du chantier Missions). TRANSMISSION **ne construit pas** un second système de notifications parallèle. Ce qui exige une attention réelle (proposition reçue, transmission acceptée) reste visible via Mon espace/Fil comme aujourd'hui ; le raccordement à une vraie CAP-054 est un dépendance déclarée, pas un blocage.
-- **CAP-021 (Commentaire)** : `ContextComment` gagne `CONTEXT_TRANSMISSION`, même patron que `CONTEXT_MISSION` (thread revalidant la visibilité à chaque lecture, append-only, pas de popularité).
-- **CAP-022 (Partage)** : `ContextShare` gagne `SOURCE_TRANSMISSION`, même patron que `SOURCE_MISSION` — partage sans dupliquer, sans jamais octroyer un accès que le destinataire n'avait pas déjà.
-- **CAP-020 (Messagerie)** : `MessageConversation` gagne `CONTEXT_TRANSMISSION` pour ouvrir une conversation contextualisée entre transmetteur et apprenant. La conversation n'est jamais la source de vérité du statut de la Transmission (même doctrine que Missions §14).
+Toute transition d'état et toute mutation de participation s'écrit dans `dg_transmission_events` (append-only), même patron que `dg_mission_events`. Chaque ligne porte l'acteur réel — aucun acteur système en v1.
 
-## 22. Points à trancher avant codage
+## 23. États UX obligatoires
 
-Ces points ont une proposition par défaut dans cette fiche mais nécessitent une confirmation humaine explicite avant tout code, car ils changent la forme du schéma ou du workflow :
+- état vide honnête sur `/transmissions` si rien n'existe encore ;
+- jamais de donnée fictive ;
+- badges de statut cohérents avec le système déjà établi (`x-dg.badge` : `decision` pour PROPOSED, `action` pour ACCEPTED/IN_PROGRESS, `project` pour COMPLETED_CONFIRMED/COMPLETED_BY_CONTEXT, `neutral` pour DECLINED/WITHDRAWN/ENDED/CANCELLED) ;
+- la vue reçoit les mêmes indicateurs de permission calculés côté service (`canRespond`, `canOfficializeContext`, `canStart`, `canDeclareDone`, `canConfirmCompletion`, `canValidateByContext`, `canEnd`, `canCancel`) plutôt que de dupliquer la logique d'autorité côté gabarit.
 
-1. **Rôle de l'autorité contextuelle.** Proposition : quand une Transmission est rattachée à un Projet/ZUMRA, l'autorité contextuelle peut élargir sa visibilité (`CONTEXT`/`PROGRAM`) mais ne peut ni forcer l'acceptation, ni la clôture, ni la création. À confirmer, notamment pour le cas ZUMRA (une ZUMRA doit-elle pouvoir « officialiser » une transmission collective qu'elle organise, au sens où Missions officialise une Mission ?).
-2. **Transmission collective.** Proposition : hors périmètre v1 strict (seulement `mode = INDIVIDUAL` codé d'abord), `dg_transmission_participants` posé dans le schéma mais non exploité tant que la décision n'est pas prise, pour éviter une migration disruptive plus tard. À confirmer.
-3. **Déclaration préalable obligatoire ou non.** Proposition : jamais obligatoire (§8) — une Transmission peut naître d'un contexte (Mission/Besoin) sans déclaration `LEARNING`/`TRANSMISSION` préexistante, et ne crée jamais silencieusement cette déclaration en retour. À confirmer, car l'alternative (déclaration obligatoire en amont) simplifierait le matching mais durcirait l'entrée en matière.
-4. **Lien Transmission → Preuve de capacité (CAP-036).** Proposition : une Transmission `COMPLETED` ne fait **jamais** progresser automatiquement le `status` d'une `CapabilityStatement` (`DECLARED → VERIFIED/ATTESTED`) — cela reste une décision humaine séparée, si et quand CAP-036 existe. À confirmer, car une automatisation même partielle serait une dérive vers la certification automatique interdite par CAP-006 invariant 4.
-5. **Clôture conjointe.** Proposition : `IN_PROGRESS → COMPLETED` exige la confirmation des **deux** parties (deux actions distinctes, pas une seule décision unilatérale) — au risque qu'une partie injoignable bloque indéfiniment la clôture. Alternative : une seule confirmation + une fenêtre de non-contestation de l'autre partie. À confirmer.
-
-Tant que ces cinq points ne sont pas tranchés par un humain, aucune implémentation ne doit démarrer sur les parties qu'ils affectent (workflow, permissions, modèle collectif).
-
-## 23. Rôle de l'IA
-
-Comme dans MISSIONS §21 et la doctrine générale : l'IA peut aider à formuler un objectif d'apprentissage, suggérer des jalons raisonnables, expliquer une recommandation de matching, préparer un résumé de clôture proposé (jamais imposé). Elle ne décide jamais à la place des personnes, ne note jamais une transmission, ne choisit jamais qui doit apprendre de qui.
-
-## 24. Audit
-
-Toute transition d'état et toute mutation de participation s'écrit dans `dg_transmission_events` (append-only, jamais modifié ni supprimé depuis l'UI), même patron que `dg_mission_events`. Chaque ligne porte l'acteur réel (jamais un acteur générique, sauf un futur job système explicitement nommé, comme `MissionEvent::SYSTEM_RECURRENCE_ACTOR` pour Missions — TRANSMISSION v1 ne prévoit aucun acteur système : tout événement a un auteur humain).
-
-## 25. États UX obligatoires
-
-- état vide honnête sur `/transmissions` si aucune proposition/transmission n'existe encore, avec l'action qui peut débloquer (proposer, ou consulter les recommandations) ;
-- jamais de donnée fictive pour remplir l'écran ;
-- badge de statut cohérent avec le vocabulaire déjà établi (`x-dg.badge`, tons réutilisés du système Missions : `decision` pour PROPOSED, `action` pour ACCEPTED/IN_PROGRESS, `project` pour COMPLETED, `neutral` pour DECLINED/WITHDRAWN/INTERRUPTED) ;
-- aucune UI n'affiche un formulaire d'action que le backend refuserait (CAP-072), donc la fiche Transmission doit calculer et transmettre au gabarit les mêmes indicateurs de permission que Missions (`canAccept`, `canDecline`, `canStart`, `canComplete`, `canInterrupt`) plutôt que de dupliquer la logique d'autorité côté vue.
-
-## 26. Tests d'acceptation obligatoires (catégories minimales)
-
-Conversion en tests réels attendue, à l'image des ~40 tests Missions. Catégories minimales, non exhaustives :
-
-- proposition transmetteur→apprenant et apprenant→transmetteur, toutes deux fonctionnelles et symétriques ;
-- aucune acceptation silencieuse (le statut ne bascule jamais sans action explicite du bon acteur) ;
-- retrait avant réponse par l'auteur seul ;
-- refus toujours possible sans justification ;
-- démarrage impossible avant double acceptation ;
-- clôture jamais unilatérale (selon décision §22.5) ;
-- interruption possible à tout moment après acceptation, sans verrouillage ;
-- visibilité privée par défaut, jamais `PUBLIC` ;
-- visibilité contextuelle revalidée à la lecture (perte d'accès à la ZUMRA ⇒ disparition de la Transmission rattachée) ;
-- matching : seules les déclarations `DISCOVERABLE` + `matching_consent=true` apparaissent, jamais d'auto-jumelage ;
-- Fil : aucun Fil Transmission séparé n'existe (assertion négative de route), événements repliés dans les filtres existants ;
-- Mon espace : sections construites depuis l'empreinte de l'acteur, jamais un balayage global masquant une proposition ancienne ;
-- aucune `CapabilityStatement` n'est créée silencieusement par une Transmission (tant que §22.3 n'autorise pas explicitement le contraire) ;
-- aucun rôle ZUMRA/Projet créé, aucune finance créée ;
-- partage sans octroi d'accès (même test que Missions, adapté) ;
-- commentaire revalidant la visibilité à chaque lecture ;
-- aucune donnée de démonstration réelle seedée.
-
-## 27. Hors périmètre (v1)
+## 24. Hors périmètre (v1)
 
 - calendrier de disponibilité structuré (attend CAP-025) ;
 - notifications poussées (attend CAP-054) ;
 - certification, badge, diplôme, niveau calculé ;
-- hébergement de contenu pédagogique (vidéo, quiz, cours) ;
-- paiement de la transmission (aucune finance ici, cf. CAP-061/062/063 séparés et hors périmètre) ;
-- tout ce qui ressemble à un catalogue public de « formateurs » consultable hors relation (pas de page « trouvez votre formateur » façon marketplace) ;
-- transmission collective si le point à trancher §22.2 est refusé.
+- hébergement de contenu pédagogique ;
+- paiement de la transmission ;
+- catalogue public de « formateurs » consultable hors relation.
 
-## 28. Definition of Done (pour cette fiche, pas pour le code)
+## 25. Definition of Done (fiche)
 
-- [x] statut CONCEPTION explicite ;
-- [x] rattachement au référentiel confirmé (CAP-006 racine, pas de nouveau numéro) ;
-- [x] doctrine et invariants cités avec leurs sources ;
-- [x] acteurs, déclencheurs, workflow, permissions, visibilité, matching, intégrations (Fil, Mon espace, commentaire, partage, messagerie, Missions, Preuve) couverts ;
-- [x] hors périmètre explicite pour empêcher la dérive LMS ;
-- [x] points à trancher listés et bornés à un nombre gérable ;
-- [ ] les 5 points de §22 validés par un humain ;
-- [ ] aucune ligne de code, migration, route ou vue écrite avant cette validation.
+- [x] statut READY FOR IMPLEMENTATION ;
+- [x] 5 décisions métier intégrées explicitement ;
+- [x] doctrine produit et chaîne produit citées ;
+- [x] modèle de données, machine d'état, permissions, intégrations couverts sans zone grise bloquante ;
+- [x] hors périmètre explicite anti-LMS.
 
-## 29. Instruction d'arrêt
-
-Ne pas commencer l'implémentation de TRANSMISSION avant validation explicite des points §22. Si un point non listé ici s'avère bloquant pendant l'implémentation, appliquer la même règle d'arrêt que Missions : documenter le conflit, les fichiers concernés, les options, le risque — puis arrêter cette partie pour revue, plutôt que de trancher seul une règle métier.
+Implémentation autorisée sur la base de ce document.
