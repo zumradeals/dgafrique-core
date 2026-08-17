@@ -23,6 +23,9 @@ use InvalidArgumentException;
  * La règle RRULE prise en charge est un sous-ensemble volontairement borné — voir
  * Support\RecurrenceRule — suffisant pour DAILY/WEEKLY/MONTHLY avec INTERVAL/BYDAY/COUNT/
  * UNTIL, sans prétendre à une conformité RFC 5545 complète.
+ *
+ * États : ACTIVE -> PAUSED | STOPPED ; PAUSED -> ACTIVE | STOPPED ; STOPPED est final
+ * (historique) — aucune réactivation n'est permise depuis STOPPED.
  */
 final class MissionRecurrenceService
 {
@@ -37,16 +40,12 @@ final class MissionRecurrenceService
         abort_if($sourceMission->officialized_at === null, 409, 'Seule une Mission officialisée peut porter une récurrence.');
         abort_if(trim((string) $sourceMission->expected_result) === '', 422, 'La Mission source doit contenir un résultat attendu valide avant d’être rendue récurrente.');
         abort_unless(in_array($timezone, DateTimeZone::listIdentifiers(), true), 422, 'Fuseau horaire invalide.');
-        abort_if(
-            MissionRecurrence::query()->where('source_mission_id', $sourceMission->id)
-                ->whereIn('status', [MissionRecurrence::STATUS_ACTIVE, MissionRecurrence::STATUS_PAUSED])->exists(),
-            409,
-            'Une récurrence est déjà active ou en pause pour cette Mission.'
-        );
 
         $rule = $this->parseOrFail($rrule);
         $tz = new DateTimeZone($timezone);
-        $nextOccurrence = $rule->nextOccurrenceAfter(CarbonImmutable::now($tz));
+        $now = CarbonImmutable::now($tz);
+        $monthlyAnchorDay = $rule->freq === 'MONTHLY' ? (int) $now->format('j') : null;
+        $nextOccurrence = $rule->nextOccurrenceAfter($now, $monthlyAnchorDay);
 
         // L'échéance d'une occurrence n'est jamais une copie éternelle du due_at de la
         // Mission source : on retient un décalage relatif à son officialisation, appliqué
@@ -56,12 +55,25 @@ final class MissionRecurrenceService
             $dueOffsetMinutes = max(0, $sourceMission->officialized_at->diffInMinutes($sourceMission->due_at));
         }
 
-        return DB::transaction(function () use ($sourceMission, $actor, $rrule, $timezone, $dueOffsetMinutes, $nextOccurrence): MissionRecurrence {
+        return DB::transaction(function () use ($sourceMission, $actor, $rrule, $timezone, $dueOffsetMinutes, $monthlyAnchorDay, $nextOccurrence): MissionRecurrence {
+            // Verrouille la Mission source puis rejoue le contrôle « déjà une récurrence
+            // active/en pause » sous ce verrou : deux créations concurrentes ne peuvent
+            // ainsi jamais produire deux récurrences actives pour la même Mission — la
+            // seconde trouvera forcément la première déjà validée et committée.
+            Mission::query()->whereKey($sourceMission->id)->lockForUpdate()->firstOrFail();
+            abort_if(
+                MissionRecurrence::query()->where('source_mission_id', $sourceMission->id)
+                    ->whereIn('status', [MissionRecurrence::STATUS_ACTIVE, MissionRecurrence::STATUS_PAUSED])->exists(),
+                409,
+                'Une récurrence est déjà active ou en pause pour cette Mission.'
+            );
+
             $recurrence = MissionRecurrence::query()->create([
                 'source_mission_id' => $sourceMission->id,
                 'rrule' => $rrule,
                 'timezone' => $timezone,
                 'due_offset_minutes' => $dueOffsetMinutes,
+                'monthly_anchor_day' => $monthlyAnchorDay,
                 'is_active' => true,
                 'status' => MissionRecurrence::STATUS_ACTIVE,
                 'next_occurrence_at' => $nextOccurrence,
@@ -82,35 +94,52 @@ final class MissionRecurrenceService
         $rule = $this->parseOrFail($recurrence->rrule);
         $tz = new DateTimeZone($recurrence->timezone);
 
-        // Recalcul sûr : reprendre ne rejoue jamais les occurrences manquées pendant la
-        // pause — on repart de la prochaine occurrence réelle après maintenant.
-        $next = $rule->nextOccurrenceAfter(CarbonImmutable::now($tz));
+        return DB::transaction(function () use ($source, $recurrence, $actor, $rule, $tz): MissionRecurrence {
+            $locked = MissionRecurrence::query()->whereKey($recurrence->id)->lockForUpdate()->firstOrFail();
+            abort_unless($locked->status === MissionRecurrence::STATUS_PAUSED, 409, 'Seule une récurrence en pause peut être réactivée. Une récurrence arrêtée (STOPPED) est définitive.');
 
-        $recurrence->update([
-            'status' => MissionRecurrence::STATUS_ACTIVE, 'is_active' => true,
-            'next_occurrence_at' => $next, 'last_error_at' => null, 'last_error_code' => null,
-        ]);
-        $this->workflow->record($source, 'MISSION_RECURRENCE_RESUMED', $actor, null, null, ['recurrence_id' => $recurrence->id]);
+            // Recalcul sûr : reprendre ne rejoue jamais les occurrences manquées pendant la
+            // pause — on repart de la prochaine occurrence réelle après maintenant.
+            $next = $rule->nextOccurrenceAfter(CarbonImmutable::now($tz), $locked->monthly_anchor_day);
 
-        return $recurrence;
+            $locked->update([
+                'status' => MissionRecurrence::STATUS_ACTIVE, 'is_active' => true,
+                'next_occurrence_at' => $next, 'last_error_at' => null, 'last_error_code' => null,
+            ]);
+            $this->workflow->record($source, 'MISSION_RECURRENCE_RESUMED', $actor, null, null, ['recurrence_id' => $locked->id]);
+
+            return $locked;
+        });
     }
 
     public function pause(Mission $mission, MissionRecurrence $recurrence, string $actor): MissionRecurrence
     {
         $source = $this->assertAuthority($mission, $recurrence, $actor);
-        $recurrence->update(['status' => MissionRecurrence::STATUS_PAUSED, 'is_active' => false]);
-        $this->workflow->record($source, 'MISSION_RECURRENCE_PAUSED', $actor, null, null, ['recurrence_id' => $recurrence->id]);
 
-        return $recurrence;
+        return DB::transaction(function () use ($source, $recurrence, $actor): MissionRecurrence {
+            $locked = MissionRecurrence::query()->whereKey($recurrence->id)->lockForUpdate()->firstOrFail();
+            abort_unless($locked->status === MissionRecurrence::STATUS_ACTIVE, 409, 'Seule une récurrence active peut être mise en pause.');
+
+            $locked->update(['status' => MissionRecurrence::STATUS_PAUSED, 'is_active' => false]);
+            $this->workflow->record($source, 'MISSION_RECURRENCE_PAUSED', $actor, null, null, ['recurrence_id' => $locked->id]);
+
+            return $locked;
+        });
     }
 
     public function stop(Mission $mission, MissionRecurrence $recurrence, string $actor): MissionRecurrence
     {
         $source = $this->assertAuthority($mission, $recurrence, $actor);
-        $recurrence->update(['status' => MissionRecurrence::STATUS_STOPPED, 'is_active' => false, 'next_occurrence_at' => null]);
-        $this->workflow->record($source, 'MISSION_RECURRENCE_STOPPED', $actor, null, null, ['recurrence_id' => $recurrence->id]);
 
-        return $recurrence;
+        return DB::transaction(function () use ($source, $recurrence, $actor): MissionRecurrence {
+            $locked = MissionRecurrence::query()->whereKey($recurrence->id)->lockForUpdate()->firstOrFail();
+            abort_if($locked->status === MissionRecurrence::STATUS_STOPPED, 409, 'Cette récurrence est déjà arrêtée.');
+
+            $locked->update(['status' => MissionRecurrence::STATUS_STOPPED, 'is_active' => false, 'next_occurrence_at' => null]);
+            $this->workflow->record($source, 'MISSION_RECURRENCE_STOPPED', $actor, null, null, ['recurrence_id' => $locked->id]);
+
+            return $locked;
+        });
     }
 
     /**
@@ -175,7 +204,7 @@ final class MissionRecurrenceService
             // On avance toujours à l'échéance suivante, y compris si cette occurrence n'a
             // pas pu être générée (contexte devenu non opérationnel...) : la récurrence ne
             // reste jamais bloquée à rejouer indéfiniment le même créneau manqué.
-            $locked->update(['next_occurrence_at' => $rule->nextOccurrenceAfter($occurrenceAt)]);
+            $locked->update(['next_occurrence_at' => $rule->nextOccurrenceAfter($occurrenceAt, $locked->monthly_anchor_day)]);
 
             return $occurrence !== null;
         });

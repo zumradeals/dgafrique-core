@@ -21,7 +21,7 @@ final class MissionRecurrence extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'source_mission_id', 'rrule', 'timezone', 'due_offset_minutes', 'is_active', 'status',
+        'source_mission_id', 'rrule', 'timezone', 'due_offset_minutes', 'monthly_anchor_day', 'is_active', 'status',
         'next_occurrence_at', 'last_generated_at', 'last_error_at',
         'last_error_code', 'created_by_core_reference',
     ];
