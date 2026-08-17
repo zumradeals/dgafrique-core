@@ -25,25 +25,32 @@ final class MissionSubmissionService
     public function contribute(Mission $mission, string $actor, string $summary, ?array $evidenceContext = null): MissionContribution
     {
         abort_if(trim($summary) === '', 422, 'Décrivez votre apport.');
-        abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
 
-        $assignment = MissionAssignment::query()
-            ->where('mission_id', $mission->id)
-            ->where('core_identity_reference', $actor)
-            ->where('status', MissionAssignment::STATUS_ACCEPTED)
-            ->first();
-        abort_unless($assignment !== null, 403, 'Seule une personne dont la participation est acceptée peut déposer une contribution.');
+        return DB::transaction(function () use ($mission, $actor, $summary, $evidenceContext): MissionContribution {
+            // Mission d'abord, puis objet enfant : verrouiller la Mission avant de statuer
+            // revalide son état contre une transition terminale qui pourrait courir en
+            // parallèle (ex. annulation concurrente).
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_if(in_array($lockedMission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
 
-        $contribution = MissionContribution::query()->create([
-            'mission_id' => $mission->id,
-            'assignment_id' => $assignment->id,
-            'summary' => trim($summary),
-            'evidence_context' => $evidenceContext,
-            'submitted_at' => now(),
-        ]);
-        $this->workflow->record($mission, 'MISSION_CONTRIBUTION_SUBMITTED', $actor, null, null, ['assignment_id' => $assignment->id]);
+            $assignment = MissionAssignment::query()
+                ->where('mission_id', $lockedMission->id)
+                ->where('core_identity_reference', $actor)
+                ->where('status', MissionAssignment::STATUS_ACCEPTED)
+                ->first();
+            abort_unless($assignment !== null, 403, 'Seule une personne dont la participation est acceptée peut déposer une contribution.');
 
-        return $contribution;
+            $contribution = MissionContribution::query()->create([
+                'mission_id' => $lockedMission->id,
+                'assignment_id' => $assignment->id,
+                'summary' => trim($summary),
+                'evidence_context' => $evidenceContext,
+                'submitted_at' => now(),
+            ]);
+            $this->workflow->record($lockedMission, 'MISSION_CONTRIBUTION_SUBMITTED', $actor, null, null, ['assignment_id' => $assignment->id]);
+
+            return $contribution;
+        });
     }
 
     /**
@@ -110,16 +117,20 @@ final class MissionSubmissionService
     public function accept(Mission $mission, string $actor, ?string $note = null): Mission
     {
         $this->assertValidator($mission, $actor);
-        // Même invariant que cancel() : une Mission avec une sous-Mission encore active ne
-        // peut jamais devenir COMPLETED tant que ces sous-Missions n'ont pas leur propre issue.
-        abort_if(
-            $mission->children()->whereNotIn('status', Mission::TERMINAL_STATUSES)->exists(),
-            409,
-            'Terminez ou annulez d’abord les sous-Missions encore actives.'
-        );
 
         return DB::transaction(function () use ($mission, $actor, $note): Mission {
             $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+
+            // Même invariant que cancel(), revalidé ICI sous le même verrou de ligne que
+            // create() pose sur ce parent avant d'insérer une sous-Mission (voir
+            // MissionWorkflow::create()) : les deux opérations se sérialisent l'une contre
+            // l'autre, jamais « parent COMPLETED + enfant non terminal » par concurrence.
+            abort_if(
+                $lockedMission->children()->whereNotIn('status', Mission::TERMINAL_STATUSES)->exists(),
+                409,
+                'Terminez ou annulez d’abord les sous-Missions encore actives.'
+            );
+
             $latest = MissionSubmission::query()->where('mission_id', $lockedMission->id)->latest('version')->lockForUpdate()->first();
             abort_unless($latest !== null, 404, 'Aucune soumission à valider.');
 

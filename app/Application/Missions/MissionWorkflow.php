@@ -64,6 +64,16 @@ final class MissionWorkflow
         abort_if($maxExecutors !== null && $maxExecutors < $minExecutors, 422, 'Le nombre maximal d’exécutants ne peut pas être inférieur au minimum.');
 
         return DB::transaction(function () use ($actor, $contextType, $contextReference, $data, $parent, $requestedVisibility, $minExecutors, $maxExecutors): Mission {
+            if ($parent !== null) {
+                // Revalidation sous verrou : le parent a pu devenir terminal entre le
+                // contrôle initial et l'acquisition du verrou (concurrence avec une
+                // annulation/complétion). Le même verrou de ligne que cancel()/accept()
+                // pose sur cette Mission sérialise les deux opérations : il est ainsi
+                // impossible d'obtenir « parent terminal + nouvel enfant non terminal ».
+                $lockedParent = Mission::query()->whereKey($parent->id)->lockForUpdate()->firstOrFail();
+                abort_unless(! in_array($lockedParent->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission parente est déjà terminée.');
+            }
+
             $mission = Mission::query()->create([
                 'public_reference' => (string) Str::uuid(),
                 'context_type' => $contextType,
@@ -178,11 +188,6 @@ final class MissionWorkflow
     public function cancel(Mission $mission, string $actor, string $reason): Mission
     {
         abort_if(trim($reason) === '', 422, 'Une raison est requise pour annuler cette Mission.');
-        abort_if(
-            $mission->children()->whereNotIn('status', Mission::TERMINAL_STATUSES)->exists(),
-            409,
-            'Terminez ou annulez d’abord les sous-Missions encore actives.'
-        );
 
         return $this->applyTransition(
             $mission, $actor,
@@ -192,6 +197,15 @@ final class MissionWorkflow
                 $adapter = $this->registry->for($m->context_type);
                 $context = $adapter->resolve($m->context_reference);
                 abort_unless($adapter->canCancel($context, $a), 403);
+                // Vérifié ICI, sous le verrou déjà posé sur $m par applyTransition() : la
+                // création concurrente d'une sous-Mission verrouille ce même parent avant
+                // d'insérer (voir create()), donc les deux opérations se sérialisent l'une
+                // contre l'autre — jamais « parent terminal + enfant non terminal ».
+                abort_if(
+                    $m->children()->whereNotIn('status', Mission::TERMINAL_STATUSES)->exists(),
+                    409,
+                    'Terminez ou annulez d’abord les sous-Missions encore actives.'
+                );
             },
             mutate: static fn (): array => ['cancelled_at' => now()],
             eventContext: ['reason' => $reason],
