@@ -142,7 +142,7 @@ final class MissionStructureMatchingTest extends TestCase
             'requirement_level' => 'REQUIRED', 'quantity' => 1,
         ]);
 
-        $this->profile('IDN-GOOD', 'Awa', true, true, 'Developpement web');
+        $good = $this->profile('IDN-GOOD', 'Awa', true, true, 'Developpement web');
         $this->profile('IDN-PRIVATE', 'Privé', true, false, 'Developpement web');
 
         $engine = app(MissionMatchingEngine::class);
@@ -153,7 +153,7 @@ final class MissionStructureMatchingTest extends TestCase
 
         self::assertSame(0, MissionAssignment::query()->count(), 'Recommander n’assigne jamais automatiquement personne.');
 
-        $engine->hide($mission, 'IDN-OWNER', 'IDN-GOOD');
+        $engine->hide($mission, 'IDN-OWNER', $good->discovery_reference);
         self::assertSame([], $engine->recommend($mission, 'IDN-OWNER'));
     }
 

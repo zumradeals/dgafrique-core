@@ -22,6 +22,7 @@ use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionRecurrence;
+use App\Models\PersonProfile;
 use App\Models\Project;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
@@ -29,6 +30,7 @@ use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -58,7 +60,8 @@ final class MissionReviewFixesTest extends TestCase
         $this->assertAborts(404, fn () => $assignments->declineOffer($missionA, 'IDN-OWNER-A', $offerOnB));
         $this->assertAborts(404, fn () => $assignments->withdraw($missionA, 'IDN-EXEC', $offerOnB));
 
-        $invitationOnB = $assignments->invite($missionB, 'IDN-OWNER-B', 'IDN-LEARNER', MissionAssignment::ROLE_LEARNER);
+        $learnerDiscoveryReference = $this->discoverableProfile('IDN-LEARNER', 'Apprenant B');
+        $invitationOnB = $assignments->invite($missionB, 'IDN-OWNER-B', $learnerDiscoveryReference, MissionAssignment::ROLE_LEARNER);
         $this->assertAborts(404, fn () => $assignments->acceptInvitation($missionA, 'IDN-LEARNER', $invitationOnB));
         $this->assertAborts(404, fn () => $assignments->declineInvitation($missionA, 'IDN-LEARNER', $invitationOnB));
 
@@ -76,9 +79,14 @@ final class MissionReviewFixesTest extends TestCase
         [$mission, ] = $this->openMission('IDN-OWNER', 'Mission ZUMRA', 'ZUMRA');
         $assignments = app(MissionAssignmentService::class);
 
-        // IDN-STRANGER n'est membre d'aucune ZUMRA : l'inviter directement sur une Mission
-        // de contexte ZUMRA ne doit jamais lui fabriquer un accès qu'il n'avait pas.
-        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', 'IDN-STRANGER', MissionAssignment::ROLE_LEARNER));
+        // Une chaîne arbitraire ne résout jamais vers une identité réelle.
+        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', 'not-a-real-discovery-reference', MissionAssignment::ROLE_LEARNER));
+
+        // IDN-STRANGER est une personne réelle et découvrable, mais n'est membre d'aucune
+        // ZUMRA : l'inviter directement sur une Mission de contexte ZUMRA ne doit jamais lui
+        // fabriquer un accès qu'il n'avait pas.
+        $strangerDiscoveryReference = $this->discoverableProfile('IDN-STRANGER', 'Kwame Étranger');
+        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', $strangerDiscoveryReference, MissionAssignment::ROLE_LEARNER));
     }
 
     // ===== 2. Démarrage =====
@@ -496,6 +504,22 @@ final class MissionReviewFixesTest extends TestCase
             'internal_charter' => 'Respect, dignité, transmission, hiérarchie responsable et décisions conformes à la charte commune.',
             'assume_primary_lead' => true,
         ]);
+    }
+
+    /** Crée un profil découvrable et consentant, et retourne sa référence de découverte. */
+    private function discoverableProfile(string $reference, string $name): string
+    {
+        $profile = PersonProfile::query()->create([
+            'core_identity_reference' => $reference,
+            'orientation_consent' => true,
+            'orientation_consented_at' => now(),
+            'discovery_reference' => (string) Str::uuid(),
+            'discovery_display_name' => $name,
+            'discovery_consent' => true,
+            'discovery_consented_at' => now(),
+        ]);
+
+        return $profile->discovery_reference;
     }
 
     private function activateProgram(string $reference): void

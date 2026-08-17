@@ -17,7 +17,9 @@ use App\Models\MissionAssignment;
 use App\Models\MissionBlocker;
 use App\Models\MissionSubmission;
 use App\Models\Need;
+use App\Models\PersonProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -88,7 +90,8 @@ final class MissionParticipationBlockerTest extends TestCase
         self::assertSame(2, MissionAssignment::query()->where('mission_id', $mission->id)->where('status', MissionAssignment::STATUS_ACCEPTED)->count());
 
         // Une invitation reste INVITED tant que la personne n'a pas explicitement répondu.
-        $invitation = $assignments->invite($mission, 'IDN-OWNER', 'IDN-EXEC-3', MissionAssignment::ROLE_LEARNER);
+        $discoveryReference = $this->discoverableProfile('IDN-EXEC-3', 'Exécutant trois');
+        $invitation = $assignments->invite($mission, 'IDN-OWNER', $discoveryReference, MissionAssignment::ROLE_LEARNER);
         self::assertSame(MissionAssignment::STATUS_INVITED, $invitation->status);
         self::assertSame(MissionAssignment::STATUS_INVITED, $invitation->fresh()->status);
 
@@ -241,6 +244,22 @@ final class MissionParticipationBlockerTest extends TestCase
             'milestones' => "Constituer l’équipe\nPréparer le lieu\nLancer le pilote",
             'property_regime' => 'PERSONAL_SUPPORTED', 'visibility' => 'PUBLIC',
         ], $overrides);
+    }
+
+    /** Crée un profil découvrable et consentant, et retourne sa référence de découverte. */
+    private function discoverableProfile(string $reference, string $name): string
+    {
+        $profile = PersonProfile::query()->create([
+            'core_identity_reference' => $reference,
+            'orientation_consent' => true,
+            'orientation_consented_at' => now(),
+            'discovery_reference' => (string) Str::uuid(),
+            'discovery_display_name' => $name,
+            'discovery_consent' => true,
+            'discovery_consented_at' => now(),
+        ]);
+
+        return $profile->discovery_reference;
     }
 
     private function activateProgram(string $reference): void
