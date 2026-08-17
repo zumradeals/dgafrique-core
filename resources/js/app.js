@@ -1,3 +1,15 @@
+const agirSheet = document.querySelector('[data-dg-agir-sheet]');
+if (agirSheet) {
+    const open = () => { agirSheet.hidden = false; };
+    const close = () => { agirSheet.hidden = true; };
+
+    document.querySelectorAll('[data-dg-agir-open]').forEach((button) => button.addEventListener('click', open));
+    agirSheet.querySelectorAll('[data-dg-agir-close]').forEach((button) => button.addEventListener('click', close));
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') close();
+    });
+}
+
 const progressiveProfile = document.querySelector('[data-profile-steps]');
 
 const zumraQrTargets = [...document.querySelectorAll('[data-zumra-qr]')];

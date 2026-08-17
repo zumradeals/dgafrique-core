@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountRegistrationController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
@@ -29,9 +30,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('foundation');
-});
+Route::get('/', LandingController::class)->name('landing');
 
 Route::get('/connexion', [MemberSessionController::class, 'create'])->name('login');
 Route::post('/connexion', [MemberSessionController::class, 'store'])

@@ -1,71 +1,193 @@
-<x-layouts.portal title="DG Afrique — Capacités, besoins et opportunités">
-    <div class="claude-portal doctrine-home">
-        <header class="claude-header">
-            <div class="claude-header-left">
-                <a class="claude-brand" href="/" aria-label="Accueil DG Afrique"><span>G</span><strong>DG Afrique</strong></a>
-                <nav aria-label="Navigation principale"><a href="#capacites">Capacités</a><a href="#besoins">Besoins</a><a href="#opportunites">Opportunités</a><a href="#zumra">ZUMRA</a><a href="#satellites">Satellites</a></nav>
-            </div>
-            <div class="claude-header-actions">
-                <span class="visibility-cta" title="Parcours en préparation">Proposer une opportunité</span>
-                <details class="apps-menu"><summary aria-label="Ouvrir le lanceur de plateformes"><i></i><i></i><i></i><i></i></summary><div><small>Portail et satellites</small><a href="/"><b class="sat-blue">D</b><span>DG Afrique <em class="active-pill">Actif</em></span></a><span><b class="sat-green">Z</b><span>ZUMRA <em>En préparation</em></span></span><span><b class="sat-cyan">G</b><span>GamaDrive <em>À raccorder</em></span></span></div></details>
-                <span class="notification-placeholder" aria-label="Notifications bientôt disponibles"><i></i></span>
-                <a class="claude-login" href="{{ route('login') }}">Connexion</a>
-            </div>
-        </header>
+{{--
+    Landing page — la promesse. Reproduction fidèle du handoff Claude
+    (docs/design/reference/claude-2026-08-16/) : DG Afrique comme réseau d'action, plus comme
+    portail/lanceur d'applications. Les deux cartes « en ce moment » sont des fixtures
+    d'exemple (resources/design-reference/), toujours annoncées par le mot « Exemple ».
+--}}
+<x-layouts.portal title="DG Afrique — le réseau où les capacités deviennent des actions">
+<div class="dg">
+    <header class="dg-topbar" style="border-radius:0">
+        <a href="{{ route('landing') }}" class="flex items-center gap-2.5" style="color:inherit">
+            <span class="dg-topbar__mark">D</span>
+            <strong style="font-size:16px">DG Afrique</strong>
+        </a>
+        <nav aria-label="Navigation" class="hidden md:flex" style="margin-left:8px">
+            <a href="#reseau">Le réseau</a>
+            <a href="#zumra">ZUMRA</a>
+            <a href="#besoins-projets">Besoins et projets</a>
+            <a href="#outils">Outils</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-3.5">
+            <a href="{{ route('login') }}" style="color:#EFE6D6;font-size:14px;font-weight:600">Se connecter</a>
+            <x-dg.btn variant="saffron" :href="route('register')">Créer mon compte</x-dg.btn>
+        </div>
+    </header>
 
-        <main>
-            <section class="claude-hero doctrine-hero">
-                <div class="cover-placeholder"><span>visuel de couverture administrable</span></div>
-                <div class="claude-hero-inner">
-                    <p class="hero-eyebrow">LE PORTAIL DES CAPACITÉS AFRICAINES</p>
-                    <h1>Ce que vous savez faire peut répondre à <em>un besoin réel.</em></h1>
-                    <p>DG Afrique révèle les capacités, rassemble les besoins et ouvre des opportunités. ZUMRA transforme les connexions utiles en actions collectives.</p>
-                    <nav class="search-tabs" aria-label="Catégories de découverte"><a class="active" href="#capacites">Capacités</a><a href="#besoins">Besoins</a><a href="#opportunites">Opportunités</a><a href="#zumra">ZUMRA</a></nav>
-                    <div class="claude-search" role="search"><div><small>JE RECHERCHE</small><span>Une capacité, un besoin, une opportunité…</span></div><div><small>OÙ ?</small><span>Pays, ville ou à distance</span></div><a href="#passer-action">Explorer</a></div>
-                    <p class="search-honesty">La recherche publique sera activée avec l’index de données réelles. Les parcours accessibles sont présentés ci-dessous.</p>
+    {{-- Hero --}}
+    <section style="position:relative;background:var(--dg-forest);color:var(--dg-on-deep-text);overflow:hidden">
+        <div style="position:absolute;inset:0;background:var(--dg-motif-deep)"></div>
+        <div class="grid gap-10 lg:gap-14 lg:!grid-cols-[1.05fr_.95fr] lg:!items-center lg:!py-24 lg:!px-10" style="position:relative;padding:44px 20px 56px">
+            <div class="flex flex-col gap-5 lg:gap-6.5">
+                <x-dg.label tone="saffron">Développement Global Afrique</x-dg.label>
+                <h1 class="dg-display dg-display--hero" style="color:var(--dg-on-deep-title);max-width:14ch">Vos capacités deviennent des actions.</h1>
+                <p style="margin:0;font-size:19px;line-height:1.65;color:var(--dg-on-deep-text);max-width:50ch">Déclarez ce que vous savez faire. Rencontrez les personnes qu’il vous faut. Répondez à un besoin réel, faites avancer un projet, faites vivre une ZUMRA. Ici, rien ne se mesure en likes — tout se mesure en actions engagées.</p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <x-dg.btn variant="saffron" :href="route('register')" style="padding:15px 26px">Créer mon compte — gratuit</x-dg.btn>
+                    <x-dg.btn variant="on-deep" :href="route('login', ['next' => route('activity.index', absolute: false)])" style="padding:15px 26px">Voir ce qui se passe en ce moment</x-dg.btn>
                 </div>
-            </section>
-
-            <div class="claude-main-flow">
-                <section class="claude-section doctrine-intro" id="passer-action">
-                    <div class="claude-heading"><span class="section-label">UN PORTAIL, TROIS MOUVEMENTS</span><h2>De la capacité à <em>l’action</em></h2><p>Chaque parcours part d’une réalité déclarée, puis vérifiée selon son niveau.</p></div>
-                    <div class="doctrine-pillars">
-                        <article id="capacites"><span>01</span><i class="pillar-capacity"></i><h3>Révéler les capacités</h3><p>Présentez ce que vous savez faire, transmettre ou souhaitez apprendre.</p><a href="{{ route('register') }}">Construire mon profil →</a></article>
-                        <article id="besoins"><span>02</span><i class="pillar-need"></i><h3>Exprimer les besoins</h3><p>Décrivez un obstacle, une compétence recherchée ou un projet à renforcer.</p><em>Parcours en préparation</em></article>
-                        <article id="opportunites"><span>03</span><i class="pillar-opportunity"></i><h3>Ouvrir des opportunités</h3><p>Missions, apprentissages, collaborations et financements pourront trouver leurs destinataires.</p><em>Index en préparation</em></article>
-                    </div>
-                </section>
-
-                <section class="claude-zumra doctrine-zumra" id="zumra">
-                    <div class="zumra-inner">
-                        <div class="zumra-text"><p class="section-label light">LE MOTEUR D’ACTION COMMUNAUTAIRE</p><h2>Une capacité isolée peut aider.<br><em>Une ZUMRA peut bâtir.</em></h2><p>ZUMRA réunit des personnes autour d’un objectif, organise la transmission des connaissances et transforme une intention en équipe, puis en projet réel.</p><div class="zumra-states"><div><strong>Apprendre</strong><small>par la transmission</small></div><div><strong>Former</strong><small>une équipe gouvernée</small></div><div><strong>Construire</strong><small>un projet réel</small></div><div><strong>Contribuer</strong><small>librement à l’écosystème</small></div></div><div class="zumra-join"><div class="empty-avatars"><i></i><i></i><i></i><i></i><i></i></div><p>Le Programme ZUMRA est distinct du compte gratuit DG Afrique.</p><span>Adhésion unique · 1 $ / 500 FCFA</span></div></div>
-                        <div class="zumra-journey" aria-label="Parcours d’une ZUMRA"><div><b>1</b><span><strong>Une intention</strong><small>un objectif utile et conforme aux valeurs</small></span></div><i></i><div><b>5</b><span><strong>Une gouvernance</strong><small>cinq responsabilités pour être validée</small></span></div><i></i><div><b>50+</b><span><strong>Une ZUMRA établie</strong><small>sans limite de membres ni de territoire</small></span></div></div>
-                    </div>
-                </section>
-
-                <section class="claude-section action-paths">
-                    <div class="claude-heading"><span class="section-label">CHOISIR SON POINT DE DÉPART</span><h2>Que voulez-vous <em>faire aujourd’hui ?</em></h2><p>DG Afrique vous conduit vers la prochaine action réellement disponible.</p></div>
-                    <div class="claude-needs-grid">
-                        <article><i></i><h3>Présenter mes capacités</h3><p>Créez votre compte puis renseignez progressivement ce que vous savez faire.</p><a href="{{ route('register') }}">Créer mon espace →</a></article>
-                        <article><i></i><h3>Trouver une capacité</h3><p>L’annuaire ouvrira avec des profils consentis et des informations réelles.</p><span class="coming-link">Annuaire · en préparation</span></article>
-                        <article class="featured"><b>Moteur social</b><i></i><h3>Découvrir ZUMRA</h3><p>Entrez dans l’espace qui reliera membres, équipes, apprentissages et projets.</p><a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}">Voir ZUMRA →</a></article>
-                        <article><i></i><h3>Exprimer un besoin</h3><p>Le parcours permettra de demander une compétence, un accompagnement ou une ressource.</p><span class="coming-link">Demandes · à venir</span></article>
-                        <article><i></i><h3>Proposer une opportunité</h3><p>Les organisations pourront publier des occasions vérifiables de travailler, apprendre ou collaborer.</p><span class="coming-link">Opportunités · à venir</span></article>
-                        <article><i></i><h3>Lancer un projet collectif</h3><p>Les adhérents pourront proposer une ZUMRA et constituer sa gouvernance.</p><span class="coming-link">Création ZUMRA · prochain gate</span></article>
-                    </div>
-                </section>
-
-                <section class="claude-section trends-section">
-                    <div class="claude-heading"><span class="section-label">PREUVES ET MOUVEMENTS RÉELS</span><h2>Ce qui prendra vie sur <em class="green">DG Afrique</em></h2><p>Aucun chiffre, profil ou projet n’est inventé avant son raccordement.</p></div>
-                    <div class="trends-grid"><aside><h3>Portail et satellites</h3>@foreach([['D','DG Afrique','Actif','blue'],['Z','ZUMRA','En préparation','green'],['G','GamaDrive','À raccorder','cyan'],['W','Wasplex','À raccorder','amber'],['G','G‑POS','À raccorder','green']] as $sat)<div class="sat-row"><b class="sat-{{ $sat[3] }}">{{ $sat[0] }}</b><span>{{ $sat[1] }}</span><em>{{ $sat[2] }}</em></div>@endforeach</aside><div class="feed-empty"><h3><b>Z</b> Actions récentes de ZUMRA</h3><article><div class="empty-author"><i></i><span></span></div><p>Les apprentissages, besoins, activités et projets apparaîtront ici à partir de publications réelles.</p><div class="media-placeholder">preuve ou média réel</div><small>Fil en préparation</small></article></div><aside class="people-empty"><h3>Capacités recherchées</h3>@for($i=0;$i<5;$i++)<div><i></i><span></span></div>@endfor<p>Les tendances seront calculées à partir de besoins réels.</p></aside></div>
-                </section>
-
-                <section class="claude-section ecosystem-manifesto" id="satellites"><div><span class="section-label">UNE PORTE VERS PLUSIEURS OUTILS</span><h2>DG Afrique révèle les possibilités.<br>Ses satellites permettent <em>d’agir.</em></h2><p>Chaque satellite répond à un besoin spécialisé tout en conservant son métier et ses données. DG Afrique reste la vitrine unique qui présente les capacités, les besoins, les opportunités et les parcours disponibles.</p></div><div class="ecosystem-layers"><span><b>DG Afrique</b><small>Portail visible</small></span><i></i><span><b>ZUMRA</b><small>Action collective</small></span><i></i><span><b>Satellites</b><small>Services spécialisés</small></span></div></section>
-
-                <section class="claude-section platforms-section" id="plateformes"><p>DÉCOUVREZ PROGRESSIVEMENT NOS SATELLITES</p><div><span><i class="dot-blue"></i>DG Afrique</span><span><i class="dot-green"></i>ZUMRA · en préparation</span><span class="muted"><i class="dot-cyan"></i>GamaDrive · à raccorder</span><span class="muted"><i class="dot-amber"></i>Wasplex · à raccorder</span><span class="muted"><i class="dot-blue"></i>G‑Market · à raccorder</span><span class="muted"><i class="dot-green"></i>G‑POS · à raccorder</span></div></section>
+                <span style="font-size:13px;color:var(--dg-on-deep-muted)">Le compte DG Afrique est gratuit et distinct de l’adhésion au Programme ZUMRA.</span>
             </div>
-        </main>
+            <figure class="dg-photo lg:!h-[520px]" style="height:300px">
+                <figcaption class="dg-photo__caption">photo — un atelier réel, mains au travail, regard direct, format portrait</figcaption>
+            </figure>
+        </div>
+    </section>
 
-        <footer class="claude-footer"><div class="footer-grid"><div><h3>DG Afrique</h3><p>Le portail des capacités, des besoins et des opportunités.</p><div class="social-placeholders"><span>f</span><span>in</span><span>ig</span><span>yt</span></div></div><div><h3>Explorer</h3><span>Capacités · bientôt</span><span>Besoins · bientôt</span><span>Opportunités · bientôt</span><span>ZUMRA · en préparation</span></div><div><h3>Nos satellites</h3><span>GamaDrive</span><span>Wasplex</span><span>G‑Market</span><span>G‑POS</span></div><div><h3>Confiance</h3><p>Les données visibles sont publiées selon leur niveau de validation et de consentement.</p></div></div><div class="footer-bottom">DG Afrique · Le portail qui relie les capacités aux opportunités.</div></footer>
-    </div>
+    {{-- Comment une capacité devient une action --}}
+    <section id="reseau" style="padding:56px 20px 20px" class="lg:!py-20 lg:!px-10">
+        <div class="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-4" style="margin-bottom:32px">
+            <h2 class="dg-display dg-display--section" style="max-width:20ch">Comment une capacité devient une action</h2>
+            <span style="font-size:15px;color:var(--dg-muted);max-width:40ch" class="lg:text-right">Un seul mouvement, six moments. Chacun existe déjà comme objet réel du produit.</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6" style="border-top:1px solid var(--dg-line-section);border-bottom:1px solid var(--dg-line-section)">
+            @foreach([
+                ['01', 'Je sais faire', 'Un profil de capacités, pas une fiche biographique.'],
+                ['02', 'Je rencontre', 'Des personnes pertinentes, avec la raison de la mise en relation.'],
+                ['03', 'J’apprends, je transmets', 'Ce que je veux apprendre vaut autant que ce que je maîtrise.'],
+                ['04', 'Un besoin apparaît', 'Ce qui manque vraiment, dit clairement, sans promesse d’aide.'],
+                ['05', 'Un projet se construit', 'Le besoin dit ce qui manque, le projet organise ce qui se construit.'],
+                ['06', 'Une équipe agit', 'Une ZUMRA prend la suite : gouvernance, charte, responsabilités réelles.'],
+            ] as [$n, $title, $body])
+                <div style="padding:24px 20px;border-bottom:1px solid var(--dg-line-inner)" class="lg:!border-b-0 lg:[&:not(:last-child)]:!border-r lg:!border-r-[var(--dg-line-inner)]">
+                    <span class="dg-label" style="color:var(--dg-copper)">{{ $n }}</span>
+                    <strong style="display:block;margin-top:10px;font-size:17px;color:var(--dg-forest)">{{ $title }}</strong>
+                    <span style="display:block;margin-top:8px;font-size:14px;line-height:1.6;color:var(--dg-muted)">{{ $body }}</span>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- Exemples --}}
+    <section id="besoins-projets" style="padding:40px 20px" class="lg:!py-16 lg:!px-10">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <x-dg.card>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <x-dg.label tone="copper">Un besoin en ce moment · Exemple</x-dg.label>
+                    <h3 class="dg-display" style="font-size:30px;line-height:1.15">{{ $exampleNeed['titre'] }}</h3>
+                    <p style="margin:0;font-size:15px;line-height:1.6;color:var(--dg-text)">{{ $exampleNeed['lieu'] }} · collaboration {{ $exampleNeed['collaboration'] }}@if(!empty($exampleNeed['capaciteRecherchee'])) · capacité recherchée : {{ $exampleNeed['capaciteRecherchee'] }}@endif</p>
+                    <div class="flex gap-2.5">
+                        <x-dg.btn variant="need" disabled title="Ceci est un exemple illustratif — créez votre compte pour voir les besoins réels.">Je peux aider</x-dg.btn>
+                        <x-dg.btn variant="learn" disabled title="Ceci est un exemple illustratif — créez votre compte pour voir les besoins réels.">Je veux apprendre</x-dg.btn>
+                    </div>
+                </div>
+            </x-dg.card>
+            <x-dg.card>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <x-dg.label style="color:var(--dg-night)">Un projet qui avance · Exemple</x-dg.label>
+                    <h3 class="dg-display" style="font-size:30px;line-height:1.15">{{ $exampleProject['titre'] }} — passage à l’expérimentation</h3>
+                    <p style="margin:0;font-size:15px;line-height:1.6;color:var(--dg-text)">Porté par une ZUMRA · {{ count($exampleProject['competencesRecherchees']) }} compétences recherchées</p>
+                    <div class="flex gap-2.5">
+                        <x-dg.btn variant="project" disabled title="Ceci est un exemple illustratif — créez votre compte pour voir les projets réels.">Voir le projet</x-dg.btn>
+                        <x-dg.btn variant="quiet" disabled title="Ceci est un exemple illustratif — créez votre compte pour voir les projets réels.">Participer</x-dg.btn>
+                    </div>
+                </div>
+            </x-dg.card>
+        </div>
+    </section>
+
+    {{-- ZUMRA --}}
+    <section id="zumra" style="position:relative;background:var(--dg-forest);color:var(--dg-on-deep-text);overflow:hidden">
+        <div style="position:absolute;inset:0;background:var(--dg-motif-deep)"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 lg:!py-24 lg:!px-10" style="position:relative;padding:56px 20px">
+            <div class="flex flex-col gap-5">
+                <x-dg.label tone="saffron">Le moteur humain</x-dg.label>
+                <h2 class="dg-display dg-display--section" style="color:var(--dg-on-deep-title);max-width:16ch">Une ZUMRA, c’est une équipe qui s’engage vraiment.</h2>
+                <p style="margin:0;font-size:17px;line-height:1.7;color:var(--dg-on-deep-text);max-width:52ch">Un domaine, un objectif fondateur, une charte, cinq responsabilités nommées et acceptées explicitement. Aucune adhésion automatique, aucun rôle attribué en silence, aucun siège rempli par un profil fictif.</p>
+                <span style="font-size:14px;color:var(--dg-on-deep-muted);max-width:52ch">Le compte DG Afrique reste gratuit. L’adhésion au Programme ZUMRA est un engagement distinct, avec sa contribution propre.</span>
+            </div>
+            <div class="flex flex-col gap-3">
+                @foreach([
+                    ['01', 'Premier responsable', 'Rôle accepté explicitement, jamais attribué'],
+                    ['02', 'Deux adjoints distincts', 'Deux personnes différentes, toujours'],
+                    ['03', 'Responsable financier', 'La contribution n’achète aucun pouvoir'],
+                    ['04', 'Relations et affaires sociales', 'Un siège vacant reste visible comme vacant'],
+                ] as [$n, $title, $body])
+                    <div style="display:flex;align-items:center;gap:16px;padding:18px 20px;border-radius:16px;background:rgba(239,230,214,.07);border:1px solid rgba(239,230,214,.12)">
+                        <span class="dg-label" style="color:var(--dg-saffron);width:24px">{{ $n }}</span>
+                        <div>
+                            <strong style="display:block;font-size:15px;color:var(--dg-on-deep-title)">{{ $title }}</strong>
+                            <span style="font-size:13px;color:var(--dg-on-deep-muted)">{{ $body }}</span>
+                        </div>
+                    </div>
+                @endforeach
+                <div class="flex items-center gap-4" style="margin-top:8px">
+                    <x-dg.btn variant="saffron" :href="route('login', ['next' => route('zumra.groups.index', absolute: false)])" style="padding:13px 22px">Découvrir les ZUMRA</x-dg.btn>
+                    <a href="{{ route('login', ['next' => route('zumra.membership.show', absolute: false)]) }}" style="color:var(--dg-on-deep-title);font-size:14px;font-weight:600">Comprendre l’adhésion →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Outils --}}
+    <section id="outils" style="padding:56px 20px;background:var(--dg-sand)" class="lg:!py-16 lg:!px-10">
+        <div class="flex flex-col lg:flex-row lg:items-baseline lg:justify-between gap-3" style="margin-bottom:24px">
+            <h2 class="dg-display lg:!text-[38px]" style="font-size:32px">Des outils, quand l’action en a besoin</h2>
+            <span style="font-size:14px;color:var(--dg-muted);max-width:44ch" class="lg:text-right">Les outils spécialisés ne sont pas le produit. Ils s’ouvrent depuis un projet, au moment où il en a réellement besoin.</span>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-4">
+            <div style="flex:1;min-width:260px;background:var(--dg-card);border:1px solid var(--dg-line);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px">
+                <span class="dg-tool__mark" style="width:44px;height:44px;border-radius:13px;font-size:14px">GD</span>
+                <div>
+                    <strong style="display:block;font-size:15px;color:var(--dg-forest)">GamaDrive</strong>
+                    <span class="dg-meta">Les documents d’un projet, à leur place</span>
+                </div>
+            </div>
+            <div style="flex:1;min-width:260px;border:1px dashed var(--dg-line-dashed);border-radius:18px;padding:22px;display:flex;align-items:center;gap:16px;color:var(--dg-faint)">
+                <span style="width:44px;height:44px;border-radius:13px;border:1px dashed var(--dg-line-dashed)"></span>
+                <div>
+                    <strong style="display:block;font-size:15px">Futurs outils</strong>
+                    <span style="font-size:13px">Ajoutés lorsqu’un besoin réel les appelle</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Ce que nous ne ferons pas --}}
+    <section style="padding:56px 20px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center" class="lg:!py-24">
+        <x-dg.label tone="copper">Ce que nous ne ferons pas</x-dg.label>
+        <h2 class="dg-display lg:!text-[52px]" style="font-size:34px;line-height:1.1;max-width:20ch">Pas de likes. Pas de classement. Pas de course à l’attention.</h2>
+        <p style="margin:0;font-size:16px;line-height:1.7;color:var(--dg-text);max-width:64ch">Personne n’est noté ici. Le fil s’arrête quand il n’a plus rien d’utile à dire. Ce qui compte, c’est qu’une capacité rencontre un besoin et qu’il en sorte quelque chose de réel.</p>
+        <x-dg.btn variant="primary" :href="route('register')" style="padding:15px 28px">Créer mon compte — gratuit</x-dg.btn>
+    </section>
+
+    {{-- Footer --}}
+    <footer style="padding:44px 20px 32px;background:var(--dg-forest);color:var(--dg-on-deep-muted)" class="lg:!py-14 lg:!px-10">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div style="grid-column:1 / -1" class="lg:!col-span-1">
+                <div class="flex items-center gap-2.5" style="margin-bottom:10px">
+                    <span class="dg-topbar__mark" style="width:28px;height:28px;font-size:15px">D</span>
+                    <strong style="font-size:15px;color:var(--dg-on-deep-title)">DG Afrique</strong>
+                </div>
+                <span style="font-size:13px;line-height:1.6;max-width:30ch;display:block">Le réseau où les capacités deviennent des actions.</span>
+            </div>
+            <div class="flex flex-col gap-2" style="font-size:13px">
+                <strong style="color:var(--dg-on-deep-title)">Le réseau</strong>
+                <a href="{{ route('login', ['next' => route('people.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Personnes</a>
+                <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Besoins</a>
+                <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Projets</a>
+            </div>
+            <div class="flex flex-col gap-2" style="font-size:13px">
+                <strong style="color:var(--dg-on-deep-title)">ZUMRA</strong>
+                <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Le programme</a>
+                <a href="{{ route('login', ['next' => route('zumra.groups.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Les ZUMRA</a>
+            </div>
+            <div class="flex flex-col gap-2" style="font-size:13px">
+                <strong style="color:var(--dg-on-deep-title)">Compte</strong>
+                <a href="{{ route('register') }}" style="color:var(--dg-on-deep-muted)">Créer mon compte</a>
+                <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Se connecter</a>
+            </div>
+        </div>
+        <div style="max-width:1600px;margin:28px auto 0;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
+    </footer>
+</div>
 </x-layouts.portal>

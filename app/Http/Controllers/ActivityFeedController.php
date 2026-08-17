@@ -5,14 +5,23 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
+use App\Application\Recommendation\PersonRecommendationEngine;
+use App\Application\Recommendation\RecommendationConfiguration;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\PortalAdministrator;
+use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 final class ActivityFeedController
 {
-    public function index(Request $request, ActivityFeedService $activity): View
-    {
+    public function index(
+        Request $request,
+        ActivityFeedService $activity,
+        PersonRecommendationEngine $recommendationEngine,
+        RecommendationConfiguration $recommendationConfiguration,
+    ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
 
@@ -31,11 +40,29 @@ final class ActivityFeedController
             $feed->appends(['type' => $filter]);
         }
 
+        $myGroups = ZumraGroup::query()
+            ->whereIn('id', ZumraGroupMembership::query()
+                ->where('core_identity_reference', $identity->reference)
+                ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+                ->pluck('zumra_group_id'))
+            ->orderBy('name')
+            ->limit(6)
+            ->get();
+
+        $recommendedPeople = array_slice(
+            $recommendationEngine->forIdentity($identity->reference, $recommendationConfiguration->get())['recommendations'],
+            0,
+            3,
+        );
+
         return view('activity.index', [
             'identity' => $identity,
+            'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'feed' => $feed,
             'filter' => $filter,
             'filters' => ActivityFeedService::FILTERS,
+            'myGroups' => $myGroups,
+            'recommendedPeople' => $recommendedPeople,
         ]);
     }
 }

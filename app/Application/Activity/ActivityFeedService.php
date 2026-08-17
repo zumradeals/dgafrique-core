@@ -13,6 +13,8 @@ use App\Models\Project;
 use App\Models\ProjectEvent;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupEvent;
+use App\Models\ZumraGroupMembership;
+use App\Models\ZumraGroupRole;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -89,7 +91,7 @@ final class ActivityFeedService
             $items = $items->concat($this->projectItems($actor, $sourceLimit));
         }
         if (in_array($filter, ['ALL', 'ZUMRA'], true)) {
-            $items = $items->concat($this->zumraItems($sourceLimit));
+            $items = $items->concat($this->zumraItems($actor, $sourceLimit));
         }
 
         return $items->sort(static function (array $left, array $right): int {
@@ -140,9 +142,14 @@ final class ActivityFeedService
                 'title' => $need->title,
                 'summary' => Str::limit(trim($need->context), 180),
                 'context' => $need->capability_label ? 'Capacité recherchée : '.$need->capability_label : null,
+                'location' => $need->location,
                 'action_label' => 'Voir le besoin',
                 'action_url' => route('needs.show', $need),
                 'comment_url' => route('comments.need', $need),
+                'share_url' => route('shares.need', $need),
+                'contact_url' => route('messages.need', $need),
+                'can_decide' => $this->needs->canDecide($need, $actor),
+                'resolution_note' => $need->resolution_note,
                 'occurred_at' => $event->occurred_at,
             ]);
         }
@@ -200,9 +207,12 @@ final class ActivityFeedService
                 'title' => $project->name,
                 'summary' => Str::limit(trim($project->summary), 180),
                 'context' => $context,
+                'maturity' => $project->maturity,
                 'action_label' => 'Voir le projet',
                 'action_url' => route('projects.show', $project),
                 'comment_url' => route('comments.project', $project),
+                'share_url' => route('shares.project', $project),
+                'can_decide' => $this->projects->canDecide($project, $actor),
                 'occurred_at' => $event->occurred_at,
             ]);
         }
@@ -210,7 +220,7 @@ final class ActivityFeedService
         return $items;
     }
 
-    private function zumraItems(int $limit): Collection
+    private function zumraItems(string $actor, int $limit): Collection
     {
         $events = ZumraGroupEvent::query()
             ->whereIn('event', array_keys(self::ZUMRA_EVENTS))
@@ -223,6 +233,11 @@ final class ActivityFeedService
             ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
             ->get()
             ->keyBy('id');
+
+        $memberships = ZumraGroupMembership::query()
+            ->whereIn('zumra_group_id', $groups->keys())
+            ->where('core_identity_reference', $actor)
+            ->pluck('status', 'zumra_group_id');
 
         $seen = [];
         $items = collect();
@@ -250,13 +265,32 @@ final class ActivityFeedService
                 'title' => $group->name,
                 'summary' => Str::limit(trim($group->founding_objective), 180),
                 'context' => $group->active_member_count > 0 ? $group->active_member_count.' membre(s) actif(s)' : null,
+                'state' => $group->state,
                 'action_label' => 'Voir la ZUMRA',
                 'action_url' => route('zumra.groups.show', $group),
                 'comment_url' => route('comments.zumra-activity', $group),
+                'request_url' => route('zumra.groups.request', $group),
+                'contact_url' => route('messages.zumra', $group),
+                'is_active_member' => $memberships->get($group->id) === ZumraGroupMembership::STATUS_ACTIVE,
+                'is_pending' => in_array($memberships->get($group->id), [ZumraGroupMembership::STATUS_REQUESTED, ZumraGroupMembership::STATUS_INVITED], true),
+                'seats' => $this->seats($group),
                 'occurred_at' => $event->occurred_at,
             ]);
         }
 
         return $items;
+    }
+
+    /** @return list<array{label: string, filled: bool}> */
+    private function seats(ZumraGroup $group): array
+    {
+        return $group->roles()
+            ->orderByRaw("case role when 'PRIMARY_LEAD' then 1 when 'FIRST_DEPUTY' then 2 when 'SECOND_DEPUTY' then 3 when 'FINANCE_LEAD' then 4 else 5 end")
+            ->get()
+            ->map(static fn (ZumraGroupRole $role): array => [
+                'label' => ZumraGroupRole::LABELS[$role->role] ?? $role->role,
+                'filled' => $role->status === ZumraGroupRole::STATUS_ACCEPTED,
+            ])
+            ->all();
     }
 }
