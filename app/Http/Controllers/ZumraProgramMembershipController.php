@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Zumra\ZumraProgramConfiguration;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\PortalAdministrator;
 use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProgramMembershipEvent;
@@ -22,8 +23,9 @@ final class ZumraProgramMembershipController
         $identity = $request->attributes->get('dg_identity');
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $charter = ZumraCharter::query()->where('status', ZumraCharter::STATUS_PUBLISHED)->latest('published_at')->first();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.membership', compact('identity', 'membership', 'charter') + ['configuration' => $configuration->get()]);
+        return view('zumra.membership', compact('identity', 'membership', 'charter', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request): RedirectResponse

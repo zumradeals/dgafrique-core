@@ -1,26 +1,199 @@
+{{--
+    Fiche ZUMRA — gouvernance, capacité collective, charte, demandes/invitations. Respect absolu
+    des cinq responsabilités distinctes, aucune nomination automatique (CAP-011).
+--}}
 <x-layouts.portal title="{{ $group->name }} — ZUMRA">
-    <div class="group-page">
-        <header class="membership-topbar"><a href="{{ route('zumra.groups.index') }}">← Les ZUMRA</a><strong><i>Z</i> {{ $group->name }}</strong><a href="{{ route('zumra.index') }}">Fil ZUMRA</a></header>
-        <main class="group-detail-content">
-            @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
-            <section class="group-detail-hero"><div class="group-monogram">{{ mb_strtoupper(mb_substr($group->name,0,1)) }}</div><div><p class="eyebrow">{{ $group->domain }}</p><h1>{{ $group->name }}</h1><p>{{ $group->founding_objective }}</p><div><span>{{ match($group->participation_mode){'PHYSICAL'=>'Physique','DIGITAL'=>'Numérique',default=>'Hybride'} }}</span><span>{{ $group->active_member_count }} membre{{ $group->active_member_count > 1 ? 's' : '' }}</span><span>{{ $group->maturity === 'ESTABLISHED' ? 'ZUMRA établie' : 'ZUMRA émergente' }}</span></div></div><aside><small>ÉTAT OPÉRATIONNEL</small><strong>{{ match($group->state){'CONSTITUTING'=>'En constitution','READY'=>'Prête à valider','VALIDATED'=>'Validée','ACTIVE'=>'Active','WARNED'=>'Avertie','SUSPENDED'=>'Suspendue','REHABILITATING'=>'En réhabilitation',default=>$group->state} }}</strong><span>{{ $roles->where('status','ACCEPTED')->count() }}/5 responsabilités acceptées</span></aside></section>
-            <div class="group-detail-grid"><div>
-                <section class="group-panel"><div class="group-panel-heading"><div><small>GOUVERNANCE FONDATRICE</small><h2>Cinq responsabilités, cinq personnes.</h2></div><span>{{ $roles->where('status','ACCEPTED')->count() === 5 ? 'Gouvernance complète' : 'Constitution en cours' }}</span></div><div class="founder-role-grid">@foreach($roles as $role) @php($profile=$roleProfiles->get($role->core_identity_reference))<article class="{{ strtolower($role->status) }}"><i>{{ $loop->iteration }}</i><div><small>{{ $role->status === 'ACCEPTED' ? 'RESPONSABILITÉ ACCEPTÉE' : 'SIÈGE VACANT' }}</small><h3>{{ \App\Models\ZumraGroupRole::LABELS[$role->role] }}</h3><p>{{ $profile?->discovery_display_name ?: ($role->status === 'ACCEPTED' ? 'Membre attesté' : 'Aucune personne nommée') }}</p></div></article>@endforeach</div><p class="group-integrity">Le système ne complète jamais les sièges avec des profils fictifs et ne nomme personne par matching.</p></section>
-                <section class="group-panel collective-capability-panel"><div class="group-panel-heading"><div><small>CAPACITÉ COLLECTIVE</small><h2>{{ $collectiveCapabilitySettings['section_title'] }}</h2></div><span>{{ $collectiveCapabilities->count() }} force{{ $collectiveCapabilities->count() > 1 ? 's' : '' }} mobilisable{{ $collectiveCapabilities->count() > 1 ? 's' : '' }}</span></div><p class="collective-capability-intro">{{ $collectiveCapabilitySettings['section_intro'] }}</p>@if($collectiveCapabilities->isEmpty())<div class="collective-capability-empty">{{ $collectiveCapabilitySettings['empty_text'] }}</div>@else<div class="collective-capability-grid">@foreach($collectiveCapabilities as $capability)<article><i>{{ mb_strtoupper(mb_substr($capability->label,0,1)) }}</i><div><h3>{{ $capability->label }}</h3><p>{{ $capability->member_count }} membre{{ $capability->member_count > 1 ? 's' : '' }} volontaire{{ $capability->member_count > 1 ? 's' : '' }} et mobilisable{{ $capability->member_count > 1 ? 's' : '' }}</p></div></article>@endforeach</div>@endif<p class="group-integrity">Le profil collectif agrège des capacités consenties. Il ne remplace pas les personnes et n’affiche aucune identité privée.</p></section>
-                <section class="group-panel"><small>CHARTE INTERNE</small><h2>Les règles de cette équipe</h2><div class="group-charter">{!! nl2br(e($group->internal_charter)) !!}</div></section>
-            </div><aside class="group-actions-panel">
-                <section><small>VOTRE RELATION</small><h2>{{ !$membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status){'ACTIVE'=>'Vous êtes membre','INVITED'=>'Vous êtes invité','REQUESTED'=>'Votre demande est étudiée','LEFT'=>'Vous avez quitté cette ZUMRA',default=>$membership->status} }}</h2>
-                    @if(!$membership || in_array($membership->status,['LEFT','EXCLUDED']))<form method="POST" action="{{ route('zumra.groups.request',$group) }}">@csrf<label>Pourquoi souhaitez-vous rejoindre cette équipe ?<textarea name="motivation" rows="4" maxlength="800"></textarea></label><button type="submit">Envoyer ma demande</button></form>
-                    @elseif($membership->status==='INVITED')<form method="POST" action="{{ route('messages.invitation',$group) }}">@csrf<button type="submit">Échanger avant d’accepter</button></form><form method="POST" action="{{ route('zumra.groups.invitation.accept',$group) }}">@csrf<button type="submit">Accepter l’invitation</button></form>
-                    @elseif($membership->status==='REQUESTED')<p>Attendez l’approbation d’un responsable. Une demande ne donne aucun droit de membre.</p>
-                    @elseif($membership->status==='ACTIVE')<form method="POST" action="{{ route('messages.zumra',$group) }}">@csrf<button type="submit">Ouvrir la conversation ZUMRA</button></form>@if(!$isLeader)<form method="POST" action="{{ route('zumra.groups.leave',$group) }}">@csrf<button class="quiet" type="submit">Quitter librement la ZUMRA</button></form>@endif @endif
-                    @if($group->state !== \App\Models\ZumraGroup::STATE_SUSPENDED)<a href="{{ route('comments.zumra-activity',$group) }}" style="display:block;margin-top:.8rem;text-align:center;color:var(--ocean);font-size:.68rem;font-weight:900;text-decoration:none">Contribuer à l’activité →</a>@if($membership?->status === 'ACTIVE')<a href="{{ route('shares.group',$group) }}" style="display:block;margin-top:.55rem;text-align:center;color:var(--ocean);font-size:.68rem;font-weight:900;text-decoration:none">Partages utiles →</a>@endif @endif
-                </section>
-                @if($membership?->status === 'ACTIVE')<section class="collective-consent"><small>MES CAPACITÉS DANS CETTE ZUMRA</small><h2>Un choix volontaire, réversible.</h2><p>Seules vos capacités déjà découvrables peuvent être comptées. Votre nom ne figure jamais dans l’agrégat.</p><form method="POST" action="{{ route('zumra.groups.collective-capabilities.consent',$group) }}">@csrf @method('PUT')<label><input type="checkbox" name="collective_capability_consent" value="1" @checked($membership->collective_capability_consent)><span>{{ $collectiveCapabilitySettings['consent_label'] }}</span></label><button type="submit">Enregistrer mon choix</button></form></section>@endif
-                @if($isLeader)<section><small>ESPACE RESPONSABLE</small><h2>Inviter un adhérent</h2><p>Utilisez la référence publique visible sur son profil. L’invitation devra être acceptée.</p><form method="POST" action="{{ route('zumra.groups.invite',$group) }}">@csrf<label>Référence publique<input name="person_reference" placeholder="xxxxxxxx-xxxx-…" required></label><button type="submit">Envoyer l’invitation</button></form></section>
-                @if($pendingRequests->isNotEmpty())<section><small>DEMANDES EN ATTENTE</small>@foreach($pendingRequests as $pending)<article class="group-request"><strong>{{ $requestProfiles->get($pending->core_identity_reference)?->discovery_display_name ?: 'Adhérent ZUMRA' }}</strong><p>{{ $pending->motivation ?: 'Aucune motivation renseignée.' }}</p><form method="POST" action="{{ route('zumra.groups.requests.approve',[$group,$pending->id]) }}">@csrf<button type="submit">Approuver</button></form></article>@endforeach</section>@endif
-                @endif
-            </aside></div>
-        </main>
-    </div>
+    <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
+        <div class="dg-page" style="max-width:1200px">
+            <a href="{{ route('zumra.groups.index') }}" class="dg-crumb">← Les ZUMRA</a>
+
+            @if(session('status'))
+                <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
+            @endif
+
+            <div class="dg-page-header">
+                <div class="flex items-center gap-4">
+                    <x-dg.avatar :initials="mb_strtoupper(mb_substr($group->name, 0, 1))" size="lg" tone="night" />
+                    <div>
+                        <x-dg.label>{{ $group->domain }}</x-dg.label>
+                        <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $group->name }}</h1>
+                        <p>{{ $group->founding_objective }}</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
+                            <x-dg.badge tone="neutral">{{ match($group->participation_mode) { 'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride' } }}</x-dg.badge>
+                            <x-dg.badge tone="neutral">{{ $group->active_member_count }} membre{{ $group->active_member_count > 1 ? 's' : '' }}</x-dg.badge>
+                            <x-dg.badge tone="neutral">{{ $group->maturity === 'ESTABLISHED' ? 'ZUMRA établie' : 'ZUMRA émergente' }}</x-dg.badge>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:right">
+                    <x-dg.label>État opérationnel</x-dg.label>
+                    <div style="margin-top:6px;font-size:15px;font-weight:600;color:var(--dg-forest)">{{ match($group->state) { 'CONSTITUTING' => 'En constitution', 'READY' => 'Prête à valider', 'VALIDATED' => 'Validée', 'ACTIVE' => 'Active', 'WARNED' => 'Avertie', 'SUSPENDED' => 'Suspendue', 'REHABILITATING' => 'En réhabilitation', default => $group->state } }}</div>
+                    <div class="dg-meta">{{ $roles->where('status', 'ACCEPTED')->count() }}/5 responsabilités acceptées</div>
+                </div>
+            </div>
+
+            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+                <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+                    <x-dg.card>
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <x-dg.label>Gouvernance fondatrice</x-dg.label>
+                                <h2 class="dg-display" style="font-size:20px;margin-top:6px">Cinq responsabilités, cinq personnes.</h2>
+                            </div>
+                            <x-dg.badge tone="{{ $roles->where('status', 'ACCEPTED')->count() === 5 ? 'action' : 'neutral' }}">{{ $roles->where('status', 'ACCEPTED')->count() === 5 ? 'Gouvernance complète' : 'Constitution en cours' }}</x-dg.badge>
+                        </div>
+                        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+                            @foreach($roles as $role)
+                                @php($profile = $roleProfiles->get($role->core_identity_reference))
+                                <x-dg.seat
+                                    :label="\App\Models\ZumraGroupRole::LABELS[$role->role]"
+                                    :filled="$role->status === 'ACCEPTED'"
+                                    :holder="$profile?->discovery_display_name ?: ($role->status === 'ACCEPTED' ? 'Membre attesté' : null)"
+                                />
+                            @endforeach
+                        </div>
+                        <p class="dg-hint" style="margin-top:14px">Le système ne complète jamais les sièges avec des profils fictifs et ne nomme personne par matching.</p>
+                    </x-dg.card>
+
+                    <x-dg.card>
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <x-dg.label>Capacité collective</x-dg.label>
+                                <h2 class="dg-display" style="font-size:20px;margin-top:6px">{{ $collectiveCapabilitySettings['section_title'] }}</h2>
+                            </div>
+                            <span class="dg-meta">{{ $collectiveCapabilities->count() }} force{{ $collectiveCapabilities->count() > 1 ? 's' : '' }} mobilisable{{ $collectiveCapabilities->count() > 1 ? 's' : '' }}</span>
+                        </div>
+                        <p class="dg-body" style="margin-top:10px">{{ $collectiveCapabilitySettings['section_intro'] }}</p>
+                        @if($collectiveCapabilities->isEmpty())
+                            <x-dg.empty style="margin-top:14px">
+                                <span>{{ $collectiveCapabilitySettings['empty_text'] }}</span>
+                            </x-dg.empty>
+                        @else
+                            <div style="display:flex;flex-direction:column;gap:10px;margin-top:14px">
+                                @foreach($collectiveCapabilities as $capability)
+                                    <div class="dg-note">
+                                        <strong style="color:var(--dg-ink)">{{ $capability->label }}</strong>
+                                        <p style="margin:4px 0 0">{{ $capability->member_count }} membre{{ $capability->member_count > 1 ? 's' : '' }} volontaire{{ $capability->member_count > 1 ? 's' : '' }} et mobilisable{{ $capability->member_count > 1 ? 's' : '' }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                        <p class="dg-hint" style="margin-top:14px">Le profil collectif agrège des capacités consenties. Il ne remplace pas les personnes et n’affiche aucune identité privée.</p>
+                    </x-dg.card>
+
+                    <x-dg.card>
+                        <x-dg.label>Charte interne</x-dg.label>
+                        <h2 class="dg-display" style="font-size:20px;margin-top:6px">Les règles de cette équipe</h2>
+                        <div class="dg-body" style="margin-top:12px;white-space:pre-line">{{ $group->internal_charter }}</div>
+                    </x-dg.card>
+                </div>
+
+                <aside style="display:flex;flex-direction:column;gap:16px">
+                    <x-dg.card tight>
+                        <x-dg.label>Votre relation</x-dg.label>
+                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">{{ ! $membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Vous êtes invité', 'REQUESTED' => 'Votre demande est étudiée', 'LEFT' => 'Vous avez quitté cette ZUMRA', default => $membership->status } }}</h2>
+
+                        @if(! $membership || in_array($membership->status, ['LEFT', 'EXCLUDED']))
+                            <form method="POST" action="{{ route('zumra.groups.request', $group) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                                @csrf
+                                <div class="dg-field">
+                                    <label for="motivation">Pourquoi souhaitez-vous rejoindre cette équipe ?</label>
+                                    <textarea id="motivation" name="motivation" class="dg-textarea" rows="4" maxlength="800"></textarea>
+                                </div>
+                                <button type="submit" class="dg-btn dg-btn--saffron">Envoyer ma demande</button>
+                            </form>
+                        @elseif($membership->status === 'INVITED')
+                            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                                <form method="POST" action="{{ route('messages.invitation', $group) }}">
+                                    @csrf
+                                    <button type="submit" class="dg-btn dg-btn--quiet" style="width:100%">Échanger avant d’accepter</button>
+                                </form>
+                                <form method="POST" action="{{ route('zumra.groups.invitation.accept', $group) }}">
+                                    @csrf
+                                    <button type="submit" class="dg-btn dg-btn--saffron" style="width:100%">Accepter l’invitation</button>
+                                </form>
+                            </div>
+                        @elseif($membership->status === 'REQUESTED')
+                            <p class="dg-hint" style="margin-top:10px">Attendez l’approbation d’un responsable. Une demande ne donne aucun droit de membre.</p>
+                        @elseif($membership->status === 'ACTIVE')
+                            <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                                <form method="POST" action="{{ route('messages.zumra', $group) }}">
+                                    @csrf
+                                    <button type="submit" class="dg-btn dg-btn--primary" style="width:100%">Ouvrir la conversation ZUMRA</button>
+                                </form>
+                                @if(! $isLeader)
+                                    <form method="POST" action="{{ route('zumra.groups.leave', $group) }}">
+                                        @csrf
+                                        <button type="submit" class="dg-btn dg-btn--quiet" style="width:100%">Quitter librement la ZUMRA</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @endif
+
+                        @if($group->state !== \App\Models\ZumraGroup::STATE_SUSPENDED)
+                            <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+                                <x-dg.btn variant="quiet" :href="route('comments.zumra-activity', $group)">Contribuer à l’activité →</x-dg.btn>
+                                @if($membership?->status === 'ACTIVE')
+                                    <x-dg.btn variant="quiet" :href="route('shares.group', $group)">Partages utiles →</x-dg.btn>
+                                @endif
+                            </div>
+                        @endif
+                    </x-dg.card>
+
+                    @if($membership?->status === 'ACTIVE')
+                        <x-dg.card tight>
+                            <x-dg.label>Mes capacités dans cette ZUMRA</x-dg.label>
+                            <h2 class="dg-display" style="font-size:16px;margin-top:6px">Un choix volontaire, réversible.</h2>
+                            <p class="dg-hint" style="margin-top:8px">Seules vos capacités déjà découvrables peuvent être comptées. Votre nom ne figure jamais dans l’agrégat.</p>
+                            <form method="POST" action="{{ route('zumra.groups.collective-capabilities.consent', $group) }}" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                                @csrf @method('PUT')
+                                <label class="dg-consent">
+                                    <input type="checkbox" name="collective_capability_consent" value="1" @checked($membership->collective_capability_consent)>
+                                    <span>{{ $collectiveCapabilitySettings['consent_label'] }}</span>
+                                </label>
+                                <button type="submit" class="dg-btn dg-btn--quiet">Enregistrer mon choix</button>
+                            </form>
+                        </x-dg.card>
+                    @endif
+
+                    @if($isLeader)
+                        <x-dg.card tight>
+                            <x-dg.label>Espace responsable</x-dg.label>
+                            <h2 class="dg-display" style="font-size:16px;margin-top:6px">Inviter un adhérent</h2>
+                            <p class="dg-hint" style="margin-top:8px">Utilisez la référence publique visible sur son profil. L’invitation devra être acceptée.</p>
+                            <form method="POST" action="{{ route('zumra.groups.invite', $group) }}" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                                @csrf
+                                <div class="dg-field">
+                                    <label for="person_reference">Référence publique</label>
+                                    <input type="text" id="person_reference" name="person_reference" class="dg-input" placeholder="xxxxxxxx-xxxx-…" required>
+                                </div>
+                                <button type="submit" class="dg-btn dg-btn--primary">Envoyer l’invitation</button>
+                            </form>
+                        </x-dg.card>
+
+                        @if($pendingRequests->isNotEmpty())
+                            <x-dg.card tight>
+                                <x-dg.label>Demandes en attente</x-dg.label>
+                                <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                                    @foreach($pendingRequests as $pending)
+                                        <div class="dg-note">
+                                            <strong style="color:var(--dg-ink)">{{ $requestProfiles->get($pending->core_identity_reference)?->discovery_display_name ?: 'Adhérent ZUMRA' }}</strong>
+                                            <p style="margin:6px 0">{{ $pending->motivation ?: 'Aucune motivation renseignée.' }}</p>
+                                            <form method="POST" action="{{ route('zumra.groups.requests.approve', [$group, $pending->id]) }}">
+                                                @csrf
+                                                <button type="submit" class="dg-btn dg-btn--primary">Approuver</button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </x-dg.card>
+                        @endif
+                    @endif
+                </aside>
+            </div>
+        </div>
+    </x-dg.shell>
 </x-layouts.portal>

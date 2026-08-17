@@ -1,6 +1,8 @@
 # Différences inévitables entre le handoff et le métier réel
 
-**Statut :** notes d'implémentation du chantier « design identity reset » (Landing, Mon espace, Fil ZUMRA, navigation, design system).
+**Statut :** notes d'implémentation du chantier « design identity reset », Phase 1 (Landing, Mon
+espace, Fil d'action, navigation, design system) et Phase 2 (Hub ZUMRA, Besoins, Projets,
+Personnes/Profil, fiches ZUMRA).
 **Référence :** `docs/design/DESIGN-INVARIANTS.md`, `docs/design/reference/claude-2026-08-16/`.
 
 Le handoff Claude est une matière de design ; l'implémentation ci-dessous se branche sur les
@@ -99,10 +101,57 @@ fixtures d'exemple explicitement annoncées par le mot **« Exemple »**, issues
 `DESIGN-INVARIANTS.md` §11 : jamais seedées, jamais présentées comme une donnée réelle, actions
 désactivées avec la mention « créez votre compte pour voir les [besoins|projets] réels ».
 
-## Périmètre non touché
+## Phase 2 — Hub ZUMRA (`/zumra`)
 
-Connexion, édition du profil, fiches Besoin/Projet/ZUMRA (pages détail), Messages, Partages,
-Commentaires et Administration conservent l'ancienne charte (`--navy`/`--ocean`/`--cyan`…). Ce
-chantier couvre exactement les trois interfaces fondatrices et la navigation commune, comme
-demandé ; leur propagation est un chantier suivant (`docs/design/reference/.../BLADE-TAILWIND.md`,
-§5 « ordre de chantier proposé »).
+- L'ancien écran simulait un « Fil ZUMRA » autonome (composeur désactivé, colonnes « Profils à
+  suivre » / « Projets tendances » sans données réelles). Il est remplacé par un Hub ZUMRA :
+  adhésion, Mes ZUMRA, Découvrir des ZUMRA, Proposer une ZUMRA, Ma Carte ZUMRA, demandes à décider.
+  **« Voir les activités ZUMRA »** pointe vers `activity.index?type=ZUMRA` — le Fil global filtré,
+  jamais un second fil (CAP-019). Aucune donnée composée n'est plus affichée sans base réelle.
+- **« Proposer une ZUMRA »** reste visible mais désactivé, avec sa raison, pour un membre dont
+  l'adhésion au Programme ZUMRA n'est pas `ACTIVE` (`ZumraGroupController::requireActiveProgramMembership`).
+
+## Phase 2 — Besoins, Projets
+
+- Les écrans liste/fiche/création de Besoins et Projets reprennent le langage visuel des cartes du
+  Fil (`x-dg.badge`, `x-dg.card`, `x-dg.actions`) sans réutiliser littéralement
+  `x-dg.feed.need`/`x-dg.feed.project` : ces composants attendent la forme `$item` produite par
+  `ActivityFeedService` (occurred_at, action_url, contact_url…), absente d'un `Need`/`Project` lu
+  directement. Le contrat visuel (badge de catégorie, titre, résumé, actions) est identique.
+- La fiche Projet utilise désormais `x-dg.stagewalk` (8 repères complets de
+  `ProjectMaturityService::STAGES`) plutôt que le bandeau compact `x-dg.maturity` (6 segments) du
+  Fil : la fiche détail a la place d'afficher le chemin complet ; la carte Fil reste compacte.
+- **« Je veux apprendre »** n'apparaît toujours pas sur la fiche Besoin (aucune régression) : ce
+  contrat métier manquant est documenté plus haut (§ Fil ZUMRA — carte Besoin) et reste inchangé.
+- Le parcours d'autonomie (`projects.autonomy.*`) n'a pas été repris cette phase : il n'était pas
+  listé dans le périmètre prioritaire (P4) et reste dans l'ancienne charte (`--navy`/`--ocean`…).
+
+## Phase 2 — Personnes / Profil
+
+- L'édition de profil progressive (`member/profile.blade.php`) conserve exactement son contrat
+  JavaScript (`data-profile-steps`, `data-profile-step-target`, `data-profile-next/previous`,
+  `resources/js/app.js`) : seule l'habillage visuel change (`x-dg.fieldset`, `.dg-steps`,
+  `.dg-field`/`.dg-input`/`.dg-textarea`/`.dg-consent`, nouveaux cette phase dans `dg.css`).
+- Les recommandations et la découverte de personnes affichent les raisons telles que produites par
+  `PersonRecommendationEngine`/`PeopleDiscoveryController` : une liste de phrases, jamais un score
+  ni un pourcentage de correspondance (CAP-011).
+
+## Phase 2 — Fiches ZUMRA
+
+- La gouvernance fondatrice (cinq responsabilités) utilise le nouveau composant `x-dg.seat` : un
+  siège vacant reste explicitement vacant (`Aucune personne nommée` → `Siège vacant`), jamais
+  complété par un profil fictif ni un matching automatique.
+- `zumra.payment-status`, `zumra.receipt` et `zumra.card-verification` n'ont pas été repris cette
+  phase : les deux premiers sont des écrans secondaires de retour de paiement ; le troisième est
+  intentionnellement **public et non authentifié** (vérification signée d'une Carte ZUMRA) et ne
+  doit de toute façon jamais recevoir la coquille membre (`x-dg.shell`) — il reste dans son propre
+  gabarit minimal, charte incluse ou non selon un chantier ultérieur.
+
+## Périmètre non touché après la Phase 2
+
+Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,
+`zumra.payment-status`/`zumra.receipt`/`zumra.card-verification` et Administration conservent
+l'ancienne charte (`--navy`/`--ocean`/`--cyan`…). Ces écrans n'étaient pas dans le périmètre
+prioritaire des Phases 1 et 2 (cf. instructions de chantier, ordre P1→P6, « Messages/commentaires/
+partages/écrans secondaires » explicitement classés après, Administration explicitement hors
+priorité).

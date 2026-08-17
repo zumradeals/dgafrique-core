@@ -10,6 +10,7 @@ use App\Application\Profile\CapabilityStatementSynchronizer;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
+use App\Models\PortalAdministrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,8 +36,9 @@ final class MemberProfileController
             ->pluck('aggregate', 'kind')
             ->map(static fn (mixed $count): int => (int) $count)
             ->all();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('member.profile', compact('identity', 'profile', 'profileConfiguration', 'capabilitySummary'));
+        return view('member.profile', compact('identity', 'profile', 'profileConfiguration', 'capabilitySummary', 'isAdministrator'));
     }
 
     public function update(

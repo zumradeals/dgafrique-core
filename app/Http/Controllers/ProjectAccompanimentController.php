@@ -8,6 +8,7 @@ use App\Application\Projects\ProjectAccompanimentConfiguration;
 use App\Application\Projects\ProjectAccompanimentService;
 use App\Application\Projects\ProjectService;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\PortalAdministrator;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,8 @@ final class ProjectAccompanimentController
         $project->load(['accompaniment.actions']);
 
         return view('projects.accompaniment', [
+            'identity' => $identity,
+            'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'project' => $project,
             'accompaniment' => $project->accompaniment,
             'configuration' => $configuration->get(),

@@ -288,6 +288,77 @@
 .dg-maturity i[data-state='done'] { background: var(--dg-forest-action); }
 .dg-maturity i[data-state='current'] { background: var(--dg-saffron); }
 
+/* ---------- Pages (liste / fiche) — phase 2 ---------- */
+
+.dg-page { max-width: 1600px; margin: 0 auto; padding: 28px 20px 48px; }
+.dg-page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px;
+    flex-wrap: wrap; margin-bottom: 28px; }
+.dg-page-header p { margin: 6px 0 0; font-size: 15px; line-height: 1.6; color: var(--dg-text); max-width: 60ch; }
+.dg-crumb { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;
+    color: var(--dg-muted); margin-bottom: 14px; }
+.dg-crumb:hover { color: var(--dg-copper); }
+
+.dg-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 24px;
+    padding: 18px 20px; background: var(--dg-card); border: 1px solid var(--dg-line); border-radius: var(--dg-radius-card); }
+.dg-filters label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--dg-muted); }
+
+.dg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+
+.dg-dl { display: grid; gap: 12px; }
+.dg-dl > div { display: flex; flex-direction: column; gap: 2px; }
+.dg-dl dt { font-family: var(--dg-font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--dg-faint); }
+.dg-dl dd { margin: 0; font-size: 14px; color: var(--dg-ink); }
+
+/* ---------- Champs de formulaire ---------- */
+
+.dg-field { display: flex; flex-direction: column; gap: 6px; }
+.dg-field label { font-size: 13px; font-weight: 600; color: var(--dg-forest); }
+.dg-hint { font-size: 12px; color: var(--dg-muted); line-height: 1.5; margin: 0; }
+.dg-input, .dg-textarea, .dg-select { width: 100%; border: 1px solid var(--dg-line); border-radius: var(--dg-radius-control);
+    padding: 11px 14px; font: inherit; font-size: 14px; color: var(--dg-ink); background: var(--dg-card); outline: none; }
+.dg-input:focus, .dg-textarea:focus, .dg-select:focus { border-color: var(--dg-forest-action); box-shadow: 0 0 0 3px rgba(27, 74, 59, .1); }
+.dg-textarea { resize: vertical; line-height: 1.6; min-height: 100px; }
+.dg-field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.dg-radio-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.dg-radio { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-control); font-size: 13px; color: var(--dg-text); cursor: pointer; }
+.dg-radio input { accent-color: var(--dg-forest-action); }
+
+.dg-consent { display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; border-radius: var(--dg-radius-control);
+    background: var(--dg-ivory); border: 1px solid var(--dg-line); }
+.dg-consent input { margin-top: 3px; accent-color: var(--dg-forest-action); }
+.dg-consent strong { display: block; font-size: 14px; color: var(--dg-forest); }
+.dg-consent span { display: block; margin-top: 3px; font-size: 12px; line-height: 1.55; color: var(--dg-muted); }
+
+.dg-fieldset { display: flex; flex-direction: column; gap: 16px; padding: 26px 28px; background: var(--dg-card);
+    border: 1px solid var(--dg-line); border-radius: var(--dg-radius-card); }
+.dg-fieldset legend { display: flex; align-items: baseline; gap: 10px; padding: 0; margin: 0 0 4px; width: 100%; }
+
+/* ---------- Étapes (profil progressif, gouvernance) ---------- */
+
+.dg-steps { display: flex; flex-wrap: wrap; gap: 8px; }
+.dg-step { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: var(--dg-radius-pill);
+    border: 1px solid var(--dg-line); background: var(--dg-card); color: var(--dg-muted); font-size: 13px; cursor: pointer; }
+.dg-step.active { background: var(--dg-forest); border-color: var(--dg-forest); color: var(--dg-ivory); font-weight: 600; }
+.dg-step.visited:not(.active) { color: var(--dg-forest-action); border-color: var(--dg-forest-action); }
+
+.dg-stagewalk { display: flex; flex-direction: column; gap: 2px; }
+.dg-stagewalk__item { display: flex; align-items: flex-start; gap: 14px; padding: 14px 16px; border-radius: var(--dg-radius-control); }
+.dg-stagewalk__item[data-current='true'] { background: var(--dg-tint-decision); }
+.dg-stagewalk__mark { flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 9px;
+    font-family: var(--dg-font-mono); font-size: 11px; background: var(--dg-sand); color: var(--dg-faint); }
+.dg-stagewalk__item[data-done='true'] .dg-stagewalk__mark { background: var(--dg-forest-action); color: var(--dg-ivory); }
+.dg-stagewalk__item[data-current='true'] .dg-stagewalk__mark { background: var(--dg-saffron); color: var(--dg-forest); }
+
+/* ---------- Sièges / responsabilités (gouvernance ZUMRA) ---------- */
+
+.dg-seat { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--dg-radius-control);
+    background: var(--dg-ivory); }
+.dg-seat[data-vacant='true'] { background: transparent; border: 1px dashed var(--dg-line-dashed); }
+.dg-seat__mark { flex: none; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px;
+    font-family: var(--dg-font-mono); font-size: 12px; font-weight: 600; background: var(--dg-forest-action); color: var(--dg-ivory); }
+.dg-seat[data-vacant='true'] .dg-seat__mark { background: transparent; border: 1px dashed var(--dg-line-dashed); color: var(--dg-faint); }
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 900px) {
@@ -301,6 +372,8 @@
     .dg-body { font-size: 15px; line-height: 1.6; }
     .dg-actions { gap: 8px; }
     .dg-actions .dg-btn { flex: 1; min-height: var(--dg-touch-min); padding: 13px; }
+    .dg-page { padding: 20px 16px 40px; }
+    .dg-fieldset { padding: 20px; }
 }
 
 } /* @layer components */
