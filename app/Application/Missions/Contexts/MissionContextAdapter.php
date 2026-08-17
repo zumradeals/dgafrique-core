@@ -37,4 +37,15 @@ interface MissionContextAdapter
     public function label(object $context): string;
 
     public function reference(object $context): string;
+
+    /**
+     * Références de contextes (de ce type) où l'acteur détient l'autorité d'officialiser/
+     * décider — bornée par l'empreinte propre de l'acteur (ses ZUMRA dirigées, ses Projets/
+     * Besoins décidables), jamais par un balayage global des Missions récentes. Permet à
+     * MissionService de construire une requête « à décider » scalable sans dépendre d'une
+     * fenêtre de récence qui pourrait masquer les décisions d'une autorité peu active.
+     *
+     * @return list<string>
+     */
+    public function authorityContextReferences(string $actor): array;
 }

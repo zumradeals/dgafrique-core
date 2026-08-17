@@ -7,6 +7,7 @@ namespace App\Application\Missions\Contexts;
 use App\Application\Needs\NeedService;
 use App\Models\Mission;
 use App\Models\Need;
+use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 
 final class NeedMissionContext implements MissionContextAdapter
@@ -84,6 +85,22 @@ final class NeedMissionContext implements MissionContextAdapter
     public function reference(object $context): string
     {
         return $context->public_reference;
+    }
+
+    public function authorityContextReferences(string $actor): array
+    {
+        $ledGroupIds = ZumraGroupRole::query()
+            ->where('core_identity_reference', $actor)
+            ->where('status', ZumraGroupRole::STATUS_ACCEPTED)
+            ->pluck('zumra_group_id');
+
+        return Need::query()
+            ->where(function ($query) use ($actor, $ledGroupIds): void {
+                $query->where(fn ($q) => $q->where('owner_type', Need::OWNER_PERSON)->where('owner_reference', $actor))
+                    ->orWhere(fn ($q) => $q->where('owner_type', Need::OWNER_GROUP)->whereIn('owner_reference', $ledGroupIds));
+            })
+            ->pluck('public_reference')
+            ->all();
     }
 
     private function hasActiveProgramMembership(string $actor): bool

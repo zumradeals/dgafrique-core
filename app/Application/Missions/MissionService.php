@@ -64,6 +64,7 @@ final class MissionService
     public function addChecklistItem(Mission $mission, string $actor, string $label, bool $isRequired): MissionChecklistItem
     {
         abort_if(trim($label) === '', 422, 'Le libellé est requis.');
+        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
         $position = (int) ($mission->checklistItems()->max('position') ?? 0) + 1;
@@ -79,6 +80,7 @@ final class MissionService
     public function setChecklistItemCompletion(Mission $mission, string $actor, MissionChecklistItem $item, bool $completed): MissionChecklistItem
     {
         abort_unless($item->mission_id === $mission->id, 404);
+        $this->assertNotTerminal($mission);
         $this->assertOfficializerOrAcceptedExecutor($mission, $actor);
 
         $item->update($completed
@@ -91,6 +93,7 @@ final class MissionService
     public function addCapabilityRequirement(Mission $mission, string $actor, string $label, string $requirementLevel, ?int $quantity, ?string $context): MissionCapabilityRequirement
     {
         abort_if(trim($label) === '', 422, 'Le libellé de la capacité est requis.');
+        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
         return $mission->capabilityRequirements()->create([
@@ -105,6 +108,7 @@ final class MissionService
     public function addResourceRequirement(Mission $mission, string $actor, string $type, string $label, ?float $quantity, ?string $unit, bool $isRequired, ?string $context): MissionResourceRequirement
     {
         abort_if(trim($label) === '', 422, 'Le libellé de la ressource est requis.');
+        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
         return $mission->resourceRequirements()->create([
@@ -117,7 +121,12 @@ final class MissionService
         ]);
     }
 
-    /** Sections « Mes Missions » (CAP-069 §16/17) — jamais un mur de statistiques. */
+    /**
+     * Sections « Mes Missions » (CAP-069 §16/17) — jamais un mur de statistiques. Chaque
+     * Mission rendue est revalidée avec MissionVisibilityService::canViewMission() au
+     * moment de la lecture : une ancienne affectation ou le fait d'être le créateur ne
+     * contourne jamais une perte d'accès au parent (départ de ZUMRA, Projet archivé...).
+     */
     public function myMissionsSections(string $actor): array
     {
         $myAssignments = MissionAssignment::query()
@@ -134,13 +143,7 @@ final class MissionService
             ->limit(self::AUTHORITY_POOL_LIMIT)
             ->get();
 
-        $authorityCandidates = Mission::query()
-            ->whereIn('status', [Mission::STATUS_PROPOSED, Mission::STATUS_SUBMITTED, Mission::STATUS_BLOCKED])
-            ->latest('created_at')
-            ->limit(self::AUTHORITY_POOL_LIMIT)
-            ->get()
-            ->filter(fn (Mission $mission): bool => $this->isOfficializer($mission, $actor))
-            ->values();
+        $authorityCandidates = $this->authorityCandidatePool($actor);
 
         $invitations = $myAssignments->filter(fn (MissionAssignment $a): bool => $a->status === MissionAssignment::STATUS_INVITED);
         $offered = $myAssignments->filter(fn (MissionAssignment $a): bool => $a->status === MissionAssignment::STATUS_OFFERED);
@@ -174,16 +177,56 @@ final class MissionService
             ->values();
 
         return [
-            'a_decider' => $toDecide,
-            'mes_propositions' => $myProposals,
-            'invitations' => $invitations->values(),
-            'je_me_suis_propose' => $offered->values(),
-            'mes_engagements' => $acceptedActive->map(fn (MissionAssignment $a): Mission => $a->mission)->unique('id')->values(),
-            'bloquees' => $blocked,
-            'a_soumettre' => $toSubmit,
-            'a_valider' => $toValidate,
-            'terminees' => $completed,
+            'a_decider' => $this->visibleMissions($toDecide, $actor),
+            'mes_propositions' => $this->visibleMissions($myProposals, $actor),
+            'invitations' => $this->visibleAssignments($invitations, $actor)->values(),
+            'je_me_suis_propose' => $this->visibleAssignments($offered, $actor)->values(),
+            'mes_engagements' => $this->visibleMissions($acceptedActive->map(fn (MissionAssignment $a): Mission => $a->mission)->unique('id'), $actor),
+            'bloquees' => $this->visibleMissions($blocked, $actor),
+            'a_soumettre' => $this->visibleMissions($toSubmit, $actor),
+            'a_valider' => $this->visibleMissions($toValidate, $actor),
+            'terminees' => $this->visibleMissions($completed, $actor),
         ];
+    }
+
+    /**
+     * Bassin de Missions « à décider » : bâti à partir de l'empreinte propre de l'acteur
+     * (ses ZUMRA dirigées, ses Projets/Besoins décidables) plutôt que d'un balayage global
+     * des Missions les plus récentes — un balayage global limité pourrait masquer les
+     * décisions d'une autorité si 200 Missions étrangères plus récentes existent ailleurs
+     * sur la plateforme.
+     */
+    private function authorityCandidatePool(string $actor): Collection
+    {
+        $candidates = collect();
+        foreach ($this->registry->types() as $type) {
+            $references = $this->registry->for($type)->authorityContextReferences($actor);
+            if ($references === []) {
+                continue;
+            }
+
+            $candidates = $candidates->concat(
+                Mission::query()
+                    ->where('context_type', $type)
+                    ->whereIn('context_reference', $references)
+                    ->whereIn('status', [Mission::STATUS_PROPOSED, Mission::STATUS_SUBMITTED, Mission::STATUS_BLOCKED])
+                    ->get()
+            );
+        }
+
+        return $candidates->unique('id')->values();
+    }
+
+    /** @param Collection<int, Mission> $missions */
+    private function visibleMissions(Collection $missions, string $actor): Collection
+    {
+        return $missions->filter(fn (Mission $mission): bool => $this->visibility->canViewMission($mission, $actor))->values();
+    }
+
+    /** @param Collection<int, MissionAssignment> $assignments */
+    private function visibleAssignments(Collection $assignments, string $actor): Collection
+    {
+        return $assignments->filter(fn (MissionAssignment $a): bool => $a->mission && $this->visibility->canViewMission($a->mission, $actor));
     }
 
     /**
@@ -261,6 +304,12 @@ final class MissionService
         }
 
         return null;
+    }
+
+    /** Une Mission terminale reste historiquement stable : pas de mutation ordinaire. */
+    private function assertNotTerminal(Mission $mission): void
+    {
+        abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée : elle reste consultable mais n’est plus modifiable.');
     }
 
     private function isOfficializer(Mission $mission, string $actor): bool

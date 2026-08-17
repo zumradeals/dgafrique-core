@@ -8,6 +8,7 @@ use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
+use App\Models\ZumraGroupRole;
 
 final class ZumraMissionContext implements MissionContextAdapter
 {
@@ -79,6 +80,17 @@ final class ZumraMissionContext implements MissionContextAdapter
     public function reference(object $context): string
     {
         return $context->public_reference;
+    }
+
+    public function authorityContextReferences(string $actor): array
+    {
+        return ZumraGroup::query()
+            ->whereIn('id', ZumraGroupRole::query()
+                ->where('core_identity_reference', $actor)
+                ->where('status', ZumraGroupRole::STATUS_ACCEPTED)
+                ->pluck('zumra_group_id'))
+            ->pluck('public_reference')
+            ->all();
     }
 
     private function isActiveMember(ZumraGroup $group, string $actor): bool
