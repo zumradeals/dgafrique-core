@@ -60,6 +60,9 @@ final class MissionSubmissionService
         return DB::transaction(function () use ($mission, $actor, $summary): MissionSubmission {
             $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
             abort_unless($lockedMission->status === Mission::STATUS_IN_PROGRESS, 409, 'Cette Mission n’est pas en cours.');
+            // Revalidation sous verrou : l'assignment du soumetteur a pu être retirée entre
+            // le contrôle initial et l'acquisition du verrou (concurrence).
+            $this->assertCanConsolidate($lockedMission, $actor);
 
             $nextVersion = (int) (MissionSubmission::query()->where('mission_id', $lockedMission->id)->max('version') ?? 0) + 1;
             $submission = MissionSubmission::query()->create([
@@ -83,7 +86,7 @@ final class MissionSubmissionService
     public function requestCorrection(Mission $mission, string $actor, string $note): Mission
     {
         abort_if(trim($note) === '', 422, 'Expliquez ce qui doit être corrigé.');
-        $this->workflow->assertOfficializer($mission, $actor);
+        $this->assertValidator($mission, $actor);
 
         return DB::transaction(function () use ($mission, $actor, $note): Mission {
             $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
@@ -106,7 +109,14 @@ final class MissionSubmissionService
 
     public function accept(Mission $mission, string $actor, ?string $note = null): Mission
     {
-        $this->workflow->assertOfficializer($mission, $actor);
+        $this->assertValidator($mission, $actor);
+        // Même invariant que cancel() : une Mission avec une sous-Mission encore active ne
+        // peut jamais devenir COMPLETED tant que ces sous-Missions n'ont pas leur propre issue.
+        abort_if(
+            $mission->children()->whereNotIn('status', Mission::TERMINAL_STATUSES)->exists(),
+            409,
+            'Terminez ou annulez d’abord les sous-Missions encore actives.'
+        );
 
         return DB::transaction(function () use ($mission, $actor, $note): Mission {
             $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
@@ -126,6 +136,13 @@ final class MissionSubmissionService
                 eventContext: ['version' => $latest->version],
             );
         });
+    }
+
+    private function assertValidator(Mission $mission, string $actor): void
+    {
+        $adapter = $this->registry->for($mission->context_type);
+        $context = $adapter->resolve($mission->context_reference);
+        abort_unless($adapter->canValidate($context, $actor), 403);
     }
 
     private function assertCanConsolidate(Mission $mission, string $actor): void
