@@ -37,6 +37,29 @@ final class DesignInvariantsPhase2Test extends TestCase
         }
     }
 
+    public function test_besoins_projets_personnes_filter_forms_actually_submit(): void
+    {
+        // x-dg.btn rend <button type="button"> par défaut : un bouton de filtre GET sans
+        // type="submit" explicite est visuellement correct mais ne soumet jamais le formulaire.
+        $this->signIn('IDN-P2-FILTER-SUBMIT');
+
+        $cases = [
+            '/besoins' => 'Filtrer',
+            '/projets' => 'Explorer',
+            '/personnes' => 'Découvrir',
+        ];
+
+        foreach ($cases as $uri => $label) {
+            $content = $this->get($uri)->assertOk()->getContent();
+            self::assertMatchesRegularExpression('/<form[^>]*method="GET"[^>]*class="dg-filters"[^>]*>.*?<\/form>/s', $content, "Formulaire de filtre introuvable sur $uri");
+            preg_match('/<form[^>]*method="GET"[^>]*class="dg-filters"[^>]*>.*?<\/form>/s', $content, $matches);
+            $form = $matches[0];
+
+            self::assertStringContainsString($label, $form, "Bouton « $label » introuvable dans le formulaire de $uri");
+            self::assertMatchesRegularExpression('/<button[^>]*type="submit"[^>]*>\s*'.preg_quote($label, '/').'/s', $form, "Le bouton « $label » sur $uri doit être type=\"submit\" pour soumettre le formulaire GET.");
+        }
+    }
+
     public function test_zumra_hub_no_longer_exposes_a_second_autonomous_feed(): void
     {
         $this->signIn('IDN-P2-HUB');

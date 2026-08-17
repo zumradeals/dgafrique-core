@@ -31,7 +31,7 @@
                         <option value="RESOLVED" @selected(request('status') === 'RESOLVED')>Résolu</option>
                     </select>
                 </label>
-                <x-dg.btn variant="quiet">Filtrer</x-dg.btn>
+                <x-dg.btn variant="quiet" type="submit">Filtrer</x-dg.btn>
             </form>
 
             @if($needs->isEmpty())

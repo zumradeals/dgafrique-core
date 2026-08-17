@@ -33,7 +33,7 @@
                         </select>
                     </label>
                 @endif
-                <x-dg.btn variant="quiet">Découvrir</x-dg.btn>
+                <x-dg.btn variant="quiet" type="submit">Découvrir</x-dg.btn>
             </form>
 
             <div class="dg-band" style="margin-bottom:24px">

@@ -23,7 +23,7 @@
                         @endforeach
                     </select>
                 </label>
-                <x-dg.btn variant="quiet">Explorer</x-dg.btn>
+                <x-dg.btn variant="quiet" type="submit">Explorer</x-dg.btn>
             </form>
 
             @if($projects->isEmpty())
