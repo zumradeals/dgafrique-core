@@ -1,23 +1,66 @@
+{{--
+    Répertoire des ZUMRA — extension du Hub ZUMRA (/zumra), jamais un fil autonome. Aucune équipe
+    fictive : les groupes n'apparaissent qu'à mesure de propositions réelles.
+--}}
 <x-layouts.portal title="Les ZUMRA — DG Afrique">
-    <div class="group-page">
-        <header class="membership-topbar"><a href="{{ route('zumra.index') }}">← ZUMRA</a><strong><i>Z</i> Groupes humains</strong><a href="{{ route('member.space') }}">Mon espace</a></header>
-        <main class="group-content">
-            @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif
-            <section class="group-directory-hero">
-                <div><p class="eyebrow dark">ZUMRA · ACTION COLLECTIVE</p><h1>{{ $configuration['directory_title'] }}</h1><p>{{ $configuration['directory_intro'] }}</p></div>
-                @if($membership?->status === 'ACTIVE')<a href="{{ route('zumra.groups.create') }}">Proposer une ZUMRA</a>@else<a href="{{ route('zumra.membership.show') }}">Activer mon adhésion</a>@endif
-            </section>
-            <div class="group-doctrine"><strong>Une ZUMRA n’est pas un simple groupe de discussion.</strong><span>Elle rassemble des personnes autour d’un objectif, d’une transmission et d’une action réelle. Une demande n’est jamais une adhésion automatique.</span></div>
-            @if($groups->isEmpty())
-                <section class="group-empty"><i>Z</i><h2>La première ZUMRA peut commencer ici.</h2><p>Aucune équipe fictive n’est affichée. Les groupes apparaîtront à mesure que des adhérents proposeront des projets humains réels.</p></section>
-            @else
-                <section class="group-grid">
-                    @foreach($groups as $group)
-                        <article class="group-card"><div class="group-card-top"><span>{{ mb_strtoupper(mb_substr($group->name,0,1)) }}</span><div><small>{{ $group->domain }}</small><h2>{{ $group->name }}</h2></div></div><p>{{ $group->founding_objective }}</p><div class="group-facts"><span>{{ match($group->participation_mode){'PHYSICAL'=>'Physique','DIGITAL'=>'Numérique',default=>'Hybride'} }}</span><span>{{ $group->active_member_count }} membre{{ $group->active_member_count > 1 ? 's' : '' }}</span><span>{{ $group->maturity === 'ESTABLISHED' ? 'Établie' : 'Émergente' }}</span></div>@if($myMemberships->has($group->id))<b>{{ match($myMemberships[$group->id]){'ACTIVE'=>'Vous êtes membre','INVITED'=>'Invitation reçue',default=>'Demande en attente'} }}</b>@endif<a href="{{ route('zumra.groups.show',$group) }}">Voir la ZUMRA →</a></article>
-                    @endforeach
-                </section>
-                <div class="discovery-pagination">{{ $groups->links() }}</div>
+    <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
+        <div class="dg-page">
+            <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
+
+            @if(session('status'))
+                <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
             @endif
-        </main>
-    </div>
+
+            <div class="dg-page-header">
+                <div>
+                    <x-dg.label tone="saffron">ZUMRA · Action collective</x-dg.label>
+                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['directory_title'] }}</h1>
+                    <p>{{ $configuration['directory_intro'] }}</p>
+                </div>
+                @if($membership?->status === 'ACTIVE')
+                    <x-dg.btn variant="saffron" :href="route('zumra.groups.create')">Proposer une ZUMRA</x-dg.btn>
+                @else
+                    <x-dg.btn variant="quiet" :href="route('zumra.membership.show')">Activer mon adhésion</x-dg.btn>
+                @endif
+            </div>
+
+            <div class="dg-band" style="margin-bottom:24px">
+                <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Une ZUMRA n’est pas un simple groupe de discussion.</strong>
+                Elle rassemble des personnes autour d’un objectif, d’une transmission et d’une action réelle. Une demande n’est jamais une adhésion automatique.
+            </div>
+
+            @if($groups->isEmpty())
+                <x-dg.empty title="La première ZUMRA peut commencer ici.">
+                    <span>Aucune équipe fictive n’est affichée. Les groupes apparaîtront à mesure que des adhérents proposeront des projets humains réels.</span>
+                </x-dg.empty>
+            @else
+                <div class="dg-grid">
+                    @foreach($groups as $group)
+                        <article class="dg-card" style="display:flex;flex-direction:column;gap:14px">
+                            <div class="flex items-center gap-3">
+                                <x-dg.avatar :initials="mb_strtoupper(mb_substr($group->name, 0, 1))" tone="night" />
+                                <div>
+                                    <div class="dg-meta">{{ $group->domain }}</div>
+                                    <h2 class="dg-display dg-display--card" style="font-size:20px">{{ $group->name }}</h2>
+                                </div>
+                            </div>
+                            <p class="dg-body">{{ \Illuminate\Support\Str::limit($group->founding_objective, 140) }}</p>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px">
+                                <x-dg.badge tone="neutral">{{ match($group->participation_mode) { 'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride' } }}</x-dg.badge>
+                                <x-dg.badge tone="neutral">{{ $group->active_member_count }} membre{{ $group->active_member_count > 1 ? 's' : '' }}</x-dg.badge>
+                                <x-dg.badge tone="neutral">{{ $group->maturity === 'ESTABLISHED' ? 'Établie' : 'Émergente' }}</x-dg.badge>
+                            </div>
+                            @if($myMemberships->has($group->id))
+                                <x-dg.label tone="saffron">{{ match($myMemberships[$group->id]) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Invitation reçue', default => 'Demande en attente' } }}</x-dg.label>
+                            @endif
+                            <x-dg.actions flush>
+                                <x-dg.btn variant="quiet" :href="route('zumra.groups.show', $group)">Voir la ZUMRA →</x-dg.btn>
+                            </x-dg.actions>
+                        </article>
+                    @endforeach
+                </div>
+                <div>{{ $groups->links('pagination.dg') }}</div>
+            @endif
+        </div>
+    </x-dg.shell>
 </x-layouts.portal>

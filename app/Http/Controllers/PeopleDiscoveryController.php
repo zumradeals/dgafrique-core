@@ -10,6 +10,7 @@ use App\Application\Profile\ProfileConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
+use App\Models\PortalAdministrator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -62,8 +63,9 @@ final class PeopleDiscoveryController
 
         $profiles = $query->orderByDesc('discovery_consented_at')
             ->paginate((int) $settings['page_size'])->withQueryString();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term'));
+        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term', 'isAdministrator'));
     }
 
     public function show(Request $request, string $reference, PeopleDiscoveryConfiguration $configuration): View
@@ -81,7 +83,8 @@ final class PeopleDiscoveryController
                 ->where('visibility', CapabilityStatement::VISIBILITY_DISCOVERABLE)
                 ->orderBy('kind')->orderBy('label')])
             ->firstOrFail();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('discovery.show', ['identity' => $identity, 'profile' => $profile, 'settings' => $configuration->get()]);
+        return view('discovery.show', ['identity' => $identity, 'profile' => $profile, 'settings' => $configuration->get(), 'isAdministrator' => $isAdministrator]);
     }
 }

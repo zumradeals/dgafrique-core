@@ -1,33 +1,108 @@
+{{--
+    Adhésion au Programme ZUMRA — un engagement distinct du compte DG Afrique. L'activation
+    n'intervient qu'après vérification directe du paiement, jamais depuis un retour navigateur.
+--}}
 <x-layouts.portal title="Adhésion ZUMRA — DG Afrique">
-    <div class="membership-shell">
-        <header class="membership-topbar"><a href="{{ route('zumra.index') }}">← ZUMRA</a><strong><i>Z</i> Programme ZUMRA</strong><a href="{{ route('member.space') }}">Mon espace</a></header>
-        <main class="membership-content">
-            @if (session('status'))<div class="alert success">{{ session('status') }}</div>@endif
-            @if ($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
+    <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
+        <div class="dg-page" style="max-width:1000px">
+            <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
 
-            <section class="membership-hero"><div><p class="eyebrow dark">ADHÉSION AU PROGRAMME</p><h1>{{ $configuration['title'] }}</h1><p>{{ $configuration['introduction'] }}</p></div><div class="membership-price"><strong>500 <small>FCFA</small></strong><span>ou 1 USD · une seule fois</span></div></section>
+            @if(session('status'))
+                <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
+            @endif
 
-            @if ($membership)
-                <section class="membership-state {{ strtolower($membership->status) }}"><span class="state-mark"></span><div><small>ÉTAT DU DOSSIER</small><h2>{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_title'] : match($membership->status) {'ACTIVE' => 'Adhésion active', 'SUSPENDED' => 'Adhésion suspendue', 'CLOSED' => 'Adhésion fermée', default => $membership->status} }}</h2><p>{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_help'] : 'Votre historique d’adhésion reste conservé.' }}</p><dl><div><dt>Charte acceptée</dt><dd>{{ $membership->accepted_charter_version }}</dd></div><div><dt>Dossier créé</dt><dd>{{ $membership->submitted_at->format('d/m/Y à H:i') }}</dd></div><div><dt>Paiement</dt><dd>{{ $membership->status === 'PENDING_PAYMENT' ? 'Non effectué' : 'Voir preuve' }}</dd></div></dl></div></section>
-                @if ($membership->status === 'PENDING_PAYMENT')
-                    <div class="payment-honesty">
-                        @if ($configuration['payment_enabled'])
-                            <strong>Paiement sécurisé · 500 FCFA</strong>
-                            <p>L’activation intervient uniquement après vérification directe du paiement par DG Afrique. Un retour navigateur ne vaut jamais confirmation.</p>
-                            <form method="POST" action="{{ route('zumra.payment.store') }}">@csrf<button type="submit">Payer mon adhésion</button></form>
+            <div class="dg-page-header">
+                <div>
+                    <x-dg.label tone="saffron">Adhésion au programme</x-dg.label>
+                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['title'] }}</h1>
+                    <p>{{ $configuration['introduction'] }}</p>
+                </div>
+                <div style="text-align:right">
+                    <div class="dg-display" style="font-size:28px">500 <small style="font-size:14px">FCFA</small></div>
+                    <div class="dg-meta">ou 1 USD · une seule fois</div>
+                </div>
+            </div>
+
+            @if($membership)
+                <x-dg.card style="margin-bottom:24px">
+                    <x-dg.label>État du dossier</x-dg.label>
+                    <h2 class="dg-display" style="font-size:22px;margin-top:6px">{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_title'] : match($membership->status) { 'ACTIVE' => 'Adhésion active', 'SUSPENDED' => 'Adhésion suspendue', 'CLOSED' => 'Adhésion fermée', default => $membership->status } }}</h2>
+                    <p class="dg-body" style="margin-top:8px">{{ $membership->status === 'PENDING_PAYMENT' ? $configuration['pending_payment_help'] : 'Votre historique d’adhésion reste conservé.' }}</p>
+                    <dl class="dg-dl" style="margin-top:16px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))">
+                        <div>
+                            <dt>Charte acceptée</dt>
+                            <dd>{{ $membership->accepted_charter_version }}</dd>
+                        </div>
+                        <div>
+                            <dt>Dossier créé</dt>
+                            <dd>{{ $membership->submitted_at->format('d/m/Y à H:i') }}</dd>
+                        </div>
+                        <div>
+                            <dt>Paiement</dt>
+                            <dd>{{ $membership->status === 'PENDING_PAYMENT' ? 'Non effectué' : 'Voir preuve' }}</dd>
+                        </div>
+                    </dl>
+                </x-dg.card>
+
+                @if($membership->status === 'PENDING_PAYMENT')
+                    <x-dg.deep>
+                        @if($configuration['payment_enabled'])
+                            <x-dg.label tone="saffron">Paiement sécurisé · 500 FCFA</x-dg.label>
+                            <p style="margin:10px 0 16px;font-size:15px;line-height:1.65;color:var(--dg-on-deep-text)">L’activation intervient uniquement après vérification directe du paiement par DG Afrique. Un retour navigateur ne vaut jamais confirmation.</p>
+                            <form method="POST" action="{{ route('zumra.payment.store') }}">
+                                @csrf
+                                <button type="submit" class="dg-btn dg-btn--saffron">Payer mon adhésion</button>
+                            </form>
                         @else
-                            <strong>Aucun débit en attente</strong><p>{{ $configuration['payment_unavailable_notice'] }}</p><button disabled>Paiement temporairement indisponible</button>
+                            <x-dg.label tone="saffron">Aucun débit en attente</x-dg.label>
+                            <p style="margin:10px 0 16px;font-size:15px;line-height:1.65;color:var(--dg-on-deep-text)">{{ $configuration['payment_unavailable_notice'] }}</p>
+                            <span class="dg-btn dg-btn--on-deep" aria-disabled="true">Paiement temporairement indisponible</span>
                         @endif
-                    </div>
+                    </x-dg.deep>
                 @endif
-            @elseif ($charter)
-                <div class="membership-grid">
-                    <section class="charter-card"><div class="charter-heading"><div><small>CHARTE EN VIGUEUR</small><h2>{{ $charter->title }}</h2></div><span>Version {{ $charter->version }}</span></div><div class="charter-body">{!! nl2br(e($charter->body)) !!}</div></section>
-                    <aside class="membership-commitment"><span class="card-kicker">VOTRE ENGAGEMENT</span><h2>Un seul paiement, une adhésion acquise.</h2><p>{{ $configuration['commitment_notice'] }}</p><ul><li>Demander à rejoindre une ZUMRA</li><li>Recevoir des invitations</li><li>Proposer une nouvelle ZUMRA</li><li>Accéder progressivement au matching</li></ul><form method="POST" action="{{ route('zumra.membership.store') }}">@csrf<input type="hidden" name="charter_id" value="{{ $charter->id }}"><label class="membership-check"><input type="checkbox" name="accept_charter" value="1" required><span>{{ $configuration['accept_label'] }}</span></label><button class="primary-button" type="submit">{{ $configuration['submit_label'] }}</button><small>Aucun paiement ne sera déclenché à cette étape.</small></form></aside>
+            @elseif($charter)
+                <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
+                    <x-dg.card>
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <x-dg.label>Charte en vigueur</x-dg.label>
+                                <h2 class="dg-display" style="font-size:20px;margin-top:6px">{{ $charter->title }}</h2>
+                            </div>
+                            <span class="dg-meta">Version {{ $charter->version }}</span>
+                        </div>
+                        <div class="dg-body" style="margin-top:14px;white-space:pre-line">{{ $charter->body }}</div>
+                    </x-dg.card>
+
+                    <x-dg.card tight>
+                        <x-dg.label tone="saffron">Votre engagement</x-dg.label>
+                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">Un seul paiement, une adhésion acquise.</h2>
+                        <p class="dg-body" style="margin-top:8px">{{ $configuration['commitment_notice'] }}</p>
+                        <ul style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--dg-text)">
+                            <li>· Demander à rejoindre une ZUMRA</li>
+                            <li>· Recevoir des invitations</li>
+                            <li>· Proposer une nouvelle ZUMRA</li>
+                            <li>· Accéder progressivement au matching</li>
+                        </ul>
+                        <form method="POST" action="{{ route('zumra.membership.store') }}" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+                            @csrf
+                            <input type="hidden" name="charter_id" value="{{ $charter->id }}">
+                            <label class="dg-consent">
+                                <input type="checkbox" name="accept_charter" value="1" required>
+                                <span>{{ $configuration['accept_label'] }}</span>
+                            </label>
+                            <button type="submit" class="dg-btn dg-btn--saffron">{{ $configuration['submit_label'] }}</button>
+                            <span class="dg-hint">Aucun paiement ne sera déclenché à cette étape.</span>
+                        </form>
+                    </x-dg.card>
                 </div>
             @else
-                <section class="membership-unavailable"><h1>Adhésion en préparation</h1><p>Aucune charte n’est actuellement publiée. Aucun dossier ni paiement ne peut être créé.</p></section>
+                <x-dg.empty title="Adhésion en préparation">
+                    <span>Aucune charte n’est actuellement publiée. Aucun dossier ni paiement ne peut être créé.</span>
+                </x-dg.empty>
             @endif
-        </main>
-    </div>
+        </div>
+    </x-dg.shell>
 </x-layouts.portal>

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Zumra\ZumraCardIssuer;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\PortalAdministrator;
 use App\Models\ZumraCard;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Http\Request;
@@ -26,8 +27,9 @@ final class ZumraCardController
         }
         $state = $this->state($card, $membership);
         $verificationUrl = $card ? URL::signedRoute('zumra.card.verify', ['card' => $card]) : null;
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.card', compact('identity', 'membership', 'card', 'state', 'verificationUrl'));
+        return view('zumra.card', compact('identity', 'membership', 'card', 'state', 'verificationUrl', 'isAdministrator'));
     }
 
     public function verify(ZumraCard $card): View

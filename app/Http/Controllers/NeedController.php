@@ -8,6 +8,7 @@ use App\Application\Needs\NeedConfiguration;
 use App\Application\Needs\NeedService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Need;
+use App\Models\PortalAdministrator;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use Illuminate\Http\RedirectResponse;
@@ -35,8 +36,9 @@ final class NeedController
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.index', compact('identity', 'needs', 'groups') + ['configuration' => $settings]);
+        return view('needs.index', compact('identity', 'needs', 'groups', 'isAdministrator') + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View
@@ -44,8 +46,9 @@ final class NeedController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $groups = ZumraGroup::query()->whereIn('id', ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->where('status', ZumraGroupMembership::STATUS_ACTIVE)->pluck('zumra_group_id'))->orderBy('name')->get();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.create', compact('groups') + ['configuration' => $configuration->get()]);
+        return view('needs.create', compact('identity', 'groups', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request, NeedConfiguration $configuration, NeedService $service): RedirectResponse
@@ -75,8 +78,9 @@ final class NeedController
         $identity = $request->attributes->get('dg_identity');
         abort_unless($service->canView($need, $identity->reference), 404);
         $group = $need->owner_type === Need::OWNER_GROUP ? ZumraGroup::query()->find($need->owner_reference) : null;
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.show', compact('identity', 'need', 'group') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
+        return view('needs.show', compact('identity', 'need', 'group', 'isAdministrator') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
     }
 
     public function transition(Request $request, Need $need, NeedService $service): RedirectResponse

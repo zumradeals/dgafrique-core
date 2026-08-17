@@ -8,6 +8,7 @@ use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
+use App\Models\PortalAdministrator;
 use App\Models\RecommendationDecision;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ final class RecommendationController
 
         return view('recommendations.index', [
             'identity' => $identity,
+            'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'settings' => $settings,
             'memberProfile' => $result['profile'],
             'recommendations' => $result['recommendations'],

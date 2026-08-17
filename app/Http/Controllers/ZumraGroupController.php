@@ -10,6 +10,7 @@ use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
+use App\Models\PortalAdministrator;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -28,8 +29,9 @@ final class ZumraGroupController
         $membership = $this->programMembership($identity->reference);
         $groups = ZumraGroup::query()->whereNotIn('state', [ZumraGroup::STATE_SUSPENDED])->latest()->paginate(12);
         $myMemberships = ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->whereIn('status', [ZumraGroupMembership::STATUS_ACTIVE, ZumraGroupMembership::STATUS_INVITED, ZumraGroupMembership::STATUS_REQUESTED])->pluck('status', 'zumra_group_id');
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.groups.index', compact('identity', 'membership', 'groups', 'myMemberships') + ['configuration' => $configuration->get()]);
+        return view('zumra.groups.index', compact('identity', 'membership', 'groups', 'myMemberships', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function create(Request $request, ZumraGroupConfiguration $configuration): View
@@ -37,8 +39,9 @@ final class ZumraGroupController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $this->requireActiveProgramMembership($identity->reference);
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.groups.create', ['configuration' => $configuration->get()]);
+        return view('zumra.groups.create', compact('identity', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request, ZumraGroupService $service): RedirectResponse
@@ -74,8 +77,9 @@ final class ZumraGroupController
         $requestProfiles = PersonProfile::query()->whereIn('core_identity_reference', $pendingRequests->pluck('core_identity_reference'))->get()->keyBy('core_identity_reference');
         $collectiveCapabilitySettings = $capabilityConfiguration->get();
         $collectiveCapabilities = $capabilityProfile->forGroup($group, $collectiveCapabilitySettings);
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.groups.show', compact('identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles', 'collectiveCapabilitySettings', 'collectiveCapabilities') + ['isLeader' => $service->isLeader($group, $identity->reference)]);
+        return view('zumra.groups.show', compact('identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles', 'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator') + ['isLeader' => $service->isLeader($group, $identity->reference)]);
     }
 
     public function requestToJoin(Request $request, ZumraGroup $group, ZumraGroupService $service): RedirectResponse

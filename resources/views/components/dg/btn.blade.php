@@ -11,6 +11,7 @@
     'method' => null,
     'disabled' => false,
     'title' => null,
+    'type' => 'button',
 ])
 @php($class = 'dg-btn dg-btn--'.$variant)
 @if($disabled)
@@ -26,5 +27,5 @@
 @elseif($href)
     <a href="{{ $href }}" {{ $attributes->merge(['class' => $class]) }}>{{ $slot }}</a>
 @else
-    <button type="button" {{ $attributes->merge(['class' => $class]) }}>{{ $slot }}</button>
+    <button type="{{ $type }}" {{ $attributes->merge(['class' => $class]) }}>{{ $slot }}</button>
 @endif

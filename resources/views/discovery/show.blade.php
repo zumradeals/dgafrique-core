@@ -1,17 +1,88 @@
+{{--
+    Fiche personne — capacités volontairement découvrables uniquement. Aucune coordonnée privée
+    exposée ; le premier contact passe par la conversation, jamais par un score ou un classement.
+--}}
 <x-layouts.portal title="Profil utile — DG Afrique">
     @php($groups = $profile->capabilityStatements->groupBy('kind'))
-    <div class="discovery-page">
-        <header class="space-header"><div class="space-identity"><a class="brand" href="/"><span class="brand-mark">G</span><span>DG Afrique</span></a></div><div class="space-search">⌕ <span>Profil de capacités volontairement visible</span></div><div class="space-identity"><a class="discovery-back" href="{{ route('people.index') }}">← Découverte</a><span class="avatar">{{ mb_strtoupper(mb_substr($identity->label, 0, 1)) }}</span></div></header>
-        <main class="discovery-content person-detail">
-            <section class="person-detail-hero"><div class="person-detail-avatar">{{ mb_strtoupper(mb_substr($profile->discovery_display_name, 0, 1)) }}</div><div><p class="eyebrow dark">PROFIL UTILE</p><h1>{{ $profile->discovery_display_name }}</h1><p>{{ collect([$profile->current_activity, $profile->city, $profile->country_code])->filter()->implode(' · ') ?: 'Contexte à compléter' }}</p></div><div style="display:grid;gap:.65rem;justify-items:end"><span>Visible avec consentement</span><form method="POST" action="{{ route('messages.direct',$profile->discovery_reference) }}">@csrf<button type="submit" style="border:0;border-radius:.75rem;padding:.7rem 1rem;background:var(--navy);color:#fff;font:inherit;font-size:.72rem;font-weight:850;cursor:pointer">Écrire un message</button></form></div></section>
-            @if($profile->discovery_bio)<section class="person-detail-bio"><h2>À propos</h2><p>{{ $profile->discovery_bio }}</p></section>@endif
-            <section class="capability-columns">
-                <article><span class="capability-icon cyan">C</span><h2>Capacités actuelles</h2><p>Ce que cette personne déclare savoir faire.</p><div>@forelse($groups->get(\App\Models\CapabilityStatement::KIND_POSSESSED, collect()) as $item)<span>{{ $item->label }}</span>@empty<small>Aucune capacité rendue visible.</small>@endforelse</div></article>
-                <article><span class="capability-icon green">T</span><h2>Transmission</h2><p>Ce qu’elle accepte de partager ou d’expliquer.</p><div>@forelse($groups->get(\App\Models\CapabilityStatement::KIND_TRANSMISSION, collect()) as $item)<span>{{ $item->label }}</span>@empty<small>Aucune transmission rendue visible.</small>@endforelse</div></article>
-                <article><span class="capability-icon amber">A</span><h2>Apprentissage</h2><p>Ce qu’elle souhaite apprendre ou renforcer.</p><div>@forelse($groups->get(\App\Models\CapabilityStatement::KIND_LEARNING, collect()) as $item)<span>{{ $item->label }}</span>@empty<small>Aucun apprentissage rendu visible.</small>@endforelse</div></article>
-            </section>
-            <section class="person-context"><div><small>Mode de participation</small><strong>{{ $profile->participation_mode ? str_replace('_', ' ', $profile->participation_mode) : 'Non précisé' }}</strong></div><div><small>Domaines d’intérêt</small><strong>{{ collect($profile->interest_domains)->take(4)->implode(' · ') ?: 'Non précisés' }}</strong></div></section>
-            <div class="discovery-privacy"><strong>Une rencontre doit rester consentie.</strong><span>Le premier contact passe par ce profil volontairement découvrable. Aucune coordonnée privée n’est exposée.</span></div>
-        </main>
-    </div>
+    <x-dg.shell current="personnes" :identity="$identity" :is-administrator="$isAdministrator">
+        <div class="dg-page" style="max-width:1000px">
+            <a href="{{ route('people.index') }}" class="dg-crumb">← Découverte</a>
+
+            <div class="dg-page-header">
+                <div class="flex items-center gap-4">
+                    <x-dg.avatar :initials="mb_strtoupper(mb_substr($profile->discovery_display_name, 0, 1))" size="lg" tone="copper" />
+                    <div>
+                        <x-dg.label tone="saffron">Profil utile</x-dg.label>
+                        <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $profile->discovery_display_name }}</h1>
+                        <p>{{ collect([$profile->current_activity, $profile->city, $profile->country_code])->filter()->implode(' · ') ?: 'Contexte à compléter' }}</p>
+                    </div>
+                </div>
+                <div style="text-align:right;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
+                    <x-dg.label>Visible avec consentement</x-dg.label>
+                    <x-dg.btn variant="primary" :href="route('messages.direct', $profile->discovery_reference)" method="POST">Écrire un message</x-dg.btn>
+                </div>
+            </div>
+
+            @if($profile->discovery_bio)
+                <x-dg.card style="margin-bottom:24px">
+                    <x-dg.label>À propos</x-dg.label>
+                    <p class="dg-body" style="margin-top:10px">{{ $profile->discovery_bio }}</p>
+                </x-dg.card>
+            @endif
+
+            <div class="dg-grid" style="margin-bottom:24px">
+                <x-dg.card>
+                    <x-dg.badge tone="need">Capacités actuelles</x-dg.badge>
+                    <p class="dg-hint" style="margin-top:10px">Ce que cette personne déclare savoir faire.</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+                        @forelse($groups->get(\App\Models\CapabilityStatement::KIND_POSSESSED, collect()) as $item)
+                            <x-dg.badge tone="neutral">{{ $item->label }}</x-dg.badge>
+                        @empty
+                            <span class="dg-meta">Aucune capacité rendue visible.</span>
+                        @endforelse
+                    </div>
+                </x-dg.card>
+                <x-dg.card>
+                    <x-dg.badge tone="action">Transmission</x-dg.badge>
+                    <p class="dg-hint" style="margin-top:10px">Ce qu’elle accepte de partager ou d’expliquer.</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+                        @forelse($groups->get(\App\Models\CapabilityStatement::KIND_TRANSMISSION, collect()) as $item)
+                            <x-dg.badge tone="neutral">{{ $item->label }}</x-dg.badge>
+                        @empty
+                            <span class="dg-meta">Aucune transmission rendue visible.</span>
+                        @endforelse
+                    </div>
+                </x-dg.card>
+                <x-dg.card>
+                    <x-dg.badge tone="decision">Apprentissage</x-dg.badge>
+                    <p class="dg-hint" style="margin-top:10px">Ce qu’elle souhaite apprendre ou renforcer.</p>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+                        @forelse($groups->get(\App\Models\CapabilityStatement::KIND_LEARNING, collect()) as $item)
+                            <x-dg.badge tone="neutral">{{ $item->label }}</x-dg.badge>
+                        @empty
+                            <span class="dg-meta">Aucun apprentissage rendu visible.</span>
+                        @endforelse
+                    </div>
+                </x-dg.card>
+            </div>
+
+            <x-dg.card style="margin-bottom:24px">
+                <dl class="dg-dl lg:grid lg:grid-cols-2" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+                    <div>
+                        <dt>Mode de participation</dt>
+                        <dd>{{ $profile->participation_mode ? str_replace('_', ' ', $profile->participation_mode) : 'Non précisé' }}</dd>
+                    </div>
+                    <div>
+                        <dt>Domaines d’intérêt</dt>
+                        <dd>{{ collect($profile->interest_domains)->take(4)->implode(' · ') ?: 'Non précisés' }}</dd>
+                    </div>
+                </dl>
+            </x-dg.card>
+
+            <div class="dg-band">
+                <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Une rencontre doit rester consentie.</strong>
+                Le premier contact passe par ce profil volontairement découvrable. Aucune coordonnée privée n’est exposée.
+            </div>
+        </div>
+    </x-dg.shell>
 </x-layouts.portal>
