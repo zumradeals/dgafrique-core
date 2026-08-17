@@ -36,8 +36,11 @@ final class MissionDependencyService
             // ne le fermait au moment de son propre contrôle pré-transaction.
             $ids = [$mission->id, $dependsOn->id];
             sort($ids);
-            Mission::query()->whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get();
+            $locked = Mission::query()->whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
 
+            // Revalidation sous verrou : $mission a pu devenir terminale entre le contrôle
+            // initial et l'acquisition du verrou.
+            abort_if(in_array($locked->get($mission->id)?->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
             abort_if($this->wouldCycle($mission, $dependsOn), 422, 'Cette dépendance créerait un cycle entre Missions.');
 
             $dependency = MissionDependency::query()->firstOrCreate([
@@ -56,13 +59,15 @@ final class MissionDependencyService
     public function remove(Mission $mission, string $actor, MissionDependency $dependency): void
     {
         abort_unless($dependency->mission_id === $mission->id, 404);
-        abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
         $this->assertAuthority($mission, $actor);
 
         DB::transaction(function () use ($mission, $actor, $dependency): void {
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_if(in_array($lockedMission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+
             $dependsOnId = $dependency->depends_on_mission_id;
             $dependency->delete();
-            $this->event($mission, 'MISSION_DEPENDENCY_REMOVED', $actor, ['depends_on_mission_id' => $dependsOnId]);
+            $this->event($lockedMission, 'MISSION_DEPENDENCY_REMOVED', $actor, ['depends_on_mission_id' => $dependsOnId]);
         });
     }
 

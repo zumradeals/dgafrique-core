@@ -50,19 +50,23 @@ final class MissionBlockerService
     {
         abort_unless(in_array($type, MissionBlocker::TYPES, true), 422, 'Type de blocage invalide.');
         abort_if(trim($description) === '', 422, 'Décrivez le blocage rencontré.');
-        abort_unless($mission->status === Mission::STATUS_BLOCKED, 409, 'Cette Mission n’est pas bloquée.');
         $this->assertCanReport($mission, $actor);
 
-        $blocker = MissionBlocker::query()->create([
-            'mission_id' => $mission->id,
-            'type' => $type,
-            'description' => trim($description),
-            'opened_by_core_reference' => $actor,
-            'opened_at' => now(),
-        ]);
-        $this->workflow->record($mission, 'MISSION_BLOCKED', $actor, null, null, ['type' => $type, 'additional' => true]);
+        return DB::transaction(function () use ($mission, $actor, $type, $description): MissionBlocker {
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_unless($lockedMission->status === Mission::STATUS_BLOCKED, 409, 'Cette Mission n’est pas bloquée.');
 
-        return $blocker;
+            $blocker = MissionBlocker::query()->create([
+                'mission_id' => $lockedMission->id,
+                'type' => $type,
+                'description' => trim($description),
+                'opened_by_core_reference' => $actor,
+                'opened_at' => now(),
+            ]);
+            $this->workflow->record($lockedMission, 'MISSION_BLOCKED', $actor, null, null, ['type' => $type, 'additional' => true]);
+
+            return $blocker;
+        });
     }
 
     public function resolve(Mission $mission, string $actor, MissionBlocker $blocker, ?string $note = null): Mission
