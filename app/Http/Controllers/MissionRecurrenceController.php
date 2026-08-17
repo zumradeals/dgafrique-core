@@ -28,7 +28,7 @@ final class MissionRecurrenceController
     public function pause(Request $request, Mission $mission, MissionRecurrence $recurrence, MissionRecurrenceService $recurrences): RedirectResponse
     {
         $identity = $this->identity($request);
-        $recurrences->pause($recurrence, $identity->reference);
+        $recurrences->pause($mission, $recurrence, $identity->reference);
 
         return back()->with('status', 'La récurrence est en pause.');
     }
@@ -36,7 +36,7 @@ final class MissionRecurrenceController
     public function resume(Request $request, Mission $mission, MissionRecurrence $recurrence, MissionRecurrenceService $recurrences): RedirectResponse
     {
         $identity = $this->identity($request);
-        $recurrences->activate($recurrence, $identity->reference);
+        $recurrences->activate($mission, $recurrence, $identity->reference);
 
         return back()->with('status', 'La récurrence est réactivée.');
     }
@@ -44,7 +44,7 @@ final class MissionRecurrenceController
     public function stop(Request $request, Mission $mission, MissionRecurrence $recurrence, MissionRecurrenceService $recurrences): RedirectResponse
     {
         $identity = $this->identity($request);
-        $recurrences->stop($recurrence, $identity->reference);
+        $recurrences->stop($mission, $recurrence, $identity->reference);
 
         return back()->with('status', 'La récurrence est arrêtée.');
     }

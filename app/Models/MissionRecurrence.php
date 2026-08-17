@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 final class MissionRecurrence extends Model
 {
@@ -20,7 +21,7 @@ final class MissionRecurrence extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'source_mission_id', 'rrule', 'timezone', 'is_active', 'status',
+        'source_mission_id', 'rrule', 'timezone', 'due_offset_minutes', 'is_active', 'status',
         'next_occurrence_at', 'last_generated_at', 'last_error_at',
         'last_error_code', 'created_by_core_reference',
     ];
@@ -33,5 +34,10 @@ final class MissionRecurrence extends Model
             'last_generated_at' => 'immutable_datetime',
             'last_error_at' => 'immutable_datetime',
         ];
+    }
+
+    public function source(): BelongsTo
+    {
+        return $this->belongsTo(Mission::class, 'source_mission_id');
     }
 }

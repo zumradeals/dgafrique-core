@@ -2,10 +2,15 @@
 
 declare(strict_types=1);
 
+use App\Console\Commands\GenerateMissionRecurringOccurrences;
 use App\Infrastructure\GamadCore\Exceptions\CoreException;
 use App\Infrastructure\GamadCore\GamadCoreClient;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schedule;
 use Symfony\Component\Console\Command\Command;
+
+// CAP-069 §8 : génération idempotente des occurrences de Missions récurrentes dues.
+Schedule::command(GenerateMissionRecurringOccurrences::class)->hourly();
 
 Artisan::command('dg:core:prouver-identite {reference?}', function (GamadCoreClient $core): int {
     $reference = trim((string) ($this->argument('reference') ?: $this->ask('Référence de l’identité Core')));
