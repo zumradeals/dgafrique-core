@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Messaging\MessagingService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\MessageConversation;
+use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
 use App\Models\ZumraGroup;
@@ -54,6 +55,13 @@ final class MessagingController
     public function openNeed(Request $request, Need $need, MessagingService $messaging): RedirectResponse
     {
         $conversation = $messaging->openNeed($this->identity($request)->reference, $need);
+
+        return redirect()->route('messages.show', $conversation);
+    }
+
+    public function openMission(Request $request, Mission $mission, MessagingService $messaging): RedirectResponse
+    {
+        $conversation = $messaging->openMission($this->identity($request)->reference, $mission);
 
         return redirect()->route('messages.show', $conversation);
     }

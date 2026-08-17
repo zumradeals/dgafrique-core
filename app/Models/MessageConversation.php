@@ -19,6 +19,7 @@ final class MessageConversation extends Model
     public const CONTEXT_ZUMRA = 'ZUMRA';
     public const CONTEXT_INVITATION = 'INVITATION';
     public const CONTEXT_PROJECT = 'PROJECT';
+    public const CONTEXT_MISSION = 'MISSION';
     public const CONTEXT_DG_AFRIQUE = 'DG_AFRIQUE';
 
     protected $table = 'dg_message_conversations';

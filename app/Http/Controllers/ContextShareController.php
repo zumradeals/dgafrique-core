@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Sharing\ContextShareService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\ContextShare;
+use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
 use App\Models\ZumraGroup;
@@ -72,6 +73,30 @@ final class ContextShareController
             $share->wasRecentlyCreated
                 ? 'Partage transmis avec son contexte d’origine.'
                 : 'Ce projet avait déjà été transmis à cette destination. Aucun doublon n’a été créé.',
+        );
+    }
+
+    public function mission(Request $request, Mission $mission, ContextShareService $shares): View
+    {
+        return view('shares.create', $shares->missionComposer($mission, $this->identity($request)->reference));
+    }
+
+    public function storeMission(Request $request, Mission $mission, ContextShareService $shares): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $share = $shares->shareMission(
+            $mission,
+            $this->identity($request)->reference,
+            $data['target_type'],
+            $data['target_reference'],
+            $data['context_note'],
+        );
+
+        return redirect()->route('shares.mission', $mission)->with(
+            'status',
+            $share->wasRecentlyCreated
+                ? 'Partage transmis avec son contexte d’origine.'
+                : 'Cette Mission avait déjà été transmise à cette destination. Aucun doublon n’a été créé.',
         );
     }
 

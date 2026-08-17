@@ -35,4 +35,14 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('group')
         ->middleware(['core.member', 'throttle:comments-write'])
         ->name('comments.zumra-activity.store');
+
+    Route::get('/commentaires/missions/{mission}', [ContextCommentController::class, 'mission'])
+        ->whereUuid('mission')
+        ->middleware(['core.member', 'throttle:comments-read'])
+        ->name('comments.mission');
+
+    Route::post('/commentaires/missions/{mission}', [ContextCommentController::class, 'storeMission'])
+        ->whereUuid('mission')
+        ->middleware(['core.member', 'throttle:comments-write'])
+        ->name('comments.mission.store');
 });

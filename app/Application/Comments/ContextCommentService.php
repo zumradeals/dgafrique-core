@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Application\Comments;
 
+use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
 use App\Models\ContextComment;
+use App\Models\Mission;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\Project;
@@ -22,6 +24,7 @@ final class ContextCommentService
     public function __construct(
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
+        private readonly MissionVisibilityService $missionVisibility,
     ) {
     }
 
@@ -74,6 +77,30 @@ final class ContextCommentService
             'can_comment' => true,
             'closed_text' => null,
         ], $actor);
+    }
+
+    public function missionThread(Mission $mission, string $actor): array
+    {
+        abort_unless($this->missionVisibility->canViewMission($mission, $actor), 404);
+
+        return $this->thread([
+            'type' => ContextComment::CONTEXT_MISSION,
+            'reference' => $mission->public_reference,
+            'label' => 'Mission',
+            'title' => $mission->title,
+            'summary' => Str::limit(trim($mission->description), 240),
+            'back_url' => route('missions.show', $mission),
+            'back_label' => 'Retour à la Mission',
+            'can_comment' => ! in_array($mission->status, Mission::TERMINAL_STATUSES, true),
+            'closed_text' => 'Cette Mission est terminée : les contributions existantes restent lisibles aux personnes encore autorisées, mais le fil est en lecture seule.',
+        ], $actor);
+    }
+
+    public function addMission(Mission $mission, string $actor, string $purpose, string $body): ContextComment
+    {
+        $thread = $this->missionThread($mission, $actor);
+
+        return $this->add($thread['context'], $actor, $purpose, $body);
     }
 
     public function addNeed(Need $need, string $actor, string $purpose, string $body): ContextComment

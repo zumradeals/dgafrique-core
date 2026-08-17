@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
+use App\Application\Missions\MissionService;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Application\Sharing\ContextShareService;
@@ -28,6 +29,7 @@ final class MemberSpaceController
         PersonRecommendationEngine $recommendationEngine,
         RecommendationConfiguration $recommendationConfiguration,
         ContextShareService $shares,
+        MissionService $missions,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -56,7 +58,9 @@ final class MemberSpaceController
             ->latest('created_at')
             ->first();
 
-        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $activityPreview, $profile);
+        $nextMissionAction = $missions->nextAction($identity->reference);
+
+        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $activityPreview, $profile);
 
         $usedKey = $priority['source_key'] ?? null;
         $rest = $activityPreview->reject(fn (array $item): bool => $item['key'] === $usedKey);
@@ -103,6 +107,7 @@ final class MemberSpaceController
         ?Need $ownProposedNeed,
         ?Project $ownProject,
         ?ZumraProgramMembership $zumraMembership,
+        ?array $nextMissionAction,
         Collection $activityPreview,
         ?PersonProfile $profile,
     ): ?array {
@@ -132,6 +137,16 @@ final class MemberSpaceController
                 'heading' => 'Votre adhésion au Programme ZUMRA attend d’être finalisée.',
                 'body' => 'Le dossier est prêt mais la contribution n’a pas encore été réglée.',
                 'primary' => ['label' => 'Finaliser mon adhésion', 'href' => route('zumra.membership.show')],
+                'secondary' => null,
+            ];
+        }
+
+        if ($nextMissionAction) {
+            return [
+                'label' => 'Aujourd’hui — une seule chose compte',
+                'heading' => $nextMissionAction['heading'],
+                'body' => $nextMissionAction['body'],
+                'primary' => $nextMissionAction['primary'],
                 'secondary' => null,
             ];
         }
