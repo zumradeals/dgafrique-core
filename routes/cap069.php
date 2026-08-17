@@ -120,7 +120,7 @@ Route::middleware('web')->group(function (): void {
     // Correspondances (matching).
     Route::get('/missions/{mission}/correspondances', [MissionMatchingController::class, 'index'])
         ->whereUuid('mission')->middleware(['core.member', 'throttle:mission-matching'])->name('missions.matching');
-    Route::post('/missions/{mission}/correspondances/{subject}/masquer', [MissionMatchingController::class, 'hide'])
+    Route::post('/missions/{mission}/correspondances/{discoveryReference}/masquer', [MissionMatchingController::class, 'hide'])
         ->whereUuid('mission')->middleware(['core.member', 'throttle:mission-matching'])->name('missions.matching.hide');
 
     // Récurrence.

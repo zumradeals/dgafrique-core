@@ -251,18 +251,27 @@
                         @endif
 
                         @if($canManageAssignments && in_array($mission->status, ['OPEN','IN_PROGRESS','BLOCKED'], true))
-                            <form method="POST" action="{{ route('missions.assignments.invite', $mission) }}" style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                                @csrf
-                                <input type="text" name="core_identity_reference" class="dg-input" placeholder="Référence de la personne à inviter" style="flex:1;min-width:220px">
-                                <select name="role" class="dg-select" style="max-width:200px">
-                                    <option value="EXECUTOR">Exécutant</option>
-                                    <option value="CO_EXECUTOR">Co-exécutant</option>
-                                    <option value="COORDINATOR">Coordinateur</option>
-                                    <option value="LEARNER">Apprenant</option>
-                                    <option value="OBSERVER">Observateur</option>
-                                </select>
-                                <button type="submit" class="dg-btn dg-btn--quiet">Inviter</button>
-                            </form>
+                            @if(empty($invitationCandidates))
+                                <p class="dg-hint" style="margin-top:10px">Aucune personne découvrable et déjà autorisée sur ce contexte n’est disponible à inviter actuellement.</p>
+                            @else
+                                <form method="POST" action="{{ route('missions.assignments.invite', $mission) }}" style="margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                                    @csrf
+                                    <select name="discovery_reference" class="dg-select" style="flex:1;min-width:220px" required>
+                                        <option value="">Choisir une personne à inviter</option>
+                                        @foreach($invitationCandidates as $candidate)
+                                            <option value="{{ $candidate['reference'] }}">{{ $candidate['label'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select name="role" class="dg-select" style="max-width:200px">
+                                        <option value="EXECUTOR">Exécutant</option>
+                                        <option value="CO_EXECUTOR">Co-exécutant</option>
+                                        <option value="COORDINATOR">Coordinateur</option>
+                                        <option value="LEARNER">Apprenant</option>
+                                        <option value="OBSERVER">Observateur</option>
+                                    </select>
+                                    <button type="submit" class="dg-btn dg-btn--quiet">Inviter</button>
+                                </form>
+                            @endif
                             <div style="margin-top:10px">
                                 <a href="{{ route('missions.matching', $mission) }}" class="dg-btn dg-btn--quiet">Voir les correspondances de capacités →</a>
                             </div>

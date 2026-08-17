@@ -43,7 +43,7 @@
                             </div>
                             <x-dg.actions flush style="justify-content:space-between;align-items:center">
                                 <x-dg.btn variant="quiet" :href="route('people.show', $match['profile']->discovery_reference)">Voir le profil public</x-dg.btn>
-                                <form method="POST" action="{{ route('missions.matching.hide', [$mission, $match['profile']->core_identity_reference]) }}">
+                                <form method="POST" action="{{ route('missions.matching.hide', [$mission, $match['profile']->discovery_reference]) }}">
                                     @csrf
                                     <button type="submit" class="dg-btn dg-btn--quiet">Masquer cette piste</button>
                                 </form>

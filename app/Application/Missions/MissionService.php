@@ -10,7 +10,9 @@ use App\Models\MissionCapabilityRequirement;
 use App\Models\MissionChecklistItem;
 use App\Models\MissionResourceRequirement;
 use App\Models\MissionSubmission;
+use App\Models\PersonProfile;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -21,6 +23,7 @@ use Illuminate\Support\Str;
 final class MissionService
 {
     private const AUTHORITY_POOL_LIMIT = 200;
+    private const INVITATION_CANDIDATE_LIMIT = 100;
 
     public function __construct(
         private readonly MissionContextRegistry $registry,
@@ -61,64 +64,111 @@ final class MissionService
             ->values();
     }
 
+    /**
+     * Personnes proposables à l'invitation, jamais une saisie libre de référence Core
+     * technique : le même mécanisme de découverte consentie que le partage (CAP-022),
+     * borné aux personnes qui peuvent déjà accéder au contexte porteur de la Mission —
+     * exactement la condition vérifiée par MissionAssignmentService::invite().
+     *
+     * @return list<array{reference: string, label: string}>
+     */
+    public function invitationCandidates(Mission $mission, string $actor): array
+    {
+        $adapter = $this->registry->for($mission->context_type);
+        $context = $adapter->resolve($mission->context_reference);
+
+        $alreadyEngaged = $mission->assignments()
+            ->whereIn('status', MissionAssignment::CURRENT_STATUSES)
+            ->pluck('core_identity_reference');
+
+        return PersonProfile::query()
+            ->where('core_identity_reference', '!=', $actor)
+            ->whereNotIn('core_identity_reference', $alreadyEngaged)
+            ->where('orientation_consent', true)
+            ->where('discovery_consent', true)
+            ->whereNotNull('discovery_reference')
+            ->whereNotNull('discovery_display_name')
+            ->orderBy('discovery_display_name')
+            ->limit(self::INVITATION_CANDIDATE_LIMIT)
+            ->get(['core_identity_reference', 'discovery_reference', 'discovery_display_name'])
+            ->filter(fn (PersonProfile $profile): bool => $adapter->canView($context, $profile->core_identity_reference))
+            ->map(static fn (PersonProfile $profile): array => [
+                'reference' => $profile->discovery_reference,
+                'label' => $profile->discovery_display_name,
+            ])
+            ->values()
+            ->all();
+    }
+
     public function addChecklistItem(Mission $mission, string $actor, string $label, bool $isRequired): MissionChecklistItem
     {
         abort_if(trim($label) === '', 422, 'Le libellé est requis.');
-        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
-        $position = (int) ($mission->checklistItems()->max('position') ?? 0) + 1;
+        return DB::transaction(function () use ($mission, $label, $isRequired): MissionChecklistItem {
+            $lockedMission = $this->lockAndAssertNotTerminal($mission);
+            $position = (int) ($lockedMission->checklistItems()->max('position') ?? 0) + 1;
 
-        return $mission->checklistItems()->create([
-            'label' => trim($label),
-            'position' => $position,
-            'is_required' => $isRequired,
-        ]);
+            return $lockedMission->checklistItems()->create([
+                'label' => trim($label),
+                'position' => $position,
+                'is_required' => $isRequired,
+            ]);
+        });
     }
 
     /** 100 % de checklist complétée ne clôture jamais automatiquement la Mission. */
     public function setChecklistItemCompletion(Mission $mission, string $actor, MissionChecklistItem $item, bool $completed): MissionChecklistItem
     {
         abort_unless($item->mission_id === $mission->id, 404);
-        $this->assertNotTerminal($mission);
         $this->assertOfficializerOrAcceptedExecutor($mission, $actor);
 
-        $item->update($completed
-            ? ['completed_by_core_reference' => $actor, 'completed_at' => now()]
-            : ['completed_by_core_reference' => null, 'completed_at' => null]);
+        return DB::transaction(function () use ($mission, $item, $actor, $completed): MissionChecklistItem {
+            $this->lockAndAssertNotTerminal($mission);
 
-        return $item;
+            $item->update($completed
+                ? ['completed_by_core_reference' => $actor, 'completed_at' => now()]
+                : ['completed_by_core_reference' => null, 'completed_at' => null]);
+
+            return $item;
+        });
     }
 
     public function addCapabilityRequirement(Mission $mission, string $actor, string $label, string $requirementLevel, ?int $quantity, ?string $context): MissionCapabilityRequirement
     {
         abort_if(trim($label) === '', 422, 'Le libellé de la capacité est requis.');
-        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
-        return $mission->capabilityRequirements()->create([
-            'label' => trim($label),
-            'normalized_label' => mb_substr(Str::of($label)->ascii()->lower()->squish()->toString(), 0, 200),
-            'requirement_level' => $requirementLevel,
-            'quantity' => $quantity,
-            'context' => $context,
-        ]);
+        return DB::transaction(function () use ($mission, $label, $requirementLevel, $quantity, $context): MissionCapabilityRequirement {
+            $lockedMission = $this->lockAndAssertNotTerminal($mission);
+
+            return $lockedMission->capabilityRequirements()->create([
+                'label' => trim($label),
+                'normalized_label' => mb_substr(Str::of($label)->ascii()->lower()->squish()->toString(), 0, 200),
+                'requirement_level' => $requirementLevel,
+                'quantity' => $quantity,
+                'context' => $context,
+            ]);
+        });
     }
 
     public function addResourceRequirement(Mission $mission, string $actor, string $type, string $label, ?float $quantity, ?string $unit, bool $isRequired, ?string $context): MissionResourceRequirement
     {
         abort_if(trim($label) === '', 422, 'Le libellé de la ressource est requis.');
-        $this->assertNotTerminal($mission);
         $this->assertOfficializer($mission, $actor);
 
-        return $mission->resourceRequirements()->create([
-            'type' => $type,
-            'label' => trim($label),
-            'quantity' => $quantity,
-            'unit' => $unit,
-            'is_required' => $isRequired,
-            'context' => $context,
-        ]);
+        return DB::transaction(function () use ($mission, $type, $label, $quantity, $unit, $isRequired, $context): MissionResourceRequirement {
+            $lockedMission = $this->lockAndAssertNotTerminal($mission);
+
+            return $lockedMission->resourceRequirements()->create([
+                'type' => $type,
+                'label' => trim($label),
+                'quantity' => $quantity,
+                'unit' => $unit,
+                'is_required' => $isRequired,
+                'context' => $context,
+            ]);
+        });
     }
 
     /**
@@ -306,10 +356,18 @@ final class MissionService
         return null;
     }
 
-    /** Une Mission terminale reste historiquement stable : pas de mutation ordinaire. */
-    private function assertNotTerminal(Mission $mission): void
+    /**
+     * Une Mission terminale reste historiquement stable : pas de mutation ordinaire.
+     * Verrouille la ligne Mission avant de statuer, pour revalider son état contre une
+     * transition terminale qui pourrait courir en parallèle (convention : Mission d'abord,
+     * puis objet enfant).
+     */
+    private function lockAndAssertNotTerminal(Mission $mission): Mission
     {
-        abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée : elle reste consultable mais n’est plus modifiable.');
+        $locked = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+        abort_if(in_array($locked->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée : elle reste consultable mais n’est plus modifiable.');
+
+        return $locked;
     }
 
     private function isOfficializer(Mission $mission, string $actor): bool

@@ -97,6 +97,7 @@ final class MissionController
             'canReportBlocker' => $canReportBlocker,
             'canConsolidateSubmission' => $canConsolidateSubmission,
             'canToggleChecklist' => $canToggleChecklist,
+            'invitationCandidates' => $canManageAssignments ? $missions->invitationCandidates($mission, $identity->reference) : [],
             'children' => $children,
         ]);
     }

@@ -25,10 +25,10 @@ final class MissionMatchingController
         return view('missions.matching', compact('identity', 'isAdministrator', 'mission', 'recommendations'));
     }
 
-    public function hide(Request $request, Mission $mission, string $subject, MissionMatchingEngine $engine): RedirectResponse
+    public function hide(Request $request, Mission $mission, string $discoveryReference, MissionMatchingEngine $engine): RedirectResponse
     {
         $identity = $this->identity($request);
-        $engine->hide($mission, $identity->reference, $subject);
+        $engine->hide($mission, $identity->reference, $discoveryReference);
 
         return back()->with('status', 'Cette piste est masquée pour cette Mission.');
     }

@@ -86,14 +86,27 @@ final class MissionMatchingEngine
         return $results;
     }
 
-    public function hide(Mission $mission, string $viewer, string $subject): void
+    /**
+     * $subjectDiscoveryReference est la référence de découverte publique du profil masqué
+     * — jamais une core_identity_reference technique reçue depuis l'UI (celle-ci n'apparaît
+     * dans aucune URL ni aucun champ de formulaire côté membre).
+     */
+    public function hide(Mission $mission, string $viewer, string $subjectDiscoveryReference): void
     {
         $this->assertCanView($mission, $viewer);
+
+        $profile = PersonProfile::query()
+            ->where('discovery_reference', $subjectDiscoveryReference)
+            ->where('orientation_consent', true)
+            ->where('discovery_consent', true)
+            ->whereNotNull('discovery_display_name')
+            ->first();
+        abort_unless($profile !== null, 422, 'Cette personne n’est pas disponible.');
 
         MissionMatchingHide::query()->firstOrCreate([
             'mission_id' => $mission->id,
             'viewer_core_reference' => $viewer,
-            'subject_core_reference' => $subject,
+            'subject_core_reference' => $profile->core_identity_reference,
         ], ['created_at' => now()]);
     }
 

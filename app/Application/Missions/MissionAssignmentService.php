@@ -8,6 +8,7 @@ use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionBlocker;
 use App\Models\MissionEvent;
+use App\Models\PersonProfile;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,6 +16,10 @@ use Illuminate\Support\Facades\DB;
  * automatique, aucun silence ne vaut acceptation. Le retrait du dernier exécutant suit
  * exactement la règle v0.5 : OPEN reste OPEN, IN_PROGRESS bascule BLOCKED avec un blocker
  * PERSON_UNAVAILABLE — jamais de Need créé, jamais de retour arbitraire à OPEN.
+ *
+ * Convention de verrouillage : toujours la Mission d'abord, puis l'objet enfant
+ * (MissionAssignment), dans cet ordre, pour ne jamais produire de deadlock croisé entre
+ * deux opérations concurrentes sur la même Mission.
  */
 final class MissionAssignmentService
 {
@@ -38,12 +43,14 @@ final class MissionAssignmentService
     public function offer(Mission $mission, string $actor, string $role): MissionAssignment
     {
         abort_unless(in_array($role, self::ROLES, true), 422, 'Rôle de participation invalide.');
-        abort_unless(in_array($mission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission ne reçoit pas de proposition de participation actuellement.');
         abort_unless($this->visibility->canViewMission($mission, $actor), 404);
 
         return DB::transaction(function () use ($mission, $actor, $role): MissionAssignment {
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_unless(in_array($lockedMission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission ne reçoit pas de proposition de participation actuellement.');
+
             $assignment = MissionAssignment::query()
-                ->where('mission_id', $mission->id)
+                ->where('mission_id', $lockedMission->id)
                 ->where('core_identity_reference', $actor)
                 ->lockForUpdate()
                 ->first();
@@ -51,7 +58,7 @@ final class MissionAssignmentService
             abort_if($assignment?->status === MissionAssignment::STATUS_ACCEPTED, 409, 'Vous participez déjà à cette Mission.');
             abort_if(in_array($assignment?->status, [MissionAssignment::STATUS_OFFERED, MissionAssignment::STATUS_INVITED], true), 409, 'Une proposition est déjà en attente pour vous sur cette Mission.');
 
-            $assignment ??= new MissionAssignment(['mission_id' => $mission->id, 'core_identity_reference' => $actor]);
+            $assignment ??= new MissionAssignment(['mission_id' => $lockedMission->id, 'core_identity_reference' => $actor]);
             $assignment->fill([
                 'role' => $role,
                 'status' => MissionAssignment::STATUS_OFFERED,
@@ -67,38 +74,47 @@ final class MissionAssignmentService
                 'removed_at' => null,
             ])->save();
 
-            $this->event($mission, 'ASSIGNMENT_OFFERED', $actor, $actor);
+            $this->event($lockedMission, 'ASSIGNMENT_OFFERED', $actor, $actor);
 
             return $assignment;
         });
     }
 
     /**
-     * Une autorité invite directement -> INVITED. Une invitation ne fabrique jamais un
-     * droit d'accès : la personne invitée doit déjà pouvoir accéder au contexte porteur
-     * (ProjectService/NeedService/ZumraGroupService), sinon l'invitation est refusée.
+     * Une autorité invite directement -> INVITED. L'UI ne demande et n'expose jamais une
+     * core_identity_reference technique : $subjectDiscoveryReference est la référence de
+     * découverte publique et opaque déjà utilisée pour le partage (CAP-022), résolue ici
+     * vers une véritable identité canonique consentante — jamais une chaîne arbitraire ne
+     * peut devenir une MissionAssignment INVITED. Une invitation ne fabrique jamais non
+     * plus un droit d'accès : la personne résolue doit déjà pouvoir accéder au contexte
+     * porteur (ProjectService/NeedService/ZumraGroupService), sinon l'invitation est refusée.
      */
-    public function invite(Mission $mission, string $actor, string $subject, string $role): MissionAssignment
+    public function invite(Mission $mission, string $actor, string $subjectDiscoveryReference, string $role): MissionAssignment
     {
         abort_unless(in_array($role, self::ROLES, true), 422, 'Rôle de participation invalide.');
-        abort_if($subject === $actor, 422, 'Vous ne pouvez pas vous inviter vous-même.');
         $this->assertManageAssignments($mission, $actor);
         abort_unless(in_array($mission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission ne reçoit pas d’invitation actuellement.');
+
+        $subject = $this->resolveInvitableSubject($subjectDiscoveryReference);
+        abort_if($subject === $actor, 422, 'Vous ne pouvez pas vous inviter vous-même.');
 
         $adapter = $this->registry->for($mission->context_type);
         $context = $adapter->resolve($mission->context_reference);
         abort_unless($adapter->canView($context, $subject), 422, 'Cette personne n’a pas accès au contexte de cette Mission : une invitation ne peut pas lui fabriquer ce droit.');
 
         return DB::transaction(function () use ($mission, $actor, $subject, $role): MissionAssignment {
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_unless(in_array($lockedMission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission ne reçoit pas d’invitation actuellement.');
+
             $assignment = MissionAssignment::query()
-                ->where('mission_id', $mission->id)
+                ->where('mission_id', $lockedMission->id)
                 ->where('core_identity_reference', $subject)
                 ->lockForUpdate()
                 ->first();
 
             abort_if($assignment?->status === MissionAssignment::STATUS_ACCEPTED, 409, 'Cette personne participe déjà à cette Mission.');
 
-            $assignment ??= new MissionAssignment(['mission_id' => $mission->id, 'core_identity_reference' => $subject]);
+            $assignment ??= new MissionAssignment(['mission_id' => $lockedMission->id, 'core_identity_reference' => $subject]);
             $assignment->fill([
                 'role' => $role,
                 'status' => MissionAssignment::STATUS_INVITED,
@@ -114,7 +130,7 @@ final class MissionAssignmentService
                 'removed_at' => null,
             ])->save();
 
-            $this->event($mission, 'ASSIGNMENT_INVITED', $actor, $subject);
+            $this->event($lockedMission, 'ASSIGNMENT_INVITED', $actor, $subject);
 
             return $assignment;
         });
@@ -163,11 +179,13 @@ final class MissionAssignmentService
         abort_unless(hash_equals($assignment->core_identity_reference, $actor), 403);
 
         return DB::transaction(function () use ($mission, $assignment, $actor): MissionAssignment {
-            abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_if(in_array($lockedMission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+
             $locked = MissionAssignment::query()->whereKey($assignment->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === MissionAssignment::STATUS_OFFERED, 409, 'Cette proposition n’est plus en attente.');
             $locked->update(['status' => MissionAssignment::STATUS_WITHDRAWN, 'withdrawn_at' => now()]);
-            $this->event($mission, 'ASSIGNMENT_WITHDRAWN', $actor, $actor);
+            $this->event($lockedMission, 'ASSIGNMENT_WITHDRAWN', $actor, $actor);
 
             return $locked;
         });
@@ -221,11 +239,13 @@ final class MissionAssignmentService
     private function decline(Mission $mission, MissionAssignment $assignment, string $expectedFrom, string $actor, ?string $reason): MissionAssignment
     {
         return DB::transaction(function () use ($mission, $assignment, $expectedFrom, $actor, $reason): MissionAssignment {
-            abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
+            abort_if(in_array($lockedMission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+
             $locked = MissionAssignment::query()->whereKey($assignment->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === $expectedFrom, 409, 'Cette proposition n’est plus en attente.');
             $locked->update(['status' => MissionAssignment::STATUS_DECLINED, 'declined_at' => now(), 'reason' => $reason]);
-            $this->event($mission, 'ASSIGNMENT_DECLINED', $actor, $locked->core_identity_reference);
+            $this->event($lockedMission, 'ASSIGNMENT_DECLINED', $actor, $locked->core_identity_reference);
 
             return $locked;
         });
@@ -303,6 +323,27 @@ final class MissionAssignmentService
         $adapter = $this->registry->for($mission->context_type);
         $context = $adapter->resolve($mission->context_reference);
         abort_unless($adapter->canManageAssignments($context, $actor), 403);
+    }
+
+    /**
+     * Résout une référence de découverte publique (jamais une core_identity_reference brute
+     * saisie côté client) vers une véritable identité canonique consentante — même mécanisme
+     * que ContextShareService::personTarget() (CAP-022). Une référence inconnue, révoquée ou
+     * non consentante échoue explicitement : elle ne devient jamais silencieusement une
+     * invitation.
+     */
+    private function resolveInvitableSubject(string $discoveryReference): string
+    {
+        $profile = PersonProfile::query()
+            ->where('discovery_reference', $discoveryReference)
+            ->where('orientation_consent', true)
+            ->where('discovery_consent', true)
+            ->whereNotNull('discovery_display_name')
+            ->first();
+
+        abort_unless($profile !== null, 422, 'Cette personne n’est pas disponible pour une invitation.');
+
+        return $profile->core_identity_reference;
     }
 
     /**
