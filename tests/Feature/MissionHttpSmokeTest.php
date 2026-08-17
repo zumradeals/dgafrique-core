@@ -1,0 +1,84 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Tests\Feature;
+
+use App\Application\Missions\MissionWorkflow;
+use App\Application\Projects\ProjectConfiguration;
+use App\Application\Projects\ProjectService;
+use App\Models\ZumraCharter;
+use App\Models\ZumraProgramMembership;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
+use Tests\TestCase;
+
+final class MissionHttpSmokeTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_missions_index_and_show_and_create_render(): void
+    {
+        $this->activateProgram('IDN-OWNER');
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $mission = app(MissionWorkflow::class)->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
+            'title' => 'Préparer le lancement pilote',
+            'description' => 'Organiser la première session pilote avec les premiers bénéficiaires.',
+        ]);
+
+        $this->signIn('IDN-OWNER');
+
+        $this->get('/missions')->assertOk()->assertSee('Mes Missions');
+        $this->get('/missions/'.$mission->public_reference)->assertOk()->assertSee('Préparer le lancement pilote');
+        $this->get('/projets/'.$project->public_reference.'/missions/creer')->assertOk()->assertSee('Proposer une Mission');
+        $this->get('/missions/'.$mission->public_reference.'/correspondances')->assertOk();
+    }
+
+    private function projectPayload(array $overrides = []): array
+    {
+        return array_replace([
+            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'name' => 'Atelier numérique communautaire',
+            'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
+            'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',
+            'proposed_solution' => 'Mettre en place un atelier progressif avec transmission entre pairs, exercices réels et accompagnement vers des premiers services.',
+            'beneficiaries' => 'Jeunes débutants et personnes en reconversion dans la commune.',
+            'domain' => 'DIGITAL', 'participation_mode' => 'HYBRID', 'location' => 'Abidjan',
+            'objectives' => "Former une première équipe\nProduire trois services pilotes",
+            'required_capabilities' => "Formation numérique\nGestion de projet",
+            'required_resources' => "Ordinateurs\nConnexion internet",
+            'risks' => "Disponibilité irrégulière\nAccès au matériel",
+            'milestones' => "Constituer l’équipe\nPréparer le lieu\nLancer le pilote",
+            'property_regime' => 'PERSONAL_SUPPORTED', 'visibility' => 'PUBLIC',
+        ], $overrides);
+    }
+
+    private function activateProgram(string $reference): void
+    {
+        $body = str_repeat('Respect et transmission. ', 5);
+        $charter = ZumraCharter::query()->firstOrCreate(
+            ['version' => '2026.1'],
+            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
+        );
+        ZumraProgramMembership::query()->create([
+            'core_identity_reference' => $reference,
+            'status' => ZumraProgramMembership::STATUS_ACTIVE,
+            'accepted_charter_id' => $charter->id,
+            'accepted_charter_version' => $charter->version,
+            'accepted_charter_hash' => $charter->content_hash,
+            'charter_accepted_at' => now(),
+            'submitted_at' => now(),
+            'activated_at' => now(),
+        ]);
+    }
+
+    private function signIn(string $reference): void
+    {
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'bearer-'.$reference, 'entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-20T23:59:00+00:00'], 201),
+            'core.test/api/v1/identites/*' => Http::response(['reference' => $reference, 'type' => 'personne', 'libelle' => 'Membre DG Afrique', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-08-20T23:59:00+00:00']),
+        ]);
+        $this->post('/connexion', ['identifier' => $reference, 'secret' => 'secret'])->assertRedirect('/espace');
+    }
+}
