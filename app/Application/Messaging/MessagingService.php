@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Application\Messaging;
 
+use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
 use App\Models\MessageConversation;
 use App\Models\MessageEntry;
 use App\Models\MessageParticipant;
+use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
@@ -29,6 +32,7 @@ final class MessagingService
     public function __construct(
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
+        private readonly MissionVisibilityService $missionVisibility,
     ) {
     }
 
@@ -139,6 +143,38 @@ final class MessagingService
             'Projet · '.$project->name,
             MessageConversation::CONTEXT_PROJECT,
             $project->public_reference,
+            $actor,
+            true,
+        );
+    }
+
+    /**
+     * La conversation garde le contexte Mission mais ne devient jamais la source de
+     * vérité des décisions Mission (v0.4 §14) : elle coordonne, elle ne statue pas.
+     */
+    public function openMission(string $actor, Mission $mission): MessageConversation
+    {
+        abort_unless($this->missionVisibility->canViewMission($mission, $actor), 404);
+        abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
+
+        $participants = MissionAssignment::query()
+            ->where('mission_id', $mission->id)
+            ->where('status', MissionAssignment::STATUS_ACCEPTED)
+            ->pluck('core_identity_reference')
+            ->push($mission->created_by_core_reference)
+            ->push($actor)
+            ->filter()
+            ->unique()
+            ->values();
+
+        abort_if($participants->count() < 2, 409, 'Aucun autre interlocuteur n’est disponible pour cette Mission.');
+
+        return $this->ensureConversation(
+            MessageConversation::KIND_GROUP,
+            $participants->all(),
+            'Mission · '.$mission->title,
+            MessageConversation::CONTEXT_MISSION,
+            $mission->public_reference,
             $actor,
             true,
         );
@@ -290,6 +326,7 @@ final class MessagingService
             MessageConversation::CONTEXT_ZUMRA => $this->canAccessZumraContext($conversation, $actor),
             MessageConversation::CONTEXT_INVITATION => $this->canAccessInvitationContext($conversation, $actor),
             MessageConversation::CONTEXT_PROJECT => $this->canAccessProjectContext($conversation, $actor),
+            MessageConversation::CONTEXT_MISSION => $this->canAccessMissionContext($conversation, $actor),
             MessageConversation::CONTEXT_DG_AFRIQUE => $this->canAccessSupportContext($conversation, $actor),
             null => true,
             default => false,
@@ -402,6 +439,13 @@ final class MessagingService
             && $this->projects->canView($project, $actor);
     }
 
+    private function canAccessMissionContext(MessageConversation $conversation, string $actor): bool
+    {
+        $mission = Mission::query()->where('public_reference', $conversation->context_reference)->first();
+
+        return $mission !== null && $this->missionVisibility->canViewMission($mission, $actor);
+    }
+
     private function canAccessSupportContext(MessageConversation $conversation, string $actor): bool
     {
         return $conversation->context_reference === $actor
@@ -430,6 +474,10 @@ final class MessagingService
                 'url' => $project ? route('projects.show', $project) : null,
                 'can_manage_participants' => $project !== null && $this->projects->canDecide($project, $actor),
             ];
+        }
+        if ($conversation->context_type === MessageConversation::CONTEXT_MISSION) {
+            $mission = Mission::query()->where('public_reference', $conversation->context_reference)->first();
+            return ['label' => $mission ? 'Mission · '.$mission->title : 'Mission', 'url' => $mission ? route('missions.show', $mission) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_DG_AFRIQUE) {
             return ['label' => 'DG Afrique', 'url' => route('member.space'), 'can_manage_participants' => false];

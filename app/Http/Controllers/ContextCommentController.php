@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Comments\ContextCommentService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\ContextComment;
+use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
 use App\Models\ZumraGroup;
@@ -54,6 +55,19 @@ final class ContextCommentController
         $comments->addZumraActivity($group, $this->identity($request)->reference, $data['purpose'], $data['body']);
 
         return redirect()->route('comments.zumra-activity', $group)->with('status', 'Contribution ajoutée à cette activité ZUMRA.');
+    }
+
+    public function mission(Request $request, Mission $mission, ContextCommentService $comments): View
+    {
+        return view('comments.context', $comments->missionThread($mission, $this->identity($request)->reference));
+    }
+
+    public function storeMission(Request $request, Mission $mission, ContextCommentService $comments): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $comments->addMission($mission, $this->identity($request)->reference, $data['purpose'], $data['body']);
+
+        return redirect()->route('comments.mission', $mission)->with('status', 'Contribution ajoutée à cette Mission.');
     }
 
     private function validated(Request $request): array
