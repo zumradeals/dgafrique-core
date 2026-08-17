@@ -59,12 +59,22 @@ Le handoff illustre un scénario précis (« deux personnes ont proposé leur ai
 dernière visite »), qui suppose un suivi de lecture des contributions reçues — inexistant
 aujourd'hui. La priorité réelle est déduite, dans cet ordre, de ce qui est réellement disponible :
 
-1. un besoin personnel encore `PROPOSED` (à publier) ;
+1. un besoin **proposé par ce membre à une ZUMRA** et encore `PROPOSED`, en attente d'une décision
+   des responsables (`owner_type=GROUP`, `author_core_reference=membre`) — **pas** un besoin
+   personnel : `NeedService::create()` ouvre toujours un besoin `PERSON` directement en `OPEN`, il
+   n'existe donc aucun « besoin personnel proposé » à afficher ici ;
 2. un projet personnel `ADOPTED` non démarré ;
 3. une adhésion ZUMRA `PENDING_PAYMENT` ;
 4. le premier événement pertinent du Fil qui concerne le membre ;
-5. à défaut, compléter le profil de capacités ;
+5. l'**absence totale de profil** — inviter à en commencer un ;
 6. sinon, l'état vide honnête (« rien ne réclame une décision maintenant »).
+
+**Le consentement d'orientation et la complétion du profil ne pilotent plus la priorité.** Le
+consentement d'orientation (`orientation_consent`) est volontaire et révocable à tout moment
+(CAP-004) : un refus ou un retrait ne rend jamais le profil « incomplet » aux yeux de Mon espace et
+ne déclenche jamais l'invitation « continuer votre profil ». Dès qu'un profil existe, sa complétion
+reste un indicateur purement informatif (affiché dans le repère « Compte vérifié · profil X % »),
+sans jamais devenir une priorité imposée.
 
 ## Navigation
 

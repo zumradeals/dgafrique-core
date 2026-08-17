@@ -39,9 +39,12 @@ final class MemberSpaceController
         $profileCompletion = $this->profileCompletion($profile);
         $activityPreview = $activity->preview($identity->reference, 6);
 
-        $ownNeed = Need::query()
-            ->where('owner_type', Need::OWNER_PERSON)
-            ->where('owner_reference', $identity->reference)
+        // Un besoin personnel s'ouvre toujours directement en OPEN (NeedService::create) : il n'y a
+        // pas de « besoin personnel proposé ». Le seul cas réel d'un besoin proposé par ce membre et
+        // en attente d'une décision est un besoin porté par une ZUMRA dont il n'est pas responsable.
+        $ownProposedNeed = Need::query()
+            ->where('owner_type', Need::OWNER_GROUP)
+            ->where('author_core_reference', $identity->reference)
             ->where('status', Need::STATUS_PROPOSED)
             ->latest('created_at')
             ->first();
@@ -53,7 +56,7 @@ final class MemberSpaceController
             ->latest('created_at')
             ->first();
 
-        $priority = $this->priority($ownNeed, $ownProject, $zumraMembership, $activityPreview, $profile, $profileCompletion);
+        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $activityPreview, $profile);
 
         $usedKey = $priority['source_key'] ?? null;
         $rest = $activityPreview->reject(fn (array $item): bool => $item['key'] === $usedKey);
@@ -97,19 +100,18 @@ final class MemberSpaceController
      * réclame une décision : l'écran affiche alors l'état vide honnête.
      */
     private function priority(
-        ?Need $ownNeed,
+        ?Need $ownProposedNeed,
         ?Project $ownProject,
         ?ZumraProgramMembership $zumraMembership,
         Collection $activityPreview,
         ?PersonProfile $profile,
-        int $profileCompletion,
     ): ?array {
-        if ($ownNeed) {
+        if ($ownProposedNeed) {
             return [
                 'label' => 'Aujourd’hui — une seule chose compte',
-                'heading' => 'Votre besoin « '.$ownNeed->title.' » attend d’être publié.',
-                'body' => 'Il est proposé aux responsables mais n’est pas encore visible dans le réseau. Publiez-le officiellement, ou ajustez-le avant de le rendre public.',
-                'primary' => ['label' => 'Ouvrir mon besoin', 'href' => route('needs.show', $ownNeed)],
+                'heading' => 'Votre besoin « '.$ownProposedNeed->title.' » attend une décision des responsables.',
+                'body' => 'Il a été proposé à votre ZUMRA et n’est pas encore publié officiellement. Vous pouvez consulter son état en attendant leur décision.',
+                'primary' => ['label' => 'Voir mon besoin', 'href' => route('needs.show', $ownProposedNeed)],
                 'secondary' => null,
             ];
         }
@@ -147,12 +149,15 @@ final class MemberSpaceController
             ];
         }
 
-        if (! $profile || $profileCompletion < 100) {
+        // Une fois qu'un profil existe, sa complétion (y compris le consentement d'orientation,
+        // volontaire et révocable) reste purement informative — elle n'impose plus de priorité.
+        // Seule l'absence totale de profil justifie encore l'invitation à en commencer un.
+        if (! $profile) {
             return [
                 'label' => 'Aujourd’hui — une seule chose compte',
-                'heading' => $profile ? 'Continuer votre profil de capacités.' : 'Déclarez une chose que vous savez faire.',
+                'heading' => 'Déclarez une chose que vous savez faire.',
                 'body' => 'Une seule capacité suffit pour commencer. Déclarer que vous débutez est une réponse valide.',
-                'primary' => ['label' => $profile ? 'Continuer mon profil' : 'Commencer mon profil', 'href' => route('member.profile.edit')],
+                'primary' => ['label' => 'Commencer mon profil', 'href' => route('member.profile.edit')],
                 'secondary' => null,
             ];
         }

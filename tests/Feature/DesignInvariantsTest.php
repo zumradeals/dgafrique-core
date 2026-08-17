@@ -115,6 +115,66 @@ final class DesignInvariantsTest extends TestCase
             ->assertSee('Rien ne réclame une décision maintenant.');
     }
 
+    public function test_withdrawn_orientation_consent_never_forces_a_profile_priority(): void
+    {
+        // Le consentement d'orientation est volontaire et révocable (CAP-004). Un profil par
+        // ailleurs complet mais sans consentement d'orientation ne doit jamais être présenté
+        // comme « incomplet », ni pousser une priorité invitant à (re)donner ce consentement.
+        PersonProfile::query()->create([
+            'core_identity_reference' => 'IDN-NO-CONSENT',
+            'country_code' => 'CI', 'city' => 'Abidjan', 'phone' => '+225000000',
+            'current_activity' => 'Test', 'education_level' => 'Test',
+            'existing_skills' => ['Test'], 'starts_without_skill' => false,
+            'transmission_offers' => ['Test'], 'learning_goals' => ['Test'],
+            'experience_highlights' => ['Test'], 'experience_proofs' => [],
+            'declared_needs' => ['Test'], 'interest_domains' => ['Test'],
+            'intentions' => ['Test'], 'participation_mode' => 'HYBRID',
+            'collaboration_preferences' => ['Test'],
+            'orientation_consent' => false,
+            'orientation_consented_at' => null,
+        ]);
+        $this->signIn('IDN-NO-CONSENT');
+
+        $this->get('/espace')
+            ->assertOk()
+            ->assertSee('Rien ne réclame une décision maintenant.')
+            ->assertDontSee('Continuer votre profil')
+            ->assertDontSee('Continuer mon profil')
+            ->assertDontSee('Déclarez une chose que vous savez faire.')
+            ->assertDontSee('Commencer mon profil');
+    }
+
+    public function test_mon_espace_priority_reflects_a_need_proposed_to_a_zumra_awaiting_decision(): void
+    {
+        // Un besoin personnel s'ouvre toujours directement en OPEN (NeedService::create) : le seul
+        // besoin « proposé et en attente d'une décision » réel est un besoin porté par une ZUMRA,
+        // proposé par un membre qui n'en est pas responsable.
+        $group = $this->group('ZUMRA du proposant');
+        $proposed = Need::query()->create([
+            'public_reference' => (string) Str::uuid(),
+            'owner_type' => Need::OWNER_GROUP,
+            'owner_reference' => $group->id,
+            'author_core_reference' => 'IDN-PROPOSER',
+            'title' => 'Besoin proposé à la ZUMRA',
+            'context' => 'Un contexte suffisamment précis pour ce besoin proposé à la ZUMRA.',
+            'category' => 'SKILL',
+            'collaboration_mode' => 'LOCAL',
+            'visibility' => Need::VISIBILITY_GROUP,
+            'status' => Need::STATUS_PROPOSED,
+            'decided_by_core_reference' => null,
+            'published_at' => null,
+        ]);
+        $this->signIn('IDN-PROPOSER');
+
+        $this->get('/espace')
+            ->assertOk()
+            ->assertSee('Besoin proposé à la ZUMRA')
+            ->assertSee('attend une décision des responsables')
+            ->assertSee('Voir mon besoin')
+            ->assertDontSee('attend d’être publié')
+            ->assertDontSee('Ouvrir mon besoin');
+    }
+
     public function test_need_contact_action_is_hidden_from_its_own_owner(): void
     {
         $need = $this->need('Mon propre besoin', Need::VISIBILITY_PUBLIC, 'IDN-OWNER-VIEWER');
