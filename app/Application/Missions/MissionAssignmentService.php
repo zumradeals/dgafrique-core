@@ -73,13 +73,21 @@ final class MissionAssignmentService
         });
     }
 
-    /** Une autorité invite directement -> INVITED. */
+    /**
+     * Une autorité invite directement -> INVITED. Une invitation ne fabrique jamais un
+     * droit d'accès : la personne invitée doit déjà pouvoir accéder au contexte porteur
+     * (ProjectService/NeedService/ZumraGroupService), sinon l'invitation est refusée.
+     */
     public function invite(Mission $mission, string $actor, string $subject, string $role): MissionAssignment
     {
         abort_unless(in_array($role, self::ROLES, true), 422, 'Rôle de participation invalide.');
         abort_if($subject === $actor, 422, 'Vous ne pouvez pas vous inviter vous-même.');
         $this->assertManageAssignments($mission, $actor);
         abort_unless(in_array($mission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission ne reçoit pas d’invitation actuellement.');
+
+        $adapter = $this->registry->for($mission->context_type);
+        $context = $adapter->resolve($mission->context_reference);
+        abort_unless($adapter->canView($context, $subject), 422, 'Cette personne n’a pas accès au contexte de cette Mission : une invitation ne peut pas lui fabriquer ce droit.');
 
         return DB::transaction(function () use ($mission, $actor, $subject, $role): MissionAssignment {
             $assignment = MissionAssignment::query()
@@ -115,6 +123,7 @@ final class MissionAssignmentService
     /** Une autorité accepte une offre. */
     public function acceptOffer(Mission $mission, string $actor, MissionAssignment $assignment): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         $this->assertManageAssignments($mission, $actor);
 
         return $this->accept($mission, $assignment, MissionAssignment::STATUS_OFFERED, $actor);
@@ -123,6 +132,7 @@ final class MissionAssignmentService
     /** Une autorité décline une offre. */
     public function declineOffer(Mission $mission, string $actor, MissionAssignment $assignment, ?string $reason = null): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         $this->assertManageAssignments($mission, $actor);
 
         return $this->decline($mission, $assignment, MissionAssignment::STATUS_OFFERED, $actor, $reason);
@@ -131,6 +141,7 @@ final class MissionAssignmentService
     /** La personne invitée accepte elle-même. */
     public function acceptInvitation(Mission $mission, string $actor, MissionAssignment $assignment): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         abort_unless(hash_equals($assignment->core_identity_reference, $actor), 403);
 
         return $this->accept($mission, $assignment, MissionAssignment::STATUS_INVITED, $actor);
@@ -139,6 +150,7 @@ final class MissionAssignmentService
     /** La personne invitée décline elle-même. */
     public function declineInvitation(Mission $mission, string $actor, MissionAssignment $assignment, ?string $reason = null): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         abort_unless(hash_equals($assignment->core_identity_reference, $actor), 403);
 
         return $this->decline($mission, $assignment, MissionAssignment::STATUS_INVITED, $actor, $reason);
@@ -147,9 +159,11 @@ final class MissionAssignmentService
     /** Retrait d'une offre avant décision, par la personne elle-même. */
     public function withdraw(Mission $mission, string $actor, MissionAssignment $assignment): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         abort_unless(hash_equals($assignment->core_identity_reference, $actor), 403);
 
         return DB::transaction(function () use ($mission, $assignment, $actor): MissionAssignment {
+            abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
             $locked = MissionAssignment::query()->whereKey($assignment->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === MissionAssignment::STATUS_OFFERED, 409, 'Cette proposition n’est plus en attente.');
             $locked->update(['status' => MissionAssignment::STATUS_WITHDRAWN, 'withdrawn_at' => now()]);
@@ -162,6 +176,7 @@ final class MissionAssignmentService
     /** L'exécutant se libère lui-même d'une affectation acceptée. */
     public function release(Mission $mission, string $actor, MissionAssignment $assignment, ?string $reason = null): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         abort_unless(hash_equals($assignment->core_identity_reference, $actor), 403);
 
         return $this->withdrawAccepted($mission, $assignment, $actor, MissionAssignment::STATUS_RELEASED, 'ASSIGNMENT_RELEASED', $reason);
@@ -170,6 +185,7 @@ final class MissionAssignmentService
     /** Une autorité retire une personne d'une affectation acceptée, avec raison obligatoire. */
     public function remove(Mission $mission, string $actor, MissionAssignment $assignment, string $reason): MissionAssignment
     {
+        $this->assertBelongsToMission($mission, $assignment);
         abort_if(trim($reason) === '', 422, 'Une raison est requise pour retirer un exécutant.');
         $this->assertManageAssignments($mission, $actor);
 
@@ -179,21 +195,24 @@ final class MissionAssignmentService
     private function accept(Mission $mission, MissionAssignment $assignment, string $expectedFrom, string $actor): MissionAssignment
     {
         return DB::transaction(function () use ($mission, $assignment, $expectedFrom, $actor): MissionAssignment {
+            // La Mission est verrouillée AVANT de lire son statut/sa capacité, pour que deux
+            // acceptations concurrentes ne puissent jamais dépasser max_executors ensemble.
+            $lockedMission = Mission::query()->whereKey($mission->id)->lockForUpdate()->firstOrFail();
             $locked = MissionAssignment::query()->whereKey($assignment->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === $expectedFrom, 409, 'Cette proposition n’est plus en attente.');
-            abort_unless(in_array($mission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission n’accepte plus de nouvelle participation.');
+            abort_unless(in_array($lockedMission->status, self::OFFERABLE_STATUSES, true), 409, 'Cette Mission n’accepte plus de nouvelle participation.');
 
-            if (in_array($locked->role, MissionAssignment::EXECUTION_ROLES, true) && $mission->max_executors !== null) {
+            if (in_array($locked->role, MissionAssignment::EXECUTION_ROLES, true) && $lockedMission->max_executors !== null) {
                 $currentExecutors = MissionAssignment::query()
-                    ->where('mission_id', $mission->id)
+                    ->where('mission_id', $lockedMission->id)
                     ->where('status', MissionAssignment::STATUS_ACCEPTED)
                     ->whereIn('role', MissionAssignment::EXECUTION_ROLES)
                     ->count();
-                abort_if($currentExecutors >= $mission->max_executors, 409, 'Le nombre maximal d’exécutants est atteint pour cette Mission.');
+                abort_if($currentExecutors >= $lockedMission->max_executors, 409, 'Le nombre maximal d’exécutants est atteint pour cette Mission.');
             }
 
             $locked->update(['status' => MissionAssignment::STATUS_ACCEPTED, 'accepted_by_core_reference' => $actor, 'accepted_at' => now()]);
-            $this->event($mission, 'ASSIGNMENT_ACCEPTED', $actor, $locked->core_identity_reference);
+            $this->event($lockedMission, 'ASSIGNMENT_ACCEPTED', $actor, $locked->core_identity_reference);
 
             return $locked;
         });
@@ -202,6 +221,7 @@ final class MissionAssignmentService
     private function decline(Mission $mission, MissionAssignment $assignment, string $expectedFrom, string $actor, ?string $reason): MissionAssignment
     {
         return DB::transaction(function () use ($mission, $assignment, $expectedFrom, $actor, $reason): MissionAssignment {
+            abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
             $locked = MissionAssignment::query()->whereKey($assignment->id)->lockForUpdate()->firstOrFail();
             abort_unless($locked->status === $expectedFrom, 409, 'Cette proposition n’est plus en attente.');
             $locked->update(['status' => MissionAssignment::STATUS_DECLINED, 'declined_at' => now(), 'reason' => $reason]);
@@ -283,6 +303,16 @@ final class MissionAssignmentService
         $adapter = $this->registry->for($mission->context_type);
         $context = $adapter->resolve($mission->context_reference);
         abort_unless($adapter->canManageAssignments($context, $actor), 403);
+    }
+
+    /**
+     * Garde-fou IDOR : une MissionAssignment reçue en paramètre doit réellement appartenir
+     * à la Mission reçue en paramètre. Le binding de route seul ne le garantit pas —
+     * cette vérification métier reste nécessaire même avec un scoped binding en complément.
+     */
+    private function assertBelongsToMission(Mission $mission, MissionAssignment $assignment): void
+    {
+        abort_unless($assignment->mission_id === $mission->id, 404);
     }
 
     private function event(Mission $mission, string $event, string $actor, string $subjectReference): void

@@ -58,7 +58,12 @@ final class MissionWorkflow
             'La visibilité demandée dépasse ce que le contexte autorise.'
         );
 
-        return DB::transaction(function () use ($actor, $contextType, $contextReference, $data, $parent, $requestedVisibility): Mission {
+        $minExecutors = (int) ($data['min_executors'] ?? 1);
+        abort_if($minExecutors < 1, 422, 'Le nombre minimal d’exécutants doit être au moins 1.');
+        $maxExecutors = isset($data['max_executors']) ? (int) $data['max_executors'] : null;
+        abort_if($maxExecutors !== null && $maxExecutors < $minExecutors, 422, 'Le nombre maximal d’exécutants ne peut pas être inférieur au minimum.');
+
+        return DB::transaction(function () use ($actor, $contextType, $contextReference, $data, $parent, $requestedVisibility, $minExecutors, $maxExecutors): Mission {
             $mission = Mission::query()->create([
                 'public_reference' => (string) Str::uuid(),
                 'context_type' => $contextType,
@@ -73,8 +78,8 @@ final class MissionWorkflow
                 'location' => $data['location'] ?? null,
                 'visibility' => $requestedVisibility,
                 'status' => Mission::STATUS_DRAFT,
-                'min_executors' => $data['min_executors'] ?? 1,
-                'max_executors' => $data['max_executors'] ?? null,
+                'min_executors' => $minExecutors,
+                'max_executors' => $maxExecutors,
                 'starts_at' => $data['starts_at'] ?? null,
                 'due_at' => $data['due_at'] ?? null,
             ]);
@@ -154,6 +159,11 @@ final class MissionWorkflow
         );
     }
 
+    /**
+     * Démarrer une Mission n'est jamais un privilège du simple créateur/proposant : seule
+     * l'autorité contextuelle compétente, ou une personne dont la participation EXECUTOR/
+     * CO_EXECUTOR/COORDINATOR est ACCEPTED, peut la faire passer en cours (v0.5 §3).
+     */
     public function start(Mission $mission, string $actor): Mission
     {
         return $this->applyTransition(
@@ -178,7 +188,11 @@ final class MissionWorkflow
             $mission, $actor,
             [Mission::STATUS_OPEN, Mission::STATUS_IN_PROGRESS, Mission::STATUS_BLOCKED, Mission::STATUS_SUBMITTED],
             Mission::STATUS_CANCELLED, 'MISSION_CANCELLED',
-            authorize: fn (Mission $m, string $a) => $this->assertOfficializer($m, $a),
+            authorize: function (Mission $m, string $a): void {
+                $adapter = $this->registry->for($m->context_type);
+                $context = $adapter->resolve($m->context_reference);
+                abort_unless($adapter->canCancel($context, $a), 403);
+            },
             mutate: static fn (): array => ['cancelled_at' => now()],
             eventContext: ['reason' => $reason],
         );
@@ -286,9 +300,17 @@ final class MissionWorkflow
         return $adapter->canOfficialize($context, $actor);
     }
 
+    /**
+     * Volontairement distinct de isCreatorOrOfficializer() : démarrer une Mission n'est
+     * jamais accordé au seul fait d'en être le créateur/proposant — seule l'autorité
+     * contextuelle compétente ou une participation EXECUTOR/CO_EXECUTOR/COORDINATOR
+     * ACCEPTED permet de la démarrer.
+     */
     private function isOfficializerOrAcceptedExecutor(Mission $mission, string $actor): bool
     {
-        if ($this->isCreatorOrOfficializer($mission, $actor)) {
+        $adapter = $this->registry->for($mission->context_type);
+        $context = $adapter->resolve($mission->context_reference);
+        if ($adapter->canOfficialize($context, $actor)) {
             return true;
         }
 
