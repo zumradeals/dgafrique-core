@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
 use App\Application\Missions\MissionService;
+use App\Application\Proof\ProofService;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Application\Sharing\ContextShareService;
@@ -32,6 +33,7 @@ final class MemberSpaceController
         ContextShareService $shares,
         MissionService $missions,
         TransmissionService $transmissions,
+        ProofService $proofs,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -62,8 +64,9 @@ final class MemberSpaceController
 
         $nextMissionAction = $missions->nextAction($identity->reference);
         $nextTransmissionAction = $transmissions->nextAction($identity->reference);
+        $nextProofAction = $proofs->nextAction($identity->reference);
 
-        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $nextTransmissionAction, $activityPreview, $profile);
+        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $nextTransmissionAction, $nextProofAction, $activityPreview, $profile);
 
         $usedKey = $priority['source_key'] ?? null;
         $rest = $activityPreview->reject(fn (array $item): bool => $item['key'] === $usedKey);
@@ -112,6 +115,7 @@ final class MemberSpaceController
         ?ZumraProgramMembership $zumraMembership,
         ?array $nextMissionAction,
         ?array $nextTransmissionAction,
+        ?array $nextProofAction,
         Collection $activityPreview,
         ?PersonProfile $profile,
     ): ?array {
@@ -161,6 +165,16 @@ final class MemberSpaceController
                 'heading' => $nextTransmissionAction['heading'],
                 'body' => $nextTransmissionAction['body'],
                 'primary' => $nextTransmissionAction['primary'],
+                'secondary' => null,
+            ];
+        }
+
+        if ($nextProofAction) {
+            return [
+                'label' => 'Aujourd’hui — une seule chose compte',
+                'heading' => $nextProofAction['heading'],
+                'body' => $nextProofAction['body'],
+                'primary' => $nextProofAction['primary'],
                 'secondary' => null,
             ];
         }

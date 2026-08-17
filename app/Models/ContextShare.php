@@ -15,6 +15,7 @@ final class ContextShare extends Model
     public const SOURCE_PROJECT = 'PROJECT';
     public const SOURCE_MISSION = 'MISSION';
     public const SOURCE_TRANSMISSION = 'TRANSMISSION';
+    public const SOURCE_PROOF = 'PROOF';
 
     public const TARGET_PERSON = 'PERSON';
     public const TARGET_ZUMRA = 'ZUMRA';

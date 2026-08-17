@@ -6,6 +6,7 @@ namespace App\Application\Comments;
 
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
+use App\Application\Proof\ProofVisibilityService;
 use App\Application\Projects\ProjectService;
 use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\ContextComment;
@@ -13,6 +14,7 @@ use App\Models\Mission;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\Project;
+use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Support\Collection;
@@ -28,6 +30,7 @@ final class ContextCommentService
         private readonly ProjectService $projects,
         private readonly MissionVisibilityService $missionVisibility,
         private readonly TransmissionVisibilityService $transmissionVisibility,
+        private readonly ProofVisibilityService $proofVisibility,
     ) {
     }
 
@@ -126,6 +129,30 @@ final class ContextCommentService
     public function addTransmission(Transmission $transmission, string $actor, string $purpose, string $body): ContextComment
     {
         $thread = $this->transmissionThread($transmission, $actor);
+
+        return $this->add($thread['context'], $actor, $purpose, $body);
+    }
+
+    public function proofThread(Proof $proof, string $actor): array
+    {
+        abort_unless($this->proofVisibility->canView($proof, $actor), 404);
+
+        return $this->thread([
+            'type' => ContextComment::CONTEXT_PROOF,
+            'reference' => $proof->public_reference,
+            'label' => 'Preuve',
+            'title' => $proof->title,
+            'summary' => Str::limit(trim($proof->description), 240),
+            'back_url' => route('proofs.show', $proof),
+            'back_label' => 'Retour à la preuve',
+            'can_comment' => $proof->archived_at === null,
+            'closed_text' => 'Cette preuve est archivée : les contributions existantes restent lisibles aux personnes encore autorisées, mais le fil est en lecture seule.',
+        ], $actor);
+    }
+
+    public function addProof(Proof $proof, string $actor, string $purpose, string $body): ContextComment
+    {
+        $thread = $this->proofThread($proof, $actor);
 
         return $this->add($thread['context'], $actor, $purpose, $body);
     }

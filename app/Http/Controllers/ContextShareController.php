@@ -10,6 +10,7 @@ use App\Models\ContextShare;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Project;
+use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use Illuminate\Http\RedirectResponse;
@@ -122,6 +123,30 @@ final class ContextShareController
             $share->wasRecentlyCreated
                 ? 'Partage transmis avec son contexte d’origine.'
                 : 'Cette Transmission avait déjà été transmise à cette destination. Aucun doublon n’a été créé.',
+        );
+    }
+
+    public function proof(Request $request, Proof $proof, ContextShareService $shares): View
+    {
+        return view('shares.create', $shares->proofComposer($proof, $this->identity($request)->reference));
+    }
+
+    public function storeProof(Request $request, Proof $proof, ContextShareService $shares): RedirectResponse
+    {
+        $data = $this->validated($request);
+        $share = $shares->shareProof(
+            $proof,
+            $this->identity($request)->reference,
+            $data['target_type'],
+            $data['target_reference'],
+            $data['context_note'],
+        );
+
+        return redirect()->route('shares.proof', $proof)->with(
+            'status',
+            $share->wasRecentlyCreated
+                ? 'Partage transmis avec son contexte d’origine.'
+                : 'Cette preuve avait déjà été transmise à cette destination. Aucun doublon n’a été créé.',
         );
     }
 

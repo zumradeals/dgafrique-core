@@ -7,6 +7,7 @@ namespace App\Application\Recommendation;
 use App\Application\Profile\CapabilityStatementSynchronizer;
 use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
+use App\Models\Proof;
 use App\Models\RecommendationDecision;
 use Illuminate\Support\Collection;
 
@@ -48,9 +49,24 @@ final class PersonRecommendationEngine
             ->limit((int) $configuration['candidate_pool'])
             ->get();
 
+        // Carnet de preuves (CAP-036) : une preuve DISCOVERABLE ne produit jamais un score —
+        // seulement une raison explicable de plus, chargée une seule fois pour tous les
+        // candidats plutôt qu'une requête par candidat.
+        $viewerLearningLabels = $viewerStatements->where('kind', CapabilityStatement::KIND_LEARNING)->pluck('normalized_label')->unique()->values();
+        $candidateProofsByOwner = ($configuration['proof_evidence'] ?? false) && $viewerLearningLabels->isNotEmpty()
+            ? Proof::query()
+                ->where('owner_type', Proof::OWNER_PERSON)
+                ->whereIn('owner_reference', $candidates->pluck('core_identity_reference'))
+                ->where('visibility', Proof::VISIBILITY_DISCOVERABLE)
+                ->whereNull('archived_at')
+                ->whereIn('normalized_label', $viewerLearningLabels)
+                ->get()
+                ->groupBy('owner_reference')
+            : collect();
+
         $recommendations = [];
         foreach ($candidates as $candidate) {
-            [$reasons, $priority] = $this->reasons($profile, $viewerStatements, $candidate, $configuration);
+            [$reasons, $priority] = $this->reasons($profile, $viewerStatements, $candidate, $configuration, $candidateProofsByOwner->get($candidate->core_identity_reference, collect()));
             if ($reasons === [] || $priority > 40) {
                 continue;
             }
@@ -73,13 +89,20 @@ final class PersonRecommendationEngine
         return ['profile' => $profile, 'recommendations' => $recommendations];
     }
 
-    /** @return array{list<string>, int} */
-    private function reasons(PersonProfile $viewer, Collection $viewerStatements, PersonProfile $candidate, array $configuration): array
+    /** @param Collection<int, Proof> $candidateProofs @return array{list<string>, int} */
+    private function reasons(PersonProfile $viewer, Collection $viewerStatements, PersonProfile $candidate, array $configuration, Collection $candidateProofs = new Collection()): array
     {
         $viewerByKind = $viewerStatements->groupBy('kind');
         $candidateByKind = $candidate->capabilityStatements->groupBy('kind');
         $reasons = [];
         $priority = 999;
+
+        if (($configuration['proof_evidence'] ?? false) && $candidateProofs->isNotEmpty()) {
+            foreach ($candidateProofs->pluck('capability_label')->filter()->unique() as $label) {
+                $reasons[] = "Cette personne a enregistré une preuve pour « {$label} ».";
+                $priority = min($priority, 15);
+            }
+        }
 
         if ($configuration['learning_transmission']) {
             foreach (CapabilityStatementSynchronizer::matchingLabels($viewerByKind->get(CapabilityStatement::KIND_LEARNING, collect()), $candidateByKind->get(CapabilityStatement::KIND_TRANSMISSION, collect())) as $label) {

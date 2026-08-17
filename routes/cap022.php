@@ -54,4 +54,14 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('transmission')
         ->middleware(['core.member', 'throttle:shares-write'])
         ->name('shares.transmission.store');
+
+    Route::get('/partages/preuves/{proof}', [ContextShareController::class, 'proof'])
+        ->whereUuid('proof')
+        ->middleware(['core.member', 'throttle:shares-read'])
+        ->name('shares.proof');
+
+    Route::post('/partages/preuves/{proof}', [ContextShareController::class, 'storeProof'])
+        ->whereUuid('proof')
+        ->middleware(['core.member', 'throttle:shares-write'])
+        ->name('shares.proof.store');
 });

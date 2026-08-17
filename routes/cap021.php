@@ -55,4 +55,14 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('transmission')
         ->middleware(['core.member', 'throttle:comments-write'])
         ->name('comments.transmission.store');
+
+    Route::get('/commentaires/preuves/{proof}', [ContextCommentController::class, 'proof'])
+        ->whereUuid('proof')
+        ->middleware(['core.member', 'throttle:comments-read'])
+        ->name('comments.proof');
+
+    Route::post('/commentaires/preuves/{proof}', [ContextCommentController::class, 'storeProof'])
+        ->whereUuid('proof')
+        ->middleware(['core.member', 'throttle:comments-write'])
+        ->name('comments.proof.store');
 });

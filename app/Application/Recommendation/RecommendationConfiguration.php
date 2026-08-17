@@ -33,6 +33,7 @@ final class RecommendationConfiguration
             'max_reasons' => 4,
             'learning_transmission' => true,
             'transmission_learning' => true,
+            'proof_evidence' => true,
             'shared_capability' => true,
             'shared_domain' => true,
             'location_context' => true,

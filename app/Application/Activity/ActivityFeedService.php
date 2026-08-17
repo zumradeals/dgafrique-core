@@ -9,6 +9,7 @@ use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectMaturityService;
 use App\Application\Projects\ProjectService;
+use App\Application\Proof\ProofVisibilityService;
 use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
@@ -17,6 +18,8 @@ use App\Models\Need;
 use App\Models\NeedEvent;
 use App\Models\Project;
 use App\Models\ProjectEvent;
+use App\Models\Proof;
+use App\Models\ProofEvent;
 use App\Models\Transmission;
 use App\Models\TransmissionEvent;
 use App\Models\ZumraGroup;
@@ -76,12 +79,20 @@ final class ActivityFeedService
 
     private const TRANSMISSION_CONTEXT_FILTER = ['PROJECT' => 'PROJECTS', 'ZUMRA' => 'ZUMRA', 'NEED' => 'NEEDS'];
 
+    // Carnet de preuves (CAP-036) : mêmes deux événements-charnière, repliés dans le filtre
+    // de leur origine porteuse. Une preuve sans origine à contexte (NONE/INTERACTION) reste
+    // réelle mais n'a pas de bucket de Fil à rejoindre.
+    private const PROOF_EVENTS = ['PROOF_SUBMITTED', 'PROOF_ACKNOWLEDGED'];
+
+    private const PROOF_CONTEXT_FILTER = ['PROJECT' => 'PROJECTS', 'ZUMRA' => 'ZUMRA', 'NEED' => 'NEEDS'];
+
     public function __construct(
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
         private readonly MissionContextRegistry $missionContexts,
         private readonly MissionVisibilityService $missionVisibility,
         private readonly TransmissionVisibilityService $transmissionVisibility,
+        private readonly ProofVisibilityService $proofVisibility,
     ) {
     }
 
@@ -120,6 +131,7 @@ final class ActivityFeedService
         }
         $items = $items->concat($this->missionItems($actor, $sourceLimit, $filter));
         $items = $items->concat($this->transmissionItems($actor, $sourceLimit, $filter));
+        $items = $items->concat($this->proofItems($actor, $sourceLimit, $filter));
 
         return $items->sort(static function (array $left, array $right): int {
             $priority = $right['priority'] <=> $left['priority'];
@@ -449,6 +461,76 @@ final class ActivityFeedService
                 'action_url' => route('transmissions.show', $transmission),
                 'comment_url' => route('comments.transmission', $transmission),
                 'share_url' => route('shares.transmission', $transmission),
+                'can_decide' => false,
+                'occurred_at' => $event->occurred_at,
+            ]);
+        }
+
+        return $items;
+    }
+
+    /**
+     * CARNET DE PREUVES s'intègre au Fil unique : jamais un Fil Preuves séparé (fiche §15).
+     * Chaque preuve rattachée à une origine se range dans le filtre de cette origine ; la
+     * visibilité est revalidée à la projection.
+     */
+    private function proofItems(string $actor, int $limit, string $filter): Collection
+    {
+        $events = ProofEvent::query()
+            ->whereIn('event', self::PROOF_EVENTS)
+            ->latest('occurred_at')
+            ->limit($limit)
+            ->get();
+
+        $proofs = Proof::query()
+            ->whereIn('id', $events->pluck('proof_id')->unique())
+            ->get()
+            ->keyBy('id');
+
+        $seen = [];
+        $items = collect();
+
+        foreach ($events as $event) {
+            if (isset($seen[$event->proof_id])) {
+                continue;
+            }
+            $seen[$event->proof_id] = true;
+
+            /** @var Proof|null $proof */
+            $proof = $proofs->get($event->proof_id);
+            if (! $proof || $proof->archived_at !== null) {
+                continue;
+            }
+
+            $kind = self::PROOF_CONTEXT_FILTER[$proof->origin_type] ?? null;
+            if ($kind === null || ($filter !== 'ALL' && $filter !== $kind)) {
+                continue;
+            }
+            if (! $this->proofVisibility->canView($proof, $actor)) {
+                continue;
+            }
+
+            [$label, $priority] = match ($event->event) {
+                'PROOF_ACKNOWLEDGED' => ['Preuve reconnue', 150],
+                default => ['Preuve enregistrée', 170],
+            };
+
+            $items->push([
+                'key' => 'proof:'.$proof->id,
+                'kind' => $kind,
+                'kind_label' => 'Preuve',
+                'card' => 'proof',
+                'event' => $event->event,
+                'event_label' => $label,
+                'badge_tone' => Proof::STATUS_BADGE_TONES[$proof->status] ?? 'neutral',
+                'priority' => $priority,
+                'title' => $proof->title,
+                'summary' => Str::limit(trim($proof->description), 180),
+                'context' => null,
+                'action_label' => 'Voir la preuve',
+                'action_url' => route('proofs.show', $proof),
+                'comment_url' => route('comments.proof', $proof),
+                'share_url' => route('shares.proof', $proof),
                 'can_decide' => false,
                 'occurred_at' => $event->occurred_at,
             ]);
