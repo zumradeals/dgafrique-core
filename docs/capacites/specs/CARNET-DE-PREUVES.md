@@ -1,7 +1,7 @@
 # FICHE D'IMPLÉMENTATION TRANSVERSALE — CARNET DE PREUVES
 
-**Statut :** CONCEPTION
-**Version :** 0.1
+**Statut :** READY FOR IMPLEMENTATION
+**Version :** 1.0
 **Racine référentielle :** CAP-036 — PREUVE DE CAPACITÉ
 **Capacité proche :** CAP-035 — MÉMOIRE D'EXPÉRIENCE (voir §3)
 **Expression produit :** CARNET DE PREUVES
@@ -9,7 +9,7 @@
 **Nature :** module transversal natif de DG Afrique, référencé par MISSIONS et TRANSMISSION mais non implémenté par eux
 **Base de conception :** référentiel des 84 capacités, doctrine canonique ZUMRA (`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`), invariants de design (`docs/design/DESIGN-INVARIANTS.md`), les fiches MISSIONS (`docs/capacites/specs/MISSIONS.md` §13) et TRANSMISSION (`docs/capacites/specs/TRANSMISSION.md` §13), qui annoncent toutes deux ce module sans l'implémenter.
 
-Ce document est un **contrat d'implémentation** en préparation. Il ne contient encore aucun code. Cinq points restent à trancher par un humain (§21) avant de passer à READY FOR IMPLEMENTATION.
+Ce document est un **contrat d'implémentation**. Les cinq points laissés ouverts en version CONCEPTION (0.1) ont été tranchés le 2026-08-17 (§21). L'implémentation peut démarrer.
 
 ---
 
@@ -191,16 +191,16 @@ Mêmes extensions CAP-020/021/022 que Missions/Transmission : `CONTEXT_PROOF`/`S
 - moteur de matching dédié (extension mineure des moteurs existants seulement) ;
 - migration ou suppression des champs `evidence_context` déjà livrés sur Mission/Transmission.
 
-## 21. Points à trancher avant READY FOR IMPLEMENTATION
+## 21. Décisions métier validées (2026-08-17)
 
-1. **Portée d'intégration.** Proposition : additive uniquement — aucune migration des `evidence_context` déjà livrés sur `MissionContribution`/`Transmission`/`TransmissionContribution`, qui restent tels quels. Le Carnet de preuves devient la source structurée pour tout nouvel usage, sans toucher au code déjà mergé.
-2. **Paliers de CapabilityStatement.** Proposition : `VERIFIED` reste strictement auto-déclaratif par la personne elle-même (jamais déclenché automatiquement par des témoins/reconnaissances) ; `ATTESTED` reste hors périmètre v1 tant qu'aucune autorité externe reconnue n'est définie dans le référentiel.
-3. **CAP-035 Mémoire d'expérience.** Proposition : pas un second module — uniquement la vue de lecture agrégée des preuves `DISCOVERABLE` sur le profil, sans nouveau modèle ni migration des champs `experience_highlights`/`experience_proofs` existants.
-4. **Preuve de résolution de Besoin.** Proposition : aucune modification du modèle `Need` — le rattachement se fait uniquement côté `Proof` (`origin_type = NEED`), jamais par l'ajout d'un champ sur `Need`.
-5. **Corroboration par témoin obligatoire ou non.** Proposition : optionnelle — une preuve `SUBMITTED` sans témoin reste pleinement valide et affichable ; le témoignage est un renforcement volontaire, jamais une condition de validité.
+1. **Intégration strictement additive.** Aucune migration ni remplacement des `evidence_context` déjà livrés sur `MissionContribution`/`Transmission`/`TransmissionContribution` : ces champs restent inchangés, sans régression sur les modules déjà mergés. Le Carnet de preuves devient la source structurée pour tout nouvel usage.
+2. **CapabilityStatement — aucune automatisation, en v1 aucune modification du tout.** CARNET DE PREUVES ne modifie **jamais**, ni automatiquement ni manuellement, `DECLARED → VERIFIED/ATTESTED` en v1. Une preuve peut être liée à une capacité (`catalog_item_id`/`normalized_label`) et apparaître comme élément de la Mémoire d'expérience, mais `VERIFIED`/`ATTESTED` restent réservés à un futur contrat d'autorité explicite, hors périmètre de cette version.
+3. **CAP-035 Mémoire d'expérience — aucun nouveau modèle métier.** C'est une vue chronologique/agrégée des preuves accessibles de la personne. Les champs narratifs historiques du profil (`experience_highlights`/`experience_proofs`) restent inchangés.
+4. **Need — aucun champ ajouté.** Aucune modification de `dg_needs`. Le rattachement se fait uniquement côté `Proof` (`origin_type = NEED`), même philosophie de non-remodelage des objets déjà livrés qui s'applique aussi à Mission/Transmission/Project/ZUMRA.
+5. **Témoignage optionnel.** Une preuve peut rester `SUBMITTED` sans témoin, pleinement valide et affichable. `WITNESSED` et `ACKNOWLEDGED` sont des corroborations humaines/contextuelles, jamais des certifications ni des conditions de validité.
 
-Tant que ces cinq points ne sont pas tranchés par un humain, aucune implémentation ne doit démarrer.
+Doctrine finale confirmée : *« Une preuve enregistre qu'une chose réelle s'est produite. Elle ne certifie jamais automatiquement une compétence, un niveau ou une vérité, et son existence ne devient jamais un score de valeur humaine. »*
 
 ## 22. Instruction d'arrêt
 
-Ne pas commencer l'implémentation avant validation explicite des points §21. Si un point non listé ici s'avère bloquant pendant l'implémentation, documenter le conflit et arrêter cette partie pour revue, comme pour Missions et Transmission.
+Si un point non couvert par cette fiche s'avère bloquant pendant l'implémentation, documenter le conflit et arrêter cette partie pour revue, comme pour Missions et Transmission.
