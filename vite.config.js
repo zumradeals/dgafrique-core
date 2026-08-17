@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
+import { fontsource } from 'laravel-vite-plugin/fonts';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
@@ -9,8 +9,20 @@ export default defineConfig({
             input: ['resources/css/app.css', 'resources/js/app.js'],
             refresh: true,
             fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
+                // Fontsource ships the font files as npm packages: no CDN fetch at build
+                // time or runtime, fully self-hosted per docs/design DECISIONS.md.
+                fontsource('Instrument Sans', {
+                    weights: [400, 500, 600, 700],
+                    optimizedFallbacks: false,
+                }),
+                fontsource('Instrument Serif', {
+                    weights: [400],
+                    styles: ['normal', 'italic'],
+                    optimizedFallbacks: false,
+                }),
+                fontsource('IBM Plex Mono', {
+                    weights: [400, 500],
+                    optimizedFallbacks: false,
                 }),
             ],
         }),

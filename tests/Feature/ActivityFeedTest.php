@@ -115,12 +115,63 @@ final class ActivityFeedTest extends TestCase
 
         $this->get('/activite?type=NEEDS')
             ->assertOk()
-            ->assertSee('Ce qui peut vous faire avancer')
+            ->assertSee('Ce qui bouge dans le réseau')
             ->assertSee('Besoin route')
-            ->assertSee('Voir le besoin')
+            ->assertSee('Je peux aider')
+            ->assertSee('Commenter')
+            ->assertSee('Partager avec contexte')
             ->assertSee('Le fil s’arrête ici')
             ->assertDontSee('J’aime')
-            ->assertDontSee('Commenter');
+            ->assertDontSee('abonnés');
+    }
+
+    public function test_feed_renders_all_four_card_treatments_with_real_actions_only(): void
+    {
+        $need = $this->need('Besoin ouvert visible', Need::VISIBILITY_PUBLIC);
+        $this->needEvent($need, 'NEED_PUBLISHED');
+
+        $resolved = $this->need('Besoin résolu visible', Need::VISIBILITY_PUBLIC);
+        $resolved->update(['status' => Need::STATUS_RESOLVED, 'resolution_note' => 'Trois membres ont résolu ce besoin ensemble.']);
+        $this->needEvent($resolved, 'NEED_RESOLVED');
+
+        $project = $this->project('Projet en action visible', Project::VISIBILITY_PUBLIC);
+        $this->projectEvent($project, 'PROJECT_IN_PROGRESS');
+
+        $group = $this->group('ZUMRA en constitution');
+        \App\Models\ZumraGroupEvent::query()->create([
+            'zumra_group_id' => $group->id,
+            'event' => 'GROUP_PROPOSED',
+            'actor_core_reference' => 'IDN-OWNER',
+            'context' => [],
+            'occurred_at' => now(),
+        ]);
+        \App\Models\ZumraGroupRole::query()->create([
+            'zumra_group_id' => $group->id,
+            'role' => 'PRIMARY_LEAD',
+            'core_identity_reference' => 'IDN-OWNER',
+            'status' => 'ACCEPTED',
+        ]);
+        \App\Models\ZumraGroupRole::query()->create([
+            'zumra_group_id' => $group->id,
+            'role' => 'FINANCE_LEAD',
+            'core_identity_reference' => null,
+            'status' => 'VACANT',
+        ]);
+
+        $this->signIn('IDN-VIEWER');
+
+        $this->get('/activite')
+            ->assertOk()
+            ->assertSee('Besoin ouvert visible')
+            ->assertSee('Besoin résolu visible')
+            ->assertSee('Trois membres ont résolu ce besoin ensemble.')
+            ->assertSee('Voir le projet')
+            ->assertSee('Découvrir cette ZUMRA')
+            ->assertSee('Demander à rejoindre')
+            ->assertSee('Responsable financier — vacant')
+            ->assertSee('Premier responsable ✓')
+            ->assertDontSee('J’aime')
+            ->assertDontSee('abonnés');
     }
 
     public function test_member_space_exposes_real_activity_preview(): void
@@ -132,7 +183,7 @@ final class ActivityFeedTest extends TestCase
         $this->get('/espace')
             ->assertOk()
             ->assertSee('Projet dans Mon espace')
-            ->assertSee('Voir toute l’activité');
+            ->assertSee('Aujourd’hui — une seule chose compte');
     }
 
     private function need(string $title, string $visibility): Need

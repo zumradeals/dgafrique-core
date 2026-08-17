@@ -1,0 +1,306 @@
+/* DG Afrique — design tokens et classes de base.
+   Transposition fidèle de docs/design/reference/claude-2026-08-16/ (design-system/tokens.css).
+   Additif : ne redéfinit ni ne supprime les variables --navy/--ocean/--cyan/--mint/--amber/--cloud
+   utilisées par les écrans non encore propagés (connexion, profil, besoins, projets, ZUMRA, messages…).
+   Aucune donnée métier ici. */
+
+:root {
+    /* Palette principale */
+    --dg-forest: #103028;
+    --dg-forest-action: #1b4a3b;
+    --dg-copper: #a9552b;
+    --dg-night: #14314d;
+    --dg-saffron: #d9a02b;
+    --dg-saffron-ink: #8a6212;
+
+    /* Fonds et surfaces */
+    --dg-ivory: #f8f3ea;
+    --dg-sand: #ede4d4;
+    --dg-card: #fffdf7;
+    --dg-line: #e0d5c2;
+    --dg-line-inner: #ede4d4;
+    --dg-line-section: #dcd0bc;
+    --dg-line-dashed: #c9bca4;
+
+    /* Textes */
+    --dg-ink: #1e1b16;
+    --dg-text: #4c463d;
+    --dg-muted: #6e675c;
+    --dg-faint: #8a8175;
+    --dg-on-deep-title: #fffdf7;
+    --dg-on-deep-text: #d7cfc0;
+    --dg-on-deep-muted: #a79f8f;
+    --dg-on-deep-nav: #c7bfaf;
+
+    /* Teintes fonctionnelles */
+    --dg-tint-need: #f3e8d6;
+    --dg-tint-action: #e6ede7;
+    --dg-tint-project: #e4e9ef;
+    --dg-tint-tool: #f1f4f7;
+    --dg-tint-tool-line: #dde4ec;
+    --dg-tint-decision: #fbefd3;
+
+    /* Typographie */
+    --dg-font-display: 'Instrument Serif', Georgia, serif;
+    --dg-font-sans: 'Instrument Sans', system-ui, sans-serif;
+    --dg-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+    /* Espacements */
+    --dg-space-1: 4px;
+    --dg-space-2: 8px;
+    --dg-space-3: 12px;
+    --dg-space-4: 18px;
+    --dg-space-5: 28px;
+    --dg-space-6: 44px;
+    --dg-space-7: 72px;
+    --dg-space-8: 112px;
+
+    /* Rayons */
+    --dg-radius-pill: 999px;
+    --dg-radius-chip: 10px;
+    --dg-radius-control: 12px;
+    --dg-radius-avatar: 14px;
+    --dg-radius-card: 20px;
+    --dg-radius-block: 24px;
+
+    /* Profondeur */
+    --dg-shadow-card: 0 1px 2px rgba(30, 27, 22, .03);
+
+    /* Trame */
+    --dg-motif-deep: repeating-linear-gradient(135deg, rgba(217, 160, 43, .09) 0 2px, transparent 2px 18px);
+
+    /* Mobile */
+    --dg-touch-min: 48px;
+}
+
+/* Couche « components » : les utilitaires Tailwind (hidden, lg:flex, etc.) doivent toujours
+   pouvoir l'emporter sur ces classes, y compris quand elles ciblent la même propriété display. */
+@layer components {
+
+/* ---------- Base ---------- */
+
+.dg { margin: 0; background: var(--dg-ivory); color: var(--dg-ink);
+    font-family: var(--dg-font-sans); -webkit-font-smoothing: antialiased; }
+.dg a { color: var(--dg-forest-action); text-decoration: none; }
+.dg a:hover { color: var(--dg-copper); }
+.dg p { text-wrap: pretty; }
+
+/* ---------- Typographie ---------- */
+
+.dg-display { font-family: var(--dg-font-display); font-weight: 400; line-height: 1.08;
+    letter-spacing: -.015em; color: var(--dg-forest); margin: 0; }
+.dg-display--hero { font-size: 82px; line-height: 1.02; }
+.dg-display--section { font-size: 46px; }
+.dg-display--screen { font-size: 44px; line-height: 1.05; }
+.dg-display--lead { font-size: 42px; }
+.dg-display--card { font-size: 30px; line-height: 1.15; }
+.dg-display--rank { font-size: 26px; }
+
+.dg-body { font-size: 15px; line-height: 1.7; color: var(--dg-text); margin: 0; max-width: 66ch; }
+.dg-lead { font-size: 19px; line-height: 1.65; color: var(--dg-text); margin: 0; }
+.dg-meta { font-size: 13px; color: var(--dg-muted); }
+
+.dg-label { font-family: var(--dg-font-mono); font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--dg-faint); }
+.dg-label--copper { color: var(--dg-copper); }
+.dg-label--saffron { color: var(--dg-saffron); letter-spacing: .16em; }
+
+/* ---------- Surfaces ---------- */
+
+.dg-card { background: var(--dg-card); border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card); padding: 28px 30px; }
+.dg-card--tight { padding: 22px; border-radius: 18px; }
+
+/* Colonne d'ancrage : une seule surface, des filets — jamais une pile de cartes */
+.dg-stack { background: var(--dg-card); border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card); overflow: hidden; align-self: flex-start; }
+.dg-stack > * { padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.dg-stack > * + * { border-top: 1px solid var(--dg-line-inner); }
+.dg-stack--tool { background: var(--dg-tint-tool); border-top: 1px solid var(--dg-tint-tool-line); }
+
+.dg-deep { position: relative; overflow: hidden; background: var(--dg-forest);
+    color: var(--dg-on-deep-text); border-radius: var(--dg-radius-block); padding: 34px 36px; }
+.dg-deep::before { content: ''; position: absolute; inset: 0; background: var(--dg-motif-deep); }
+.dg-deep > * { position: relative; }
+.dg-deep .dg-display { color: var(--dg-on-deep-title); }
+
+.dg-band { background: var(--dg-sand); border-radius: 16px; padding: 18px 20px;
+    font-size: 13px; line-height: 1.6; color: var(--dg-muted); }
+.dg-note { padding: 12px 14px; background: var(--dg-ivory); border-radius: var(--dg-radius-control);
+    font-size: 14px; line-height: 1.6; color: var(--dg-text); }
+
+/* ---------- Étiquettes d'état ---------- */
+
+.dg-badge { display: inline-flex; align-items: center; flex: none; white-space: nowrap; padding: 6px 12px;
+    border-radius: var(--dg-radius-pill); font-family: var(--dg-font-mono); font-size: 11px;
+    letter-spacing: .08em; text-transform: uppercase; }
+.dg-badge--need { background: var(--dg-tint-need); color: var(--dg-copper); }
+.dg-badge--action { background: var(--dg-tint-action); color: var(--dg-forest-action); }
+.dg-badge--project { background: var(--dg-tint-project); color: var(--dg-night); }
+.dg-badge--decision { background: var(--dg-tint-decision); color: var(--dg-saffron-ink); }
+.dg-badge--neutral { background: var(--dg-sand); color: var(--dg-muted); }
+.dg-badge--on-deep { background: rgba(217, 160, 43, .18); color: var(--dg-saffron); }
+
+/* Intention de contribution (CAP-021) */
+.dg-intent { padding: 3px 9px; border-radius: 7px; background: var(--dg-card);
+    border: 1px solid var(--dg-line); font-size: 11px; color: var(--dg-text); }
+
+/* ---------- Boutons ---------- */
+
+.dg-btn { display: inline-grid; place-items: center; padding: 11px 18px;
+    border-radius: var(--dg-radius-control); border: 1px solid transparent;
+    font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    text-align: center; line-height: 1.2; }
+.dg-btn--primary { background: var(--dg-forest); color: var(--dg-ivory); }
+.dg-btn--primary:hover { background: var(--dg-forest-action); color: var(--dg-ivory); }
+.dg-btn--saffron { background: var(--dg-saffron); color: var(--dg-forest); font-weight: 700; }
+.dg-btn--saffron:hover { color: var(--dg-forest); filter: brightness(1.04); }
+.dg-btn--need { background: var(--dg-tint-need); color: var(--dg-copper); }
+.dg-btn--need:hover { color: var(--dg-copper); filter: brightness(0.98); }
+.dg-btn--learn { background: var(--dg-tint-action); color: var(--dg-forest-action); }
+.dg-btn--learn:hover { color: var(--dg-forest-action); filter: brightness(0.98); }
+.dg-btn--project { background: var(--dg-tint-project); color: var(--dg-night); }
+.dg-btn--project:hover { color: var(--dg-night); filter: brightness(0.98); }
+.dg-btn--quiet { border-color: var(--dg-line); color: var(--dg-text); background: transparent; }
+.dg-btn--quiet:hover { color: var(--dg-copper); background: var(--dg-ivory); }
+.dg-btn--on-deep { border-color: rgba(239, 230, 214, .3); color: #efe6d6; background: transparent; }
+.dg-btn--on-deep:hover { color: var(--dg-on-deep-title); border-color: rgba(239, 230, 214, .5); }
+.dg-btn[aria-disabled='true'] { border: 1px dashed var(--dg-line-dashed); color: var(--dg-faint);
+    background: transparent; cursor: not-allowed; pointer-events: none; }
+.dg-btn--on-deep[aria-disabled='true'] { border-color: rgba(217, 160, 43, .35); color: var(--dg-on-deep-muted); }
+
+.dg-actions { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px;
+    border-top: 1px solid var(--dg-line-inner); }
+.dg-actions--on-deep { border-top-color: rgba(239, 230, 214, .14); }
+.dg-actions--flush { border-top: 0; padding-top: 0; }
+
+/* ---------- Personnes ---------- */
+
+.dg-avatar { display: grid; place-items: center; flex: none;
+    width: 44px; height: 44px; border-radius: var(--dg-radius-avatar);
+    font-family: var(--dg-font-display); font-size: 18px;
+    background: var(--dg-forest); color: #efe6d6; }
+.dg-avatar--sm { width: 34px; height: 34px; border-radius: 11px; font-size: 14px; }
+.dg-avatar--md { width: 42px; height: 42px; border-radius: 13px; font-size: 17px; }
+.dg-avatar--lg { width: 52px; height: 52px; border-radius: 16px; font-size: 22px; }
+.dg-avatar--copper { background: var(--dg-copper); color: var(--dg-ivory); }
+.dg-avatar--night { background: var(--dg-night); color: #efe6d6; }
+.dg-avatar--saffron { background: var(--dg-saffron); color: var(--dg-forest); }
+/* Identité masquée : « Membre DG Afrique » */
+.dg-avatar--anonymous { background: var(--dg-sand); color: var(--dg-faint); }
+
+.dg-person { display: flex; align-items: center; gap: 12px; }
+.dg-person__name { font-size: 15px; font-weight: 600; color: var(--dg-forest); }
+.dg-person__role { font-size: 13px; color: var(--dg-muted); }
+
+.dg-people { display: flex; }
+.dg-people .dg-avatar { border: 2px solid var(--dg-card); }
+.dg-people .dg-avatar + .dg-avatar { margin-left: -8px; }
+
+/* ---------- Navigation ---------- */
+
+.dg-topbar { display: flex; align-items: center; gap: 28px; height: 72px; padding: 0 32px;
+    background: var(--dg-forest); color: #efe6d6; }
+.dg-topbar__mark { display: grid; place-items: center; width: 34px; height: 34px;
+    border-radius: 11px; background: var(--dg-saffron); color: var(--dg-forest);
+    font-family: var(--dg-font-display); font-size: 19px; }
+.dg-topbar nav { display: flex; gap: 4px; }
+.dg-topbar nav a { padding: 9px 14px; border-radius: var(--dg-radius-chip);
+    color: var(--dg-on-deep-nav); font-size: 14px; font-weight: 500; }
+.dg-topbar nav a:hover { color: var(--dg-on-deep-title); }
+.dg-topbar nav a[aria-current] { background: rgba(239, 230, 214, .12);
+    color: var(--dg-on-deep-title); font-weight: 600; }
+.dg-topbar__search { display: flex; align-items: center; gap: 8px; width: 260px; padding: 9px 16px;
+    border-radius: var(--dg-radius-pill); background: rgba(239, 230, 214, .10);
+    color: #b7af9f; font-size: 13px; }
+.dg-topbar__tools { display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+    border-radius: var(--dg-radius-chip); border: 1px solid rgba(239, 230, 214, .22);
+    color: #efe6d6; font-size: 13px; font-weight: 600; background: transparent; cursor: pointer; }
+.dg-topbar__tools:hover { border-color: rgba(239, 230, 214, .4); }
+
+.dg-tools-menu { position: relative; }
+.dg-tools-menu summary { list-style: none; cursor: pointer; }
+.dg-tools-menu summary::-webkit-details-marker { display: none; }
+.dg-tools-menu > div { position: absolute; top: 3rem; right: 0; z-index: 30; width: 17rem;
+    padding: 10px; border-radius: 16px; background: var(--dg-card); border: 1px solid var(--dg-line);
+    box-shadow: 0 1rem 2.5rem rgba(16, 48, 40, .16); display: flex; flex-direction: column; gap: 8px; }
+.dg-account-menu { position: relative; }
+.dg-account-menu summary { list-style: none; cursor: pointer; }
+.dg-account-menu summary::-webkit-details-marker { display: none; }
+.dg-account-menu > div { position: absolute; top: 3rem; right: 0; z-index: 30; width: 13rem;
+    padding: 8px; border-radius: 14px; background: var(--dg-card); border: 1px solid var(--dg-line);
+    box-shadow: 0 1rem 2.5rem rgba(16, 48, 40, .16); display: flex; flex-direction: column; gap: 2px; }
+.dg-account-menu a, .dg-account-menu button { width: 100%; display: block; border: 0; border-radius: 9px;
+    padding: 10px 12px; color: var(--dg-forest); background: transparent; text-align: left;
+    text-decoration: none; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.dg-account-menu a:hover, .dg-account-menu button:hover { background: var(--dg-ivory); }
+.dg-account-menu button { color: var(--dg-copper); }
+
+.dg-tabbar { display: grid; grid-template-columns: repeat(5, 1fr); align-items: end; gap: 4px;
+    padding: 10px 12px 22px; background: var(--dg-card); border-top: 1px solid var(--dg-line); }
+.dg-tabbar a, .dg-tabbar button { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; min-height: var(--dg-touch-min); font-size: 11px; color: var(--dg-faint);
+    border: 0; background: transparent; font-family: inherit; cursor: pointer; }
+.dg-tabbar a[aria-current], .dg-tabbar button[aria-current] { color: var(--dg-forest); font-weight: 600; }
+.dg-tabbar__icon { width: 22px; height: 22px; border-radius: 7px; background: #d6cdbb; }
+.dg-tabbar a[aria-current] .dg-tabbar__icon, .dg-tabbar button[aria-current] .dg-tabbar__icon { background: var(--dg-forest); }
+.dg-tabbar__act { display: grid; place-items: center; width: 52px; height: 52px;
+    border-radius: 18px; background: var(--dg-saffron); color: var(--dg-forest);
+    font-size: 13px; font-weight: 700; }
+
+.dg-sheet-backdrop { position: fixed; inset: 0; background: rgba(16, 48, 40, .35); z-index: 40; }
+.dg-sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; background: var(--dg-card);
+    border-radius: 22px 22px 0 0; padding: 10px 14px calc(env(safe-area-inset-bottom, 0px) + 18px);
+    box-shadow: 0 -1rem 3rem rgba(16, 48, 40, .22); }
+.dg-sheet__grab { width: 40px; height: 4px; border-radius: 999px; background: var(--dg-line); margin: 8px auto 14px; }
+.dg-sheet a, .dg-sheet button { display: block; width: 100%; text-align: left; padding: 16px;
+    border-radius: var(--dg-radius-control); font: inherit; font-size: 15px; font-weight: 600;
+    border: 0; background: transparent; cursor: pointer; }
+.dg-sheet a[aria-disabled='true'], .dg-sheet button[aria-disabled='true'] { color: var(--dg-faint); cursor: not-allowed; }
+
+/* ---------- États vides ---------- */
+
+.dg-empty { border: 1px dashed var(--dg-line-dashed); border-radius: 18px; padding: 22px;
+    display: flex; flex-direction: column; gap: 8px; }
+.dg-empty strong { font-size: 16px; color: var(--dg-forest); }
+.dg-empty span { font-size: 14px; line-height: 1.6; color: var(--dg-muted); }
+/* Un écran vide s'ouvre toujours par un accueil .dg-deep, jamais par un cadre pointillé isolé. */
+
+/* ---------- Outils spécialisés ---------- */
+
+.dg-tool { background: var(--dg-tint-tool); border-top: 1px solid var(--dg-tint-tool-line);
+    padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.dg-tool__mark { display: grid; place-items: center; flex: none; width: 38px; height: 38px;
+    border-radius: 12px; background: var(--dg-night); color: #efe6d6; font-size: 12px; font-weight: 600; }
+
+/* ---------- Emplacement photo ---------- */
+
+.dg-photo { position: relative; display: flex; align-items: flex-end; padding: 20px;
+    border-radius: var(--dg-radius-block); overflow: hidden;
+    background: repeating-linear-gradient(135deg, #16382e 0 12px, #194035 12px 24px); }
+.dg-photo figcaption, .dg-photo__caption { font-family: var(--dg-font-mono); font-size: 12px;
+    color: rgba(239, 230, 214, .55); background: rgba(16, 48, 40, .7); padding: 8px 12px; border-radius: 8px; }
+
+/* ---------- Maturité (repères, jamais un score) ---------- */
+
+.dg-maturity { display: flex; align-items: center; gap: 4px; }
+.dg-maturity i { flex: 1; height: 4px; border-radius: 999px; background: var(--dg-line); display: block; }
+.dg-maturity i[data-state='done'] { background: var(--dg-forest-action); }
+.dg-maturity i[data-state='current'] { background: var(--dg-saffron); }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+    .dg-card { padding: 22px; border-radius: 18px; }
+    .dg-deep { padding: 22px; border-radius: 20px; }
+    .dg-display--hero { font-size: 44px; }
+    .dg-display--section { font-size: 30px; }
+    .dg-display--screen { font-size: 32px; }
+    .dg-display--lead { font-size: 26px; }
+    .dg-display--card { font-size: 24px; }
+    .dg-body { font-size: 15px; line-height: 1.6; }
+    .dg-actions { gap: 8px; }
+    .dg-actions .dg-btn { flex: 1; min-height: var(--dg-touch-min); padding: 13px; }
+}
+
+} /* @layer components */

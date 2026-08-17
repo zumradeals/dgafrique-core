@@ -22,11 +22,12 @@ final class IdentityAuthorityGuardTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Ce que vous savez faire')
-            ->assertSee('Révéler les capacités')
-            ->assertSee('Exprimer les besoins')
-            ->assertSee('Ouvrir des opportunités')
-            ->assertSee('Une ZUMRA peut bâtir.')
+            ->assertSee('Vos capacités deviennent des actions.')
+            ->assertSee('Je sais faire')
+            ->assertSee('Un besoin apparaît')
+            ->assertSee('Une équipe agit')
+            ->assertSee('Une ZUMRA, c’est une équipe qui s’engage vraiment.')
+            ->assertSee('Exemple')
             ->assertDontSee('4 250')
             ->assertDontSee('1,2 million');
     }
