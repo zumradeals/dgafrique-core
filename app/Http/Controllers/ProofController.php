@@ -70,14 +70,25 @@ final class ProofController
 
         $proof->load(['references', 'witnesses']);
 
+        // Une preuve peut rester visible (auteur/témoin/DISCOVERABLE) sans que le viewer ait
+        // accès au contexte cité : le label et le lien du contexte ne sont jamais révélés
+        // dans ce cas — seule l'existence d'un rattachement non public est signalée.
         $contextLabel = null;
         $contextUrl = null;
         $canAcknowledge = false;
         if (in_array($proof->origin_type, Proof::ACKNOWLEDGEABLE_ORIGINS, true)) {
             $context = $contexts->resolve($proof->origin_type, $proof->origin_reference);
-            $contextLabel = $contexts->label($proof->origin_type, $context);
-            $contextUrl = $contexts->url($proof->origin_type, $context);
-            $canAcknowledge = $contexts->canAcknowledge($proof->origin_type, $context, $identity->reference)
+            $viewerCanViewContext = $contexts->canView($proof->origin_type, $context, $identity->reference);
+
+            if ($viewerCanViewContext) {
+                $contextLabel = $contexts->label($proof->origin_type, $context);
+                $contextUrl = $contexts->url($proof->origin_type, $context);
+            } else {
+                $contextLabel = 'Contexte non public';
+            }
+
+            $canAcknowledge = $viewerCanViewContext
+                && $contexts->canAcknowledge($proof->origin_type, $context, $identity->reference)
                 && in_array($proof->status, [Proof::STATUS_SUBMITTED, Proof::STATUS_WITNESSED], true);
         }
 

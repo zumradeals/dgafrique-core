@@ -113,6 +113,55 @@ final class ProofWorkflowTest extends TestCase
         self::assertDatabaseMissing('dg_proof_witnesses', ['proof_id' => $proof->id]);
     }
 
+    public function test_submission_requires_actual_access_to_the_cited_context_fail_closed(): void
+    {
+        $this->activateProgram('IDN-DECIDER-PRIV');
+        $this->activateProgram('IDN-OUTSIDER-PRIV');
+        $privateProject = app(ProjectService::class)->create('IDN-DECIDER-PRIV', $this->projectPayload(['visibility' => 'PRIVATE']), (new ProjectConfiguration)->defaults());
+
+        $workflow = app(ProofWorkflow::class);
+
+        // Un tiers sans accès au Projet privé ne peut pas soumettre une preuve qui le cite —
+        // fail-closed en 404, pour ne jamais révéler l'existence du contexte à qui n'y a pas accès.
+        $this->assertAborts(404, fn () => $workflow->submit('IDN-OUTSIDER-PRIV', [
+            'owner_type' => Proof::OWNER_PERSON,
+            'title' => 'Preuve non autorisée',
+            'description' => 'Une tentative de citer un contexte privé sans y avoir accès.',
+            'origin_type' => Proof::ORIGIN_PROJECT,
+            'origin_reference' => $privateProject->public_reference,
+        ]));
+
+        // Le propriétaire du Projet, lui, peut citer son propre contexte privé.
+        $proof = $workflow->submit('IDN-DECIDER-PRIV', [
+            'owner_type' => Proof::OWNER_PERSON,
+            'title' => 'Preuve autorisée',
+            'description' => 'Le propriétaire du Projet cite son propre contexte privé.',
+            'origin_type' => Proof::ORIGIN_PROJECT,
+            'origin_reference' => $privateProject->public_reference,
+        ]);
+        self::assertSame(Proof::ORIGIN_PROJECT, $proof->origin_type);
+
+        // Même garde-fou pour un Besoin privé.
+        $privateNeed = app(NeedService::class)->create('IDN-DECIDER-PRIV', $this->needPayload(['visibility' => Need::VISIBILITY_PRIVATE]), (new NeedConfiguration)->defaults());
+        $this->assertAborts(404, fn () => $workflow->submit('IDN-OUTSIDER-PRIV', [
+            'owner_type' => Proof::OWNER_PERSON,
+            'title' => 'Preuve non autorisée (besoin)',
+            'description' => 'Une tentative de citer un besoin privé sans y avoir accès.',
+            'origin_type' => Proof::ORIGIN_NEED,
+            'origin_reference' => $privateNeed->public_reference,
+        ]));
+
+        // Même garde-fou pour une ZUMRA dont l'acteur n'est pas membre.
+        $group = $this->group('IDN-DECIDER-PRIV');
+        $this->assertAborts(404, fn () => $workflow->submit('IDN-OUTSIDER-PRIV', [
+            'owner_type' => Proof::OWNER_PERSON,
+            'title' => 'Preuve non autorisée (zumra)',
+            'description' => 'Une tentative de citer une ZUMRA sans en être membre.',
+            'origin_type' => Proof::ORIGIN_ZUMRA,
+            'origin_reference' => $group->public_reference,
+        ]));
+    }
+
     public function test_acknowledge_across_all_contextual_origins(): void
     {
         $this->activateProgram('IDN-LEADER');

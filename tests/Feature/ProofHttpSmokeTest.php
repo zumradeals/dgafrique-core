@@ -113,6 +113,47 @@ final class ProofHttpSmokeTest extends TestCase
         $this->get('/partages/preuves/'.$proof->public_reference)->assertOk();
     }
 
+    public function test_discoverable_proof_never_reveals_a_private_context_label_or_link_to_an_unauthorized_viewer(): void
+    {
+        $this->activateProgram('IDN-OWNER-CTX');
+        $this->activateProgram('IDN-VIEWER-CTX');
+        $this->discoverableProfile('IDN-OWNER-CTX', 'Porteur Contexte');
+        $this->discoverableProfile('IDN-VIEWER-CTX', 'Viewer Contexte');
+
+        $project = app(ProjectService::class)->create('IDN-OWNER-CTX', $this->projectPayload([
+            'name' => 'Atelier Confidentiel Ultra Secret',
+            'visibility' => 'PRIVATE',
+        ]), (new ProjectConfiguration)->defaults());
+
+        $workflow = app(ProofWorkflow::class);
+        $proof = $workflow->submit('IDN-OWNER-CTX', [
+            'owner_type' => Proof::OWNER_PERSON,
+            'title' => 'Activité réalisée dans un cadre privé',
+            'description' => 'Une activité réelle a été menée dans le cadre de ce projet.',
+            'origin_type' => Proof::ORIGIN_PROJECT,
+            'origin_reference' => $project->public_reference,
+            'visibility' => Proof::VISIBILITY_DISCOVERABLE,
+        ]);
+
+        // Le viewer n'a pas accès au Projet privé : il voit la preuve (DISCOVERABLE) mais
+        // jamais le nom ni le lien du contexte cité.
+        $this->signIn('IDN-VIEWER-CTX');
+        $response = $this->get('/preuves/'.$proof->public_reference);
+        $response->assertOk()
+            ->assertSee('Activité réalisée dans un cadre privé')
+            ->assertSee('Contexte non public')
+            ->assertDontSee('Atelier Confidentiel Ultra Secret')
+            ->assertDontSee('/projets/'.$project->public_reference);
+
+        // Une fois que le viewer a réellement accès au contexte (ici : visibilité PROGRAM +
+        // adhésion active), le label et le lien réels s'affichent normalement.
+        $project->update(['visibility' => 'PROGRAM']);
+        $response = $this->get('/preuves/'.$proof->public_reference);
+        $response->assertOk()
+            ->assertSee('Atelier Confidentiel Ultra Secret')
+            ->assertSee('/projets/'.$project->public_reference);
+    }
+
     public function test_matching_surfaces_proof_as_explainable_reason_never_as_a_score(): void
     {
         $this->discoverableProfile('IDN-VIEWER', 'Vue Matching');

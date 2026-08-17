@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Application\Proof;
 
 use App\Application\Missions\MissionContextRegistry;
+use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
+use App\Application\Transmission\TransmissionVisibilityService;
 use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\Need;
@@ -15,13 +17,16 @@ use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\TransmissionParticipant;
 use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
 
 /**
  * Contrat de contexte Preuve (fiche §9) : une preuve reste toujours valide de manière
  * autonome (origin_type = NONE/INTERACTION). Un rattachement MISSION/TRANSMISSION/NEED/
  * PROJECT/ZUMRA ajoute seulement la possibilité, pour l'autorité déjà existante de ce
  * contexte, de reconnaître la preuve — jamais de garantir sa véracité, jamais une nouvelle
- * autorité créée.
+ * autorité créée. `canView()` réutilise strictement la visibilité déjà existante de chaque
+ * domaine : citer un contexte ne fabrique jamais un accès à celui-ci, et une preuve rattachée
+ * à un contexte privé ne révèle jamais son identité (label/lien) à qui n'y a pas accès.
  */
 final class ProofContextService
 {
@@ -30,6 +35,8 @@ final class ProofContextService
         private readonly ProjectService $projects,
         private readonly ZumraGroupService $zumraGroups,
         private readonly MissionContextRegistry $missionRegistry,
+        private readonly MissionVisibilityService $missionVisibility,
+        private readonly TransmissionVisibilityService $transmissionVisibility,
     ) {}
 
     public function resolve(string $type, string $reference): object
@@ -41,6 +48,24 @@ final class ProofContextService
             Proof::ORIGIN_MISSION => Mission::query()->where('public_reference', $reference)->firstOrFail(),
             Proof::ORIGIN_TRANSMISSION => Transmission::query()->where('public_reference', $reference)->firstOrFail(),
             default => abort(422, 'Cette origine de preuve n’est pas prise en charge.'),
+        };
+    }
+
+    /**
+     * Visibilité réelle du contexte cité — jamais une seconde logique de permission :
+     * délègue à l'autorité/visibilité déjà existante de chaque domaine (revue post-
+     * implémentation). Utilisée à la soumission (fail-closed) et à la lecture (masquage du
+     * label/lien si le viewer n'a pas accès).
+     */
+    public function canView(string $type, object $context, string $actor): bool
+    {
+        return match ($type) {
+            Proof::ORIGIN_NEED => $this->needs->canView($context, $actor),
+            Proof::ORIGIN_PROJECT => $this->projects->canView($context, $actor),
+            Proof::ORIGIN_ZUMRA => $this->isActiveZumraMember($context, $actor) || $this->zumraGroups->isLeader($context, $actor),
+            Proof::ORIGIN_MISSION => $this->missionVisibility->canViewMission($context, $actor),
+            Proof::ORIGIN_TRANSMISSION => $this->transmissionVisibility->canView($context, $actor),
+            default => false,
         };
     }
 
@@ -99,6 +124,15 @@ final class ProofContextService
             ->where('core_identity_reference', $actor)
             ->where('status', TransmissionParticipant::STATUS_ACCEPTED)
             ->where('role', TransmissionParticipant::ROLE_TRANSMITTER)
+            ->exists();
+    }
+
+    private function isActiveZumraMember(ZumraGroup $group, string $actor): bool
+    {
+        return ZumraGroupMembership::query()
+            ->where('zumra_group_id', $group->id)
+            ->where('core_identity_reference', $actor)
+            ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
             ->exists();
     }
 }

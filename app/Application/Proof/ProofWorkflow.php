@@ -41,9 +41,11 @@ final class ProofWorkflow
         $originReference = $data['origin_reference'] ?? null;
         if ($originType !== Proof::ORIGIN_NONE && $originType !== Proof::ORIGIN_INTERACTION) {
             abort_if($originReference === null || $originReference === '', 422, 'Une référence d’origine est requise pour ce type.');
-            // Résolution seule : une origine citée ne fabrique jamais un accès à ce contexte,
-            // elle sert uniquement à permettre une future reconnaissance contextuelle (§9).
-            $this->contexts->resolve($originType, $originReference);
+            // Une personne ne peut citer que ce qu'elle est déjà autorisée à voir — jamais
+            // fabriquer un accès. Fail-closed : un contexte inaccessible répond 404, jamais
+            // 403, pour ne pas révéler son existence à quelqu'un qui n'y a pas accès.
+            $context = $this->contexts->resolve($originType, $originReference);
+            abort_unless($this->contexts->canView($originType, $context, $actor), 404);
         } else {
             $originReference = null;
         }
