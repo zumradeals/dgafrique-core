@@ -111,8 +111,9 @@ Evidence: `app/Application/Zumra/ZumraGroupService.php`, `dg_zumra_groups`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
-Final SHA: —
+Implementation PR: antérieur au workflow PR-par-module ; recomposition visuelle additive de la fiche
+(#40) — voir `docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
+Final SHA: e8db741bc0274b48a27b77d2a9a06e83b9eb51b6
 
 ## CAP-012 — Capacité collective
 Status: CLOSED
@@ -349,7 +350,8 @@ Evidence: `ZumraGroupController::show` agrège les `Need`/`Project` du groupe (o
 Gap: aucun
 Dependencies: aucune
 Decision: extension additive de la fiche existante, aucune nouvelle table
-Implementation PR: #21
+Implementation PR: #21 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-038 — Tableau de bord collectif
@@ -358,7 +360,8 @@ Evidence: `ZumraGroupController::collectivePriority()` — une seule priorité d
 Gap: aucun
 Dependencies: aucune
 Decision: aucun siège vacant en priorité (aucune action réelle n'existe pour en proposer un)
-Implementation PR: #21
+Implementation PR: #21 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-039 — La ZUMRA comme capacité d'émergence
@@ -385,7 +388,8 @@ Evidence: `ProjectTeamMember` (table `dg_project_team_members`) + `ProjectTeamSe
 Gap: aucun
 Dependencies: aucune
 Decision: table additive distincte de `ProjectMatchDecision` (suggestion masquée ≠ adhésion réelle)
-Implementation PR: #23
+Implementation PR: #23 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: 5699162d908ebad20df9104c6a488a50fc8ceb4d
 
 ## CAP-042 — Besoin projet
@@ -394,7 +398,8 @@ Evidence: `Need::OWNER_PROJECT` + `NeedService` étendu (éligibilité : porteur
 Gap: aucun
 Dependencies: aucune
 Decision: `ProjectAuthority` extraite de `ProjectService::canView/canDecide` (comportement inchangé) pour être réutilisée par `NeedService` sans dépendance circulaire ; `required_capabilities`/`required_resources` restent l'instantané figé de création, inchangés
-Implementation PR: #25
+Implementation PR: #25 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: d7b456c2ba17fb726be7b18400e64a756629f44d
 
 ## CAP-043 — Dossier de projet vivant
@@ -412,7 +417,8 @@ Evidence: `ProjectSignalsEngine::forProject()` (jalons, équipe, besoins, contri
 Gap: aucun
 Dependencies: aucune
 Decision: panneau strictement consultatif — `ProjectMaturityService::change()` reste l'unique chemin d'écriture sur `Project.maturity`, aucun signal ne déclenche jamais une transition automatique
-Implementation PR: #27
+Implementation PR: #27 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: 0e6958ddb167c446c80f9b47776b812d2a6f53ed
 
 ## CAP-045 — Accompagnement
@@ -421,7 +427,8 @@ Evidence: `ProjectAccompanimentService::request/acknowledgeRequest/closeRequest`
 Gap: aucun
 Dependencies: aucune
 Decision: file distincte de l'activation directe (`activate()`/`end()`, inchangés) — demande possible uniquement une fois l'accompagnement actif, réservée au porteur autorisé ; prise en charge/clôture réservées à un administrateur provisionné
-Implementation PR: #29
+Implementation PR: #29 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: 9f48dc91c4fda8d9737c2dd92a7f0cd9b4372295
 
 ## CAP-046 — Dossier d'accompagnement
@@ -430,7 +437,8 @@ Evidence: synthèse par type/source et filtres par type/partenaire sur `/projets
 Gap: aucun
 Dependencies: aucune
 Decision: enrichissement de vue uniquement — comptes réels, jamais un score, filtres en GET sans état caché
-Implementation PR: #31
+Implementation PR: #31 ; recomposition visuelle additive (#40) — voir
+`docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
 Final SHA: 5106974204115f473283e217aa3c4d5288d15f92
 
 ## CAP-047 — Le « satellite » comme changement de nature
