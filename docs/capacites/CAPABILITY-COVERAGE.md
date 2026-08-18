@@ -382,7 +382,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: table additive distincte de `ProjectMatchDecision` (suggestion masquée ≠ adhésion réelle)
 Implementation PR: #23
-Final SHA: —
+Final SHA: 5699162d908ebad20df9104c6a488a50fc8ceb4d
 
 ## CAP-042 — Besoin projet
 Status: PARTIAL
