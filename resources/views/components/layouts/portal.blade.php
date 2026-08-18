@@ -10,6 +10,9 @@
     if (request()->routeIs('member.space')) {
         $pageStyles[] = 'resources/css/member-space-v2.css';
     }
+    if (request()->routeIs('landing')) {
+        $pageStyles[] = 'resources/css/landing-v2.css';
+    }
     $pageStyles = array_values(array_unique($pageStyles));
 @endphp
 <!doctype html>
