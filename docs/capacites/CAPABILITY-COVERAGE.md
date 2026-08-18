@@ -454,7 +454,7 @@ Gap: aucun
 Dependencies: CAP-048 (CLOSED)
 Decision: `FederatedProductGateway`/`GamadCoreClient` inchangés (aucun nouveau secret) ; déclarer un satellite actif dans l'administration le fait apparaître partout sans déploiement ; un satellite désactivé redevient 404 et disparaît du menu
 Implementation PR: #36
-Final SHA: —
+Final SHA: f89145098fa65b1a912d9f766409a17af6d2610e
 
 ## CAP-050 — DG Afrique comme client du Core
 Status: CLOSED
