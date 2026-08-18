@@ -14,6 +14,30 @@
                 <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
+            <x-dg.deep style="margin-bottom:16px">
+                <div style="display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap">
+                    <div style="display:flex;flex-direction:column;gap:12px;max-width:56ch">
+                        <x-dg.badge tone="on-deep">{{ $group->domain }} · {{ $group->maturity === 'ESTABLISHED' ? 'Établie' : 'Émergente' }}</x-dg.badge>
+                        <h1 class="dg-display" style="font-size:44px;line-height:1.06;color:var(--dg-on-deep-title)">{{ $group->name }}</h1>
+                        <p style="margin:0;font-size:15px;line-height:1.7;color:var(--dg-on-deep-text)">{{ $group->founding_objective }}</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+                            <x-dg.badge tone="on-deep">{{ match($group->participation_mode) { 'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride' } }}</x-dg.badge>
+                            <x-dg.badge tone="on-deep">{{ match($group->state) { 'CONSTITUTING' => 'En constitution', 'READY' => 'Prête à valider', 'VALIDATED' => 'Validée', 'ACTIVE' => 'Active', 'WARNED' => 'Avertie', 'SUSPENDED' => 'Suspendue', 'REHABILITATING' => 'En réhabilitation', default => $group->state } }}</x-dg.badge>
+                        </div>
+                    </div>
+                    <div style="text-align:right;flex:none">
+                        <div style="font-family:var(--dg-font-display);font-size:26px;color:var(--dg-on-deep-title)">{{ $group->active_member_count }}</div>
+                        <span style="font-size:13px;color:var(--dg-on-deep-muted)">membre{{ $group->active_member_count > 1 ? 's' : '' }} actif{{ $group->active_member_count > 1 ? 's' : '' }}</span>
+                        <div class="dg-meta" style="color:var(--dg-on-deep-muted);margin-top:6px">{{ $roles->where('status', 'ACCEPTED')->count() }}/5 responsabilités acceptées</div>
+                    </div>
+                </div>
+            </x-dg.deep>
+
+            <details class="dg-disclosure" style="margin-bottom:20px">
+                <summary><span class="dg-disclosure__mark">i</span> Aucune adhésion automatique, aucun rôle attribué en silence.</summary>
+                <div class="dg-disclosure__body">Chaque responsabilité est acceptée explicitement par la personne qui la porte. Un siège vacant reste visible comme vacant — jamais rempli par un profil fictif. Rejoindre cette ZUMRA se fait par demande approuvée ou invitation acceptée, jamais automatiquement.</div>
+            </details>
+
             @if($collectivePriority)
                 <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
                     <x-dg.label tone="saffron">Aujourd’hui — une seule chose compte pour cette ZUMRA</x-dg.label>
@@ -25,27 +49,6 @@
                 </div>
             @endif
 
-            <div class="dg-page-header">
-                <div class="flex items-center gap-4">
-                    <x-dg.avatar :initials="mb_strtoupper(mb_substr($group->name, 0, 1))" size="lg" tone="night" />
-                    <div>
-                        <x-dg.label>{{ $group->domain }}</x-dg.label>
-                        <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $group->name }}</h1>
-                        <p>{{ $group->founding_objective }}</p>
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">
-                            <x-dg.badge tone="neutral">{{ match($group->participation_mode) { 'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride' } }}</x-dg.badge>
-                            <x-dg.badge tone="neutral">{{ $group->active_member_count }} membre{{ $group->active_member_count > 1 ? 's' : '' }}</x-dg.badge>
-                            <x-dg.badge tone="neutral">{{ $group->maturity === 'ESTABLISHED' ? 'ZUMRA établie' : 'ZUMRA émergente' }}</x-dg.badge>
-                        </div>
-                    </div>
-                </div>
-                <div style="text-align:right">
-                    <x-dg.label>État opérationnel</x-dg.label>
-                    <div style="margin-top:6px;font-size:15px;font-weight:600;color:var(--dg-forest)">{{ match($group->state) { 'CONSTITUTING' => 'En constitution', 'READY' => 'Prête à valider', 'VALIDATED' => 'Validée', 'ACTIVE' => 'Active', 'WARNED' => 'Avertie', 'SUSPENDED' => 'Suspendue', 'REHABILITATING' => 'En réhabilitation', default => $group->state } }}</div>
-                    <div class="dg-meta">{{ $roles->where('status', 'ACCEPTED')->count() }}/5 responsabilités acceptées</div>
-                </div>
-            </div>
-
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
                 <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
                     <x-dg.card>
@@ -56,7 +59,7 @@
                             </div>
                             <x-dg.badge tone="{{ $roles->where('status', 'ACCEPTED')->count() === 5 ? 'action' : 'neutral' }}">{{ $roles->where('status', 'ACCEPTED')->count() === 5 ? 'Gouvernance complète' : 'Constitution en cours' }}</x-dg.badge>
                         </div>
-                        <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+                        <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
                             @foreach($roles as $role)
                                 @php($profile = $roleProfiles->get($role->core_identity_reference))
                                 <x-dg.seat
@@ -66,7 +69,6 @@
                                 />
                             @endforeach
                         </div>
-                        <p class="dg-hint" style="margin-top:14px">Le système ne complète jamais les sièges avec des profils fictifs et ne nomme personne par matching.</p>
                     </x-dg.card>
 
                     <x-dg.card>
@@ -95,41 +97,45 @@
                         <p class="dg-hint" style="margin-top:14px">Le profil collectif agrège des capacités consenties. Il ne remplace pas les personnes et n’affiche aucune identité privée.</p>
                     </x-dg.card>
 
-                    <x-dg.card>
-                        <div class="flex items-center justify-between gap-4">
-                            <div>
-                                <x-dg.label>Micro-espace de travail</x-dg.label>
-                                <h2 class="dg-display" style="font-size:20px;margin-top:6px">Projets et besoins de cette ZUMRA</h2>
+                    <div class="grid gap-5 lg:grid-cols-[1.3fr_1fr]" style="align-items:start">
+                        <x-dg.card style="padding:0;overflow:hidden">
+                            <div style="padding:22px 24px 14px;display:flex;align-items:baseline;justify-content:space-between">
+                                <x-dg.label>Ce que porte cette ZUMRA</x-dg.label>
+                                <span class="dg-meta">{{ $groupProjects->count() }} projet{{ $groupProjects->count() > 1 ? 's' : '' }} · {{ $groupNeeds->count() }} besoin{{ $groupNeeds->count() > 1 ? 's' : '' }}</span>
                             </div>
-                            <span class="dg-meta">{{ $groupProjects->count() + $groupNeeds->count() }} en cours</span>
-                        </div>
-                        @if($groupProjects->isEmpty() && $groupNeeds->isEmpty())
-                            <x-dg.empty style="margin-top:14px">
-                                <span>Cette ZUMRA ne porte encore aucun Projet ni Besoin visible.</span>
-                            </x-dg.empty>
-                        @else
-                            <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
-                                @foreach($groupProjects as $project)
-                                    <a href="{{ route('projects.show', $project) }}" class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit">
-                                        <span><span class="dg-meta">Projet ·</span> <strong style="color:var(--dg-ink)">{{ $project->name }}</strong></span>
-                                        <x-dg.badge tone="neutral">{{ $project->status }}</x-dg.badge>
-                                    </a>
-                                @endforeach
-                                @foreach($groupNeeds as $need)
-                                    <a href="{{ route('needs.show', $need) }}" class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit">
-                                        <span><span class="dg-meta">Besoin ·</span> <strong style="color:var(--dg-ink)">{{ $need->title }}</strong></span>
-                                        <x-dg.badge tone="neutral">{{ $need->status }}</x-dg.badge>
-                                    </a>
-                                @endforeach
-                            </div>
-                        @endif
-                    </x-dg.card>
+                            @if($groupProjects->isEmpty() && $groupNeeds->isEmpty())
+                                <div style="padding:0 24px 20px">
+                                    <x-dg.empty><span>Cette ZUMRA ne porte encore aucun Projet ni Besoin visible.</span></x-dg.empty>
+                                </div>
+                            @else
+                                <div style="padding:0 24px 8px;border-top:1px solid var(--dg-line-inner)">
+                                    @foreach($groupProjects as $project)
+                                        <a href="{{ route('projects.show', $project) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                            <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="project">Projet</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $project->name }}</strong></span>
+                                            <span class="dg-meta" style="flex:none">{{ $project->status }}</span>
+                                        </a>
+                                    @endforeach
+                                    @foreach($groupNeeds as $need)
+                                        <a href="{{ route('needs.show', $need) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                            <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="need">Besoin</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $need->title }}</strong></span>
+                                            <span class="dg-meta" style="flex:none">{{ $need->status }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </x-dg.card>
 
-                    <x-dg.card>
-                        <x-dg.label>Charte interne</x-dg.label>
-                        <h2 class="dg-display" style="font-size:20px;margin-top:6px">Les règles de cette équipe</h2>
-                        <div class="dg-body" style="margin-top:12px;white-space:pre-line">{{ $group->internal_charter }}</div>
-                    </x-dg.card>
+                        <x-dg.card>
+                            <x-dg.label>Charte interne · extrait</x-dg.label>
+                            <p class="dg-body" style="margin-top:10px">{{ \Illuminate\Support\Str::limit($group->internal_charter, 220) }}</p>
+                            @if(mb_strlen($group->internal_charter) > 220)
+                                <details style="margin-top:8px">
+                                    <summary style="cursor:pointer;font-size:12px;color:var(--dg-faint);font-weight:600">Lecture intégrale ⌄</summary>
+                                    <div class="dg-body" style="margin-top:10px;white-space:pre-line">{{ $group->internal_charter }}</div>
+                                </details>
+                            @endif
+                        </x-dg.card>
+                    </div>
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">
