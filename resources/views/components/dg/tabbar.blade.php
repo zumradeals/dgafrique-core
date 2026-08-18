@@ -22,7 +22,7 @@
         <span class="dg-tabbar__act" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke-width="2.2" stroke-linecap="round"/></svg>
         </span>
-        <span class="dg-tabbar__act-label">Agir</span>
+        <span class="dg-action-label" style="margin-top:-1px;color:var(--dg-orange-deep);font-size:.65rem;font-weight:800">Agir</span>
     </button>
 
     <a href="{{ route('zumra.index') }}" @if($current === 'zumra') aria-current="page" @endif>
