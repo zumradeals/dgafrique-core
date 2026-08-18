@@ -22,8 +22,9 @@ final class MembershipPaymentService
         if ($membership->status !== ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
             throw new RuntimeException('MEMBERSHIP_NOT_PAYABLE');
         }
+        $configuredEnvironment = (string) config('payments.geniuspay.environment');
         $remote = $this->provider->createMembershipPayment($membership->core_identity_reference, $successUrl, $errorUrl);
-        if ($remote['amount'] !== 500 || $remote['environment'] !== 'live' || ! $remote['checkout_url']
+        if ($remote['amount'] !== 500 || $remote['environment'] !== $configuredEnvironment || ! $remote['checkout_url']
             || parse_url($remote['checkout_url'], PHP_URL_SCHEME) !== 'https') {
             throw new RuntimeException('PAYMENT_CREATION_MISMATCH');
         }
@@ -31,7 +32,7 @@ final class MembershipPaymentService
         return ZumraPayment::query()->create([
             'membership_id' => $membership->id, 'provider' => 'GENIUSPAY', 'purpose' => ZumraPayment::PURPOSE_MEMBERSHIP,
             'reference' => $remote['reference'], 'provider_id' => $remote['provider_id'], 'amount' => 500, 'currency' => 'XOF',
-            'environment' => 'live', 'status' => $remote['status'], 'checkout_url' => $remote['checkout_url'],
+            'environment' => $configuredEnvironment, 'status' => $remote['status'], 'checkout_url' => $remote['checkout_url'],
             'provider_snapshot' => $remote['snapshot'], 'provider_snapshot_hash' => $this->snapshotHash($remote['snapshot']),
         ]);
     }
@@ -39,7 +40,10 @@ final class MembershipPaymentService
     public function reconcile(ZumraPayment $payment): ZumraPayment
     {
         $remote = $this->provider->payment($payment->reference);
-        if ($remote['amount'] !== $payment->amount || $payment->currency !== 'XOF' || $payment->purpose !== ZumraPayment::PURPOSE_MEMBERSHIP || $remote['environment'] !== 'live') {
+        // La tentative ne peut jamais changer d'environnement en cours de route : un paiement
+        // amorcé en sandbox doit se réconcilier en sandbox, jamais en live et inversement.
+        if ($remote['amount'] !== $payment->amount || $payment->currency !== 'XOF' || $payment->purpose !== ZumraPayment::PURPOSE_MEMBERSHIP
+            || $remote['environment'] !== $payment->environment) {
             throw new RuntimeException('PAYMENT_RECONCILIATION_MISMATCH');
         }
 
@@ -52,12 +56,18 @@ final class MembershipPaymentService
                 'last_verified_at' => now(), 'completed_at' => $remote['status'] === ZumraPayment::STATUS_COMPLETED ? ($locked->completed_at ?? now()) : $locked->completed_at,
             ])->save();
 
-            if ($remote['status'] === ZumraPayment::STATUS_COMPLETED && $membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
+            // CAP-007B : seul `live` active toujours. `sandbox` ne peut activer que si
+            // l'interrupteur dédié `sandbox_activation_allowed` est explicitement ouvert —
+            // jamais déduit de APP_ENV. Off par défaut partout, y compris en local.
+            $canActivate = $locked->environment === 'live'
+                || ($locked->environment === 'sandbox' && (bool) config('payments.geniuspay.sandbox_activation_allowed'));
+
+            if ($remote['status'] === ZumraPayment::STATUS_COMPLETED && $canActivate && $membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
                 $membership->update(['status' => ZumraProgramMembership::STATUS_ACTIVE, 'activated_at' => now()]);
                 ZumraProgramMembershipEvent::query()->create([
                     'membership_id' => $membership->id, 'event' => 'PAYMENT_CONFIRMED',
                     'from_status' => ZumraProgramMembership::STATUS_PENDING_PAYMENT, 'to_status' => ZumraProgramMembership::STATUS_ACTIVE,
-                    'actor_core_reference' => 'SYSTEM:PAYMENT_PROVIDER', 'context' => ['payment_reference' => $locked->reference], 'occurred_at' => now(),
+                    'actor_core_reference' => 'SYSTEM:PAYMENT_PROVIDER', 'context' => ['payment_reference' => $locked->reference, 'environment' => $locked->environment], 'occurred_at' => now(),
                 ]);
                 $this->issueReceipt($locked, $membership);
             }

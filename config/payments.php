@@ -15,5 +15,10 @@ return [
         'api_key' => env('GENIUSPAY_API_KEY'),
         'api_secret' => env('GENIUSPAY_API_SECRET'),
         'timeout' => (int) env('GENIUSPAY_TIMEOUT', 15),
+        // CAP-007B : un paiement sandbox ne peut activer une adhésion que si cet interrupteur
+        // dédié est explicitement activé — jamais déduit de APP_ENV, qui peut légitimement
+        // valoir "production" sur le domaine réel pendant une phase de test. À désactiver
+        // explicitement dès que de vrais membres commencent à payer pour de vrai.
+        'sandbox_activation_allowed' => (bool) env('GENIUSPAY_SANDBOX_ACTIVATION_ALLOWED', false),
     ],
 ];

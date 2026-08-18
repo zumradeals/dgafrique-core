@@ -46,7 +46,10 @@ final class GeniusPayClient
         $key = trim((string) config('payments.geniuspay.api_key'));
         $secret = trim((string) config('payments.geniuspay.api_secret'));
         $environment = (string) config('payments.geniuspay.environment');
-        if (! config('payments.membership.enabled') || $environment !== 'live' || $key === '' || $secret === '') {
+        // CAP-007B : sandbox reste un environnement de paiement légitime (tests réels chez le
+        // prestataire, sans argent réel) — seule l'ACTIVATION de l'adhésion qui en résulte reste
+        // gouvernée séparément par `sandbox_activation_allowed` (voir MembershipPaymentService).
+        if (! config('payments.membership.enabled') || ! in_array($environment, ['live', 'sandbox'], true) || $key === '' || $secret === '') {
             throw new RuntimeException('PAYMENT_PROVIDER_NOT_LIVE');
         }
 
@@ -63,14 +66,16 @@ final class GeniusPayClient
         $reference = (string) ($raw['reference'] ?? '');
         $amount = filter_var($raw['amount'] ?? null, FILTER_VALIDATE_INT);
         $checkout = $raw['checkout_url'] ?? $raw['payment_url'] ?? null;
-        if ($reference === '' || $amount === false || ! in_array($status, ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED'], true)) {
+        $environment = strtolower((string) ($raw['environment'] ?? ''));
+        if ($reference === '' || $amount === false || ! in_array($status, ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED'], true)
+            || ! in_array($environment, ['live', 'sandbox'], true)) {
             throw new RuntimeException('PAYMENT_PROVIDER_RESPONSE_INVALID');
         }
 
         return [
             'reference' => $reference, 'provider_id' => isset($raw['id']) ? (string) $raw['id'] : null,
             'amount' => $amount, 'status' => $status, 'checkout_url' => is_string($checkout) ? $checkout : null,
-            'environment' => strtolower((string) ($raw['environment'] ?? 'live')),
+            'environment' => $environment,
             'fees' => isset($raw['fees']) ? (int) $raw['fees'] : null,
             'net_amount' => isset($raw['net_amount']) ? (int) $raw['net_amount'] : null,
             'completed_at' => is_string($raw['completed_at'] ?? null) ? $raw['completed_at'] : null,
