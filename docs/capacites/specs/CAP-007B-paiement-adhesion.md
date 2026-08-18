@@ -5,7 +5,7 @@
 - Prix canonique : **500 FCFA (XOF), une seule fois**.
 - L’adhésion et les contributions mensuelles sont deux objets financiers distincts.
 - Une redirection, un paramètre d’URL ou une réponse du navigateur ne peut jamais activer une adhésion.
-- Seule une lecture serveur-à-serveur auprès du prestataire, cohérente sur la référence, le montant, la devise, l’objet et l’environnement `live`, peut produire `COMPLETED`.
+- Seule une lecture serveur-à-serveur auprès du prestataire, cohérente sur la référence, le montant, la devise, l’objet et l’environnement (identique à celui de la tentative d’origine), peut produire `COMPLETED`.
 - La transition `PENDING_PAYMENT → ACTIVE`, son événement et le reçu sont atomiques et idempotents.
 - Un reçu appartient exclusivement à la référence d’identité canonique qui a payé.
 - Les données de carte, codes Mobile Money, clés et secrets ne sont jamais stockés par DG Afrique.
@@ -16,4 +16,22 @@
 
 ## Activation opérationnelle
 
-Le bouton réel reste fermé tant que `ZUMRA_PAYMENT_ENABLED=false`. L’ouverture en production exige les identifiants GeniusPay live, une création et une lecture de paiement validées sur le compte marchand, puis une preuve de bout en bout de faible montant. Aucun mode sandbox ne peut activer le lot réel.
+Le bouton réel reste fermé tant que `ZUMRA_PAYMENT_ENABLED=false`. L’ouverture en production exige les identifiants GeniusPay live, une création et une lecture de paiement validées sur le compte marchand, puis une preuve de bout en bout de faible montant.
+
+## Décision — sandbox et activation (2026-08-18)
+
+Point tranché par revue humaine après conflit documenté entre « aucun mode sandbox ne peut activer
+le lot réel » (version initiale de cette fiche) et le besoin réel d'exercer le parcours complet
+(paiement → adhésion active → reste de la plateforme) avant un vrai lancement.
+
+**Décision validée :** un paiement `sandbox` peut activer une adhésion, mais uniquement si
+l'interrupteur dédié `GENIUSPAY_SANDBOX_ACTIVATION_ALLOWED` (`payments.geniuspay.sandbox_activation_allowed`)
+est explicitement activé — **jamais déduit de `APP_ENV`**, qui peut légitimement valoir
+`production` sur le domaine réel (`dgafrique.com`) pendant une phase de test. Off par défaut
+partout. À désactiver explicitement dès que de vrais membres commencent à payer pour de vrai —
+ce n'est pas automatique, c'est un geste opérationnel conscient à chaque bascule.
+
+Garanties inchangées, y compris en sandbox : prix canonique 500 FCFA, environnement de la
+réconciliation identique à celui de la tentative d'origine (un paiement amorcé en sandbox ne peut
+jamais se réconcilier en `live` et inversement), transition atomique et idempotente, reçu
+strictement lié à la référence d'identité canonique.

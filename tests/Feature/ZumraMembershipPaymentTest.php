@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Zumra\MembershipPaymentService;
 use App\Models\ZumraPayment;
 use App\Models\ZumraPaymentReceipt;
 use App\Models\ZumraCharter;
@@ -12,6 +13,7 @@ use App\Models\ZumraProgramMembershipEvent;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
 use Tests\TestCase;
 
 final class ZumraMembershipPaymentTest extends TestCase
@@ -19,6 +21,7 @@ final class ZumraMembershipPaymentTest extends TestCase
     use RefreshDatabase;
 
     private string $providerStatus = 'pending';
+    private string $providerEnvironment = 'live';
     private string $coreReference = 'IDN-PER-000000008';
     private bool $httpIsFaked = false;
 
@@ -91,6 +94,75 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->get(route('zumra.payment.receipt', $receipt))->assertNotFound();
     }
 
+    public function test_a_sandbox_payment_is_created_with_sandbox_environment(): void
+    {
+        config()->set('payments.geniuspay.environment', 'sandbox');
+        config()->set('payments.geniuspay.api_key', 'pk_sandbox_test');
+        config()->set('payments.geniuspay.api_secret', 'sk_sandbox_test');
+        $this->providerEnvironment = 'sandbox';
+        $this->pendingMembership();
+        $this->signIn(providerStatus: 'pending');
+
+        $this->post('/zumra/adhesion/paiement')->assertRedirect();
+        self::assertSame('sandbox', ZumraPayment::query()->sole()->environment);
+    }
+
+    public function test_sandbox_completion_never_activates_membership_when_the_switch_is_off(): void
+    {
+        config()->set('payments.geniuspay.environment', 'sandbox');
+        config()->set('payments.geniuspay.api_key', 'pk_sandbox_test');
+        config()->set('payments.geniuspay.api_secret', 'sk_sandbox_test');
+        config()->set('payments.geniuspay.sandbox_activation_allowed', false);
+        $this->providerEnvironment = 'sandbox';
+        $membership = $this->pendingMembership();
+        $this->signIn(providerStatus: 'pending');
+        $this->post('/zumra/adhesion/paiement');
+        $this->fakeRequests(providerStatus: 'completed');
+
+        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk();
+        self::assertSame(ZumraProgramMembership::STATUS_PENDING_PAYMENT, $membership->refresh()->status, 'Off par défaut : un paiement sandbox ne doit jamais activer une adhésion.');
+        self::assertSame(0, ZumraPaymentReceipt::query()->count());
+    }
+
+    public function test_sandbox_completion_activates_membership_only_when_the_switch_is_explicitly_on(): void
+    {
+        config()->set('payments.geniuspay.environment', 'sandbox');
+        config()->set('payments.geniuspay.api_key', 'pk_sandbox_test');
+        config()->set('payments.geniuspay.api_secret', 'sk_sandbox_test');
+        config()->set('payments.geniuspay.sandbox_activation_allowed', true);
+        $this->providerEnvironment = 'sandbox';
+        $membership = $this->pendingMembership();
+        $this->signIn(providerStatus: 'pending');
+        $this->post('/zumra/adhesion/paiement');
+        $this->fakeRequests(providerStatus: 'completed');
+
+        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk()->assertSee('Votre adhésion est active');
+        self::assertSame(ZumraProgramMembership::STATUS_ACTIVE, $membership->refresh()->status);
+        self::assertSame('sandbox', ZumraPayment::query()->sole()->environment);
+        self::assertSame(1, ZumraPaymentReceipt::query()->count());
+    }
+
+    public function test_reconciliation_rejects_a_payment_that_changes_environment_mid_flight(): void
+    {
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'pending');
+        $payment = app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+        self::assertSame('live', $payment->environment);
+
+        // Le prestataire renvoie soudainement un environnement différent de celui de la
+        // tentative d'origine : rejeté, jamais réconcilié silencieusement.
+        $this->providerEnvironment = 'sandbox';
+        $this->fakeRequests(providerStatus: 'completed');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('PAYMENT_RECONCILIATION_MISMATCH');
+        app(MembershipPaymentService::class)->reconcile($payment);
+    }
+
     private function pendingMembership(): ZumraProgramMembership
     {
         $body = str_repeat('Respect, transmission et construction collective. ', 4);
@@ -143,7 +215,7 @@ final class ZumraMembershipPaymentTest extends TestCase
     private function providerPayload(string $status): array
     {
         return ['id' => 'pay-1', 'reference' => 'REF-001', 'amount' => 500, 'status' => $status,
-            'environment' => 'live', 'checkout_url' => 'https://checkout.example/pay/REF-001',
+            'environment' => $this->providerEnvironment, 'checkout_url' => 'https://checkout.example/pay/REF-001',
             'completed_at' => $status === 'completed' ? now()->toIso8601String() : null];
     }
 }
