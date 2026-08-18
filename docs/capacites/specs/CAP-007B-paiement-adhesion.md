@@ -35,3 +35,14 @@ Garanties inchangées, y compris en sandbox : prix canonique 500 FCFA, environne
 réconciliation identique à celui de la tentative d'origine (un paiement amorcé en sandbox ne peut
 jamais se réconcilier en `live` et inversement), transition atomique et idempotente, reçu
 strictement lié à la référence d'identité canonique.
+
+## Correctif — statut absent à la création sandbox (2026-08-18)
+
+Diagnostiqué en conditions réelles : `POST /payments` sur le sandbox GeniusPay peut répondre
+`HTTP 201`, `success=true`, référence/montant/environnement/checkout valides, mais `status=null`.
+`GeniusPayClient::normalize()` accepte désormais ce cas **uniquement à la création**
+(`createMembershipPayment()`, `allowMissingInitialStatus=true`) : un statut absent ou vide sur une
+réponse par ailleurs valide (référence non vide, montant valide, environnement `live`/`sandbox`,
+`checkout_url` HTTPS) est normalisé en `PENDING`. **Jamais** à la lecture/réconciliation
+(`payment()`) : un statut manquant y reste toujours `PAYMENT_PROVIDER_RESPONSE_INVALID`. Un statut
+absent n'est jamais transformé en `COMPLETED`, à la création comme à la réconciliation.

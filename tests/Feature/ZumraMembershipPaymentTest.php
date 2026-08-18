@@ -24,6 +24,7 @@ final class ZumraMembershipPaymentTest extends TestCase
     private string $providerEnvironment = 'live';
     private string $coreReference = 'IDN-PER-000000008';
     private bool $httpIsFaked = false;
+    private bool $providerStatusMissing = false;
 
     protected function setUp(): void
     {
@@ -163,6 +164,91 @@ final class ZumraMembershipPaymentTest extends TestCase
         app(MembershipPaymentService::class)->reconcile($payment);
     }
 
+    public function test_sandbox_creation_with_a_null_status_is_normalized_to_pending(): void
+    {
+        config()->set('payments.geniuspay.environment', 'sandbox');
+        config()->set('payments.geniuspay.api_key', 'pk_sandbox_test');
+        config()->set('payments.geniuspay.api_secret', 'sk_sandbox_test');
+        $this->providerEnvironment = 'sandbox';
+        $this->providerStatusMissing = true;
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'pending');
+
+        $payment = app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+
+        self::assertSame(ZumraPayment::STATUS_PENDING, $payment->status, 'Un statut absent sur une création par ailleurs valide (référence, montant, environnement, checkout HTTPS) devient PENDING, jamais une erreur.');
+        self::assertSame('sandbox', $payment->environment);
+        self::assertSame(500, $payment->amount);
+    }
+
+    public function test_a_normal_pending_creation_still_works_unchanged(): void
+    {
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'pending');
+
+        $payment = app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+
+        self::assertSame(ZumraPayment::STATUS_PENDING, $payment->status);
+    }
+
+    public function test_reconciliation_with_a_null_status_is_never_tolerated(): void
+    {
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'pending');
+        $payment = app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+
+        // Le fallback de création ne s'applique jamais à la lecture/réconciliation : un statut
+        // manquant y reste toujours une erreur explicite, jamais une supposition silencieuse.
+        $this->providerStatusMissing = true;
+        $this->fakeRequests(providerStatus: 'pending');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('PAYMENT_PROVIDER_RESPONSE_INVALID');
+        app(MembershipPaymentService::class)->reconcile($payment);
+    }
+
+    public function test_a_genuinely_invalid_status_is_always_rejected(): void
+    {
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'banana');
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('PAYMENT_PROVIDER_RESPONSE_INVALID');
+        app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+    }
+
+    public function test_a_genuinely_invalid_status_is_always_rejected_on_reconciliation(): void
+    {
+        $membership = $this->pendingMembership();
+        $this->fakeRequests(providerStatus: 'pending');
+        $payment = app(MembershipPaymentService::class)->start(
+            $membership,
+            'https://example.test/succes',
+            'https://example.test/echec',
+        );
+
+        $this->fakeRequests(providerStatus: 'banana');
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('PAYMENT_PROVIDER_RESPONSE_INVALID');
+        app(MembershipPaymentService::class)->reconcile($payment);
+    }
+
     private function pendingMembership(): ZumraProgramMembership
     {
         $body = str_repeat('Respect, transmission et construction collective. ', 4);
@@ -214,7 +300,8 @@ final class ZumraMembershipPaymentTest extends TestCase
 
     private function providerPayload(string $status): array
     {
-        return ['id' => 'pay-1', 'reference' => 'REF-001', 'amount' => 500, 'status' => $status,
+        return ['id' => 'pay-1', 'reference' => 'REF-001', 'amount' => 500,
+            'status' => $this->providerStatusMissing ? null : $status,
             'environment' => $this->providerEnvironment, 'checkout_url' => 'https://checkout.example/pay/REF-001',
             'completed_at' => $status === 'completed' ? now()->toIso8601String() : null];
     }
