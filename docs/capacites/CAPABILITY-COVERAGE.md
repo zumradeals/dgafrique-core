@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 46 CLOSED · 6 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-045 — file de demandes d'accompagnement, PR #29)
+> **Total : 84/84 auditées — 47 CLOSED · 5 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-046 — dossier d'accompagnement, PR #31)
 
 ---
 
@@ -421,12 +421,12 @@ Implementation PR: #29
 Final SHA: 9f48dc91c4fda8d9737c2dd92a7f0cd9b4372295
 
 ## CAP-046 — Dossier d'accompagnement
-Status: PARTIAL
-Evidence: `ProjectAccompanimentAction` = liste chronologique basique
-Gap: pas de vue dossier enrichie (synthèse, filtres par partenaire/catégorie)
+Status: CLOSED
+Evidence: synthèse par type/source et filtres par type/partenaire sur `/projets/{project}/accompagnement`, calculés depuis `ProjectAccompanimentAction` réellement enregistrées, aucune nouvelle table
+Gap: aucun
 Dependencies: aucune
-Decision: enrichir la vue au-delà de la chronologie brute
-Implementation PR: —
+Decision: enrichissement de vue uniquement — comptes réels, jamais un score, filtres en GET sans état caché
+Implementation PR: #31
 Final SHA: —
 
 ## CAP-047 — Le « satellite » comme changement de nature
