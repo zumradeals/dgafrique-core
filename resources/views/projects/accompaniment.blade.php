@@ -101,6 +101,31 @@
                 </div>
             </x-dg.card>
 
+            @if($accompaniment && $accompaniment->actions->isNotEmpty())
+                <x-dg.card style="margin-bottom:24px">
+                    <x-dg.label>Synthèse</x-dg.label>
+                    <p class="dg-hint" style="margin-top:6px">Des comptes réels, jamais un score ni un classement.</p>
+                    <div style="margin-top:12px;display:grid;gap:16px" class="lg:grid-cols-2">
+                        <div>
+                            <span class="dg-meta">Par type d’appui</span>
+                            <ul style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--dg-text)">
+                                @foreach($typeCounts as $type => $count)
+                                    <li>· {{ $configuration['action_types'][$type] ?? str_replace('_', ' ', $type) }} — {{ $count }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                        <div>
+                            <span class="dg-meta">Par source</span>
+                            <ul style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--dg-text)">
+                                @foreach($sourceCounts as $source => $count)
+                                    <li>· {{ $source === \App\Models\ProjectAccompanimentAction::SOURCE_PARTNER ? 'Partenaire' : 'DG Afrique' }} — {{ $count }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </x-dg.card>
+            @endif
+
             <x-dg.card>
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
@@ -108,12 +133,39 @@
                         <h2 class="dg-display" style="font-size:20px;margin-top:6px">Interventions enregistrées</h2>
                     </div>
                     @if($accompaniment)
-                        <span class="dg-meta">{{ $accompaniment->actions->count() }} action(s)</span>
+                        <span class="dg-meta">{{ $actions->count() }} / {{ $accompaniment->actions->count() }} action(s)</span>
                     @endif
                 </div>
 
+                @if($accompaniment && $accompaniment->actions->isNotEmpty())
+                    <form method="GET" action="{{ route('projects.accompaniment.show', $project) }}" style="margin-top:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end">
+                        <div class="dg-field" style="max-width:220px">
+                            <label for="type">Type d’appui</label>
+                            <select name="type" id="type" class="dg-select">
+                                <option value="">Tous</option>
+                                @foreach($typeCounts->keys() as $type)
+                                    <option value="{{ $type }}" @selected($selectedType === $type)>{{ $configuration['action_types'][$type] ?? str_replace('_', ' ', $type) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="dg-field" style="max-width:220px">
+                            <label for="partenaire">Intervenant / partenaire</label>
+                            <select name="partenaire" id="partenaire" class="dg-select">
+                                <option value="">Tous</option>
+                                @foreach($availablePartners as $partner)
+                                    <option value="{{ $partner }}" @selected($selectedPartner === $partner)>{{ $partner }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <button type="submit" class="dg-btn dg-btn--quiet">Filtrer</button>
+                        @if($selectedType || $selectedPartner)
+                            <a href="{{ route('projects.accompaniment.show', $project) }}" class="dg-btn dg-btn--quiet">Réinitialiser</a>
+                        @endif
+                    </form>
+                @endif
+
                 <div style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
-                    @forelse($accompaniment?->actions ?? [] as $action)
+                    @forelse($actions as $action)
                         <div class="dg-note">
                             <div class="flex flex-wrap items-center justify-between gap-2">
                                 <strong style="color:var(--dg-ink)">{{ $configuration['action_types'][$action->action_type] ?? str_replace('_', ' ', $action->action_type) }}</strong>
@@ -126,9 +178,15 @@
                             @endif
                         </div>
                     @empty
-                        <x-dg.empty title="Aucune intervention enregistrée.">
-                            <span>L’accompagnement peut commencer sans dossier lourd ; la chronologie s’enrichira au fur et à mesure des actions réelles.</span>
-                        </x-dg.empty>
+                        @if($selectedType || $selectedPartner)
+                            <x-dg.empty title="Aucune intervention ne correspond à ce filtre.">
+                                <span>Réinitialisez le filtre pour revoir la chronologie complète.</span>
+                            </x-dg.empty>
+                        @else
+                            <x-dg.empty title="Aucune intervention enregistrée.">
+                                <span>L’accompagnement peut commencer sans dossier lourd ; la chronologie s’enrichira au fur et à mesure des actions réelles.</span>
+                            </x-dg.empty>
+                        @endif
                     @endforelse
                 </div>
             </x-dg.card>

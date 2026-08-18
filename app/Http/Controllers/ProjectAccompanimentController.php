@@ -28,6 +28,18 @@ final class ProjectAccompanimentController
         abort_unless($projects->canDecide($project, $identity->reference), 403);
 
         $project->load(['accompaniment.actions', 'accompaniment.requests']);
+        $allActions = $project->accompaniment?->actions ?? collect();
+
+        // CAP-046 : synthèse honnête (comptes réels), jamais un score — et filtres appliqués à la
+        // même chronologie sous-jacente, sans état caché (paramètres en GET).
+        $typeCounts = $allActions->countBy('action_type');
+        $sourceCounts = $allActions->countBy('delivery_source');
+        $availablePartners = $allActions->pluck('provider_label')->unique()->sort()->values();
+
+        $filteredActions = $allActions
+            ->when($request->filled('type'), fn ($actions) => $actions->where('action_type', $request->query('type')))
+            ->when($request->filled('partenaire'), fn ($actions) => $actions->where('provider_label', $request->query('partenaire')))
+            ->values();
 
         return view('projects.accompaniment', [
             'identity' => $identity,
@@ -35,6 +47,12 @@ final class ProjectAccompanimentController
             'project' => $project,
             'accompaniment' => $project->accompaniment,
             'requests' => $project->accompaniment?->requests->sortByDesc('requested_at')->values() ?? collect(),
+            'actions' => $filteredActions,
+            'typeCounts' => $typeCounts,
+            'sourceCounts' => $sourceCounts,
+            'availablePartners' => $availablePartners,
+            'selectedType' => $request->query('type'),
+            'selectedPartner' => $request->query('partenaire'),
             'configuration' => $configuration->get(),
         ]);
     }
