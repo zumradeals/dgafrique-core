@@ -39,8 +39,8 @@
                 </div>
                 <span style="font-size:13px;color:var(--dg-on-deep-muted)">Le compte DG Afrique est gratuit et distinct de l’adhésion au Programme ZUMRA.</span>
             </div>
-            <figure class="dg-photo lg:!h-[520px]" style="height:300px">
-                <figcaption class="dg-photo__caption">photo — un atelier réel, mains au travail, regard direct, format portrait</figcaption>
+            <figure class="dg-photo lg:!h-[520px]" style="height:300px;padding:0">
+                <img src="{{ asset('images/landing-hero.jpg') }}" alt="Une couturière de DG Afrique à l’atelier, tissu wax en main, entourée de son équipe." style="width:100%;height:100%;object-fit:cover;object-position:center 22%">
             </figure>
         </div>
     </section>
