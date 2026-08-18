@@ -19,7 +19,7 @@
                 <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
-            <form method="POST" action="{{ route('needs.store') }}" style="display:flex;flex-direction:column;gap:20px">
+            <form method="POST" action="{{ route('needs.store') }}" enctype="multipart/form-data" style="display:flex;flex-direction:column;gap:20px">
                 @csrf
 
                 <x-dg.fieldset>
@@ -102,6 +102,11 @@
                             <label for="location">Localisation</label>
                             <input type="text" name="location" id="location" class="dg-input" value="{{ old('location') }}">
                         </div>
+                    </div>
+                    <div class="dg-field">
+                        <label for="image">Image (facultative)</label>
+                        <input type="file" name="image" id="image" class="dg-input" accept="image/png,image/jpeg,image/webp">
+                        <p class="dg-hint">Un seul visuel, 4 Mo maximum. Aucune galerie.</p>
                     </div>
                 </x-dg.fieldset>
 

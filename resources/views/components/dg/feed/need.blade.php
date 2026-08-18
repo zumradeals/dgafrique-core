@@ -4,7 +4,7 @@
     les deux ouvriraient aujourd'hui la même conversation de coordination (CAP-020).
 --}}
 @props(['item'])
-<article class="dg-card" style="display:flex;flex-direction:column;gap:14px">
+<article class="dg-card dg-card--copper" style="display:flex;flex-direction:column;gap:14px">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-2.5">
             <x-dg.badge tone="need">{{ $item['event_label'] }}</x-dg.badge>
@@ -19,6 +19,10 @@
         <a href="{{ $item['action_url'] }}" style="color:inherit">{{ $item['title'] }}</a>
     </h2>
     <p class="dg-body">{{ $item['summary'] }}</p>
+
+    @if($item['image_url'] ?? null)
+        <img src="{{ $item['image_url'] }}" alt="" style="width:100%;max-height:340px;object-fit:cover;border-radius:var(--dg-radius-control)">
+    @endif
 
     @if($item['context'])
         <x-dg.note>{{ $item['context'] }}</x-dg.note>

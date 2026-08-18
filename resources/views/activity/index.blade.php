@@ -45,6 +45,34 @@
                     @endforeach
                 </form>
 
+                <form method="POST" action="{{ route('needs.store') }}" enctype="multipart/form-data" class="dg-composer">
+                    @csrf
+                    <input type="hidden" name="owner_type" value="PERSON">
+                    <input type="hidden" name="collaboration_mode" value="ANY">
+                    <input type="hidden" name="visibility" value="PUBLIC">
+                    <input type="text" name="title" class="dg-composer__title" placeholder="Quel besoin réel voulez-vous exprimer ?" minlength="5" maxlength="180" required>
+                    <textarea name="context" class="dg-composer__context" rows="2" minlength="40" maxlength="3000" required placeholder="Le contexte : pourquoi ce besoin, pour qui, dans quelles conditions… (40 caractères minimum)"></textarea>
+                    <div class="dg-composer__foot">
+                        <select name="category" class="dg-select dg-composer__category" required>
+                            <option value="">Catégorie</option>
+                            @foreach($composerCategories as $code => $label)
+                                <option value="{{ $code }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
+                        <label class="dg-composer__image">
+                            <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
+                        </label>
+                        <button type="submit" class="dg-btn dg-btn--need dg-composer__submit">Publier ce besoin</button>
+                    </div>
+                </form>
+                <a href="{{ route('projects.create') }}" class="dg-composer-project">
+                    <span class="dg-composer-project__mark">+</span>
+                    <span>
+                        <strong>Proposer un projet</strong>
+                        <small>Un vrai dossier — problème, solution, bénéficiaires, premières étapes.</small>
+                    </span>
+                </a>
+
                 @if($feed->isEmpty())
                     <x-dg.deep>
                         <div style="display:flex;flex-direction:column;gap:8px">
@@ -62,23 +90,25 @@
                     </div>
                     <div class="dg-band">Vous ne voyez que ce que votre identité est autorisée à consulter. Un objet privé reste privé, une ZUMRA suspendue n’apparaît pas.</div>
                 @else
-                    @foreach($feed as $item)
-                        @if(($item['card'] ?? null) === 'mission')
-                            <x-dg.feed.mission :item="$item" />
-                        @elseif(($item['card'] ?? null) === 'transmission')
-                            <x-dg.feed.transmission :item="$item" />
-                        @elseif(($item['card'] ?? null) === 'proof')
-                            <x-dg.feed.proof :item="$item" />
-                        @elseif($item['kind'] === 'NEEDS' && $item['event'] === 'NEED_RESOLVED')
-                            <x-dg.feed.resolved :item="$item" />
-                        @elseif($item['kind'] === 'NEEDS')
-                            <x-dg.feed.need :item="$item" />
-                        @elseif($item['kind'] === 'PROJECTS')
-                            <x-dg.feed.project :item="$item" />
-                        @else
-                            <x-dg.feed.zumra :item="$item" />
-                        @endif
-                    @endforeach
+                    <div class="dg-feed" style="display:flex;flex-direction:column;gap:18px">
+                        @foreach($feed as $item)
+                            @if(($item['card'] ?? null) === 'mission')
+                                <x-dg.feed.mission :item="$item" />
+                            @elseif(($item['card'] ?? null) === 'transmission')
+                                <x-dg.feed.transmission :item="$item" />
+                            @elseif(($item['card'] ?? null) === 'proof')
+                                <x-dg.feed.proof :item="$item" />
+                            @elseif($item['kind'] === 'NEEDS' && $item['event'] === 'NEED_RESOLVED')
+                                <x-dg.feed.resolved :item="$item" />
+                            @elseif($item['kind'] === 'NEEDS')
+                                <x-dg.feed.need :item="$item" />
+                            @elseif($item['kind'] === 'PROJECTS')
+                                <x-dg.feed.project :item="$item" />
+                            @else
+                                <x-dg.feed.zumra :item="$item" />
+                            @endif
+                        @endforeach
+                    </div>
 
                     <div>{{ $feed->links('pagination.dg') }}</div>
 

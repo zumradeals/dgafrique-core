@@ -56,6 +56,7 @@ final class NeedService
                 'capability_label' => $data['capability_label'] ?? null,
                 'collaboration_mode' => $data['collaboration_mode'],
                 'location' => $data['location'] ?? null,
+                'image_path' => $data['image_path'] ?? null,
                 'visibility' => in_array($ownerType, [Need::OWNER_PERSON, Need::OWNER_PROJECT], true) && $data['visibility'] === Need::VISIBILITY_GROUP ? Need::VISIBILITY_PRIVATE : $data['visibility'],
                 'status' => $status,
                 'decided_by_core_reference' => $status === Need::STATUS_OPEN ? $actor : null,

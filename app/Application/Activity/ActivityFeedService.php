@@ -28,6 +28,7 @@ use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 final class ActivityFeedService
@@ -182,6 +183,7 @@ final class ActivityFeedService
                 'summary' => Str::limit(trim($need->context), 180),
                 'context' => $need->capability_label ? 'Capacité recherchée : '.$need->capability_label : null,
                 'location' => $need->location,
+                'image_url' => $need->image_path ? Storage::disk('public')->url($need->image_path) : null,
                 'action_label' => 'Voir le besoin',
                 'action_url' => route('needs.show', $need),
                 'comment_url' => route('comments.need', $need),
@@ -247,6 +249,7 @@ final class ActivityFeedService
                 'summary' => Str::limit(trim($project->summary), 180),
                 'context' => $context,
                 'maturity' => $project->maturity,
+                'image_url' => $project->image_path ? Storage::disk('public')->url($project->image_path) : null,
                 'action_label' => 'Voir le projet',
                 'action_url' => route('projects.show', $project),
                 'comment_url' => route('comments.project', $project),

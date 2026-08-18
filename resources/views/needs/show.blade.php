@@ -25,6 +25,10 @@
 
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
                 <div style="display:flex;flex-direction:column;gap:16px">
+                    @if($need->image_path)
+                        <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($need->image_path) }}" alt=""
+                             style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--dg-radius-card);border:1px solid var(--dg-line)">
+                    @endif
                     <x-dg.card>
                         <x-dg.label>Contexte</x-dg.label>
                         <p class="dg-body" style="margin-top:12px;white-space:pre-line">{{ $need->context }}</p>

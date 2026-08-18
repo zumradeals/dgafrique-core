@@ -31,7 +31,7 @@ final class Need extends Model
     protected $fillable = [
         'public_reference', 'owner_type', 'owner_reference', 'author_core_reference',
         'title', 'context', 'category', 'capability_label', 'collaboration_mode',
-        'location', 'visibility', 'status', 'decided_by_core_reference',
+        'location', 'image_path', 'visibility', 'status', 'decided_by_core_reference',
         'resolution_note', 'published_at', 'resolved_at', 'archived_at',
     ];
 

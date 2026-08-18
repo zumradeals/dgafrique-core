@@ -27,10 +27,10 @@
                 </div>
             </div>
 
-            <div class="dg-band" style="margin-bottom:24px">
-                <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Le projet reste autonome.</strong>
-                Activer cet accompagnement n’accorde à DG Afrique ni propriété, ni contrôle, ni pouvoir de décision sur le projet. Aucun financement n’est créé par cette page.
-            </div>
+            <details class="dg-disclosure" style="margin-bottom:24px">
+                <summary><span class="dg-disclosure__mark">i</span> Le projet reste autonome.</summary>
+                <div class="dg-disclosure__body">Activer cet accompagnement n’accorde à DG Afrique ni propriété, ni contrôle, ni pouvoir de décision sur le projet. Aucun financement n’est créé par cette page.</div>
+            </details>
 
             @if(! $accompaniment || $accompaniment->status === \App\Models\ProjectAccompaniment::STATUS_ENDED)
                 <x-dg.card style="margin-bottom:24px">

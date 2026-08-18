@@ -3,7 +3,7 @@
     global unique (fiche CARNET DE PREUVES §15).
 --}}
 @props(['item'])
-<article class="dg-card" style="display:flex;flex-direction:column;gap:14px">
+<article class="dg-card dg-card--forest" style="display:flex;flex-direction:column;gap:14px">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-2.5">
             <x-dg.badge :tone="$item['badge_tone']">{{ $item['event_label'] }}</x-dg.badge>
