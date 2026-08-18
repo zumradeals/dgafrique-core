@@ -151,7 +151,7 @@ final class DesignInvariantsPhase2Test extends TestCase
 
         $this->get('/zumra')
             ->assertOk()
-            ->assertSee('Réservé aux membres du Programme ZUMRA dont l’adhésion est active.', false);
+            ->assertSee('Réservé aux membres dont l’adhésion au Programme ZUMRA est active.', false);
     }
 
     public function test_zumra_group_show_hides_leader_only_sections_from_a_non_leader(): void
