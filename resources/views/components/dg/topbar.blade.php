@@ -56,6 +56,7 @@
                 @endif
                 <a href="{{ route('member.profile.edit') }}">Mon profil</a>
                 <a href="{{ route('messages.index') }}">Messages</a>
+                <a href="{{ route('notifications.index') }}">Notifications</a>
                 @if($isAdministrator)
                     <a href="{{ route('administration.profile.edit') }}">Administration</a>
                 @endif
