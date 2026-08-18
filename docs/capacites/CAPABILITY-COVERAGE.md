@@ -409,7 +409,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: panneau strictement consultatif — `ProjectMaturityService::change()` reste l'unique chemin d'écriture sur `Project.maturity`, aucun signal ne déclenche jamais une transition automatique
 Implementation PR: #27
-Final SHA: —
+Final SHA: 0e6958ddb167c446c80f9b47776b812d2a6f53ed
 
 ## CAP-045 — Accompagnement
 Status: PARTIAL
