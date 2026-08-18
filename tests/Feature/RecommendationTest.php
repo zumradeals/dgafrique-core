@@ -65,6 +65,34 @@ final class RecommendationTest extends TestCase
             ->assertDontSee('Même ville seulement');
     }
 
+    public function test_availability_alone_never_creates_a_recommendation(): void
+    {
+        $viewer = $this->profile('IDN-VIEWER', null, 'Visiteur', false, true, 'Abidjan', 'HYBRIDE');
+        $candidate = $this->profile('IDN-OTHER', '66666666-6666-4666-8666-666666666666', 'Seulement disponible', true, true, 'Abidjan', 'HYBRIDE');
+        $candidate->update(['availability_status' => PersonProfile::AVAILABILITY_OPEN]);
+        $this->statement($viewer, 'Couture', CapabilityStatement::KIND_LEARNING, false);
+        $this->statement($candidate, 'Mécanique', CapabilityStatement::KIND_TRANSMISSION, true);
+        $this->signIn('IDN-VIEWER');
+
+        $this->get('/recommandations')->assertOk()
+            ->assertSee('Aucune recommandation suffisamment claire')
+            ->assertDontSee('Seulement disponible');
+    }
+
+    public function test_declared_availability_adds_an_explainable_reason_to_an_already_qualified_match(): void
+    {
+        $viewer = $this->profile('IDN-VIEWER', null, 'Visiteur', false, true);
+        $candidate = $this->profile('IDN-TRAINER', '77777777-7777-4777-8777-777777777777', 'Disponible Couture', true, true);
+        $candidate->update(['availability_status' => PersonProfile::AVAILABILITY_OPEN]);
+        $this->statement($viewer, 'Couture', CapabilityStatement::KIND_LEARNING, false);
+        $this->statement($candidate, 'Couture', CapabilityStatement::KIND_TRANSMISSION, true);
+        $this->signIn('IDN-VIEWER');
+
+        $this->get('/recommandations')->assertOk()
+            ->assertSee('Disponible Couture')
+            ->assertSee('se déclare disponible pour de nouvelles sollicitations');
+    }
+
     public function test_hiding_is_identity_scoped_and_restoring_reopens_the_suggestion(): void
     {
         $first = $this->profile('IDN-FIRST', null, 'Premier', false, true);

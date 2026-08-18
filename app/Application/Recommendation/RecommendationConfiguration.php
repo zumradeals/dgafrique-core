@@ -38,6 +38,7 @@ final class RecommendationConfiguration
             'shared_domain' => true,
             'location_context' => true,
             'participation_context' => true,
+            'availability_declared' => true,
         ];
     }
 }

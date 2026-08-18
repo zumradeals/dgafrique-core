@@ -14,7 +14,7 @@
             'learning' => ['learning_goals_text'],
             'experience' => ['experience_highlights_text', 'experience_proofs_text'],
             'needs' => ['declared_needs_text', 'interest_domains_text', 'intentions_text'],
-            'collaboration' => ['participation_mode', 'collaboration_preferences_text', 'orientation_consent', 'discovery_display_name', 'discovery_bio', 'discovery_consent'],
+            'collaboration' => ['participation_mode', 'collaboration_preferences_text', 'orientation_consent', 'discovery_display_name', 'discovery_bio', 'discovery_consent', 'availability_status', 'availability_note'],
         ];
         $initialStep = 0;
         foreach ($sections->keys()->values() as $stepIndex => $sectionKey) {
@@ -161,6 +161,20 @@
                                                     <option value="{{ $mode['value'] }}" @selected(old('participation_mode', $profile?->participation_mode) === $mode['value'])>{{ $mode['label'] }}</option>
                                                 @endforeach
                                             </select>
+                                        </div>
+                                        <div class="dg-field">
+                                            <label for="availability_status">Votre disponibilité</label>
+                                            <select class="dg-select" id="availability_status" name="availability_status">
+                                                <option value="">Non précisée</option>
+                                                @foreach(\App\Models\PersonProfile::AVAILABILITY_LABELS as $value => $label)
+                                                    <option value="{{ $value }}" @selected(old('availability_status', $profile?->availability_status) === $value)>{{ $label }}</option>
+                                                @endforeach
+                                            </select>
+                                            <p class="dg-hint">Une déclaration volontaire, jamais un calendrier ni une obligation — révocable à tout moment.</p>
+                                        </div>
+                                        <div class="dg-field">
+                                            <label for="availability_note">Précision sur votre disponibilité — facultatif</label>
+                                            <input class="dg-input" id="availability_note" name="availability_note" maxlength="300" value="{{ old('availability_note', $profile?->availability_note) }}" placeholder="Ex. disponible le week-end uniquement">
                                         </div>
                                         <div class="dg-field">
                                             <label for="collaboration_preferences_text">{{ $profileConfiguration['field_labels']['collaboration_preferences'] }}</label>

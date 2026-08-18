@@ -9,6 +9,17 @@ use Illuminate\Database\Eloquent\Model;
 
 final class PersonProfile extends Model
 {
+    // CAP-025 — trois états en langage humain, jamais un calendrier de créneaux (fiche §5).
+    public const AVAILABILITY_OPEN = 'OPEN';
+    public const AVAILABILITY_LIMITED = 'LIMITED';
+    public const AVAILABILITY_PAUSED = 'PAUSED';
+
+    public const AVAILABILITY_LABELS = [
+        self::AVAILABILITY_OPEN => 'Disponible pour de nouvelles sollicitations',
+        self::AVAILABILITY_LIMITED => 'Disponibilité réduite',
+        self::AVAILABILITY_PAUSED => 'En pause pour le moment',
+    ];
+
     protected $table = 'dg_person_profiles';
     protected $primaryKey = 'core_identity_reference';
     public $incrementing = false;
@@ -23,7 +34,8 @@ final class PersonProfile extends Model
         'collaboration_preferences', 'orientation_consent',
         'orientation_consented_at', 'discovery_reference',
         'discovery_display_name', 'discovery_bio', 'discovery_consent',
-        'discovery_consented_at',
+        'discovery_consented_at', 'availability_status',
+        'availability_note', 'availability_updated_at',
     ];
 
     protected function casts(): array
@@ -43,6 +55,7 @@ final class PersonProfile extends Model
             'orientation_consented_at' => 'immutable_datetime',
             'discovery_consent' => 'boolean',
             'discovery_consented_at' => 'immutable_datetime',
+            'availability_updated_at' => 'immutable_datetime',
         ];
     }
 
