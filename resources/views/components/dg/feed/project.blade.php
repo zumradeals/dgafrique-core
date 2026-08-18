@@ -4,7 +4,7 @@
     qui ne gère pas déjà le projet — seule la conversation de gestion (canDecide) existe (CAP-020).
 --}}
 @props(['item'])
-<article class="dg-card" style="display:flex;flex-direction:column;gap:14px">
+<article class="dg-card dg-card--night" style="display:flex;flex-direction:column;gap:14px">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <x-dg.badge tone="project">{{ $item['event_label'] }}</x-dg.badge>
         <span class="dg-meta" style="color:var(--dg-faint)">{{ $item['occurred_at']->locale('fr')->diffForHumans() }}</span>
@@ -14,6 +14,10 @@
         <a href="{{ $item['action_url'] }}" style="color:inherit">{{ $item['title'] }}</a>
     </h2>
     <p class="dg-body">{{ $item['summary'] }}</p>
+
+    @if($item['image_url'] ?? null)
+        <img src="{{ $item['image_url'] }}" alt="" style="width:100%;max-height:340px;object-fit:cover;border-radius:var(--dg-radius-control)">
+    @endif
 
     @if($item['context'])
         <x-dg.note>{{ $item['context'] }}</x-dg.note>

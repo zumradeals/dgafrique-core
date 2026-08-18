@@ -129,7 +129,8 @@ Evidence: `app/Models/Need.php`, `app/Application/Needs/NeedService.php`, `/beso
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative + composeur
+direct dans le Fil) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
 Final SHA: —
 
 ## CAP-014 — Projet
@@ -138,7 +139,8 @@ Evidence: `app/Models/Project.php`, `app/Application/Projects/ProjectService.php
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative) — voir
+`docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
 Final SHA: —
 
 ## CAP-015 — Mise en relation projet ↔ compétences
@@ -183,7 +185,9 @@ Evidence: `app/Application/Activity/ActivityFeedService.php`, `/activite`
 Gap: aucun
 Dependencies: aucune
 Decision: corriger le libellé « [PLUS TARD] » dans `CAPABILITY-INDEX.md`
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur au workflow PR-par-module ; extension additive (composeur de publication
+directe, image facultative sur les cartes, allègement visuel des mentions doctrinales via un motif de
+divulgation `<details>`) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
 Final SHA: —
 
 ## CAP-020 — Messagerie

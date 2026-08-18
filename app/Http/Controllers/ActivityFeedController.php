@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
+use App\Application\Needs\NeedConfiguration;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Domain\Identity\CoreIdentity;
@@ -21,6 +22,7 @@ final class ActivityFeedController
         ActivityFeedService $activity,
         PersonRecommendationEngine $recommendationEngine,
         RecommendationConfiguration $recommendationConfiguration,
+        NeedConfiguration $needConfiguration,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -63,6 +65,7 @@ final class ActivityFeedController
             'filters' => ActivityFeedService::FILTERS,
             'myGroups' => $myGroups,
             'recommendedPeople' => $recommendedPeople,
+            'composerCategories' => $needConfiguration->get()['categories'],
         ]);
     }
 }

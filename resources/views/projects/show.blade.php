@@ -28,6 +28,10 @@
             </div>
 
             <div style="display:flex;flex-direction:column;gap:16px">
+                @if($project->image_path)
+                    <img src="{{ Illuminate\Support\Facades\Storage::disk('public')->url($project->image_path) }}" alt=""
+                         style="width:100%;max-height:420px;object-fit:cover;border-radius:var(--dg-radius-card);border:1px solid var(--dg-line)">
+                @endif
                 <x-dg.card>
                     <div style="display:grid;gap:16px" class="lg:grid-cols-3">
                         <div>
@@ -243,10 +247,10 @@
                     @endif
                 </x-dg.card>
 
-                <div class="dg-band">
-                    <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Aucun financement ouvert</strong>
-                    Cette fiche organise le projet ; elle ne constitue ni une collecte, ni une promesse d’accompagnement.
-                </div>
+                <details class="dg-disclosure">
+                    <summary><span class="dg-disclosure__mark">i</span> Aucun financement n’est ouvert ici.</summary>
+                    <div class="dg-disclosure__body">Cette fiche organise le projet ; elle ne constitue ni une collecte, ni une promesse d’accompagnement. Le projet reste la propriété de son porteur et son adhésion à un dispositif n’est jamais automatique.</div>
+                </details>
 
                 <x-dg.card>
                     <x-dg.label>Contributions et circulation utiles</x-dg.label>

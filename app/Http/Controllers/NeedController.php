@@ -16,6 +16,7 @@ use App\Models\ZumraGroupMembership;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -79,7 +80,11 @@ final class NeedController
             'collaboration_mode' => ['required', Rule::in(['LOCAL', 'REMOTE', 'HYBRID', 'ANY'])],
             'location' => ['nullable', 'string', 'max:160'],
             'visibility' => ['required', Rule::in([Need::VISIBILITY_PRIVATE, Need::VISIBILITY_GROUP, Need::VISIBILITY_PROGRAM, Need::VISIBILITY_PUBLIC])],
+            'image' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
         ]);
+        if ($request->hasFile('image')) {
+            $data['image_path'] = Storage::disk('public')->putFile('needs', $request->file('image'));
+        }
         $need = $service->create($identity->reference, $data, $settings);
 
         return redirect()->route('needs.show', $need)->with('status', $need->status === Need::STATUS_PROPOSED ? 'Le besoin est proposé aux responsables de la ZUMRA. Il n’est pas encore publié officiellement.' : 'Votre besoin est publié selon la visibilité choisie.');

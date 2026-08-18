@@ -1,5 +1,5 @@
 @props(['item'])
-<article class="dg-card" style="display:flex;flex-direction:column;gap:14px">
+<article class="dg-card dg-card--forest" style="display:flex;flex-direction:column;gap:14px">
     <div class="flex flex-wrap items-center justify-between gap-4">
         <x-dg.badge tone="action">{{ $item['event_label'] }}</x-dg.badge>
         <span class="dg-meta" style="color:var(--dg-faint)">{{ $item['occurred_at']->locale('fr')->diffForHumans() }}</span>
