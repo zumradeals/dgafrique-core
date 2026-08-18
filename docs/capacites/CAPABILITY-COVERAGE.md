@@ -427,7 +427,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: enrichissement de vue uniquement — comptes réels, jamais un score, filtres en GET sans état caché
 Implementation PR: #31
-Final SHA: —
+Final SHA: 5106974204115f473283e217aa3c4d5288d15f92
 
 ## CAP-047 — Le « satellite » comme changement de nature
 Status: NOT_IMPLEMENTED
