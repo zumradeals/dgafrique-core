@@ -10,7 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 38 CLOSED · 11 PARTIAL · 16 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> **Total : 84/84 auditées — 39 CLOSED · 11 PARTIAL · 15 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-025, PR #17, SHA `4e7df340881595800f94b1dcf8072ed94d6433ab`)
 
 ---
 
@@ -231,13 +232,13 @@ Implementation PR: antérieur au workflow PR-par-module
 Final SHA: —
 
 ## CAP-025 — Disponibilité
-Status: NOT_IMPLEMENTED
-Evidence: seul `PersonProfile.participation_mode` existe (PHYSICAL/DIGITAL/HYBRID) ; `MissionBlocker::TYPE_PERSON_UNAVAILABLE` n'est qu'un blocage réactif, jamais une déclaration
-Gap: aucune primitive de disponibilité (créneaux, charge, statut « je peux agir maintenant ») n'existe
+Status: CLOSED
+Evidence: `dg_person_profiles.availability_status/note/updated_at`, formulaire de profil (section collaboration), fiche personne découvrable, `PersonRecommendationEngine` (raison supplémentaire) — fiche `docs/capacites/specs/CAP-025-disponibilite.md`
+Gap: intégration aux flux d'invitation Mission/Transmission non faite — documentée hors périmètre v1 (POST-BETA), non bloquante pour le contrat CAP-025 lui-même
 Dependencies: aucune
-Decision: **premier CAP traité** — primitive légère consommée par Missions/Transmission/matching, jamais un calendrier générique
-Implementation PR: en cours
-Final SHA: —
+Decision: aucune action requise pour la v1
+Implementation PR: #17
+Final SHA: 4e7df340881595800f94b1dcf8072ed94d6433ab
 
 ## CAP-026 — Intention
 Status: CLOSED
