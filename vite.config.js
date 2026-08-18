@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
+            input: ['resources/css/app.css', 'resources/css/zumra-hub.css', 'resources/js/app.js'],
             refresh: true,
             fonts: [
                 // Fontsource ships the font files as npm packages: no CDN fetch at build
