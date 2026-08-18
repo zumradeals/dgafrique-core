@@ -7,6 +7,9 @@
     if (request()->routeIs('zumra.index')) {
         $pageStyles[] = 'resources/css/zumra-hub.css';
     }
+    if (request()->routeIs('member.space')) {
+        $pageStyles[] = 'resources/css/member-space-v2.css';
+    }
     $pageStyles = array_values(array_unique($pageStyles));
 @endphp
 <!doctype html>
