@@ -11,7 +11,7 @@ final class FederationContinuationTest extends TestCase
 {
     public function test_unauthenticated_member_returns_to_login_with_local_federation_destination(): void
     {
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertRedirect('/connexion?next=%2Ffederation%2Fcontinue%2Fgamadrive');
     }
 
@@ -20,7 +20,7 @@ final class FederationContinuationTest extends TestCase
         $this->fakeFederationFlow();
         $this->signIn();
 
-        $response = $this->get('/federation/continue/gamadrive');
+        $response = $this->post('/federation/continue/gamadrive');
 
         $response->assertOk()
             ->assertSee('Ouverture de GamaDrive')
@@ -51,7 +51,7 @@ final class FederationContinuationTest extends TestCase
         ]);
         $this->signIn();
 
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertStatus(502)
             ->assertSee('Aucun accès n’a été transmis')
             ->assertDontSee('FED-WRONG-AUDIENCE');
@@ -64,7 +64,7 @@ final class FederationContinuationTest extends TestCase
         ], 422);
         $this->signIn();
 
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertForbidden()
             ->assertSee('Votre compte ne peut pas ouvrir GamaDrive');
     }
@@ -74,7 +74,7 @@ final class FederationContinuationTest extends TestCase
         $this->fakeFederationFlow([], 503);
         $this->signIn();
 
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertStatus(503)
             ->assertSee('Votre connexion DG Afrique reste active')
             ->assertSessionHas('dg_core_member.reference', 'AUT-GAMAD-001');
@@ -85,7 +85,7 @@ final class FederationContinuationTest extends TestCase
         $this->fakeFederationFlow([], 401);
         $this->signIn();
 
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertRedirect('/connexion?next=%2Ffederation%2Fcontinue%2Fgamadrive')
             ->assertSessionMissing('dg_core_member');
     }
@@ -96,7 +96,7 @@ final class FederationContinuationTest extends TestCase
         $this->signIn();
         config(['federation.gamadrive.callback_url' => 'http://gamadrive.test/federation/callback']);
 
-        $this->get('/federation/continue/gamadrive')
+        $this->post('/federation/continue/gamadrive')
             ->assertStatus(503)
             ->assertSee('temporairement indisponible');
 
@@ -107,7 +107,7 @@ final class FederationContinuationTest extends TestCase
 
     public function test_unknown_satellite_has_no_compatibility_route(): void
     {
-        $this->get('/federation/continue/wasplex')->assertNotFound();
+        $this->post('/federation/continue/wasplex')->assertNotFound();
     }
 
     private function signIn(): void
