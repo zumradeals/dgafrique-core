@@ -1,15 +1,17 @@
 {{--
-    Navigation desktop/tablette : six entrées qui nomment la matière de l'action, jamais des
-    modules. Les satellites (GamaDrive…) vivent dans « Mes outils », jamais au premier niveau.
-    « Fil » est l'entrée par défaut d'un membre connecté.
+    Navigation desktop/tablette DG Afrique V2.
+    Le pétrole structure le réseau ; l’orange solaire signale le passage à l’action.
+    Les satellites restent dans « Mes outils », jamais au premier niveau.
 --}}
 @props(['current' => null, 'identity' => null, 'isAdministrator' => false])
-{{-- $satellites est injecté par un composeur de vue (FederationServiceProvider, CAP-049),
-     jamais déclaré ici comme prop pour ne pas l'écraser avec une valeur par défaut. --}}
-<header class="dg-topbar" style="border-radius:0">
-    <a href="{{ route('activity.index') }}" class="flex items-center gap-2.5" style="color:inherit">
-        <span class="dg-topbar__mark">D</span>
-        <strong style="font-size:16px;letter-spacing:-.01em">DG Afrique</strong>
+{{-- $satellites est injecté par FederationServiceProvider (CAP-049). --}}
+<header class="dg-topbar">
+    <a href="{{ route('activity.index') }}" class="dg-brand" aria-label="DG Afrique — Fil">
+        <span class="dg-brandmark" aria-hidden="true">
+            <span class="dg-brandmark__d">D</span>
+            <span class="dg-brandmark__g">G</span>
+        </span>
+        <span class="dg-brand__word">DG Afrique</span>
     </a>
 
     <nav aria-label="Navigation principale">
@@ -21,16 +23,23 @@
         <a href="{{ route('zumra.index') }}" @if($current === 'zumra') aria-current="page" @endif>ZUMRA</a>
     </nav>
 
-    <div class="ml-auto flex items-center gap-3.5">
+    <div class="ml-auto flex items-center gap-2.5">
         <div class="dg-topbar__search hidden xl:flex" aria-disabled="true"
              title="La recherche publique sera activée avec l’index de données réelles.">
             <span aria-hidden="true">⌕</span>
-            <span>Rechercher une capacité, un besoin…</span>
+            <span>Rechercher dans le réseau…</span>
         </div>
+
+        <a href="{{ route('notifications.index') }}" class="dg-topbar__notify" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M7.5 9.5a4.5 4.5 0 0 1 9 0c0 5 2 5.5 2 6.5h-13c0-1 2-1.5 2-6.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+                <path d="M10 19h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+        </a>
 
         <details class="dg-tools-menu">
             <summary class="dg-topbar__tools">
-                <span aria-hidden="true">⚙</span>
+                <span aria-hidden="true">⌘</span>
                 <span class="hidden sm:inline">Mes outils</span>
             </summary>
             <div>
@@ -51,9 +60,14 @@
             </div>
         </details>
 
+        <button type="button" class="dg-topbar__agir" data-dg-agir-open aria-haspopup="dialog" aria-controls="dg-agir-sheet">
+            <span aria-hidden="true">＋</span>
+            AGIR
+        </button>
+
         <details class="dg-account-menu">
             <summary aria-label="Mon compte">
-                <span class="dg-avatar dg-avatar--sm dg-avatar--saffron" style="border-radius:12px">{{ $identity ? mb_strtoupper(mb_substr($identity->label, 0, 1)) : '?' }}</span>
+                <span class="dg-avatar dg-avatar--sm dg-avatar--saffron">{{ $identity ? mb_strtoupper(mb_substr($identity->label, 0, 1)) : '?' }}</span>
             </summary>
             <div>
                 @if($identity)
