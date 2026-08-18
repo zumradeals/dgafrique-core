@@ -346,7 +346,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: extension additive de la fiche existante, aucune nouvelle table
 Implementation PR: #21
-Final SHA: —
+Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-038 — Tableau de bord collectif
 Status: CLOSED
@@ -355,7 +355,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: aucun siège vacant en priorité (aucune action réelle n'existe pour en proposer un)
 Implementation PR: #21
-Final SHA: —
+Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-039 — La ZUMRA comme capacité d'émergence
 Status: CLOSED
