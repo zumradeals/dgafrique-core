@@ -8,6 +8,7 @@ use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ProjectAccompaniment;
 use App\Models\ProjectAccompanimentAction;
+use App\Models\ProjectAccompanimentRequest;
 use App\Models\ProjectEvent;
 use Illuminate\Support\Facades\DB;
 
@@ -122,6 +123,75 @@ final class ProjectAccompanimentService
             ]);
 
             return $action;
+        });
+    }
+
+    public function request(Project $project, string $actor, string $subject, string $description): ProjectAccompanimentRequest
+    {
+        abort_unless($this->projects->canDecide($project, $actor), 403);
+
+        $accompaniment = ProjectAccompaniment::query()
+            ->where('project_id', $project->id)
+            ->where('status', ProjectAccompaniment::STATUS_ACTIVE)
+            ->first();
+
+        abort_unless($accompaniment, 409, 'Un accompagnement doit être actif avant de transmettre une demande.');
+
+        return DB::transaction(function () use ($project, $actor, $accompaniment, $subject, $description): ProjectAccompanimentRequest {
+            $request = ProjectAccompanimentRequest::query()->create([
+                'project_accompaniment_id' => $accompaniment->id,
+                'requested_by_core_reference' => $actor,
+                'subject' => $subject,
+                'description' => $description,
+                'status' => ProjectAccompanimentRequest::STATUS_PENDING,
+                'requested_at' => now(),
+            ]);
+
+            $this->event($project, 'ACCOMPANIMENT_REQUEST_SUBMITTED', $actor, [
+                'accompaniment_id' => $accompaniment->id,
+                'request_id' => $request->id,
+            ]);
+
+            return $request;
+        });
+    }
+
+    public function acknowledgeRequest(ProjectAccompanimentRequest $accompanimentRequest, string $actor): void
+    {
+        abort_unless(PortalAdministrator::query()->where('core_identity_reference', $actor)->exists(), 403);
+        abort_unless($accompanimentRequest->status === ProjectAccompanimentRequest::STATUS_PENDING, 409, 'Cette demande n’est plus en attente.');
+
+        DB::transaction(function () use ($accompanimentRequest, $actor): void {
+            $accompanimentRequest->update([
+                'status' => ProjectAccompanimentRequest::STATUS_ACKNOWLEDGED,
+                'acknowledged_by_core_reference' => $actor,
+                'acknowledged_at' => now(),
+            ]);
+
+            $this->event($accompanimentRequest->accompaniment->project, 'ACCOMPANIMENT_REQUEST_ACKNOWLEDGED', $actor, [
+                'accompaniment_id' => $accompanimentRequest->project_accompaniment_id,
+                'request_id' => $accompanimentRequest->id,
+            ]);
+        });
+    }
+
+    public function closeRequest(ProjectAccompanimentRequest $accompanimentRequest, string $actor, ?string $resolutionNote): void
+    {
+        abort_unless(PortalAdministrator::query()->where('core_identity_reference', $actor)->exists(), 403);
+        abort_if($accompanimentRequest->status === ProjectAccompanimentRequest::STATUS_CLOSED, 409, 'Cette demande est déjà close.');
+
+        DB::transaction(function () use ($accompanimentRequest, $actor, $resolutionNote): void {
+            $accompanimentRequest->update([
+                'status' => ProjectAccompanimentRequest::STATUS_CLOSED,
+                'closed_by_core_reference' => $actor,
+                'closed_at' => now(),
+                'resolution_note' => $resolutionNote,
+            ]);
+
+            $this->event($accompanimentRequest->accompaniment->project, 'ACCOMPANIMENT_REQUEST_CLOSED', $actor, [
+                'accompaniment_id' => $accompanimentRequest->project_accompaniment_id,
+                'request_id' => $accompanimentRequest->id,
+            ]);
         });
     }
 

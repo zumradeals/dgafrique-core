@@ -53,6 +53,45 @@
                 </x-dg.deep>
             @endif
 
+            @if($accompaniment && $accompaniment->status === \App\Models\ProjectAccompaniment::STATUS_ACTIVE)
+                <x-dg.card style="margin-bottom:24px">
+                    <x-dg.label>Transmettre une demande</x-dg.label>
+                    <p class="dg-hint" style="margin-top:6px">Chaque demande entre dans une file traitée par DG Afrique dans l’ordre d’arrivée, jamais selon un score.</p>
+                    <form method="POST" action="{{ route('projects.accompaniment.requests.store', $project) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                        @csrf
+                        <div class="dg-field">
+                            <label for="subject">Objet</label>
+                            <input type="text" id="subject" name="subject" class="dg-input" minlength="5" maxlength="180" required>
+                        </div>
+                        <div class="dg-field">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" class="dg-textarea" rows="3" minlength="20" maxlength="2400" required></textarea>
+                        </div>
+                        <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Transmettre la demande</button>
+                    </form>
+                </x-dg.card>
+
+                <x-dg.card style="margin-bottom:24px">
+                    <x-dg.label>Vos demandes</x-dg.label>
+                    <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                        @forelse($requests as $accompanimentRequest)
+                            <div class="dg-note">
+                                <div class="flex flex-wrap items-center justify-between gap-2">
+                                    <strong style="color:var(--dg-ink)">{{ $accompanimentRequest->subject }}</strong>
+                                    <x-dg.label>{{ ['PENDING' => 'En attente', 'ACKNOWLEDGED' => 'Prise en charge', 'CLOSED' => 'Close'][$accompanimentRequest->status] ?? $accompanimentRequest->status }}</x-dg.label>
+                                </div>
+                                <p style="margin:8px 0 0">{{ $accompanimentRequest->description }}</p>
+                                @if($accompanimentRequest->resolution_note)
+                                    <p style="margin:8px 0 0;font-weight:600;color:var(--dg-forest-action)">Réponse : {{ $accompanimentRequest->resolution_note }}</p>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="dg-meta">Aucune demande transmise pour l’instant.</p>
+                        @endforelse
+                    </div>
+                </x-dg.card>
+            @endif
+
             <x-dg.card style="margin-bottom:24px">
                 <x-dg.label>Appuis disponibles</x-dg.label>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">

@@ -11,6 +11,7 @@ use App\Models\PortalSetting;
 use App\Models\Project;
 use App\Models\ProjectAccompaniment;
 use App\Models\ProjectAccompanimentAction;
+use App\Models\ProjectAccompanimentRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -27,9 +28,18 @@ final class ProjectAccompanimentController
             ->limit(100)
             ->get();
 
+        // CAP-045 : file déterministe, triée par date de demande croissante — jamais un score caché.
+        $pendingRequests = ProjectAccompanimentRequest::query()
+            ->where('status', ProjectAccompanimentRequest::STATUS_PENDING)
+            ->with(['accompaniment.project'])
+            ->oldest('requested_at')
+            ->limit(100)
+            ->get();
+
         return view('administration.project-accompaniment', [
             'configuration' => $configuration->get(),
             'activeAccompaniments' => $active,
+            'pendingRequests' => $pendingRequests,
         ]);
     }
 
@@ -95,5 +105,30 @@ final class ProjectAccompanimentController
         $service->recordAction($project, $identity->reference, $data, $settings);
 
         return back()->with('status', 'Intervention enregistrée dans la chronologie du projet.');
+    }
+
+    public function acknowledgeRequest(
+        Request $request,
+        ProjectAccompanimentRequest $accompanimentRequest,
+        ProjectAccompanimentService $service
+    ): RedirectResponse {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        $service->acknowledgeRequest($accompanimentRequest, $identity->reference);
+
+        return back()->with('status', 'Demande prise en charge.');
+    }
+
+    public function closeRequest(
+        Request $request,
+        ProjectAccompanimentRequest $accompanimentRequest,
+        ProjectAccompanimentService $service
+    ): RedirectResponse {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        $data = $request->validate(['resolution_note' => ['nullable', 'string', 'max:1500']]);
+        $service->closeRequest($accompanimentRequest, $identity->reference, $data['resolution_note'] ?? null);
+
+        return back()->with('status', 'Demande close.');
     }
 }
