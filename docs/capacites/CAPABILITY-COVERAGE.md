@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 39 CLOSED · 11 PARTIAL · 15 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-025, PR #17, SHA `4e7df340881595800f94b1dcf8072ed94d6433ab`)
+> **Total : 84/84 auditées — 42 CLOSED · 8 PARTIAL · 15 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-037/038 — micro-espace de travail ZUMRA et priorité collective, PR #21)
 
 ---
 
@@ -259,12 +259,12 @@ Implementation PR: antérieur au workflow PR-par-module
 Final SHA: —
 
 ## CAP-028 — Home personnalisée
-Status: PARTIAL
-Evidence: `/espace` agrège recommandations/groupes/activité ; `/` (landing) reste statique
-Gap: pas de « home » distincte du retour connecté — le rôle est assumé par `/espace` (CAP-027)
-Dependencies: CAP-027 (déjà CLOSED)
-Decision: trancher si CAP-028 = CAP-027 dans le référentiel, ou construire une home distincte — non prioritaire
-Implementation PR: —
+Status: CLOSED
+Evidence: `/espace` (`MemberSpaceController`) est confirmé comme la destination réelle du retour connecté — `routes/web.php` redirige `/connexion` vers `/espace` (`MemberSessionController::store`, vérifié par tous les tests de connexion, ex. `ZumraMembershipPaymentTest::signIn()` → `assertRedirect('/espace')`). Il agrège déjà recommandations, groupes ZUMRA, aperçu d'activité et partages reçus.
+Gap: aucun — décision de consolidation validée : CAP-028 = CAP-027, pas un second écran distinct
+Dependencies: CAP-027 (CLOSED)
+Decision: consolidé avec CAP-027 dans le référentiel ; aucune construction séparée
+Implementation PR: — (consolidation documentaire uniquement)
 Final SHA: —
 
 ## CAP-029 — Découverte
@@ -340,21 +340,21 @@ Implementation PR: #14
 Final SHA: 7571089c6d71309d5e7272bb6faf045b4bb60d60
 
 ## CAP-037 — La ZUMRA comme micro-espace de travail
-Status: PARTIAL
-Evidence: `ZumraGroupController::show` (gouvernance, capacités collectives)
-Gap: aucune vue n'agrège les projets/besoins portés par le groupe
+Status: CLOSED
+Evidence: `ZumraGroupController::show` agrège les `Need`/`Project` du groupe (owner_type=GROUP), filtrés par `NeedService::canView`/`ProjectService::canView`, affichés dans `zumra/groups/show.blade.php`
+Gap: aucun
 Dependencies: aucune
-Decision: ajouter une section projets/besoins au show du groupe
-Implementation PR: —
+Decision: extension additive de la fiche existante, aucune nouvelle table
+Implementation PR: #21
 Final SHA: —
 
 ## CAP-038 — Tableau de bord collectif
-Status: PARTIAL
-Evidence: vue de gouvernance du groupe existe (sièges, demandes, capacités)
-Gap: pas de `nextAction()` collectif par ZUMRA
+Status: CLOSED
+Evidence: `ZumraGroupController::collectivePriority()` — une seule priorité dominante pour les responsables (demande d'adhésion → besoin PROPOSED → projet PROPOSED → null), même patron que `MemberSpaceController::priority()`
+Gap: aucun
 Dependencies: aucune
-Decision: construire sur le patron Missions/Transmission
-Implementation PR: —
+Decision: aucun siège vacant en priorité (aucune action réelle n'existe pour en proposer un)
+Implementation PR: #21
 Final SHA: —
 
 ## CAP-039 — La ZUMRA comme capacité d'émergence
