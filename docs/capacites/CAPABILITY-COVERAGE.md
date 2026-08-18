@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 45 CLOSED · 7 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-044 — signaux de maturité, PR #27)
+> **Total : 84/84 auditées — 46 CLOSED · 6 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-045 — file de demandes d'accompagnement, PR #29)
 
 ---
 
@@ -412,12 +412,12 @@ Implementation PR: #27
 Final SHA: 0e6958ddb167c446c80f9b47776b812d2a6f53ed
 
 ## CAP-045 — Accompagnement
-Status: PARTIAL
-Evidence: `ProjectAccompanimentService` (activation/fin/interventions) ; `CAP-016-accompagnement-dg-afrique.md` réserve la file de demandes à CAP-045
-Gap: pas de file de demandes/priorisation, seulement une activation directe
+Status: CLOSED
+Evidence: `ProjectAccompanimentService::request/acknowledgeRequest/closeRequest`, table `dg_project_accompaniment_requests`, file « Demandes en attente » sur `/administration/accompagnement-projets` (triée par date de demande croissante, jamais un score)
+Gap: aucun
 Dependencies: aucune
-Decision: ajouter une file de demandes distincte de l'activation directe
-Implementation PR: —
+Decision: file distincte de l'activation directe (`activate()`/`end()`, inchangés) — demande possible uniquement une fois l'accompagnement actif, réservée au porteur autorisé ; prise en charge/clôture réservées à un administrateur provisionné
+Implementation PR: #29
 Final SHA: —
 
 ## CAP-046 — Dossier d'accompagnement

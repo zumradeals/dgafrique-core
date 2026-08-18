@@ -27,15 +27,35 @@ final class ProjectAccompanimentController
 
         abort_unless($projects->canDecide($project, $identity->reference), 403);
 
-        $project->load(['accompaniment.actions']);
+        $project->load(['accompaniment.actions', 'accompaniment.requests']);
 
         return view('projects.accompaniment', [
             'identity' => $identity,
             'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'project' => $project,
             'accompaniment' => $project->accompaniment,
+            'requests' => $project->accompaniment?->requests->sortByDesc('requested_at')->values() ?? collect(),
             'configuration' => $configuration->get(),
         ]);
+    }
+
+    public function storeRequest(
+        Request $request,
+        Project $project,
+        ProjectAccompanimentService $service
+    ): RedirectResponse {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        $data = $request->validate([
+            'subject' => ['required', 'string', 'min:5', 'max:180'],
+            'description' => ['required', 'string', 'min:20', 'max:2400'],
+        ]);
+
+        $service->request($project, $identity->reference, $data['subject'], $data['description']);
+
+        return redirect()
+            ->route('projects.accompaniment.show', $project)
+            ->with('status', 'Votre demande a été transmise à DG Afrique. Elle sera traitée dans l’ordre d’arrivée.');
     }
 
     public function activate(

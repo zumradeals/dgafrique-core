@@ -50,4 +50,9 @@ final class ProjectAccompaniment extends Model
             ->orderByDesc('occurred_at')
             ->orderByDesc('created_at');
     }
+
+    public function requests(): HasMany
+    {
+        return $this->hasMany(ProjectAccompanimentRequest::class);
+    }
 }

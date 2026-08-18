@@ -13,6 +13,8 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('project')->middleware(['core.member', 'throttle:project-accompaniment'])->name('projects.accompaniment.activate');
     Route::put('/projets/{project}/accompagnement/fin', [ProjectAccompanimentController::class, 'end'])
         ->whereUuid('project')->middleware(['core.member', 'throttle:project-accompaniment'])->name('projects.accompaniment.end');
+    Route::post('/projets/{project}/accompagnement/demandes', [ProjectAccompanimentController::class, 'storeRequest'])
+        ->whereUuid('project')->middleware(['core.member', 'throttle:project-accompaniment'])->name('projects.accompaniment.requests.store');
 
     Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
         Route::get('/accompagnement-projets', [AdministrationProjectAccompanimentController::class, 'edit'])
@@ -21,5 +23,9 @@ Route::middleware('web')->group(function (): void {
             ->middleware('throttle:project-accompaniment-configuration')->name('administration.project-accompaniment.update');
         Route::post('/accompagnement-projets/{project}/interventions', [AdministrationProjectAccompanimentController::class, 'storeAction'])
             ->whereUuid('project')->middleware('throttle:project-accompaniment-admin')->name('administration.project-accompaniment.actions.store');
+        Route::put('/accompagnement-projets/demandes/{accompanimentRequest}/prise-en-charge', [AdministrationProjectAccompanimentController::class, 'acknowledgeRequest'])
+            ->whereUuid('accompanimentRequest')->middleware('throttle:project-accompaniment-admin')->name('administration.project-accompaniment.requests.acknowledge');
+        Route::put('/accompagnement-projets/demandes/{accompanimentRequest}/clore', [AdministrationProjectAccompanimentController::class, 'closeRequest'])
+            ->whereUuid('accompanimentRequest')->middleware('throttle:project-accompaniment-admin')->name('administration.project-accompaniment.requests.close');
     });
 });
