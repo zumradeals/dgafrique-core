@@ -2,6 +2,13 @@
     'title' => 'DG Afrique',
     'styles' => [],
 ])
+@php
+    $pageStyles = (array) $styles;
+    if (request()->routeIs('zumra.index')) {
+        $pageStyles[] = 'resources/css/zumra-hub.css';
+    }
+    $pageStyles = array_values(array_unique($pageStyles));
+@endphp
 <!doctype html>
 <html lang="fr">
 <head>
@@ -11,7 +18,7 @@
     <meta name="robots" content="noindex, nofollow">
     <title>{{ $title }}</title>
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
-        @vite(array_merge(['resources/css/app.css'], (array) $styles, ['resources/js/app.js']))
+        @vite(array_merge(['resources/css/app.css'], $pageStyles, ['resources/js/app.js']))
     @endif
 </head>
 <body class="portal-body">
