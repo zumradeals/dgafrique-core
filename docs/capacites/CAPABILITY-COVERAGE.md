@@ -418,7 +418,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: file distincte de l'activation directe (`activate()`/`end()`, inchangés) — demande possible uniquement une fois l'accompagnement actif, réservée au porteur autorisé ; prise en charge/clôture réservées à un administrateur provisionné
 Implementation PR: #29
-Final SHA: —
+Final SHA: 9f48dc91c4fda8d9737c2dd92a7f0cd9b4372295
 
 ## CAP-046 — Dossier d'accompagnement
 Status: PARTIAL
