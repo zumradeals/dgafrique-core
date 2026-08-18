@@ -445,7 +445,7 @@ Gap: aucun (le branchement du flux de continuité fédérée sur le registre res
 Dependencies: aucune
 Decision: table + admin d'abord, généralisation du flux fédéré différée à CAP-049 ; `config/federation.php` et `FederationContinuationController` restent inchangés
 Implementation PR: #34
-Final SHA: —
+Final SHA: 6f25ef392fd89afb7f1a77511717d2962893e569
 
 ## CAP-049 — Relation satellite ↔ Core
 Status: PARTIAL
