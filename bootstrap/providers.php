@@ -3,6 +3,7 @@
 use App\Providers\AppServiceProvider;
 use App\Providers\FederationServiceProvider;
 use App\Providers\MissionServiceProvider;
+use App\Providers\NotificationServiceProvider;
 use App\Providers\ProofServiceProvider;
 use App\Providers\TransmissionServiceProvider;
 
@@ -12,4 +13,5 @@ return [
     MissionServiceProvider::class,
     TransmissionServiceProvider::class,
     ProofServiceProvider::class,
+    NotificationServiceProvider::class,
 ];
