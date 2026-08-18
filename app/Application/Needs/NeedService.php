@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Application\Needs;
 
+use App\Application\Projects\ProjectAuthority;
 use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\NeedEvent;
+use App\Models\Project;
+use App\Models\ProjectTeamMember;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraProgramMembership;
@@ -15,7 +18,7 @@ use Illuminate\Support\Str;
 
 final class NeedService
 {
-    public function __construct(private readonly ZumraGroupService $groups) {}
+    public function __construct(private readonly ZumraGroupService $groups, private readonly ProjectAuthority $projects) {}
 
     public function create(string $actor, array $data, array $configuration): Need
     {
@@ -28,6 +31,13 @@ final class NeedService
             $this->assertActiveGroupMember($group, $actor);
             $ownerReference = $group->id;
             $status = $this->groups->isLeader($group, $actor) ? Need::STATUS_OPEN : Need::STATUS_PROPOSED;
+        }
+
+        if ($ownerType === Need::OWNER_PROJECT) {
+            $project = Project::query()->where('public_reference', $data['project_reference'])->firstOrFail();
+            $this->assertEligibleProjectContributor($project, $actor);
+            $ownerReference = $project->id;
+            $status = $this->projects->canDecide($project, $actor) ? Need::STATUS_OPEN : Need::STATUS_PROPOSED;
         }
 
         $limit = $ownerType === Need::OWNER_PERSON ? (int) $configuration['max_open_personal_needs'] : (int) $configuration['max_open_group_needs'];
@@ -46,7 +56,7 @@ final class NeedService
                 'capability_label' => $data['capability_label'] ?? null,
                 'collaboration_mode' => $data['collaboration_mode'],
                 'location' => $data['location'] ?? null,
-                'visibility' => $ownerType === Need::OWNER_PERSON && $data['visibility'] === Need::VISIBILITY_GROUP ? Need::VISIBILITY_PRIVATE : $data['visibility'],
+                'visibility' => in_array($ownerType, [Need::OWNER_PERSON, Need::OWNER_PROJECT], true) && $data['visibility'] === Need::VISIBILITY_GROUP ? Need::VISIBILITY_PRIVATE : $data['visibility'],
                 'status' => $status,
                 'decided_by_core_reference' => $status === Need::STATUS_OPEN ? $actor : null,
                 'published_at' => $status === Need::STATUS_OPEN ? now() : null,
@@ -98,6 +108,12 @@ final class NeedService
         if ($need->owner_type === Need::OWNER_GROUP && $this->isActiveGroupMember($need->owner_reference, $actor)) {
             return true;
         }
+        if ($need->owner_type === Need::OWNER_PROJECT) {
+            $project = Project::query()->find($need->owner_reference);
+            if ($project !== null && $this->isEligibleProjectContributor($project, $actor)) {
+                return true;
+            }
+        }
         if ($need->status === Need::STATUS_PROPOSED || $need->status === Need::STATUS_ARCHIVED || $need->visibility === Need::VISIBILITY_PRIVATE) {
             return false;
         }
@@ -117,6 +133,11 @@ final class NeedService
             return hash_equals($need->owner_reference, $actor);
         }
 
+        if ($need->owner_type === Need::OWNER_PROJECT) {
+            $project = Project::query()->find($need->owner_reference);
+            return $project !== null && $this->projects->canDecide($project, $actor);
+        }
+
         $group = ZumraGroup::query()->find($need->owner_reference);
         return $group !== null && $this->groups->isLeader($group, $actor);
     }
@@ -134,6 +155,20 @@ final class NeedService
     private function isActiveGroupMember(string $groupId, string $actor): bool
     {
         return ZumraGroupMembership::query()->where('zumra_group_id', $groupId)->where('core_identity_reference', $actor)->where('status', ZumraGroupMembership::STATUS_ACTIVE)->exists();
+    }
+
+    private function assertEligibleProjectContributor(Project $project, string $actor): void
+    {
+        abort_unless($this->isEligibleProjectContributor($project, $actor), 403);
+    }
+
+    private function isEligibleProjectContributor(Project $project, string $actor): bool
+    {
+        if ($project->initiator_core_reference === $actor || ($project->owner_type === Project::OWNER_PERSON && $project->owner_reference === $actor)) {
+            return true;
+        }
+
+        return ProjectTeamMember::query()->where('project_id', $project->id)->where('core_identity_reference', $actor)->where('status', ProjectTeamMember::STATUS_ACTIVE)->exists();
     }
 
     private function event(Need $need, string $event, string $actor, ?string $from, string $to): void

@@ -14,6 +14,7 @@ final class Need extends Model
 
     public const OWNER_PERSON = 'PERSON';
     public const OWNER_GROUP = 'GROUP';
+    public const OWNER_PROJECT = 'PROJECT';
     public const STATUS_PROPOSED = 'PROPOSED';
     public const STATUS_OPEN = 'OPEN';
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';

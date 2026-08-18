@@ -18,7 +18,7 @@
                 <div>
                     <x-dg.badge tone="need">{{ $configuration['categories'][$need->category] ?? $need->category }}</x-dg.badge>
                     <h1 class="dg-display dg-display--screen" style="margin-top:10px">{{ $need->title }}</h1>
-                    <p>{{ $need->owner_type === 'GROUP' ? ($group?->name ?? 'ZUMRA') : 'Besoin personnel' }}</p>
+                    <p>{{ match($need->owner_type) { 'GROUP' => $group?->name ?? 'ZUMRA', 'PROJECT' => $project?->name ?? 'Projet', default => 'Besoin personnel' } }}</p>
                 </div>
                 <x-dg.label>{{ ['PROPOSED' => 'Proposé', 'OPEN' => 'Ouvert', 'IN_PROGRESS' => 'En cours', 'RESOLVED' => 'Résolu', 'ARCHIVED' => 'Archivé'][$need->status] ?? $need->status }}</x-dg.label>
             </div>

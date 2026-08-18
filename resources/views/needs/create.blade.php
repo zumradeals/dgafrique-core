@@ -35,6 +35,12 @@
                                 Une ZUMRA dont je suis membre
                             </label>
                         @endif
+                        @if($projects->isNotEmpty())
+                            <label class="dg-radio">
+                                <input type="radio" name="owner_type" value="PROJECT" @checked(old('owner_type', $preselectedProject ? 'PROJECT' : null) === 'PROJECT')>
+                                Un projet que je porte ou dans l’équipe duquel je suis actif
+                            </label>
+                        @endif
                     </div>
                     @if($groups->isNotEmpty())
                         <div class="dg-field" style="max-width:340px">
@@ -43,6 +49,17 @@
                                 <option value="">Choisir</option>
                                 @foreach($groups as $group)
                                     <option value="{{ $group->public_reference }}" @selected(old('group_reference') === $group->public_reference)>{{ $group->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    @if($projects->isNotEmpty())
+                        <div class="dg-field" style="max-width:340px">
+                            <label for="project_reference">Projet</label>
+                            <select name="project_reference" id="project_reference" class="dg-select">
+                                <option value="">Choisir</option>
+                                @foreach($projects as $project)
+                                    <option value="{{ $project->public_reference }}" @selected(old('project_reference', $preselectedProject?->public_reference) === $project->public_reference)>{{ $project->name }}</option>
                                 @endforeach
                             </select>
                         </div>
