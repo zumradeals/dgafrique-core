@@ -66,6 +66,28 @@ final class PeopleDiscoveryTest extends TestCase
             ->assertDontSee('preuve-secrete.test');
     }
 
+    public function test_declared_availability_is_shown_on_the_discovery_profile(): void
+    {
+        $profile = $this->profile('IDN-PER-AVAILABLE', '66666666-6666-4666-8666-666666666666', 'Disponible Maintenant', true, true);
+        $profile->update([
+            'availability_status' => PersonProfile::AVAILABILITY_OPEN,
+            'availability_note' => 'disponible le week-end uniquement',
+        ]);
+        $this->signIn();
+
+        $this->get('/personnes/'.$profile->discovery_reference)->assertOk()
+            ->assertSee('Disponible pour de nouvelles sollicitations')
+            ->assertSee('disponible le week-end uniquement');
+    }
+
+    public function test_unset_availability_shows_an_honest_empty_state(): void
+    {
+        $profile = $this->profile('IDN-PER-UNSET', '77777777-7777-4777-8777-777777777777', 'Sans Disponibilité', true, true);
+        $this->signIn();
+
+        $this->get('/personnes/'.$profile->discovery_reference)->assertOk()->assertSee('Non précisée');
+    }
+
     public function test_withdrawing_discovery_consent_hides_profile_and_capabilities_immediately(): void
     {
         $this->signIn('IDN-PER-OWNER', 'Propriétaire');

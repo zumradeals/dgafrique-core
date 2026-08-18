@@ -138,6 +138,13 @@ final class PersonRecommendationEngine
             $mode = mb_strtolower(str_replace('_', ' ', $candidate->participation_mode));
             $reasons[] = "Vous privilégiez tous les deux un mode {$mode}.";
         }
+        // CAP-025 : la disponibilité déclarée n'est jamais un critère de tri à elle seule — une
+        // raison supplémentaire uniquement, ajoutée à une recommandation déjà qualifiée par un
+        // vrai rapprochement de capacité (même patron que location_context/participation_context).
+        if ($priority <= 40 && ($configuration['availability_declared'] ?? false)
+            && $candidate->availability_status === PersonProfile::AVAILABILITY_OPEN) {
+            $reasons[] = 'Cette personne se déclare disponible pour de nouvelles sollicitations.';
+        }
 
         return [array_values(array_unique($reasons)), $priority];
     }

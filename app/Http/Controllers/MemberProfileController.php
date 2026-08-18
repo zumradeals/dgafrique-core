@@ -61,6 +61,7 @@ final class MemberProfileController
             'participation_mode' => 'collaboration',
             'collaboration_preferences_text' => 'collaboration',
             'discovery_display_name' => 'collaboration', 'discovery_bio' => 'collaboration',
+            'availability_status' => 'collaboration', 'availability_note' => 'collaboration',
         ];
         $presence = static function (string $field) use ($profileConfiguration, $fieldSections): string {
             $section = $fieldSections[$field];
@@ -89,6 +90,8 @@ final class MemberProfileController
             'discovery_display_name' => ['nullable', 'string', 'max:120'],
             'discovery_bio' => ['nullable', 'string', 'max:600'],
             'discovery_consent' => ['nullable', 'boolean'],
+            'availability_status' => ['nullable', Rule::in(array_keys(PersonProfile::AVAILABILITY_LABELS))],
+            'availability_note' => ['nullable', 'string', 'max:300'],
         ]);
 
         $discoveryConsent = $request->boolean('orientation_consent') && $request->boolean('discovery_consent');
@@ -146,6 +149,8 @@ final class MemberProfileController
                 'discovery_display_name' => $data['discovery_display_name'] ?? null,
                 'discovery_bio' => $data['discovery_bio'] ?? null,
                 'discovery_consent' => $discoveryConsent,
+                'availability_status' => $data['availability_status'] ?? null,
+                'availability_note' => $data['availability_note'] ?? null,
             ];
         }
 
@@ -172,6 +177,9 @@ final class MemberProfileController
                 if ($attributes['discovery_consent'] && ! $profile->discovery_reference) {
                     $attributes['discovery_reference'] = (string) Str::uuid();
                 }
+            }
+            if (array_key_exists('availability_status', $attributes) && $attributes['availability_status'] !== $profile->availability_status) {
+                $attributes['availability_updated_at'] = $attributes['availability_status'] ? now() : null;
             }
             $profile->fill($attributes);
             $profile->save();

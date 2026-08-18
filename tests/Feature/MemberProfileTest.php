@@ -91,6 +91,34 @@ final class MemberProfileTest extends TestCase
         self::assertSame(['Cuisine'], $profile->existing_skills);
     }
 
+    public function test_a_member_declares_availability_and_can_clear_it(): void
+    {
+        $this->signIn();
+        $this->put('/espace/profil', [
+            'availability_status' => 'OPEN',
+            'availability_note' => 'disponible le week-end uniquement',
+        ])->assertRedirect('/espace/profil');
+
+        $profile = PersonProfile::query()->sole();
+        self::assertSame('OPEN', $profile->availability_status);
+        self::assertSame('disponible le week-end uniquement', $profile->availability_note);
+        self::assertNotNull($profile->availability_updated_at);
+        $declaredAt = $profile->availability_updated_at;
+
+        $this->get('/espace/profil')->assertOk()->assertSee('Disponible pour de nouvelles sollicitations');
+
+        // Un statut inchangé ne réécrit jamais la date de déclaration.
+        $this->put('/espace/profil', ['availability_status' => 'OPEN', 'availability_note' => 'disponible le week-end uniquement']);
+        self::assertTrue($declaredAt->equalTo($profile->fresh()->availability_updated_at));
+
+        // Une disponibilité redevient « non précisée » aussi facilement qu'elle a été déclarée —
+        // jamais une obligation permanente.
+        $this->put('/espace/profil', []);
+        $profile->refresh();
+        self::assertNull($profile->availability_status);
+        self::assertNull($profile->availability_updated_at);
+    }
+
     public function test_orientation_consent_can_be_withdrawn(): void
     {
         $this->signIn();

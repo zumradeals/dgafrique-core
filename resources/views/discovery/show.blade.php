@@ -73,6 +73,10 @@
                         <dd>{{ $profile->participation_mode ? str_replace('_', ' ', $profile->participation_mode) : 'Non précisé' }}</dd>
                     </div>
                     <div>
+                        <dt>Disponibilité</dt>
+                        <dd>{{ $profile->availability_status ? \App\Models\PersonProfile::AVAILABILITY_LABELS[$profile->availability_status] : 'Non précisée' }}{{ $profile->availability_note ? ' — '.$profile->availability_note : '' }}</dd>
+                    </div>
+                    <div>
                         <dt>Domaines d’intérêt</dt>
                         <dd>{{ collect($profile->interest_domains)->take(4)->implode(' · ') ?: 'Non précisés' }}</dd>
                     </div>
