@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 44 CLOSED · 7 PARTIAL · 14 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-042 — besoin projet, PR #25)
+> **Total : 84/84 auditées — 45 CLOSED · 7 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-044 — signaux de maturité, PR #27)
 
 ---
 
@@ -403,12 +403,12 @@ Implementation PR: antérieur au workflow PR-par-module
 Final SHA: —
 
 ## CAP-044 — Maturité calculée par signes, pas par décret
-Status: NOT_IMPLEMENTED
-Evidence: `ProjectMaturityService` 100% manuel ; `CAP-017-maturite.md` réserve explicitement ce calcul à CAP-044
-Gap: aucun calcul automatique par signaux (activité, jalons, contributions)
+Status: CLOSED
+Evidence: `ProjectSignalsEngine::forProject()` (jalons, équipe, besoins, contributions, dernière activité — phrases factuelles, jamais un score/pourcentage), panneau « Signaux observés » sur `/projets/{project}`
+Gap: aucun
 Dependencies: aucune
-Decision: construire un moteur de signaux, sans remplacer le repère décrété
-Implementation PR: —
+Decision: panneau strictement consultatif — `ProjectMaturityService::change()` reste l'unique chemin d'écriture sur `Project.maturity`, aucun signal ne déclenche jamais une transition automatique
+Implementation PR: #27
 Final SHA: —
 
 ## CAP-045 — Accompagnement
