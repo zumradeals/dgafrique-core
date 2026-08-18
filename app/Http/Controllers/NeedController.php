@@ -9,6 +9,8 @@ use App\Application\Needs\NeedService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Need;
 use App\Models\PortalAdministrator;
+use App\Models\Project;
+use App\Models\ProjectTeamMember;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use Illuminate\Http\RedirectResponse;
@@ -36,9 +38,10 @@ final class NeedController
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
+        $projects = Project::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_PROJECT)->pluck('owner_reference'))->get()->keyBy('id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.index', compact('identity', 'needs', 'groups', 'isAdministrator') + ['configuration' => $settings]);
+        return view('needs.index', compact('identity', 'needs', 'groups', 'projects', 'isAdministrator') + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View
@@ -46,9 +49,18 @@ final class NeedController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $groups = ZumraGroup::query()->whereIn('id', ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->where('status', ZumraGroupMembership::STATUS_ACTIVE)->pluck('zumra_group_id'))->orderBy('name')->get();
+        $projectIds = ProjectTeamMember::query()->where('core_identity_reference', $identity->reference)->where('status', ProjectTeamMember::STATUS_ACTIVE)->pluck('project_id');
+        $projects = Project::query()->where(function ($query) use ($identity, $projectIds): void {
+            $query->where('initiator_core_reference', $identity->reference)
+                ->orWhere(function ($query) use ($identity): void {
+                    $query->where('owner_type', Project::OWNER_PERSON)->where('owner_reference', $identity->reference);
+                })
+                ->orWhereIn('id', $projectIds);
+        })->whereNotIn('status', [Project::STATUS_ARCHIVED])->orderBy('name')->get();
+        $preselectedProject = $projects->firstWhere('public_reference', $request->query('project'));
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.create', compact('identity', 'groups', 'isAdministrator') + ['configuration' => $configuration->get()]);
+        return view('needs.create', compact('identity', 'groups', 'projects', 'preselectedProject', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request, NeedConfiguration $configuration, NeedService $service): RedirectResponse
@@ -57,8 +69,9 @@ final class NeedController
         $identity = $request->attributes->get('dg_identity');
         $settings = $configuration->get();
         $data = $request->validate([
-            'owner_type' => ['required', Rule::in([Need::OWNER_PERSON, Need::OWNER_GROUP])],
+            'owner_type' => ['required', Rule::in([Need::OWNER_PERSON, Need::OWNER_GROUP, Need::OWNER_PROJECT])],
             'group_reference' => ['nullable', 'uuid', 'required_if:owner_type,GROUP'],
+            'project_reference' => ['nullable', 'uuid', 'required_if:owner_type,PROJECT'],
             'title' => ['required', 'string', 'min:5', 'max:180'],
             'context' => ['required', 'string', 'min:40', 'max:3000'],
             'category' => ['required', Rule::in(array_keys($settings['categories']))],
@@ -78,9 +91,10 @@ final class NeedController
         $identity = $request->attributes->get('dg_identity');
         abort_unless($service->canView($need, $identity->reference), 404);
         $group = $need->owner_type === Need::OWNER_GROUP ? ZumraGroup::query()->find($need->owner_reference) : null;
+        $project = $need->owner_type === Need::OWNER_PROJECT ? Project::query()->find($need->owner_reference) : null;
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.show', compact('identity', 'need', 'group', 'isAdministrator') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
+        return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
     }
 
     public function transition(Request $request, Need $need, NeedService $service): RedirectResponse

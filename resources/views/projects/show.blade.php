@@ -207,6 +207,28 @@
                     @endif
                 </x-dg.card>
 
+                <x-dg.card>
+                    <x-dg.label>Besoins du projet</x-dg.label>
+                    <p class="dg-hint" style="margin-top:6px">Ce que le projet exprime au fil de son avancement, distinct de l’instantané initial ci-dessus.</p>
+
+                    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                        @forelse($projectNeeds as $need)
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--dg-line-dashed)">
+                                <a href="{{ route('needs.show', $need) }}" style="color:var(--dg-ink);font-weight:600">{{ $need->title }}</a>
+                                <x-dg.label>{{ ['PROPOSED' => 'Proposé', 'OPEN' => 'Ouvert', 'IN_PROGRESS' => 'En cours', 'RESOLVED' => 'Résolu'][$need->status] ?? $need->status }}</x-dg.label>
+                            </div>
+                        @empty
+                            <p class="dg-meta">Aucun besoin exprimé pour ce projet.</p>
+                        @endforelse
+                    </div>
+
+                    @if($canProposeNeed)
+                        <x-dg.actions flush style="margin-top:14px">
+                            <x-dg.btn variant="quiet" :href="route('needs.create', ['project' => $project->public_reference])">Exprimer un besoin pour ce projet →</x-dg.btn>
+                        </x-dg.actions>
+                    @endif
+                </x-dg.card>
+
                 <div class="dg-band">
                     <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Aucun financement ouvert</strong>
                     Cette fiche organise le projet ; elle ne constitue ni une collecte, ni une promesse d’accompagnement.

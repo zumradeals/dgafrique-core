@@ -51,7 +51,7 @@
                             </h2>
                             <p class="dg-body">{{ \Illuminate\Support\Str::limit($need->context, 160) }}</p>
                             <x-dg.actions flush style="justify-content:space-between;align-items:center">
-                                <span class="dg-meta">{{ $need->owner_type === 'GROUP' ? ($groups->get($need->owner_reference)?->name ?? 'ZUMRA') : 'Besoin personnel' }}</span>
+                                <span class="dg-meta">{{ match($need->owner_type) { 'GROUP' => $groups->get($need->owner_reference)?->name ?? 'ZUMRA', 'PROJECT' => $projects->get($need->owner_reference)?->name ?? 'Projet', default => 'Besoin personnel' } }}</span>
                                 <x-dg.btn variant="quiet" :href="route('needs.show', $need)">Comprendre le besoin →</x-dg.btn>
                             </x-dg.actions>
                         </article>

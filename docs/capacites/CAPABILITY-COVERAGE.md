@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 43 CLOSED · 8 PARTIAL · 14 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-041 — équipe projet, PR #23)
+> **Total : 84/84 auditées — 44 CLOSED · 7 PARTIAL · 14 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-042 — besoin projet, PR #25)
 
 ---
 
@@ -385,12 +385,12 @@ Implementation PR: #23
 Final SHA: 5699162d908ebad20df9104c6a488a50fc8ceb4d
 
 ## CAP-042 — Besoin projet
-Status: PARTIAL
-Evidence: `Project.required_capabilities/required_resources` (JSON figé), `source_need_id`
-Gap: pas de besoin dynamique propre au projet, avec son propre cycle de vie
+Status: CLOSED
+Evidence: `Need::OWNER_PROJECT` + `NeedService` étendu (éligibilité : porteur/initiateur/membre d'équipe `ACTIF`, statut `OPEN` si `ProjectAuthority::canDecide` sinon `PROPOSED`), carte « Besoins du projet » sur `/projets/{project}`
+Gap: aucun
 Dependencies: aucune
-Decision: ajouter `OWNER_PROJECT` à `Need` ou sous-objet dédié
-Implementation PR: —
+Decision: `ProjectAuthority` extraite de `ProjectService::canView/canDecide` (comportement inchangé) pour être réutilisée par `NeedService` sans dépendance circulaire ; `required_capabilities`/`required_resources` restent l'instantané figé de création, inchangés
+Implementation PR: #25
 Final SHA: —
 
 ## CAP-043 — Dossier de projet vivant
