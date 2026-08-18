@@ -22,14 +22,16 @@ final class IdentityAuthorityGuardTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Vos capacités deviennent des actions.')
-            ->assertSee('Je sais faire')
-            ->assertSee('Un besoin apparaît')
-            ->assertSee('Une équipe agit')
-            ->assertSee('Une ZUMRA, c’est une équipe qui s’engage vraiment.')
+            ->assertSee('Ensemble,')
+            ->assertSee('changer nos réalités.')
+            ->assertSee('De la capacité à l’action')
+            ->assertSee('1. Rejoindre')
+            ->assertSee('4. Agir')
+            ->assertSee('Pas de likes. Pas de classement. Place à l’action utile.')
             ->assertSee('Exemple')
-            ->assertDontSee('4 250')
-            ->assertDontSee('1,2 million');
+            ->assertDontSee('25K+')
+            ->assertDontSee('1 200+')
+            ->assertDontSee('45 pays');
     }
 
     public function test_the_invisible_institution_is_never_named_in_user_interfaces(): void
