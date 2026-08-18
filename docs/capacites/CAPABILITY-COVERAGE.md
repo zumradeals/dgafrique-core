@@ -130,8 +130,8 @@ Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
 Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative + composeur
-direct dans le Fil) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
-Final SHA: —
+direct dans le Fil) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-014 — Projet
 Status: CLOSED
@@ -140,8 +140,8 @@ Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
 Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative) — voir
-`docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
-Final SHA: —
+`docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-015 — Mise en relation projet ↔ compétences
 Status: CLOSED
@@ -187,8 +187,8 @@ Dependencies: aucune
 Decision: corriger le libellé « [PLUS TARD] » dans `CAPABILITY-INDEX.md`
 Implementation PR: antérieur au workflow PR-par-module ; extension additive (composeur de publication
 directe, image facultative sur les cartes, allègement visuel des mentions doctrinales via un motif de
-divulgation `<details>`) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md`
-Final SHA: —
+divulgation `<details>`) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-020 — Messagerie
 Status: CLOSED
