@@ -14,6 +14,17 @@
                 <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
+            @if($collectivePriority)
+                <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
+                    <x-dg.label tone="saffron">Aujourd’hui — une seule chose compte pour cette ZUMRA</x-dg.label>
+                    <h2 class="dg-display" style="font-size:20px;margin-top:8px">{{ $collectivePriority['heading'] }}</h2>
+                    <p class="dg-body" style="margin-top:6px">{{ $collectivePriority['body'] }}</p>
+                    <div style="margin-top:14px">
+                        <a href="{{ $collectivePriority['primary']['href'] }}" class="dg-btn dg-btn--saffron">{{ $collectivePriority['primary']['label'] }}</a>
+                    </div>
+                </div>
+            @endif
+
             <div class="dg-page-header">
                 <div class="flex items-center gap-4">
                     <x-dg.avatar :initials="mb_strtoupper(mb_substr($group->name, 0, 1))" size="lg" tone="night" />
@@ -82,6 +93,36 @@
                             </div>
                         @endif
                         <p class="dg-hint" style="margin-top:14px">Le profil collectif agrège des capacités consenties. Il ne remplace pas les personnes et n’affiche aucune identité privée.</p>
+                    </x-dg.card>
+
+                    <x-dg.card>
+                        <div class="flex items-center justify-between gap-4">
+                            <div>
+                                <x-dg.label>Micro-espace de travail</x-dg.label>
+                                <h2 class="dg-display" style="font-size:20px;margin-top:6px">Projets et besoins de cette ZUMRA</h2>
+                            </div>
+                            <span class="dg-meta">{{ $groupProjects->count() + $groupNeeds->count() }} en cours</span>
+                        </div>
+                        @if($groupProjects->isEmpty() && $groupNeeds->isEmpty())
+                            <x-dg.empty style="margin-top:14px">
+                                <span>Cette ZUMRA ne porte encore aucun Projet ni Besoin visible.</span>
+                            </x-dg.empty>
+                        @else
+                            <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+                                @foreach($groupProjects as $project)
+                                    <a href="{{ route('projects.show', $project) }}" class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit">
+                                        <span><span class="dg-meta">Projet ·</span> <strong style="color:var(--dg-ink)">{{ $project->name }}</strong></span>
+                                        <x-dg.badge tone="neutral">{{ $project->status }}</x-dg.badge>
+                                    </a>
+                                @endforeach
+                                @foreach($groupNeeds as $need)
+                                    <a href="{{ route('needs.show', $need) }}" class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:10px;color:inherit">
+                                        <span><span class="dg-meta">Besoin ·</span> <strong style="color:var(--dg-ink)">{{ $need->title }}</strong></span>
+                                        <x-dg.badge tone="neutral">{{ $need->status }}</x-dg.badge>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
                     </x-dg.card>
 
                     <x-dg.card>
@@ -175,7 +216,7 @@
                         </x-dg.card>
 
                         @if($pendingRequests->isNotEmpty())
-                            <x-dg.card tight>
+                            <x-dg.card tight id="demandes">
                                 <x-dg.label>Demandes en attente</x-dg.label>
                                 <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
                                     @foreach($pendingRequests as $pending)

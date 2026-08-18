@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Needs\NeedService;
+use App\Application\Projects\ProjectService;
 use App\Application\Zumra\ZumraGroupConfiguration;
 use App\Application\Zumra\ZumraGroupService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
+use App\Models\Project;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -63,15 +68,23 @@ final class ZumraGroupController
         return redirect()->route('zumra.groups.show', $group)->with('status', 'Votre ZUMRA est créée en constitution. Aucun rôle vacant n’a été attribué automatiquement.');
     }
 
-    public function show(Request $request, ZumraGroup $group, ZumraGroupService $service, CollectiveCapabilityConfiguration $capabilityConfiguration, CollectiveCapabilityProfile $capabilityProfile): View
-    {
+    public function show(
+        Request $request,
+        ZumraGroup $group,
+        ZumraGroupService $service,
+        CollectiveCapabilityConfiguration $capabilityConfiguration,
+        CollectiveCapabilityProfile $capabilityProfile,
+        NeedService $needs,
+        ProjectService $projects,
+    ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         abort_if($group->state === ZumraGroup::STATE_SUSPENDED && !$service->isLeader($group, $identity->reference), 404);
+        $isLeader = $service->isLeader($group, $identity->reference);
         $membership = $group->memberships()->where('core_identity_reference', $identity->reference)->first();
         $roles = $group->roles()->orderByRaw("case role when 'PRIMARY_LEAD' then 1 when 'FIRST_DEPUTY' then 2 when 'SECOND_DEPUTY' then 3 when 'FINANCE_LEAD' then 4 else 5 end")->get();
         $roleProfiles = PersonProfile::query()->whereIn('core_identity_reference', $roles->pluck('core_identity_reference')->filter())->get()->keyBy('core_identity_reference');
-        $pendingRequests = $service->isLeader($group, $identity->reference)
+        $pendingRequests = $isLeader
             ? $group->memberships()->where('status', ZumraGroupMembership::STATUS_REQUESTED)->oldest('requested_at')->get()
             : collect();
         $requestProfiles = PersonProfile::query()->whereIn('core_identity_reference', $pendingRequests->pluck('core_identity_reference'))->get()->keyBy('core_identity_reference');
@@ -79,7 +92,69 @@ final class ZumraGroupController
         $collectiveCapabilities = $capabilityProfile->forGroup($group, $collectiveCapabilitySettings);
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.groups.show', compact('identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles', 'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator') + ['isLeader' => $service->isLeader($group, $identity->reference)]);
+        // CAP-037 : la ZUMRA comme micro-espace de travail — ce qu'elle porte réellement devient
+        // visible, filtré par les autorités déjà réelles de Need/Project, jamais une nouvelle
+        // autorité fabriquée ici.
+        $groupNeeds = Need::query()
+            ->where('owner_type', Need::OWNER_GROUP)->where('owner_reference', $group->id)
+            ->where('status', '!=', Need::STATUS_ARCHIVED)
+            ->latest('created_at')->limit(20)->get()
+            ->filter(fn (Need $need): bool => $needs->canView($need, $identity->reference))
+            ->values();
+        $groupProjects = Project::query()
+            ->where('owner_type', Project::OWNER_GROUP)->where('owner_reference', $group->id)
+            ->where('status', '!=', Project::STATUS_ARCHIVED)
+            ->latest('created_at')->limit(20)->get()
+            ->filter(fn (Project $project): bool => $projects->canView($project, $identity->reference))
+            ->values();
+
+        $collectivePriority = $isLeader ? $this->collectivePriority($group, $pendingRequests, $groupNeeds, $groupProjects) : null;
+
+        return view('zumra.groups.show', compact(
+            'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
+            'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects', 'collectivePriority',
+        ) + ['isLeader' => $isLeader]);
+    }
+
+    /**
+     * CAP-038 : une seule priorité collective dominante, jamais un mur de statistiques — même
+     * patron que MemberSpaceController::priority(), scopé au groupe plutôt qu'à l'individu.
+     * Aucun siège vacant ici : aucune action réelle n'existe encore pour en proposer un (§2 de
+     * la fiche), une priorité doit toujours pointer vers une action réellement exécutable.
+     *
+     * @param Collection<int, ZumraGroupMembership> $pendingRequests
+     * @param Collection<int, Need> $groupNeeds
+     * @param Collection<int, Project> $groupProjects
+     */
+    private function collectivePriority(ZumraGroup $group, Collection $pendingRequests, Collection $groupNeeds, Collection $groupProjects): ?array
+    {
+        if ($pendingRequests->isNotEmpty()) {
+            return [
+                'heading' => 'Une demande d’adhésion attend une décision.',
+                'body' => 'Une personne souhaite rejoindre cette ZUMRA.',
+                'primary' => ['label' => 'Voir les demandes', 'href' => route('zumra.groups.show', $group).'#demandes'],
+            ];
+        }
+
+        $proposedNeed = $groupNeeds->first(fn (Need $need): bool => $need->status === Need::STATUS_PROPOSED);
+        if ($proposedNeed) {
+            return [
+                'heading' => 'Le besoin « '.$proposedNeed->title.' » attend une décision de publication.',
+                'body' => 'Il a été proposé par un membre et n’est pas encore publié.',
+                'primary' => ['label' => 'Décider', 'href' => route('needs.show', $proposedNeed)],
+            ];
+        }
+
+        $proposedProject = $groupProjects->first(fn (Project $project): bool => $project->status === Project::STATUS_PROPOSED);
+        if ($proposedProject) {
+            return [
+                'heading' => 'Le projet « '.$proposedProject->name.' » attend une décision d’adoption.',
+                'body' => 'Il a été proposé par un membre et n’est pas encore adopté.',
+                'primary' => ['label' => 'Décider', 'href' => route('projects.show', $proposedProject)],
+            ];
+        }
+
+        return null;
     }
 
     public function requestToJoin(Request $request, ZumraGroup $group, ZumraGroupService $service): RedirectResponse
