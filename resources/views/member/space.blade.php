@@ -169,16 +169,18 @@
                                 <span class="dg-meta" style="line-height:1.55">À décider, invitations, engagements, à valider, terminées.</span>
                             </span>
                         </a>
-                        <form method="POST" action="{{ route('federation.continue.gamadrive') }}">
-                            @csrf
-                            <button type="submit" style="width:100%;display:flex;align-items:flex-start;gap:12px;border:0;background:transparent;text-align:left;font:inherit;cursor:pointer">
-                                <span class="dg-tool__mark">GD</span>
-                                <span>
-                                    <strong style="display:block;font-size:15px;color:var(--dg-night)">GamaDrive</strong>
-                                    <span class="dg-meta" style="line-height:1.55">Ouvrir votre espace documentaire.</span>
-                                </span>
-                            </button>
-                        </form>
+                        @foreach(($satellites ?? collect()) as $satellite)
+                            <form method="POST" action="{{ route('federation.continue', $satellite->slug) }}">
+                                @csrf
+                                <button type="submit" style="width:100%;display:flex;align-items:flex-start;gap:12px;border:0;background:transparent;text-align:left;font:inherit;cursor:pointer">
+                                    <span class="dg-tool__mark">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($satellite->display_name, 0, 2)) }}</span>
+                                    <span>
+                                        <strong style="display:block;font-size:15px;color:var(--dg-night)">{{ $satellite->display_name }}</strong>
+                                        <span class="dg-meta" style="line-height:1.55">{{ $satellite->description ?: 'Ouvrir cet outil connecté à DG Afrique.' }}</span>
+                                    </span>
+                                </button>
+                            </form>
+                        @endforeach
                         <span class="dg-meta" style="line-height:1.55;padding-top:10px;border-top:1px solid var(--dg-tint-tool-line)">Un outil n’existe ici que rattaché à une action réelle.</span>
                     </div>
                 </aside>

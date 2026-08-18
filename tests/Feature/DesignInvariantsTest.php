@@ -37,7 +37,7 @@ final class DesignInvariantsTest extends TestCase
             ->assertSee(route('zumra.index'), false)
             ->assertSee('Mes outils')
             ->assertSee('GamaDrive')
-            ->assertSee(route('federation.continue.gamadrive'), false);
+            ->assertSee(route('federation.continue', 'gamadrive'), false);
     }
 
     public function test_mobile_tabbar_has_five_entries_and_besoins_projets_are_not_top_level_tabs(): void

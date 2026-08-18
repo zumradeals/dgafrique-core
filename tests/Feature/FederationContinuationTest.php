@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 final class FederationContinuationTest extends TestCase
 {
+    use RefreshDatabase;
+
     public function test_unauthenticated_member_returns_to_login_with_local_federation_destination(): void
     {
         $this->post('/federation/continue/gamadrive')
@@ -94,7 +97,7 @@ final class FederationContinuationTest extends TestCase
     {
         $this->fakeFederationFlow();
         $this->signIn();
-        config(['federation.gamadrive.callback_url' => 'http://gamadrive.test/federation/callback']);
+        \App\Models\Satellite::query()->where('slug', 'gamadrive')->update(['callback_url' => 'http://gamadrive.test/federation/callback']);
 
         $this->post('/federation/continue/gamadrive')
             ->assertStatus(503)
@@ -107,7 +110,19 @@ final class FederationContinuationTest extends TestCase
 
     public function test_unknown_satellite_has_no_compatibility_route(): void
     {
+        $this->fakeFederationFlow();
+        $this->signIn();
+
         $this->post('/federation/continue/wasplex')->assertNotFound();
+    }
+
+    public function test_a_disabled_satellite_is_not_reachable(): void
+    {
+        \App\Models\Satellite::query()->where('slug', 'gamadrive')->update(['is_active' => false]);
+        $this->fakeFederationFlow();
+        $this->signIn();
+
+        $this->post('/federation/continue/gamadrive')->assertNotFound();
     }
 
     private function signIn(): void

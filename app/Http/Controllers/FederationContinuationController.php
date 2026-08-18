@@ -10,6 +10,7 @@ use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
 use App\Infrastructure\GamadCore\Exceptions\CoreSessionRejectedException;
 use App\Infrastructure\GamadCore\Exceptions\CoreUnavailableException;
 use App\Infrastructure\GamadCore\FederatedProductGateway;
+use App\Models\Satellite;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -20,12 +21,16 @@ final readonly class FederationContinuationController
         private PortalMemberSession $portalSession,
     ) {}
 
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request, string $satellite): Response
     {
-        $satellite = $this->gamadriveConfiguration();
-        if ($satellite === null) {
+        $record = Satellite::query()->where('slug', $satellite)->where('is_active', true)->first();
+        abort_if($record === null, 404);
+
+        $configured = $this->satelliteConfiguration($record);
+        if ($configured === null) {
             return $this->failure(
-                'L’accès à GamaDrive est temporairement indisponible. Réessayez dans un instant.',
+                $record->slug,
+                "L’accès à {$record->display_name} est temporairement indisponible. Réessayez dans un instant.",
                 503,
             );
         }
@@ -38,7 +43,7 @@ final readonly class FederationContinuationController
         }
 
         try {
-            $access = $this->federation->open($satellite['product_reference'], $bearer);
+            $access = $this->federation->open($configured['product_reference'], $bearer);
         } catch (CoreSessionRejectedException) {
             $this->portalSession->clear($request->session());
 
@@ -47,17 +52,20 @@ final readonly class FederationContinuationController
             ]);
         } catch (CoreProductAccessDeniedException) {
             return $this->failure(
-                'Votre compte ne peut pas ouvrir GamaDrive pour le moment.',
+                $configured['slug'],
+                "Votre compte ne peut pas ouvrir {$configured['display_name']} pour le moment.",
                 403,
             );
         } catch (CoreUnavailableException) {
             return $this->failure(
-                'GamaDrive ne peut pas être ouvert pour le moment. Votre connexion DG Afrique reste active.',
+                $configured['slug'],
+                "{$configured['display_name']} ne peut pas être ouvert pour le moment. Votre connexion DG Afrique reste active.",
                 503,
             );
         } catch (CoreProtocolException) {
             return $this->failure(
-                'La passerelle vers GamaDrive a reçu une réponse incohérente. Aucun accès n’a été transmis.',
+                $configured['slug'],
+                "La passerelle vers {$configured['display_name']} a reçu une réponse incohérente. Aucun accès n’a été transmis.",
                 502,
             );
         }
@@ -65,23 +73,23 @@ final readonly class FederationContinuationController
         $nonce = rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
         $headers = $this->securityHeaders(
             "default-src 'none'; base-uri 'none'; frame-ancestors 'none'; "
-            ."form-action {$satellite['callback_origin']}; script-src 'nonce-{$nonce}'; style-src 'nonce-{$nonce}'",
+            ."form-action {$configured['callback_origin']}; script-src 'nonce-{$nonce}'; style-src 'nonce-{$nonce}'",
         );
 
         return response()->view('federation.handoff', [
-            'displayName' => $satellite['display_name'],
-            'callbackUrl' => $satellite['callback_url'],
+            'displayName' => $configured['display_name'],
+            'callbackUrl' => $configured['callback_url'],
             'token' => $access['token'],
             'nonce' => $nonce,
         ], 200, $headers);
     }
 
-    /** @return array{product_reference: string, display_name: string, callback_url: string, callback_origin: string}|null */
-    private function gamadriveConfiguration(): ?array
+    /** @return array{slug: string, product_reference: string, display_name: string, callback_url: string, callback_origin: string}|null */
+    private function satelliteConfiguration(Satellite $satellite): ?array
     {
-        $productReference = trim((string) config('federation.gamadrive.product_reference'));
-        $displayName = trim((string) config('federation.gamadrive.display_name', 'GamaDrive'));
-        $callbackUrl = trim((string) config('federation.gamadrive.callback_url'));
+        $productReference = trim($satellite->product_reference);
+        $displayName = trim($satellite->display_name);
+        $callbackUrl = trim((string) $satellite->callback_url);
         $parts = parse_url($callbackUrl);
 
         if (
@@ -104,6 +112,7 @@ final readonly class FederationContinuationController
         }
 
         return [
+            'slug' => $satellite->slug,
             'product_reference' => $productReference,
             'display_name' => $displayName,
             'callback_url' => $callbackUrl,
@@ -111,10 +120,11 @@ final readonly class FederationContinuationController
         ];
     }
 
-    private function failure(string $message, int $status): Response
+    private function failure(string $satelliteSlug, string $message, int $status): Response
     {
         return response()->view('federation.error', [
             'message' => $message,
+            'satelliteSlug' => $satelliteSlug,
         ], $status, $this->securityHeaders(
             "default-src 'none'; base-uri 'none'; frame-ancestors 'none'",
         ));

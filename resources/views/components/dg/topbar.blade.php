@@ -4,6 +4,8 @@
     « Fil » est l'entrée par défaut d'un membre connecté.
 --}}
 @props(['current' => null, 'identity' => null, 'isAdministrator' => false])
+{{-- $satellites est injecté par un composeur de vue (FederationServiceProvider, CAP-049),
+     jamais déclaré ici comme prop pour ne pas l'écraser avec une valeur par défaut. --}}
 <header class="dg-topbar" style="border-radius:0">
     <a href="{{ route('activity.index') }}" class="flex items-center gap-2.5" style="color:inherit">
         <span class="dg-topbar__mark">D</span>
@@ -33,16 +35,19 @@
             </summary>
             <div>
                 <span class="dg-label" style="padding:4px 8px 6px;display:block">Outils spécialisés</span>
-                <form method="POST" action="{{ route('federation.continue.gamadrive') }}">
-                    @csrf
-                    <button type="submit" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:transparent;border:0;font:inherit;text-align:left;cursor:pointer">
-                        <span class="dg-tool__mark">GD</span>
-                        <span style="font-size:13px;font-weight:600;color:var(--dg-night)">GamaDrive</span>
-                    </button>
-                </form>
-                <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px dashed var(--dg-line-dashed);color:var(--dg-faint);font-size:12px;line-height:1.5">
-                    D’autres outils apparaîtront ici lorsqu’une action réelle les rendra utiles.
-                </div>
+                @forelse(($satellites ?? collect()) as $satellite)
+                    <form method="POST" action="{{ route('federation.continue', $satellite->slug) }}">
+                        @csrf
+                        <button type="submit" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;background:transparent;border:0;font:inherit;text-align:left;cursor:pointer">
+                            <span class="dg-tool__mark">{{ \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($satellite->display_name, 0, 2)) }}</span>
+                            <span style="font-size:13px;font-weight:600;color:var(--dg-night)">{{ $satellite->display_name }}</span>
+                        </button>
+                    </form>
+                @empty
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;border:1px dashed var(--dg-line-dashed);color:var(--dg-faint);font-size:12px;line-height:1.5">
+                        D’autres outils apparaîtront ici lorsqu’une action réelle les rendra utiles.
+                    </div>
+                @endforelse
             </div>
         </details>
 

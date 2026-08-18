@@ -15,7 +15,7 @@
 
         <section class="admin-accompaniment-list"><div class="section-heading"><div><p class="eyebrow dark">Registre</p><h2>Satellites déclarés</h2></div><small>{{ $satellites->count() }} satellite(s)</small></div>
             @forelse($satellites as $satellite)
-                <article class="admin-accompaniment-card"><header><div><span>{{ $satellite->is_active ? 'Actif' : 'Désactivé' }}</span><h3>{{ $satellite->display_name }}</h3><p>Référence produit : {{ $satellite->product_reference }}</p></div></header>
+                <article class="admin-accompaniment-card"><header><div><span>{{ $satellite->is_active ? 'Actif' : 'Désactivé' }}</span><h3>{{ $satellite->display_name }}</h3><p>Référence produit : {{ $satellite->product_reference }} · URL de continuité : /federation/continue/{{ $satellite->slug }}</p></div></header>
                     @if($satellite->description)<p>{{ $satellite->description }}</p>@endif
                     <form method="POST" action="{{ route('administration.satellites.update', $satellite) }}" class="accompaniment-action-form">@csrf @method('PUT')
                         <label>Nom d’affichage<input name="display_name" value="{{ $satellite->display_name }}" required></label>

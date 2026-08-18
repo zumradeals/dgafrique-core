@@ -16,7 +16,7 @@ final class Satellite extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'product_reference', 'display_name', 'description', 'callback_url',
+        'product_reference', 'slug', 'display_name', 'description', 'callback_url',
         'is_active', 'created_by_core_reference',
     ];
 

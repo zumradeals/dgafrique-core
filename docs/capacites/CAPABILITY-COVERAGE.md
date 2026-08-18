@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 48 CLOSED · 5 PARTIAL · 12 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-048 — registre des satellites, PR #34)
+> **Total : 84/84 auditées — 49 CLOSED · 4 PARTIAL · 12 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-049 — relation satellite ↔ Core, PR #36)
 
 ---
 
@@ -448,12 +448,12 @@ Implementation PR: #34
 Final SHA: 6f25ef392fd89afb7f1a77511717d2962893e569
 
 ## CAP-049 — Relation satellite ↔ Core
-Status: PARTIAL
-Evidence: `FederatedProductGateway` — continuité SSO fédérée, GamaDrive uniquement
-Gap: relation ni généralisée ni pilotée par un registre (CAP-048)
-Dependencies: CAP-048
-Decision: généraliser une fois CAP-048 construit
-Implementation PR: —
+Status: CLOSED
+Evidence: `FederationContinuationController` résout désormais le satellite par `slug` depuis `dg_satellites` (`is_active` requis) au lieu de `config/federation.php` ; le menu « Mes outils » (topbar + Mon espace) itère sur le registre via un composeur de vue (`FederationServiceProvider`)
+Gap: aucun
+Dependencies: CAP-048 (CLOSED)
+Decision: `FederatedProductGateway`/`GamadCoreClient` inchangés (aucun nouveau secret) ; déclarer un satellite actif dans l'administration le fait apparaître partout sans déploiement ; un satellite désactivé redevient 404 et disparaît du menu
+Implementation PR: #36
 Final SHA: —
 
 ## CAP-050 — DG Afrique comme client du Core
