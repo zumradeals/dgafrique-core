@@ -13,6 +13,7 @@ use App\Models\Project;
 use App\Models\ProjectAccompaniment;
 use App\Models\ProjectAutonomyPathway;
 use App\Models\ProjectEvent;
+use App\Models\Satellite;
 use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,7 +60,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         self::assertSame(Project::STATUS_PROPOSED, $project->status);
         self::assertSame('POTENTIAL_STRUCTURE', $project->maturity);
         self::assertSame(0, ProjectAccompaniment::query()->count());
-        self::assertFalse(Schema::hasTable('dg_satellites'));
+        self::assertSame(1, Satellite::query()->count(), 'ouvrir un parcours d’autonomie ne doit jamais créer de satellite (CAP-048, registre distinct et administratif)');
         self::assertFalse(Schema::hasTable('dg_organizations'));
     }
 
