@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 42 CLOSED · 8 PARTIAL · 15 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-037/038 — micro-espace de travail ZUMRA et priorité collective, PR #21)
+> **Total : 84/84 auditées — 43 CLOSED · 8 PARTIAL · 14 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-041 — équipe projet, PR #23)
 
 ---
 
@@ -376,12 +376,12 @@ Implementation PR: antérieur au workflow PR-par-module
 Final SHA: —
 
 ## CAP-041 — Équipe projet
-Status: NOT_IMPLEMENTED
-Evidence: seul `ProjectMatchDecision` (masquage `HIDDEN`) existe
-Gap: aucune structure d'équipe (rôles, acceptation, responsabilités)
+Status: CLOSED
+Evidence: `ProjectTeamMember` (table `dg_project_team_members`) + `ProjectTeamService` (demande/invitation/acceptation/départ/retrait), autorité réutilisée depuis `ProjectService::canView/canDecide`, invitation consentie via `PersonProfile.discovery_reference`/`discovery_consent`, section « Équipe du projet » sur `/projets/{project}`
+Gap: aucun
 Dependencies: aucune
-Decision: construire `ProjectTeamMember`/invitation, distinct du matching
-Implementation PR: —
+Decision: table additive distincte de `ProjectMatchDecision` (suggestion masquée ≠ adhésion réelle)
+Implementation PR: #23
 Final SHA: —
 
 ## CAP-042 — Besoin projet

@@ -133,6 +133,80 @@
                     </div>
                 </x-dg.card>
 
+                <x-dg.card>
+                    <x-dg.label>Équipe du projet</x-dg.label>
+                    <p class="dg-hint" style="margin-top:6px">Les personnes qui ont réellement rejoint ce projet, jamais un classement ni un score.</p>
+
+                    <div style="margin-top:14px;display:flex;flex-direction:column;gap:8px">
+                        @forelse($teamMembers as $member)
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--dg-line-dashed)">
+                                <div>
+                                    <strong style="color:var(--dg-ink)">{{ $teamProfiles->get($member->core_identity_reference)?->discovery_display_name ?: 'Membre du projet' }}</strong>
+                                    @if($member->role)
+                                        <span class="dg-meta"> · {{ $member->role }}</span>
+                                    @endif
+                                </div>
+                                @if($canDecide)
+                                    <form method="POST" action="{{ route('projects.team.remove', [$project, $member]) }}" onsubmit="return confirm('Retirer cette personne de l’équipe ?');" style="display:flex;gap:6px;align-items:center">
+                                        @csrf
+                                        <input type="text" name="reason" class="dg-input" placeholder="Raison" required style="max-width:180px">
+                                        <button type="submit" class="dg-btn dg-btn--quiet">Retirer</button>
+                                    </form>
+                                @endif
+                            </div>
+                        @empty
+                            <p class="dg-meta">Aucune personne n’a encore rejoint l’équipe.</p>
+                        @endforelse
+                    </div>
+
+                    @if($myTeamMembership?->status === 'INVITED')
+                        <form method="POST" action="{{ route('projects.team.invitation.accept', $project) }}" style="margin-top:14px">
+                            @csrf
+                            <button type="submit" class="dg-btn dg-btn--primary">Accepter l’invitation à rejoindre l’équipe</button>
+                        </form>
+                    @elseif($myTeamMembership?->status === 'ACTIVE')
+                        <form method="POST" action="{{ route('projects.team.leave', $project) }}" style="margin-top:14px">
+                            @csrf
+                            <button type="submit" class="dg-btn dg-btn--quiet">Quitter l’équipe</button>
+                        </form>
+                    @elseif($myTeamMembership?->status === 'REQUESTED')
+                        <p class="dg-meta" style="margin-top:14px">Votre demande pour rejoindre l’équipe est en attente.</p>
+                    @elseif(! $canDecide)
+                        <form method="POST" action="{{ route('projects.team.request', $project) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                            @csrf
+                            <textarea name="motivation" class="dg-textarea" rows="2" maxlength="800" placeholder="Motivation facultative"></textarea>
+                            <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Demander à rejoindre l’équipe</button>
+                        </form>
+                    @endif
+
+                    @if($canDecide)
+                        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--dg-line-dashed)">
+                            <x-dg.label>Espace porteur</x-dg.label>
+                            <p class="dg-hint" style="margin-top:8px">Utilisez la référence publique visible sur son profil. L’invitation devra être acceptée.</p>
+                            <form method="POST" action="{{ route('projects.team.invite', $project) }}" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-start">
+                                @csrf
+                                <input type="text" name="person_reference" class="dg-input" placeholder="Référence publique xxxxxxxx-xxxx-…" required style="flex:1;min-width:220px">
+                                <button type="submit" class="dg-btn dg-btn--primary">Envoyer l’invitation</button>
+                            </form>
+
+                            @if($pendingTeamRequests->isNotEmpty())
+                                <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px">
+                                    @foreach($pendingTeamRequests as $pending)
+                                        <div class="dg-note">
+                                            <strong style="color:var(--dg-ink)">{{ $teamProfiles->get($pending->core_identity_reference)?->discovery_display_name ?: 'Personne' }}</strong>
+                                            <p style="margin:6px 0">{{ $pending->motivation ?: 'Aucune motivation renseignée.' }}</p>
+                                            <form method="POST" action="{{ route('projects.team.requests.approve', [$project, $pending]) }}">
+                                                @csrf
+                                                <button type="submit" class="dg-btn dg-btn--primary">Approuver</button>
+                                            </form>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endif
+                </x-dg.card>
+
                 <div class="dg-band">
                     <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Aucun financement ouvert</strong>
                     Cette fiche organise le projet ; elle ne constitue ni une collecte, ni une promesse d’accompagnement.
