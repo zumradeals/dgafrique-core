@@ -292,15 +292,6 @@
                     </section>
                 </aside>
             </div>
-
-            <footer class="zumra-hub__context-note">
-                <span class="zumra-hub__context-icon" aria-hidden="true">◎</span>
-                <div>
-                    <strong>ZUMRA fait partie de DG Afrique.</strong>
-                    <p>Les collectifs s’articulent avec le Fil, les besoins, les projets, les capacités et les outils spécialisés — sans créer un second réseau parallèle.</p>
-                </div>
-                <a href="{{ route('activity.index', ['type' => 'ZUMRA']) }}">Voir l’action dans le Fil →</a>
-            </footer>
         </div>
     </x-dg.shell>
 </x-layouts.portal>
