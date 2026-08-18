@@ -391,7 +391,7 @@ Gap: aucun
 Dependencies: aucune
 Decision: `ProjectAuthority` extraite de `ProjectService::canView/canDecide` (comportement inchangé) pour être réutilisée par `NeedService` sans dépendance circulaire ; `required_capabilities`/`required_resources` restent l'instantané figé de création, inchangés
 Implementation PR: #25
-Final SHA: —
+Final SHA: d7b456c2ba17fb726be7b18400e64a756629f44d
 
 ## CAP-043 — Dossier de projet vivant
 Status: CLOSED
