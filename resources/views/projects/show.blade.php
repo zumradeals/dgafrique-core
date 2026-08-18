@@ -84,6 +84,20 @@
                     <div style="margin-top:16px">
                         <x-dg.stagewalk :stages="$maturityStages" :current="$project->maturity" />
                     </div>
+
+                    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--dg-line-dashed)">
+                        <x-dg.label>Signaux observés</x-dg.label>
+                        <p class="dg-hint" style="margin-top:6px">Ces signaux n’attribuent ni ne modifient aucun repère. Seul le porteur décide.</p>
+                        @if(empty($maturitySignals))
+                            <p class="dg-meta" style="margin-top:10px">Aucun signal observé pour l’instant.</p>
+                        @else
+                            <ul style="margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--dg-text)">
+                                @foreach($maturitySignals as $signal)
+                                    <li>· {{ $signal }}</li>
+                                @endforeach
+                            </ul>
+                        @endif
+                    </div>
                 </x-dg.card>
 
                 @if($canDecide)
