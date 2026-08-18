@@ -1,0 +1,886 @@
+.zumra-hub {
+    --zh-forest: var(--dg-forest, #0d3f33);
+    --zh-forest-action: var(--dg-forest-action, #075a46);
+    --zh-ivory: var(--dg-ivory, #f7f1e6);
+    --zh-paper: #fffdf8;
+    --zh-sand: var(--dg-sand, #e5d7bd);
+    --zh-sand-soft: #f1e7d6;
+    --zh-saffron: var(--dg-saffron, #dda51b);
+    --zh-copper: var(--dg-copper, #b85d2b);
+    --zh-text: #243c35;
+    --zh-muted: #6f746d;
+    --zh-line: rgba(121, 91, 49, .2);
+    --zh-shadow: 0 18px 45px rgba(38, 54, 43, .055);
+    padding-top: clamp(2rem, 4vw, 4.25rem);
+    padding-bottom: clamp(5rem, 8vw, 7rem);
+}
+
+.zumra-hub a {
+    text-underline-offset: .2em;
+}
+
+.zumra-hub__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(320px, .75fr);
+    align-items: end;
+    gap: clamp(2rem, 6vw, 6.5rem);
+    padding: 0 0 clamp(2.25rem, 4vw, 4rem);
+}
+
+.zumra-hub__hero-copy {
+    max-width: 56rem;
+}
+
+.zumra-hub__title {
+    max-width: 14ch;
+    margin: .45rem 0 .7rem;
+    color: var(--zh-forest);
+    font-size: clamp(3rem, 5.2vw, 6rem);
+    line-height: .96;
+    letter-spacing: -.045em;
+}
+
+.zumra-hub__lead {
+    max-width: 58ch;
+    margin: 0;
+    color: var(--zh-text);
+    font-size: clamp(.92rem, 1.2vw, 1.05rem);
+    line-height: 1.75;
+}
+
+.zumra-hub__hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    align-content: end;
+}
+
+.zumra-hub__btn {
+    min-height: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    border: 1px solid var(--zh-line);
+    border-radius: .85rem;
+    padding: .78rem 1rem;
+    color: var(--zh-forest);
+    background: var(--zh-paper);
+    font-size: .78rem;
+    font-weight: 750;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.zumra-hub__btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(17, 61, 49, .09);
+}
+
+.zumra-hub__btn:focus-visible,
+.zumra-hub__feed-link a:focus-visible,
+.zumra-hub__section-heading > a:focus-visible,
+.zumra-hub__program-item a:focus-visible,
+.zumra-hub__context-note > a:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--zh-saffron) 55%, transparent);
+    outline-offset: 3px;
+}
+
+.zumra-hub__btn--primary {
+    border-color: var(--zh-forest);
+    color: #fffdf7;
+    background: linear-gradient(135deg, var(--zh-forest), #0a4d3d);
+    box-shadow: 0 12px 28px rgba(10, 66, 51, .12);
+}
+
+.zumra-hub__btn--secondary {
+    background: rgba(255, 253, 248, .74);
+}
+
+.zumra-hub__btn--saffron {
+    border-color: color-mix(in srgb, var(--zh-saffron) 80%, #b77900);
+    color: #2b321e;
+    background: linear-gradient(135deg, #e9ae22, #d99a0d);
+}
+
+.zumra-hub__btn--disabled {
+    opacity: .48;
+    cursor: not-allowed;
+}
+
+.zumra-hub__btn--disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.zumra-hub__feed-link {
+    grid-column: 1 / -1;
+    display: grid;
+    justify-items: center;
+    gap: .28rem;
+    padding-top: .15rem;
+}
+
+.zumra-hub__feed-link a {
+    color: var(--zh-forest);
+    font-size: .75rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.zumra-hub__feed-link small {
+    color: var(--zh-muted);
+    font-size: .62rem;
+}
+
+.zumra-hub__section {
+    margin-top: clamp(2.25rem, 4vw, 4rem);
+}
+
+.zumra-hub__section-heading {
+    min-height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.zumra-hub__section-heading > div {
+    display: flex;
+    align-items: center;
+    gap: .65rem;
+}
+
+.zumra-hub__section-heading h2 {
+    margin: 0;
+    color: var(--zh-text);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: .67rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+}
+
+.zumra-hub__section-heading > a {
+    color: var(--zh-forest-action);
+    font-size: .7rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.zumra-hub__section-icon {
+    width: 1.65rem;
+    height: 1.65rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #8d6510;
+    background: #fff2ce;
+    font-size: .9rem;
+    font-weight: 800;
+}
+
+.zumra-hub__micro-label {
+    display: inline-block;
+    color: #806e59;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: .59rem;
+    font-weight: 500;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+}
+
+.zumra-hub__attention {
+    margin-top: 0;
+    padding-top: clamp(1.5rem, 3vw, 2.4rem);
+    border-top: 1px solid var(--zh-line);
+}
+
+.zumra-hub__attention-list {
+    display: grid;
+    gap: .85rem;
+}
+
+.zumra-hub__attention-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1.2rem;
+    border: 1px solid var(--zh-line);
+    border-radius: 1.2rem;
+    padding: clamp(1.15rem, 2vw, 1.6rem);
+    background: linear-gradient(105deg, rgba(255, 253, 248, .96), rgba(253, 248, 237, .92));
+    box-shadow: var(--zh-shadow);
+}
+
+.zumra-hub__attention-mark {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border-radius: 1rem;
+    color: var(--zh-forest);
+    background: #edf3e8;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.4rem;
+}
+
+.zumra-hub__attention-copy h3 {
+    margin: .3rem 0 .3rem;
+    color: var(--zh-forest);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.zumra-hub__attention-copy p {
+    margin: 0;
+    color: var(--zh-muted);
+    font-size: .75rem;
+    line-height: 1.55;
+}
+
+.zumra-hub__attention-actions {
+    min-width: 9.5rem;
+}
+
+.zumra-hub__attention-actions .zumra-hub__btn {
+    width: 100%;
+}
+
+.zumra-hub__workspace {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(270px, 330px);
+    gap: clamp(1rem, 2.2vw, 1.5rem);
+    align-items: start;
+}
+
+.zumra-hub__groups {
+    display: grid;
+    gap: 1rem;
+}
+
+.zumra-hub__group-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(220px, .65fr);
+    overflow: hidden;
+    border: 1px solid var(--zh-line);
+    border-radius: 1.25rem;
+    background: var(--zh-paper);
+    box-shadow: var(--zh-shadow);
+}
+
+.zumra-hub__group-main {
+    padding: clamp(1.2rem, 2.5vw, 1.8rem);
+}
+
+.zumra-hub__group-side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1rem;
+    border-left: 1px solid var(--zh-line);
+    padding: clamp(1.2rem, 2vw, 1.6rem);
+    background: linear-gradient(180deg, rgba(247, 242, 232, .46), rgba(255, 253, 248, .8));
+}
+
+.zumra-hub__group-identity {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.zumra-hub__avatar {
+    width: 3.8rem;
+    height: 3.8rem;
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    border-radius: 1rem;
+    color: #fffaf0;
+    background: linear-gradient(145deg, #0b493a, #07352c);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 9px 20px rgba(14,62,49,.12);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.2rem;
+}
+
+.zumra-hub__group-title-line {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+
+.zumra-hub__group-title-line h3 {
+    margin: 0;
+    color: var(--zh-forest);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: clamp(1.35rem, 2vw, 1.65rem);
+    font-weight: 400;
+    line-height: 1.15;
+}
+
+.zumra-hub__status {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    border-radius: 999px;
+    padding: .2rem .52rem;
+    font-size: .57rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.zumra-hub__status--active {
+    color: #286346;
+    background: #e6f2e4;
+}
+
+.zumra-hub__status--invited {
+    color: #8b5b08;
+    background: #fff1cc;
+}
+
+.zumra-hub__status--pending {
+    color: #6e6256;
+    background: #eee8df;
+}
+
+.zumra-hub__domain {
+    display: block;
+    margin-top: .25rem;
+    color: var(--zh-copper);
+    font-size: .67rem;
+    font-weight: 650;
+}
+
+.zumra-hub__objective {
+    max-width: 58ch;
+    margin: 1rem 0 1.15rem;
+    color: var(--zh-text);
+    font-size: .78rem;
+    line-height: 1.65;
+}
+
+.zumra-hub__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.3rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--zh-line);
+}
+
+.zumra-hub__fact {
+    min-width: 8rem;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+}
+
+.zumra-hub__fact-icon {
+    color: #9b805e;
+    font-size: .95rem;
+}
+
+.zumra-hub__fact span:last-child {
+    display: grid;
+    gap: .08rem;
+}
+
+.zumra-hub__fact strong {
+    color: var(--zh-text);
+    font-size: .72rem;
+}
+
+.zumra-hub__fact small {
+    color: var(--zh-muted);
+    font-size: .6rem;
+}
+
+.zumra-hub__group-context {
+    display: grid;
+    gap: .35rem;
+}
+
+.zumra-hub__group-context span {
+    color: #927b61;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: .55rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.zumra-hub__group-context strong {
+    color: var(--zh-text);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.06rem;
+    font-weight: 400;
+    line-height: 1.3;
+}
+
+.zumra-hub__program {
+    position: sticky;
+    top: 5.5rem;
+    display: grid;
+    gap: .75rem;
+    margin-top: clamp(2.25rem, 4vw, 4rem);
+    border: 1px solid var(--zh-line);
+    border-radius: 1.15rem;
+    padding: 1rem;
+    background: rgba(247, 241, 230, .66);
+}
+
+.zumra-hub__program > .zumra-hub__micro-label {
+    padding: .2rem .25rem .45rem;
+}
+
+.zumra-hub__program-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .7rem;
+    border: 1px solid rgba(121, 91, 49, .14);
+    border-radius: .9rem;
+    padding: .9rem;
+    background: var(--zh-paper);
+}
+
+.zumra-hub__program-item.is-muted {
+    opacity: .7;
+}
+
+.zumra-hub__program-icon {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #647266;
+    background: #edf0e8;
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.zumra-hub__program-icon.is-active {
+    color: #2f744a;
+    background: #e3f3df;
+}
+
+.zumra-hub__program-item strong {
+    color: var(--zh-text);
+    font-size: .73rem;
+}
+
+.zumra-hub__program-item p {
+    margin: .3rem 0 .5rem;
+    color: var(--zh-muted);
+    font-size: .62rem;
+    line-height: 1.5;
+}
+
+.zumra-hub__program-item a {
+    color: var(--zh-forest-action);
+    font-size: .62rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.zumra-hub__empty {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    border: 1px dashed color-mix(in srgb, var(--zh-sand) 80%, #bca57f);
+    border-radius: 1.15rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    background: rgba(255, 253, 248, .66);
+}
+
+.zumra-hub__empty-mark {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border-radius: .9rem;
+    color: var(--zh-forest);
+    background: #eaf1e7;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.2rem;
+}
+
+.zumra-hub__empty h3 {
+    margin: 0 0 .3rem;
+    color: var(--zh-forest);
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+}
+
+.zumra-hub__empty p {
+    max-width: 60ch;
+    margin: 0;
+    color: var(--zh-muted);
+    font-size: .72rem;
+    line-height: 1.6;
+}
+
+.zumra-hub__discover {
+    padding-top: 1rem;
+}
+
+.zumra-hub__domain-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: .8rem;
+}
+
+.zumra-hub__domain-card {
+    min-height: 9.5rem;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--zh-line);
+    border-radius: 1rem;
+    padding: 1rem;
+    background: var(--zh-paper);
+    box-shadow: 0 10px 28px rgba(38,54,43,.035);
+}
+
+.zumra-hub__domain-mark {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--zh-forest);
+    background: #eaf1e7;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 1rem;
+}
+
+.zumra-hub__domain-card h3 {
+    margin: .8rem 0 .25rem;
+    color: var(--zh-text);
+    font-size: .78rem;
+}
+
+.zumra-hub__domain-card p {
+    margin: auto 0 0;
+    color: var(--zh-muted);
+    font-size: .62rem;
+    line-height: 1.45;
+}
+
+.zumra-hub__discover-empty {
+    border: 1px dashed var(--zh-line);
+    border-radius: 1rem;
+    padding: 1.4rem;
+    color: var(--zh-muted);
+    background: rgba(255,255,255,.45);
+    font-size: .72rem;
+}
+
+.zumra-hub__context-note {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    margin-top: clamp(2.3rem, 5vw, 4.5rem);
+    border: 1px solid rgba(121, 91, 49, .13);
+    border-radius: 1rem;
+    padding: 1rem 1.15rem;
+    background: rgba(239, 229, 210, .5);
+}
+
+.zumra-hub__context-icon {
+    width: 2.45rem;
+    height: 2.45rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--zh-forest);
+    background: #f7eddc;
+}
+
+.zumra-hub__context-note strong {
+    color: var(--zh-text);
+    font-size: .72rem;
+}
+
+.zumra-hub__context-note p {
+    margin: .18rem 0 0;
+    color: var(--zh-muted);
+    font-size: .62rem;
+    line-height: 1.45;
+}
+
+.zumra-hub__context-note > a {
+    color: var(--zh-forest-action);
+    font-size: .64rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+@media (max-width: 1180px) {
+    .zumra-hub__hero {
+        grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr);
+        gap: 2.5rem;
+    }
+
+    .zumra-hub__workspace {
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 290px);
+    }
+
+    .zumra-hub__group-card {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__group-side {
+        flex-direction: row;
+        align-items: center;
+        border-top: 1px solid var(--zh-line);
+        border-left: 0;
+    }
+
+    .zumra-hub__group-side .zumra-hub__btn {
+        min-width: 10rem;
+    }
+
+    .zumra-hub__domain-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .zumra-hub {
+        padding-top: 2rem;
+    }
+
+    .zumra-hub__hero {
+        grid-template-columns: 1fr;
+        align-items: start;
+        gap: 1.5rem;
+    }
+
+    .zumra-hub__title {
+        max-width: 16ch;
+        font-size: clamp(2.8rem, 8vw, 4.5rem);
+    }
+
+    .zumra-hub__hero-actions {
+        max-width: 36rem;
+    }
+
+    .zumra-hub__workspace {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__program {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-top: 1rem;
+    }
+
+    .zumra-hub__program > .zumra-hub__micro-label {
+        grid-column: 1 / -1;
+    }
+
+    .zumra-hub__attention-card {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .zumra-hub__attention-actions {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .zumra-hub__domain-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 680px) {
+    .zumra-hub {
+        padding-top: 1.35rem;
+        padding-bottom: 6.5rem;
+    }
+
+    .zumra-hub__hero {
+        gap: 1.25rem;
+        padding-bottom: 1.5rem;
+    }
+
+    .zumra-hub__title {
+        max-width: 10ch;
+        margin-top: .55rem;
+        font-size: clamp(2.55rem, 12.5vw, 3.6rem);
+        line-height: .95;
+    }
+
+    .zumra-hub__lead {
+        font-size: .84rem;
+        line-height: 1.65;
+    }
+
+    .zumra-hub__hero-actions {
+        grid-template-columns: 1fr;
+        width: 100%;
+        max-width: none;
+    }
+
+    .zumra-hub__feed-link {
+        grid-column: auto;
+        border-top: 1px solid var(--zh-line);
+        padding-top: .8rem;
+    }
+
+    .zumra-hub__section {
+        margin-top: 2rem;
+    }
+
+    .zumra-hub__section-heading {
+        align-items: flex-start;
+    }
+
+    .zumra-hub__section-heading > a {
+        max-width: 9rem;
+        text-align: right;
+    }
+
+    .zumra-hub__attention {
+        padding-top: 1.25rem;
+    }
+
+    .zumra-hub__attention-card {
+        grid-template-columns: 1fr;
+        gap: .75rem;
+        padding: 1rem;
+    }
+
+    .zumra-hub__attention-mark {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: .8rem;
+    }
+
+    .zumra-hub__attention-actions {
+        grid-column: auto;
+        width: 100%;
+    }
+
+    .zumra-hub__group-main {
+        padding: 1rem;
+    }
+
+    .zumra-hub__group-identity {
+        align-items: flex-start;
+        gap: .75rem;
+    }
+
+    .zumra-hub__avatar {
+        width: 3.15rem;
+        height: 3.15rem;
+        border-radius: .85rem;
+    }
+
+    .zumra-hub__group-title-line {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .35rem;
+    }
+
+    .zumra-hub__group-title-line h3 {
+        font-size: 1.35rem;
+    }
+
+    .zumra-hub__objective {
+        margin-top: .9rem;
+        font-size: .73rem;
+    }
+
+    .zumra-hub__facts {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .75rem;
+    }
+
+    .zumra-hub__fact {
+        min-width: 0;
+        align-items: flex-start;
+    }
+
+    .zumra-hub__group-side {
+        align-items: stretch;
+        flex-direction: column;
+        padding: 1rem;
+    }
+
+    .zumra-hub__group-side .zumra-hub__btn {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .zumra-hub__program {
+        grid-template-columns: 1fr;
+        gap: .65rem;
+        padding: .75rem;
+    }
+
+    .zumra-hub__program > .zumra-hub__micro-label {
+        grid-column: auto;
+    }
+
+    .zumra-hub__empty {
+        grid-template-columns: 1fr;
+        padding: 1rem;
+    }
+
+    .zumra-hub__empty .zumra-hub__btn {
+        width: 100%;
+    }
+
+    .zumra-hub__domain-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .65rem;
+    }
+
+    .zumra-hub__domain-card {
+        min-height: 8rem;
+        padding: .85rem;
+    }
+
+    .zumra-hub__context-note {
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .zumra-hub__context-note > a {
+        grid-column: 2;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 390px) {
+    .zumra-hub__domain-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__section-heading {
+        flex-direction: column;
+        gap: .45rem;
+    }
+
+    .zumra-hub__section-heading > a {
+        max-width: none;
+        text-align: left;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .zumra-hub__btn {
+        transition: none;
+    }
+}
