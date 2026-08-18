@@ -27,7 +27,9 @@ final class GeniusPayClient
         ]);
         $data = $response->throw()->json('data');
 
-        return $this->normalize(is_array($data) ? $data : []);
+        // GeniusPay sandbox renvoie parfois un statut absent sur la création initiale (le
+        // paiement existe déjà côté prestataire) — jamais toléré à la réconciliation.
+        return $this->normalize(is_array($data) ? $data : [], allowMissingInitialStatus: true);
     }
 
     public function payment(string $reference): array
@@ -58,7 +60,13 @@ final class GeniusPayClient
             ->withHeaders(['X-API-Key' => $key, 'X-API-Secret' => $secret]);
     }
 
-    private function normalize(array $raw): array
+    /**
+     * @param bool $allowMissingInitialStatus true uniquement pour createMembershipPayment() —
+     *   jamais pour payment()/reconcile(), qui doivent toujours recevoir un vrai statut du
+     *   prestataire. Un statut absent n'est jamais transformé silencieusement en COMPLETED :
+     *   au mieux, sur une création par ailleurs valide, en PENDING.
+     */
+    private function normalize(array $raw, bool $allowMissingInitialStatus = false): array
     {
         $status = strtoupper((string) ($raw['status'] ?? ''));
         $aliases = ['SUCCESS' => 'COMPLETED', 'SUCCESSFUL' => 'COMPLETED'];
@@ -67,6 +75,13 @@ final class GeniusPayClient
         $amount = filter_var($raw['amount'] ?? null, FILTER_VALIDATE_INT);
         $checkout = $raw['checkout_url'] ?? $raw['payment_url'] ?? null;
         $environment = strtolower((string) ($raw['environment'] ?? ''));
+
+        if ($allowMissingInitialStatus && $status === '' && $reference !== '' && $amount !== false
+            && in_array($environment, ['live', 'sandbox'], true)
+            && is_string($checkout) && parse_url($checkout, PHP_URL_SCHEME) === 'https') {
+            $status = 'PENDING';
+        }
+
         if ($reference === '' || $amount === false || ! in_array($status, ['PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED', 'REFUNDED'], true)
             || ! in_array($environment, ['live', 'sandbox'], true)) {
             throw new RuntimeException('PAYMENT_PROVIDER_RESPONSE_INVALID');
