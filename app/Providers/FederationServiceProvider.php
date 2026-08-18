@@ -28,5 +28,6 @@ final class FederationServiceProvider extends ServiceProvider
         RateLimiter::for('federation-continue', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
 
         $this->loadRoutesFrom(base_path('routes/federation.php'));
+        $this->loadRoutesFrom(base_path('routes/cap048.php'));
     }
 }

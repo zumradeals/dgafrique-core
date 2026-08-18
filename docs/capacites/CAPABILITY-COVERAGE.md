@@ -10,8 +10,8 @@
 >
 > **Statuts autorisés :** CLOSED · PARTIAL · NOT_IMPLEMENTED · DOC_ONLY · DEPENDENCY_BLOCKED.
 >
-> **Total : 84/84 auditées — 47 CLOSED · 5 PARTIAL · 13 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
-> (mis à jour après CAP-046 — dossier d'accompagnement, PR #31)
+> **Total : 84/84 auditées — 48 CLOSED · 5 PARTIAL · 12 NOT_IMPLEMENTED · 13 DOC_ONLY · 6 DEPENDENCY_BLOCKED.**
+> (mis à jour après CAP-048 — registre des satellites, PR #34)
 
 ---
 
@@ -439,12 +439,12 @@ Implementation PR: —
 Final SHA: —
 
 ## CAP-048 — Registre des satellites
-Status: NOT_IMPLEMENTED
-Evidence: un seul satellite codé en dur dans `config/federation.php`
-Gap: aucun registre réel (table, CRUD, écran d'administration)
+Status: CLOSED
+Evidence: table `dg_satellites` + `Satellite` + `Administration\SatelliteController` (CRUD complet : déclarer/éditer/basculer actif-inactif), écran `/administration/satellites`, GamaDrive migré comme premier enregistrement réel
+Gap: aucun (le branchement du flux de continuité fédérée sur le registre reste explicitement CAP-049)
 Dependencies: aucune
-Decision: créer table `dg_satellites` + admin avant toute relation générique
-Implementation PR: —
+Decision: table + admin d'abord, généralisation du flux fédéré différée à CAP-049 ; `config/federation.php` et `FederationContinuationController` restent inchangés
+Implementation PR: #34
 Final SHA: —
 
 ## CAP-049 — Relation satellite ↔ Core
