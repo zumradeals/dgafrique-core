@@ -11,6 +11,7 @@ export default defineConfig({
                 'resources/css/identity-v2.css',
                 'resources/css/zumra-hub.css',
                 'resources/css/member-space-v2.css',
+                'resources/css/auth-v2.css',
                 'resources/js/app.js',
             ],
             refresh: true,

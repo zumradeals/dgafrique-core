@@ -1,82 +1,84 @@
 <x-layouts.portal title="Connexion — DG Afrique">
-    <main class="login-shell">
-        <section class="login-story" aria-label="DG Afrique">
-            <a class="brand" href="/" aria-label="Accueil DG Afrique">
-                <span class="brand-mark">G</span>
-                <span>DG Afrique</span>
-            </a>
+    <main class="av2-shell">
+        <section class="av2-story" aria-label="DG Afrique">
+            <span class="dg-brand" aria-hidden="true">
+                <span class="dg-brandmark"><span class="dg-brandmark__d">D</span><span class="dg-brandmark__g">G</span></span>
+                <span class="dg-brand__word">DG Afrique</span>
+            </span>
 
-            <div class="login-promise">
-                <p class="eyebrow">Le portail numérique DG Afrique</p>
-                <h1>Le numérique qui fait avancer vos projets.</h1>
-                <p>Connectez-vous pour accéder à votre espace, suivre vos demandes et rejoindre ZUMRA.</p>
+            <div class="av2-promise">
+                <span class="av2-eyebrow">Le réseau d’action</span>
+                <h1 class="av2-headline">Reprenez le<br><em>mouvement.</em></h1>
+                <p class="av2-sub">Connectez-vous pour retrouver votre fil, vos besoins et vos projets en cours.</p>
             </div>
 
-            <p class="login-foot">© DG Afrique · Tous droits réservés</p>
+            <p class="av2-foot">© DG Afrique — le réseau où les capacités deviennent des actions.</p>
         </section>
 
-        <section class="login-form-panel">
-            <div class="login-form-wrap">
-                <a class="mobile-brand" href="/">
-                    <span class="brand-mark">G</span><span>DG Afrique</span>
-                </a>
-
-                <h2>Connexion</h2>
-                <p class="form-intro">Accédez à votre espace DG Afrique.</p>
+        <section class="av2-panel">
+            <div class="av2-formwrap">
+                <div class="av2-formhead">
+                    <h1>Connexion</h1>
+                    <p>Accédez à votre espace DG Afrique.</p>
+                </div>
 
                 @if (session('status'))
-                    <div class="alert success" role="status">{{ session('status') }}</div>
+                    <div class="av2-alert av2-alert--success" role="status">{{ session('status') }}</div>
                 @endif
 
                 @if ($errors->any())
-                    <div class="alert danger" role="alert">{{ $errors->first() }}</div>
+                    <div class="av2-alert av2-alert--danger" role="alert">{{ $errors->first() }}</div>
                 @endif
 
-                <form method="POST" action="{{ route('login.store') }}" class="auth-form">
+                <form method="POST" action="{{ route('login.store') }}" class="av2-form">
                     @csrf
                     <input type="hidden" name="next" value="{{ old('next', $next) }}">
 
-                    <label for="identifier">E-mail ou téléphone</label>
-                    <input
-                        id="identifier"
-                        name="identifier"
-                        type="text"
-                        value="{{ old('identifier') }}"
-                        placeholder="vous@exemple.com"
-                        autocomplete="username"
-                        maxlength="512"
-                        required
-                        autofocus
-                    >
+                    <div class="av2-field">
+                        <label for="identifier">E-mail ou téléphone</label>
+                        <input
+                            id="identifier"
+                            name="identifier"
+                            type="text"
+                            value="{{ old('identifier') }}"
+                            placeholder="vous@exemple.com"
+                            autocomplete="username"
+                            maxlength="512"
+                            required
+                            autofocus
+                        >
+                    </div>
 
-                    <label for="secret">Mot de passe</label>
-                    <input
-                        id="secret"
-                        name="secret"
-                        type="password"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        maxlength="4096"
-                        required
-                    >
+                    <div class="av2-field">
+                        <label for="secret">Mot de passe</label>
+                        <input
+                            id="secret"
+                            name="secret"
+                            type="password"
+                            placeholder="••••••••"
+                            autocomplete="current-password"
+                            maxlength="4096"
+                            required
+                        >
+                    </div>
 
-                    <div class="auth-options">
-                        <label class="remember-choice">
+                    <div class="av2-row-between">
+                        <label class="av2-check">
                             <input type="checkbox" name="remember" value="1" @checked(old('remember'))>
                             <span>Se souvenir de moi</span>
                         </label>
-                        <span class="future-link" title="Disponible dans un prochain lot">Mot de passe oublié ?</span>
+                        <span class="av2-quiet" title="Disponible dans un prochain lot">Mot de passe oublié ?</span>
                     </div>
 
-                    <button class="primary-button" type="submit">Se connecter</button>
+                    <button class="av2-btn-primary" type="submit">Se connecter</button>
                 </form>
 
-                <button class="whatsapp-button" type="button" disabled>
+                <button class="av2-btn-secondary" type="button" disabled>
                     Continuer avec WhatsApp <small>— bientôt</small>
                 </button>
 
-                <p class="create-account">Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
-                <p class="identity-note">Votre Compte DG Afrique reste distinct de l’adhésion au Programme ZUMRA.</p>
+                <p class="av2-switchline">Pas encore de compte ? <a href="{{ route('register') }}">Créer un compte</a></p>
+                <p class="av2-note">Votre Compte DG Afrique reste distinct de l’adhésion au Programme ZUMRA.</p>
             </div>
         </section>
     </main>
