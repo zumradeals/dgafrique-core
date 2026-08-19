@@ -32,14 +32,26 @@ final class ActivityFeedController
             $filter = 'ALL';
         }
 
-        $feed = $activity->paginate(
-            $identity->reference,
-            $filter,
-            max(1, $request->integer('page', 1)),
-        );
+        $page = max(1, $request->integer('page', 1));
+
+        $feed = $activity->paginate($identity->reference, $filter, $page);
 
         if ($filter !== 'ALL') {
             $feed->appends(['type' => $filter]);
+        }
+
+        // Fil V2 — règle DEMO-FIRST, REAL-DATA-TAKES-OVER (docs/design/DESIGN-INVARIANTS.md §17) :
+        // des cartes d'exemple ne s'affichent qu'en première page et seulement quand le filtre
+        // actif n'a aucune donnée réelle — jamais mélangées à de vraies cartes.
+        $demoCards = [];
+        if ($page === 1 && $feed->isEmpty()) {
+            $demo = json_decode(
+                file_get_contents(resource_path('design-reference/fil-demo.json')),
+                true,
+            );
+            $demoCards = $filter === 'ALL'
+                ? $demo['cards']
+                : array_values(array_filter($demo['cards'], static fn (array $card): bool => $card['kind'] === $filter));
         }
 
         $myGroups = ZumraGroup::query()
@@ -61,6 +73,7 @@ final class ActivityFeedController
             'identity' => $identity,
             'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'feed' => $feed,
+            'demoCards' => $demoCards,
             'filter' => $filter,
             'filters' => ActivityFeedService::FILTERS,
             'myGroups' => $myGroups,

@@ -1,0 +1,241 @@
+/* Fil — DG Afrique Identity V2
+   Un fil d'action, pas un réseau de popularité : chaque carte répond à
+   « pourquoi cela m'est montré » puis « que puis-je faire ». */
+
+.dg-fil-grid {
+    width: min(1560px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 30px 0 64px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+}
+
+@media (min-width: 1024px) {
+    .dg-fil-grid {
+        grid-template-columns: 252px minmax(0, 1fr) 296px;
+        gap: 28px;
+        align-items: start;
+    }
+}
+
+.dg-fil-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: sticky;
+    top: 24px;
+}
+
+/* ---------- Rail gauche ---------- */
+
+.dg-fil-publish {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 18px;
+    border-radius: var(--dg-radius-control);
+    background: var(--dg-orange, var(--dg-copper));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.dg-fil-publish:hover {
+    color: #fff;
+    filter: brightness(1.05);
+}
+
+.dg-fil-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dg-fil-filters a {
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    color: var(--dg-text);
+}
+
+.dg-fil-filters a[aria-current='page'] {
+    background: var(--dg-petrol, var(--dg-forest));
+    color: #fff;
+    font-weight: 600;
+}
+
+.dg-fil-contribute {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 16px;
+    border-top: 1px solid var(--dg-line);
+}
+
+.dg-fil-contribute__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: var(--dg-tint-need, var(--dg-orange-soft));
+    color: var(--dg-ink);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.dg-fil-contribute__item:hover {
+    filter: brightness(0.98);
+    color: var(--dg-ink);
+}
+
+.dg-fil-contribute__item span[aria-hidden] {
+    color: var(--dg-orange-deep, var(--dg-copper));
+}
+
+/* ---------- Composeur ---------- */
+
+.dg-fil-composer {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px 24px;
+    background: var(--dg-card);
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card);
+    box-shadow: var(--dg-shadow-card);
+}
+
+.dg-fil-composer__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dg-fil-composer__prompt {
+    font-size: 15px;
+    color: var(--dg-muted);
+}
+
+.dg-fil-composer__types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dg-fil-composer__type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--dg-radius-pill);
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid var(--dg-line);
+    color: var(--dg-text);
+}
+
+.dg-fil-composer__type--need { border-color: transparent; background: var(--dg-tint-need); color: var(--dg-copper); }
+.dg-fil-composer__type--project { border-color: transparent; background: var(--dg-tint-project); color: var(--dg-night); }
+.dg-fil-composer__type--zumra { border-color: transparent; background: var(--dg-tint-decision); color: var(--dg-saffron-ink); }
+.dg-fil-composer__type:hover { filter: brightness(0.98); }
+.dg-fil-composer__type[aria-disabled='true'] {
+    border: 1px dashed var(--dg-line-dashed);
+    color: var(--dg-faint);
+    cursor: not-allowed;
+    background: transparent;
+}
+
+.dg-fil-composer__form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--dg-line-inner);
+}
+
+/* ---------- Barre de filtres + tri (mobile + desktop) ---------- */
+
+.dg-fil-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.dg-fil-toolbar__sort {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--dg-muted);
+}
+
+.dg-fil-follow-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--dg-muted);
+    cursor: not-allowed;
+}
+
+/* ---------- Cartes d'exemple ---------- */
+
+.dg-card--demo { border-style: dashed; border-width: 1.5px; }
+.dg-badge--demo { border: 1px dashed currentColor; background: transparent !important; }
+
+/* ---------- Rail droit ---------- */
+
+.dg-fil-matters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+    background: var(--dg-card);
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card);
+}
+
+.dg-fil-matters__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.dg-fil-matters__mark {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    background: var(--dg-tint-need, var(--dg-orange-soft));
+    color: var(--dg-orange-deep, var(--dg-copper));
+}
+
+.dg-fil-matters__item strong {
+    display: block;
+    font-size: 14px;
+    color: var(--dg-ink);
+}
+
+.dg-fil-matters__item span {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--dg-muted);
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 1023px) {
+    .dg-fil-rail { position: static; }
+    .dg-fil-composer { padding: 18px; }
+    .dg-fil-composer__types { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+    .dg-fil-composer__type { white-space: nowrap; }
+}

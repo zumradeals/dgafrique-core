@@ -84,14 +84,18 @@ final class DesignInvariantsTest extends TestCase
         self::assertSame(0, ZumraGroup::query()->count());
     }
 
-    public function test_fil_shows_an_honest_empty_state_for_a_fresh_identity(): void
+    public function test_fil_shows_marked_demo_cards_for_a_fresh_identity_instead_of_a_bare_empty_state(): void
     {
+        // Fil V2 (docs/design/DESIGN-INVARIANTS.md §17, 19 août 2026) : DEMO-FIRST,
+        // REAL-DATA-TAKES-OVER — un fresh identity voit des cartes d'exemple clairement
+        // marquées plutôt que seulement l'état vide, tant qu'aucune donnée réelle n'existe.
         $this->signIn('IDN-FRESH');
 
         $this->get('/activite')
             ->assertOk()
-            ->assertSee('Rien ne bouge encore près de vous.')
-            ->assertSee('Exprimer un besoin');
+            ->assertSee('Besoin · Exemple')
+            ->assertSee('Objet de démonstration — aucune action réelle n’est rattachée.')
+            ->assertDontSee('Rien ne bouge encore près de vous.');
     }
 
     public function test_mon_espace_shows_honest_empty_state_when_nothing_needs_a_decision(): void
@@ -184,10 +188,13 @@ final class DesignInvariantsTest extends TestCase
         $this->needEvent($need, 'NEED_PUBLISHED');
         $this->signIn('IDN-OWNER-VIEWER');
 
-        $this->get('/activite')
-            ->assertOk()
-            ->assertSee('Mon propre besoin')
-            ->assertDontSee('Je peux aider');
+        $content = $this->get('/activite')->assertOk()->assertSee('Mon propre besoin')->getContent();
+
+        // Le rail « Envie de contribuer ? » du Fil V2 porte lui-même le libellé « Je peux
+        // aider » comme raccourci générique (docs/design/DESIGN-INVARIANTS.md §17) : la
+        // vérification se limite donc à la carte du Fil elle-même, pas à toute la page.
+        $feedSection = substr($content, strpos($content, 'class="dg-feed"'));
+        self::assertStringNotContainsString('Je peux aider', $feedSection);
     }
 
     public function test_zumra_card_action_depends_on_real_membership_state(): void

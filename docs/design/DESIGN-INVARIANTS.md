@@ -217,3 +217,50 @@ surface serveur — la page reste un simple GET public).
 **Référence visuelle** : maquette fournie par le demandeur le 19 août 2026 (non archivée dans
 `docs/design/reference/` — capture d’écran transmise en conversation, reproduite dans
 `resources/views/foundation.blade.php` et `resources/css/dg.css` §« Landing — portail »).
+
+## 17. Addendum daté — Fil V2 (19 août 2026)
+
+**Portée : Fil d’action uniquement** (`resources/views/activity/index.blade.php`,
+`resources/views/components/dg/feed/*`). Ce changement suit la procédure de gouvernance du §14.
+
+**Invariant concerné** : §10 (état vide honnête, jamais remplacé automatiquement par des données
+fictives) et §11 (les fixtures Exemple étaient jusqu’ici réservées à la landing/documentation), et
+révise l’affirmation du §16 selon laquelle « le Fil d’action […] connecté reste gouverné par les
+invariants 1.0 sans modification ».
+
+**Problème utilisateur justifiant le changement** : un nouveau Fil V2 a été spécifié (maquette +
+correctifs fonctionnels fournis le 19 août 2026), avec une règle produit explicite **DEMO-FIRST,
+REAL-DATA-TAKES-OVER** : quand un filtre du Fil n’a pas encore de donnée réelle, afficher des
+cartes démonstratives réalistes plutôt que seulement un état vide, pour expliquer concrètement à
+un membre ce que le réseau produit — jusqu’à ce qu’une donnée réelle existe pour ce filtre, auquel
+cas la démonstration disparaît d’elle-même pour ce filtre.
+
+**Ce qui change** :
+- le Fil peut désormais afficher jusqu’à trois cartes d’exemple (Besoin, Projet, ZUMRA — voir
+  `resources/design-reference/fil-demo.json`), chacune marquée **« · EXEMPLE »** sur son badge,
+  **uniquement lorsque le filtre actif n’a aucune donnée réelle correspondante** et seulement en
+  première page (`page=1`) — dès qu’une donnée réelle existe pour ce filtre, elle prend le pas et
+  la carte d’exemple correspondante disparaît ;
+- une carte d’exemple ne porte **aucune action câblée** : toutes ses actions sont visuellement
+  conservées mais désactivées, avec la raison accessible « Objet de démonstration — aucune action
+  réelle n’est rattachée. » (conforme au §13 — jamais un faux backend pour satisfaire une
+  maquette) ;
+- ces cartes ne sont jamais écrites dans les tables métier, jamais seedées, et restent gouvernées
+  par le §11 (marquage Exemple obligatoire, pas de faux compteurs de traction).
+
+**Ce qui ne change pas** : Mon espace n’affiche toujours aucun contenu de démonstration (état vide
+honnête intégral, §10 sans exception) ; les cartes réelles du Fil gardent exactement leurs actions
+et leurs raisons d’indisponibilité déjà conformes (CAP-019/020/021/022) ; §7 (une priorité
+dominante) et §8/annexe « pas de mécaniques de popularité » restent pleinement en vigueur — les
+cartes d’exemple n’affichent aucun compteur de likes/partages/classement, seulement des faits qui
+décrivent l’objet (ex. « 3 compétences recherchées »).
+
+**Compatibilité vérifiée** : doctrine (démonstration jamais confondue avec du réel — badge
+« · EXEMPLE » + actions désactivées avec raison), accessibilité (`aria-disabled`, raisons de
+désactivation lisibles au clavier/lecteur d’écran), mobile (cartes testées au viewport 390×844),
+sécurité (fixtures statiques servies en lecture seule, aucune écriture déclenchée par leur
+affichage).
+
+**Référence visuelle** : maquette + correctifs fonctionnels fournis par le demandeur le
+19 août 2026 (transmis en conversation, non archivés dans `docs/design/reference/` ; handoff
+complet dans `docs/design/handoffs/DG-AFRIQUE-FIL-V2-HANDOFF.md`).
