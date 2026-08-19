@@ -283,25 +283,11 @@
 
     <div style="height:78px" class="lg:hidden" aria-hidden="true"></div>
 
-    {{-- Barre de navigation mobile --}}
+    {{-- Barre de navigation mobile : le même composant que Fil/Mon espace/ZUMRA (un visiteur non
+         connecté est redirigé vers la connexion par le middleware core.member, avec retour
+         automatique sur la page demandée). --}}
     <div class="lg:hidden fixed inset-x-0 bottom-0 z-30">
-        <nav class="dg-tabbar" aria-label="Navigation mobile">
-            <a href="{{ route('landing') }}" aria-current="page">
-                <span class="dg-tabbar__icon" aria-hidden="true"></span>Accueil
-            </a>
-            <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}">
-                <span class="dg-tabbar__icon" aria-hidden="true"></span>Fil
-            </a>
-            <a href="{{ route('register') }}">
-                <span class="dg-tabbar__act">Agir</span>
-            </a>
-            <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}">
-                <span class="dg-tabbar__icon" aria-hidden="true"></span>Projets
-            </a>
-            <a href="{{ route('login') }}">
-                <span class="dg-tabbar__icon" aria-hidden="true"></span>Profil
-            </a>
-        </nav>
+        <x-dg.tabbar />
     </div>
 </div>
 </x-layouts.portal>
