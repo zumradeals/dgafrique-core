@@ -9,6 +9,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/identity-v2.css',
+                'resources/css/gateway-v2.css',
                 'resources/css/zumra-hub.css',
                 'resources/css/member-space-v2.css',
                 'resources/css/auth-v2.css',
