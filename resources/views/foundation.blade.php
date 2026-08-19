@@ -289,5 +289,9 @@
     <div class="lg:hidden fixed inset-x-0 bottom-0 z-30">
         <x-dg.tabbar />
     </div>
+
+    {{-- Feuille d'action du bouton « Agir » de la tabbar (même composant partagé que Fil/ZUMRA/
+         Mon espace) : un visiteur anonyme est redirigé vers la connexion sur chaque geste. --}}
+    <x-dg.agir-sheet />
 </div>
 </x-layouts.portal>

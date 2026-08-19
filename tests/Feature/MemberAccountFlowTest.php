@@ -27,7 +27,7 @@ final class MemberAccountFlowTest extends TestCase
         $this->get('/espace')
             ->assertOk()
             ->assertSee('Membre Démo')
-            ->assertSee('Compte vérifié')
+            ->assertSee('Identité reconnue')
             ->assertDontSee('GAMAD')
             ->assertSee('Aujourd’hui — une seule chose compte')
             ->assertSee('Déclarez une chose que vous savez faire.')
@@ -118,7 +118,7 @@ final class MemberAccountFlowTest extends TestCase
         $this->get('/zumra')
             ->assertOk()
             ->assertSee('ZUMRA')
-            ->assertSee('Vous n’êtes membre d’aucune ZUMRA')
+            ->assertSee('Votre première ZUMRA vous attend')
             ->assertDontSee('Contribution à jour')
             ->assertDontSee('24 J’aime');
     }
