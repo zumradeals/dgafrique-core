@@ -11,7 +11,7 @@ return new class extends Migration {
     {
         Schema::create('dg_project_brain_intents', function (Blueprint $table): void {
             $table->uuid('id')->primary();
-            $table->uuid('actor_core_reference')->index();
+            $table->string('actor_core_reference', 120)->index();
             $table->string('title', 180)->nullable();
             $table->json('messages')->default('[]');
             $table->json('context')->default('{}');
