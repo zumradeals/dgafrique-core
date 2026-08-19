@@ -13,6 +13,9 @@
     if (request()->routeIs('login') || request()->routeIs('register') || request()->routeIs('register.verify')) {
         $pageStyles[] = 'resources/css/auth-v2.css';
     }
+    if (request()->routeIs('activity.index')) {
+        $pageStyles[] = 'resources/css/fil-v2.css';
+    }
     $pageStyles = array_values(array_unique($pageStyles));
 @endphp
 <!doctype html>

@@ -85,7 +85,7 @@ final class DesignInvariantsPhase2Test extends TestCase
     {
         $this->signIn('IDN-P2-NOSCORE');
 
-        foreach (['/besoins', '/projets', '/personnes', '/zumra', '/zumra/groupes'] as $uri) {
+        foreach (['/besoins', '/projets', '/personnes', '/zumra', '/zumra/groupes', '/activite'] as $uri) {
             $content = $this->get($uri)->assertOk()->getContent();
             self::assertStringNotContainsStringIgnoringCase('J’aime', $content);
             self::assertStringNotContainsStringIgnoringCase('abonnés', $content);
