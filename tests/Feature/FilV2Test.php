@@ -53,10 +53,7 @@ final class FilV2Test extends TestCase
             '/<span class="dg-fil-composer__type" aria-disabled="true" title="Une Mission se crée depuis un Projet, une ZUMRA ou un Besoin existant\.">Mission<\/span>/',
             $content
         );
-        self::assertMatchesRegularExpression(
-            '/<span class="dg-fil-composer__type" aria-disabled="true" title="Aucun objet Événement n’existe encore dans le produit\.">Événement<\/span>/u',
-            $content
-        );
+        self::assertStringNotContainsString('Événement', $content);
     }
 
     public function test_left_rail_contribution_intents_link_to_real_routes(): void
