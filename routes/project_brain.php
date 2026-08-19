@@ -3,9 +3,19 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ProjectBrainController;
+use App\Http\Controllers\ProjectBrainStartController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web', 'core.member'])->group(function (): void {
+    Route::get('/projets/cerveau/nouveau', [ProjectBrainStartController::class, 'create'])
+        ->name('projects.brain.start');
+    Route::post('/projets/cerveau/nouveau', [ProjectBrainStartController::class, 'store'])
+        ->middleware('throttle:project-write')->name('projects.brain.start.store');
+    Route::get('/projets/cerveau/preparation/{intent}', [ProjectBrainStartController::class, 'show'])
+        ->whereUuid('intent')->name('projects.brain.start.show');
+    Route::post('/projets/cerveau/preparation/{intent}', [ProjectBrainStartController::class, 'reply'])
+        ->whereUuid('intent')->middleware('throttle:project-write')->name('projects.brain.start.reply');
+
     Route::get('/projets/{project}/cerveau', [ProjectBrainController::class, 'show'])
         ->whereUuid('project')->name('projects.brain.show');
     Route::post('/projets/{project}/cerveau/besoins/preparer', [ProjectBrainController::class, 'prepareNeed'])

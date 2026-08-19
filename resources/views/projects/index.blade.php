@@ -5,11 +5,20 @@
             <div class="dg-page-header">
                 <div>
                     <x-dg.label tone="night">Du besoin à l’action</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['directory_title'] }}</h1>
-                    <p>{{ $configuration['directory_intro'] }}</p>
+                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">Des idées qui deviennent des projets vivants.</h1>
+                    <p>Commencez avec vos propres mots. Le Cerveau vous aide à structurer la suite sans grand formulaire.</p>
                 </div>
-                <x-dg.btn variant="project" :href="route('projects.create')">Proposer un projet</x-dg.btn>
+                <x-dg.btn variant="project" :href="route('projects.brain.start')">+ Parler de mon idée</x-dg.btn>
             </div>
+
+            <section class="dg-card" style="margin-bottom:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;background:linear-gradient(135deg,#fff 0%,#fff7ef 100%)">
+                <div>
+                    <x-dg.label tone="night">Cerveau du Projet</x-dg.label>
+                    <h2 class="dg-display dg-display--card" style="margin:8px 0 7px">Qu’est-ce que vous voulez réaliser ?</h2>
+                    <p style="max-width:720px;margin:0">Une idée encore floue suffit. Expliquez-la comme vous la raconteriez à quelqu’un. Nous avancerons une question utile à la fois.</p>
+                </div>
+                <x-dg.btn variant="project" :href="route('projects.brain.start')">Commencer la conversation →</x-dg.btn>
+            </section>
 
             <form method="GET" class="dg-filters">
                 <label>Domaine<select name="domain" class="dg-select"><option value="">Tous les domaines</option>@foreach($configuration['domains'] as $code => $label)<option value="{{ $code }}" @selected(request('domain') === $code)>{{ $label }}</option>@endforeach</select></label>
@@ -17,7 +26,7 @@
             </form>
 
             @if($projects->isEmpty())
-                <x-dg.empty title="Aucun projet visible"><span>Une proposition structurée apparaîtra ici sans inventer de résultats ni de financement.</span></x-dg.empty>
+                <x-dg.empty title="Aucun projet pour le moment"><span>Pas besoin de remplir l’ancien formulaire : commencez simplement par raconter ce que vous voulez réaliser.</span></x-dg.empty>
             @else
                 <div class="dg-grid">
                     @foreach($projects as $project)
@@ -40,5 +49,6 @@
                 <div>{{ $projects->links('pagination.dg') }}</div>
             @endif
         </div>
+        <style>@media(max-width:760px){.dg-page section[style*="grid-template-columns"]{grid-template-columns:1fr!important}}</style>
     </x-dg.shell>
 </x-layouts.portal>
