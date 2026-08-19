@@ -20,13 +20,17 @@ final class IdentityAuthorityGuardTest extends TestCase
 
     public function test_the_foundation_page_is_available(): void
     {
+        // Refonte « portail » du 19/08/2026 (docs/design/DESIGN-INVARIANTS.md, addendum daté) :
+        // le texte segmenté par un <span> pour la mise en avant colorée n'est pas une chaîne
+        // continue dans le HTML, d'où les deux assertions séparées sur le titre du hero.
         $this->get('/')
             ->assertOk()
-            ->assertSee('Vos capacités deviennent des actions.')
-            ->assertSee('Je sais faire')
-            ->assertSee('Un besoin apparaît')
-            ->assertSee('Une équipe agit')
-            ->assertSee('Une ZUMRA, c’est une équipe qui s’engage vraiment.')
+            ->assertSee('Ensemble, déployons nos capacités pour')
+            ->assertSee('changer nos réalités.')
+            ->assertSee('De la capacité à l’action')
+            ->assertSee('Rejoindre')
+            ->assertSee('Impacter')
+            ->assertSee('Dans le réseau en ce moment')
             ->assertSee('Exemple')
             ->assertDontSee('4 250')
             ->assertDontSee('1,2 million');

@@ -183,6 +183,8 @@
 .dg-btn--quiet:hover { color: var(--dg-copper); background: var(--dg-ivory); }
 .dg-btn--on-deep { border-color: rgba(239, 230, 214, .3); color: #efe6d6; background: transparent; }
 .dg-btn--on-deep:hover { color: var(--dg-on-deep-title); border-color: rgba(239, 230, 214, .5); }
+.dg-btn--copper { background: var(--dg-copper); color: var(--dg-ivory); font-weight: 700; }
+.dg-btn--copper:hover { color: var(--dg-ivory); filter: brightness(1.06); }
 .dg-btn[aria-disabled='true'] { border: 1px dashed var(--dg-line-dashed); color: var(--dg-faint);
     background: transparent; cursor: not-allowed; pointer-events: none; }
 .dg-btn--on-deep[aria-disabled='true'] { border-color: rgba(217, 160, 43, .35); color: var(--dg-on-deep-muted); }
@@ -433,6 +435,51 @@
 .dg-disclosure__body { padding: 2px 14px 16px 44px; font-size: 13px; line-height: 1.65; color: var(--dg-muted); }
 
 /* ---------- Responsive ---------- */
+
+/* ---------- Landing — portail (addendum du 19/08/2026, voir DESIGN-INVARIANTS.md §1) ---------- */
+
+.dg-landing-nav-link { padding: 9px 13px; border-radius: var(--dg-radius-chip); font-size: 14px;
+    font-weight: 500; color: var(--dg-muted); border-bottom: 2px solid transparent; }
+.dg-landing-nav-link:hover { color: var(--dg-forest); }
+.dg-landing-nav-link[aria-current] { color: var(--dg-forest); font-weight: 700; border-bottom-color: var(--dg-copper); }
+
+.dg-landing-icon-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--dg-line); background: transparent; color: var(--dg-muted); cursor: pointer; }
+.dg-landing-icon-btn:hover { color: var(--dg-copper); border-color: var(--dg-copper); }
+.dg-landing-icon-btn[aria-disabled='true'] { cursor: not-allowed; opacity: .6; }
+
+.dg-landing-hub-card { display: flex; flex-direction: column; gap: 10px; padding: 22px;
+    background: var(--dg-card); border: 1px solid var(--dg-line); border-radius: var(--dg-radius-card);
+    color: inherit; transition: transform .16s ease, box-shadow .16s ease; }
+.dg-landing-hub-card:hover { color: inherit; transform: translateY(-2px); box-shadow: 0 14px 30px rgba(16, 48, 40, .08); }
+.dg-landing-hub-card strong { font-size: 16px; color: var(--dg-forest); }
+.dg-landing-hub-card span { font-size: 13px; line-height: 1.55; color: var(--dg-muted); }
+.dg-landing-hub-card__cta { margin-top: auto; font-size: 13px; font-weight: 700; color: var(--dg-copper) !important; }
+
+.dg-landing-steps { display: flex; flex-wrap: wrap; justify-content: center; gap: 28px 18px; position: relative; }
+.dg-landing-steps__line { position: absolute; left: 100px; right: 100px; top: 26px; height: 0;
+    border-top: 1px dashed var(--dg-line-dashed); z-index: 0; }
+.dg-landing-step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px;
+    width: 168px; position: relative; z-index: 1; }
+.dg-landing-step strong { font-size: 14px; color: var(--dg-forest); }
+.dg-landing-step span { font-size: 12px; line-height: 1.5; color: var(--dg-muted); }
+.dg-landing-step__mark { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+    background: var(--dg-tint-need); color: var(--dg-copper); }
+
+.dg-landing-pills { display: inline-flex; gap: 6px; padding: 4px; border-radius: var(--dg-radius-pill);
+    background: var(--dg-sand); }
+.dg-landing-pills button { padding: 7px 15px; border-radius: var(--dg-radius-pill); border: 0; background: transparent;
+    font: inherit; font-size: 13px; font-weight: 600; color: var(--dg-muted); cursor: pointer; }
+.dg-landing-pills button[aria-pressed='true'] { background: var(--dg-copper); color: var(--dg-ivory); }
+
+.dg-landing-stat__value { font-family: var(--dg-font-display); font-size: 28px; color: var(--dg-forest); min-width: 76px; }
+
+.dg-landing-social { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%;
+    border: 1px solid rgba(239, 230, 214, .25); color: var(--dg-on-deep-muted); cursor: default; }
+
+@media (max-width: 640px) {
+    .dg-landing-step { width: 44%; }
+}
 
 @media (max-width: 900px) {
     .dg-card { padding: 22px; border-radius: 18px; }
