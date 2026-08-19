@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Application\ProjectBrain\ProjectBrainAiProvider;
+use App\Infrastructure\AI\DeepSeekProjectBrainProvider;
 use App\Infrastructure\GamadCore\GamadCoreClient;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -21,6 +23,7 @@ final class AppServiceProvider extends ServiceProvider
             timeoutSeconds: (int) config('gamad-core.timeout_seconds'),
             connectTimeoutSeconds: (int) config('gamad-core.connect_timeout_seconds'),
         ));
+        $this->app->singleton(ProjectBrainAiProvider::class, DeepSeekProjectBrainProvider::class);
     }
 
     public function boot(): void
