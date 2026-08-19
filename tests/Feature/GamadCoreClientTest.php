@@ -9,6 +9,9 @@ use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
 use App\Infrastructure\GamadCore\Exceptions\CoreSessionRejectedException;
 use App\Infrastructure\GamadCore\Exceptions\CoreUnavailableException;
 use App\Infrastructure\GamadCore\GamadCoreClient;
+use GuzzleHttp\Psr7\Response as Psr7Response;
+use Illuminate\Http\Client\RequestException;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
@@ -131,6 +134,17 @@ final class GamadCoreClientTest extends TestCase
             'panne Core' => [503, CoreUnavailableException::class],
             'réponse inattendue' => [403, CoreProtocolException::class],
         ];
+    }
+
+    public function test_it_treats_a_transport_level_request_exception_as_core_unavailable(): void
+    {
+        Http::fake(function () {
+            throw new RequestException(new Response(new Psr7Response(403)));
+        });
+
+        $this->expectException(CoreUnavailableException::class);
+
+        $this->client->resolveIdentity('PER-GAMAD-000000001', 'secret-bearer');
     }
 
     public function test_it_never_sends_a_request_without_a_session(): void
