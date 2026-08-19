@@ -18,12 +18,20 @@ final class IdentityAuthorityGuardTest extends TestCase
         self::assertFileDoesNotExist(database_path('migrations/0001_01_01_000000_create_users_table.php'));
     }
 
-    public function test_the_foundation_page_is_available(): void
+    public function test_the_social_gateway_and_discovery_landing_are_available(): void
     {
-        // Refonte « portail » du 19/08/2026 (docs/design/DESIGN-INVARIANTS.md, addendum daté) :
-        // le texte segmenté par un <span> pour la mise en avant colorée n'est pas une chaîne
-        // continue dans le HTML, d'où les deux assertions séparées sur le titre du hero.
         $this->get('/')
+            ->assertOk()
+            ->assertSee('Le réseau des capacités en action')
+            ->assertSee('Votre capacité peut')
+            ->assertSee('changer une réalité.')
+            ->assertSee('Je peux aider')
+            ->assertSee('J’ai un besoin')
+            ->assertSee('Je veux apprendre')
+            ->assertSee('Se connecter')
+            ->assertSee('Créer gratuitement mon compte');
+
+        $this->get('/decouvrir')
             ->assertOk()
             ->assertSee('Ensemble, déployons nos capacités pour')
             ->assertSee('changer nos réalités.')
