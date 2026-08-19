@@ -1,7 +1,7 @@
 # DG Afrique — Invariants de design
 
 **Statut : CANONIQUE DESIGN — ADOPTÉ**  
-**Version : 1.0**  
+**Version : 1.0** (voir addendum daté §16 pour la Landing)  
 **Date d’adoption : 16 août 2026**  
 **Référence visuelle :** `docs/design/reference/claude-2026-08-16/`
 
@@ -175,3 +175,45 @@ Une retouche locale peut évoluer sans nouvelle version si elle ne contredit auc
 6. propagation progressive vers les autres capacités.
 
 Le backend CAP-001 → CAP-022 n’est pas réinitialisé par ce chantier : on refond l’expérience et l’identité visuelle, pas les contrats métier validés.
+
+## 16. Addendum daté — Landing « portail » (19 août 2026)
+
+**Portée : Landing page uniquement** (`resources/views/foundation.blade.php`). Ce changement suit
+la procédure de gouvernance du §14.
+
+**Invariant concerné** : §2 (« DG Afrique est un réseau social d’action », pas un portail) et §3.1
+(la Landing comme « la promesse » manifeste, adoptées le 16 août 2026).
+
+**Problème utilisateur justifiant le changement** : une maquette a été fournie qui demande à la
+Landing de fonctionner comme point d’entrée « hub », avec un accès direct à Fil/Besoins/Projets/
+ZUMRA depuis quatre portes d’entrée visibles, une preuve chiffrée de l’ampleur du réseau, et un
+aperçu concret de l’activité en cours — plutôt que de porter le manifeste seul. Décision produit
+explicite : reproduire cette maquette telle quelle, chiffres de communauté inclus, jugés utiles
+pour situer l’orientation et l’objectif du réseau d’action pour un nouvel arrivant.
+
+**Ce qui change** :
+- la Landing ajoute une porte d’entrée à quatre cartes (Fil/Besoins/Projets/ZUMRA), un bloc
+  chiffré (« Une communauté engagée ») et des cartes d’activité (« Dans le réseau en ce moment »),
+  tous marqués **Exemple** conformément au §11 — aucun de ces éléments n’est une donnée métier
+  réelle, aucun n’est seedé dans les tables métier (`resources/design-reference/landing-portal-demo.json`) ;
+- l’en-tête public gagne une recherche (désactivée, comme le reste du produit) et une icône de
+  notification qui renvoie vers la connexion plutôt que d’afficher un compteur fictif pour un
+  visiteur anonyme ;
+- un bouton « copper » plein (`.dg-btn--copper`) est ajouté aux boutons existants pour l’appel à
+  l’action principal de la Landing.
+
+**Ce qui ne change pas** : Mon espace, le Fil d’action/ZUMRA connectés et la navigation
+authentifiée (`x-dg.topbar`/`x-dg.tabbar`) restent gouvernés par les invariants 1.0 sans
+modification — en particulier §7 (une priorité dominante), §8 (pas de mécaniques de popularité) et
+§10 (état vide honnête). Le §11 (fixtures marquées Exemple, jamais seedées) s’applique sans
+exception aux nouveaux blocs.
+
+**Compatibilité vérifiée** : doctrine (aucune identité parallèle, aucun faux lien — les entrées de
+pied de page sans destination réelle sont marquées « · bientôt » plutôt que rendues cliquables),
+accessibilité (liens réels vs. `aria-disabled`, `aria-current`, `role="dialog"` pour les feuilles
+mobiles), mobile (en-tête + tabbar dédiés, testés au viewport 390×844), sécurité (aucune nouvelle
+surface serveur — la page reste un simple GET public).
+
+**Référence visuelle** : maquette fournie par le demandeur le 19 août 2026 (non archivée dans
+`docs/design/reference/` — capture d’écran transmise en conversation, reproduite dans
+`resources/views/foundation.blade.php` et `resources/css/dg.css` §« Landing — portail »).

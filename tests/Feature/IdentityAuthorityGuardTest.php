@@ -20,18 +20,20 @@ final class IdentityAuthorityGuardTest extends TestCase
 
     public function test_the_foundation_page_is_available(): void
     {
+        // Refonte « portail » du 19/08/2026 (docs/design/DESIGN-INVARIANTS.md, addendum daté) :
+        // le texte segmenté par un <span> pour la mise en avant colorée n'est pas une chaîne
+        // continue dans le HTML, d'où les deux assertions séparées sur le titre du hero.
         $this->get('/')
             ->assertOk()
-            ->assertSee('Ensemble,')
+            ->assertSee('Ensemble, déployons nos capacités pour')
             ->assertSee('changer nos réalités.')
             ->assertSee('De la capacité à l’action')
-            ->assertSee('1. Rejoindre')
-            ->assertSee('4. Agir')
-            ->assertSee('Pas de likes. Pas de classement. Place à l’action utile.')
+            ->assertSee('Rejoindre')
+            ->assertSee('Impacter')
+            ->assertSee('Dans le réseau en ce moment')
             ->assertSee('Exemple')
-            ->assertDontSee('25K+')
-            ->assertDontSee('1 200+')
-            ->assertDontSee('45 pays');
+            ->assertDontSee('4 250')
+            ->assertDontSee('1,2 million');
     }
 
     public function test_the_invisible_institution_is_never_named_in_user_interfaces(): void

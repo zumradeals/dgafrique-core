@@ -1,0 +1,37 @@
+{
+  "__avertissement": "Contenu fictif à des fins de maquette uniquement. Ne jamais importer ni afficher comme donnée réelle. Introduit pour la refonte landing « portail » (voir docs/design/DESIGN-INVARIANTS.md, addendum daté), distinct de demo-content.json qui reste la copie exacte du handoff du 16 août 2026.",
+  "statistiques": {
+    "__demonstration": true,
+    "membresActifs": "25K+",
+    "projetsLances": "1 200+",
+    "paysConnectes": "45"
+  },
+  "moments": [
+    {
+      "__demonstration": true,
+      "type": "besoin",
+      "titre": "Formation en entrepreneuriat pour jeunes femmes",
+      "lieu": "Dakar, Sénégal",
+      "meta": "3 compétences recherchée(s)",
+      "tempsEcoule": "Il y a 2h",
+      "participants": 24
+    },
+    {
+      "__demonstration": true,
+      "type": "projet",
+      "titre": "Accès à l’eau potable en milieu rural",
+      "lieu": "Bobo-Dioulasso, Burkina Faso",
+      "meta": "8 membres actifs",
+      "tempsEcoule": "Il y a 4h",
+      "participants": 17
+    },
+    {
+      "__demonstration": true,
+      "type": "zumra",
+      "titre": "Collectif Éducation pour tous",
+      "meta": "Communauté active",
+      "tempsEcoule": "Il y a 6h",
+      "participants": 112
+    }
+  ]
+}

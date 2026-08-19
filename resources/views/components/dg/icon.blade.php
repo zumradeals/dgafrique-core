@@ -1,0 +1,79 @@
+{{--
+    Icônes ligne minimalistes, dessinées à la main (pas de dépendance d'icônes). Usage strictement
+    décoratif à côté d'un libellé texte — aria-hidden dans tous les cas.
+--}}
+@props(['name', 'size' => '20'])
+@php($stroke = 'stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"')
+<svg width="{{ $size }}" height="{{ $size }}" viewBox="0 0 24 24" aria-hidden="true" {{ $attributes }}>
+    @switch($name)
+        @case('search')
+            <circle cx="10.5" cy="10.5" r="6.5" {!! $stroke !!} />
+            <path d="M20 20l-4.8-4.8" {!! $stroke !!} />
+            @break
+        @case('bell')
+            <path d="M12 3.5c-2.7 0-4.5 2.1-4.5 4.9v3.2c0 .9-.4 1.8-1 2.5l-.9 1c-.5.6-.1 1.4.6 1.4h11.6c.7 0 1.1-.9.6-1.4l-.9-1c-.6-.7-1-1.6-1-2.5V8.4c0-2.8-1.8-4.9-4.5-4.9Z" {!! $stroke !!} />
+            <path d="M10 19.5a2 2 0 0 0 4 0" {!! $stroke !!} />
+            @break
+        @case('menu')
+            <path d="M4 6.5h16M4 12h16M4 17.5h16" {!! $stroke !!} />
+            @break
+        @case('feed')
+            <rect x="4" y="4" width="16" height="16" rx="3" {!! $stroke !!} />
+            <path d="M8 9h8M8 12.5h8M8 16h5" {!! $stroke !!} />
+            @break
+        @case('heart')
+            <path d="M12 20s-7-4.4-9.3-8.9C1.3 8 2.6 4.8 5.8 4.1c2-.4 3.7.5 4.9 2.1a1.6 1.6 0 0 0 2.6 0c1.2-1.6 2.9-2.5 4.9-2.1 3.2.7 4.5 3.9 3.1 7C19 15.6 12 20 12 20Z" {!! $stroke !!} />
+            @break
+        @case('team')
+            <circle cx="8.5" cy="8" r="2.8" {!! $stroke !!} />
+            <circle cx="16" cy="9" r="2.3" {!! $stroke !!} />
+            <path d="M3.5 19c.5-3 2.5-4.8 5-4.8s4.5 1.8 5 4.8" {!! $stroke !!} />
+            <path d="M14.5 14.7c2.1.2 3.6 1.9 4 4.3" {!! $stroke !!} />
+            @break
+        @case('zumra')
+            <circle cx="12" cy="7" r="2.6" {!! $stroke !!} />
+            <circle cx="6.5" cy="16" r="2.2" {!! $stroke !!} />
+            <circle cx="17.5" cy="16" r="2.2" {!! $stroke !!} />
+            <path d="M9.8 8.7 7.9 14M14.2 8.7l1.9 5.3M8.6 16h6.8" {!! $stroke !!} />
+            @break
+        @case('people')
+            <circle cx="9" cy="8" r="3" {!! $stroke !!} />
+            <path d="M3.5 19.5c.6-3.6 2.8-5.7 5.5-5.7s4.9 2.1 5.5 5.7" {!! $stroke !!} />
+            <path d="M15.5 6.2c1.6.4 2.7 1.8 2.7 3.5 0 1.5-.9 2.8-2.1 3.4" {!! $stroke !!} />
+            <path d="M17 14.3c2 .6 3.4 2.4 3.8 5.2" {!! $stroke !!} />
+            @break
+        @case('handshake')
+            <path d="M3 11.5l4-3.7 4 2.6 3-2.6 5 4.2" {!! $stroke !!} />
+            <path d="M7 10l4.2 4.4a1.4 1.4 0 0 0 2-2l-3.4-3.5" {!! $stroke !!} />
+            <path d="M14 12l1.8 1.8a1.3 1.3 0 0 0 1.9-1.8" {!! $stroke !!} />
+            <path d="M3 11.5v4.3l2.3 2.1M21 11v4.5l-2.6 2" {!! $stroke !!} />
+            @break
+        @case('rocket')
+            <path d="M12 3c2.8 1 5 4 5 8-1.6 1-3 1.6-5 1.6S8.6 12 7 11c0-4 2.2-7 5-8Z" {!! $stroke !!} />
+            <circle cx="12" cy="9" r="1.6" {!! $stroke !!} />
+            <path d="M9.3 14 7 21l3.2-1.8M14.7 14 17 21l-3.2-1.8" {!! $stroke !!} />
+            @break
+        @case('chart')
+            <path d="M4 20V10M10 20V4M16 20v-7M21 20H3" {!! $stroke !!} />
+            @break
+        @case('facebook')
+            <path d="M14 21v-7h2.3l.4-3H14V9c0-.9.2-1.5 1.6-1.5H17V4.9c-.3 0-1.2-.1-2.3-.1-2.3 0-3.7 1.4-3.7 3.9V11H8.5v3H11v7h3Z" {!! $stroke !!} />
+            @break
+        @case('linkedin')
+            <rect x="3.5" y="3.5" width="17" height="17" rx="3" {!! $stroke !!} />
+            <path d="M8 10.5v6M8 7.7v.1M12.3 16.5v-3.5c0-1.4.9-2.2 2-2.2s1.8.8 1.8 2.2v3.5" {!! $stroke !!} />
+            @break
+        @case('twitter')
+            <path d="M20 6.4c-.6.3-1.3.5-2 .6a3.4 3.4 0 0 0 1.5-1.9c-.7.4-1.5.7-2.3.9a3.4 3.4 0 0 0-5.9 3.1A9.8 9.8 0 0 1 4.2 5.6a3.4 3.4 0 0 0 1.1 4.6c-.6 0-1.1-.2-1.6-.4v.1c0 1.7 1.2 3 2.7 3.4-.5.1-1 .1-1.5.1l-.4-.1c.4 1.4 1.7 2.4 3.2 2.4A6.9 6.9 0 0 1 3 17.1a9.7 9.7 0 0 0 5.3 1.6c6.4 0 9.9-5.3 9.9-9.9v-.5c.7-.5 1.3-1.1 1.8-1.9Z" {!! $stroke !!} />
+            @break
+        @case('youtube')
+            <rect x="3" y="6" width="18" height="12" rx="3.5" {!! $stroke !!} />
+            <path d="M10.5 9.5v5l4.5-2.5-4.5-2.5Z" {!! $stroke !!} />
+            @break
+        @case('instagram')
+            <rect x="3.5" y="3.5" width="17" height="17" rx="5" {!! $stroke !!} />
+            <circle cx="12" cy="12" r="3.6" {!! $stroke !!} />
+            <circle cx="17" cy="7" r=".9" fill="currentColor" stroke="none" />
+            @break
+    @endswitch
+</svg>

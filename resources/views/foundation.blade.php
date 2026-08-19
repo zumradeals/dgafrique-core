@@ -1,218 +1,297 @@
-{{-- DG Afrique Landing V2 — réseau des capacités en action. Les cartes réseau ci-dessous restent explicitement des exemples illustratifs. --}}
-<x-layouts.portal title="DG Afrique — le réseau des capacités en action">
-<div class="dg-landing-v2">
-    <header class="dg-land-header">
-        <div class="dg-land-container dg-land-header__inner">
-            <a href="{{ route('landing') }}" class="dg-land-brand" aria-label="DG Afrique — Accueil">
-                <span class="dg-land-mark" aria-hidden="true">DG</span>
-                <strong>DG Afrique</strong>
+{{--
+    Landing page — la promesse. Refonte « portail » du 19/08/2026 (voir l'addendum daté dans
+    docs/design/DESIGN-INVARIANTS.md §1) : DG Afrique s'y présente comme un hub d'entrée qui met en
+    avant Fil/Besoins/Projets/ZUMRA et l'activité vivante du réseau, plutôt que la version
+    manifeste du 16/08/2026. Les chiffres et cartes « en ce moment » sont des fixtures d'exemple
+    (resources/design-reference/landing-portal-demo.json), toujours annoncées par le mot « Exemple ».
+--}}
+<x-layouts.portal title="DG Afrique — le réseau où les capacités deviennent des actions">
+<div class="dg">
+    {{-- Topbar desktop --}}
+    <header class="hidden lg:flex items-center" style="height:72px;padding:0 32px;background:var(--dg-card);border-bottom:1px solid var(--dg-line);gap:28px">
+        <a href="{{ route('landing') }}" class="flex items-center gap-2.5" style="color:inherit">
+            <span class="dg-topbar__mark">D</span>
+            <strong style="font-size:16px;color:var(--dg-forest)">DG Afrique</strong>
+        </a>
+        <nav aria-label="Navigation" style="display:flex;gap:6px">
+            <a href="{{ route('landing') }}" aria-current="page" class="dg-landing-nav-link">Accueil</a>
+            <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}" class="dg-landing-nav-link">Fil</a>
+            <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" class="dg-landing-nav-link">Besoins</a>
+            <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" class="dg-landing-nav-link">Projets</a>
+            <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" class="dg-landing-nav-link">ZUMRA</a>
+            <a href="#outils" class="dg-landing-nav-link">Ressources</a>
+            <a href="#a-propos" class="dg-landing-nav-link">À propos</a>
+        </nav>
+        <div class="ml-auto flex items-center gap-3">
+            <button type="button" class="dg-landing-icon-btn" aria-disabled="true" title="La recherche publique sera activée avec l’index de données réelles.">
+                <x-dg.icon name="search" />
+            </button>
+            <a href="{{ route('login') }}" class="dg-landing-icon-btn" style="position:relative" title="Connectez-vous pour voir vos notifications.">
+                <x-dg.icon name="bell" />
             </a>
-
-            <nav class="dg-land-nav" aria-label="Navigation principale">
-                <a href="{{ route('landing') }}">Accueil</a>
-                <a href="{{ route('login', ['next' => '/activite']) }}">Fil</a>
-                <a href="{{ route('login', ['next' => '/besoins']) }}">Besoins</a>
-                <a href="{{ route('login', ['next' => '/projets']) }}">Projets</a>
-                <a href="{{ route('login', ['next' => '/zumra']) }}">ZUMRA</a>
-                <a href="#outils">Ressources</a>
-                <a href="#manifeste">À propos</a>
-            </nav>
-
-            <div class="dg-land-header__actions">
-                <a class="dg-land-icon-btn" href="{{ route('login', ['next' => '/personnes']) }}" aria-label="Rechercher dans le réseau">
-                    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="6.5" stroke-width="1.8"/><path d="m16 16 4 4" stroke-width="1.8" stroke-linecap="round"/></svg>
-                </a>
-                <a class="dg-land-icon-btn" href="{{ route('login', ['next' => '/notifications']) }}" aria-label="Notifications">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6.5 9.5a5.5 5.5 0 0 1 11 0v4.1l1.4 2.4H5.1l1.4-2.4V9.5Z" stroke-width="1.7" stroke-linejoin="round"/><path d="M10 19h4" stroke-width="1.7" stroke-linecap="round"/></svg>
-                </a>
-                <a class="dg-land-login" href="{{ route('login') }}">Connexion</a>
-                <a class="dg-land-btn dg-land-btn--orange" href="{{ route('register') }}">+&nbsp; AGIR</a>
-                <a class="dg-land-mobile-menu" href="#plateforme" aria-label="Découvrir la plateforme">☰</a>
-            </div>
+            <x-dg.btn variant="copper" :href="route('login', ['next' => route('member.space', absolute: false)])">AGIR</x-dg.btn>
         </div>
     </header>
 
-    <main>
-        <section class="dg-land-hero">
-            <div class="dg-land-container dg-land-hero__grid">
-                <div>
-                    <div class="dg-land-kicker">Le réseau des capacités en action</div>
-                    <h1>Ensemble,<br>déployons nos capacités<br>pour <em>changer nos réalités.</em></h1>
-                    <p class="dg-land-hero__lead">DG Afrique connecte les capacités, les besoins, les projets et les collectifs pour transformer une intention en action utile, visible et durable.</p>
-                    <div class="dg-land-hero__actions">
-                        <a class="dg-land-btn dg-land-btn--orange" href="{{ route('register') }}">AGIR MAINTENANT <span aria-hidden="true">→</span></a>
-                        <a class="dg-land-btn dg-land-btn--outline" href="#plateforme">DÉCOUVRIR LE RÉSEAU <span aria-hidden="true">●</span></a>
+    {{-- Topbar mobile --}}
+    <header class="lg:hidden flex items-center justify-between" style="height:60px;padding:0 16px;background:var(--dg-card);border-bottom:1px solid var(--dg-line)">
+        <a href="{{ route('landing') }}" class="flex items-center gap-2" style="color:inherit">
+            <span class="dg-topbar__mark" style="width:28px;height:28px;font-size:15px">D</span>
+            <strong style="font-size:14px;color:var(--dg-forest)">DG Afrique</strong>
+        </a>
+        <div class="flex items-center gap-2">
+            <button type="button" class="dg-landing-icon-btn" aria-disabled="true" title="La recherche publique sera activée avec l’index de données réelles.">
+                <x-dg.icon name="search" size="18" />
+            </button>
+            <a href="{{ route('login') }}" class="dg-landing-icon-btn" title="Connectez-vous pour voir vos notifications.">
+                <x-dg.icon name="bell" size="18" />
+            </a>
+            <button type="button" class="dg-landing-icon-btn" data-dg-menu-open aria-haspopup="dialog" aria-controls="dg-landing-menu" aria-label="Ouvrir le menu">
+                <x-dg.icon name="menu" size="18" />
+            </button>
+        </div>
+    </header>
+
+    <div id="dg-landing-menu" data-dg-menu-sheet hidden>
+        <div class="dg-sheet-backdrop" data-dg-menu-close></div>
+        <div class="dg-sheet" role="dialog" aria-modal="true" aria-label="Menu">
+            <div class="dg-sheet__grab" aria-hidden="true"></div>
+            <a href="{{ route('landing') }}" style="color:var(--dg-forest);font-weight:700">Accueil</a>
+            <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}" style="color:var(--dg-ink)">Fil</a>
+            <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" style="color:var(--dg-ink)">Besoins</a>
+            <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" style="color:var(--dg-ink)">Projets</a>
+            <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" style="color:var(--dg-ink)">ZUMRA</a>
+            <a href="#outils" data-dg-menu-close style="color:var(--dg-ink)">Ressources</a>
+            <a href="#a-propos" data-dg-menu-close style="color:var(--dg-ink)">À propos</a>
+            <a href="{{ route('login') }}" style="color:var(--dg-muted);margin-top:6px">Se connecter</a>
+            <a href="{{ route('register') }}" style="color:var(--dg-copper);font-weight:700">Créer mon compte</a>
+            <button type="button" data-dg-menu-close style="margin-top:6px;color:var(--dg-muted);font-weight:500">Fermer</button>
+        </div>
+    </div>
+
+    {{-- Hero --}}
+    <section style="background:var(--dg-ivory)">
+        <div class="grid gap-10 lg:gap-14 lg:!grid-cols-[1.05fr_.95fr] lg:!items-center lg:!py-20 lg:!px-10 dg-landing-container" style="padding:40px 20px 48px">
+            <div class="flex flex-col gap-5 lg:gap-6.5">
+                <x-dg.label tone="copper">Développement Global Afrique</x-dg.label>
+                <h1 class="dg-display lg:!text-[54px]" style="font-size:38px;line-height:1.12;max-width:16ch">Ensemble, déployons nos capacités pour <span style="color:var(--dg-copper)">changer nos réalités.</span></h1>
+                <p style="margin:0;font-size:18px;line-height:1.65;color:var(--dg-text);max-width:52ch">DG Afrique est le réseau d’action qui connecte les talents, les besoins, les projets et les communautés pour un impact social réel et durable.</p>
+                <div class="flex flex-wrap items-center gap-3">
+                    <x-dg.btn variant="copper" :href="route('register')" style="padding:15px 26px">AGIR MAINTENANT</x-dg.btn>
+                    <x-dg.btn variant="quiet" :href="route('login', ['next' => route('activity.index', absolute: false)])" style="padding:15px 26px;border-color:var(--dg-line)">DÉCOUVRIR LE RÉSEAU</x-dg.btn>
+                </div>
+            </div>
+            <div style="display:flex;justify-content:center">
+                <x-dg.africa-network style="width:100%;max-width:380px;height:auto" />
+            </div>
+        </div>
+    </section>
+
+    {{-- Quatre portes d'entrée --}}
+    <section style="padding:0 20px 40px" class="lg:!px-10 lg:!pb-16 dg-landing-container">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}" class="dg-landing-hub-card">
+                <span class="dg-tool__mark" style="background:var(--dg-forest-action)"><x-dg.icon name="feed" size="18" /></span>
+                <strong>Fil</strong>
+                <span>Suivez l’activité réelle du réseau en temps réel et restez informé de ce qui compte.</span>
+                <span class="dg-landing-hub-card__cta">Voir le fil →</span>
+            </a>
+            <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" class="dg-landing-hub-card">
+                <span class="dg-tool__mark" style="background:var(--dg-copper)"><x-dg.icon name="heart" size="18" /></span>
+                <strong>Besoins</strong>
+                <span>Identifiez les besoins prioritaires et mobilisez les compétences adéquates.</span>
+                <span class="dg-landing-hub-card__cta">Explorer les besoins →</span>
+            </a>
+            <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" class="dg-landing-hub-card">
+                <span class="dg-tool__mark" style="background:var(--dg-night)"><x-dg.icon name="team" size="18" /></span>
+                <strong>Projets</strong>
+                <span>Collaborez sur des projets à fort impact avec des communautés engagées.</span>
+                <span class="dg-landing-hub-card__cta">Découvrir les projets →</span>
+            </a>
+            <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" class="dg-landing-hub-card">
+                <span class="dg-tool__mark" style="background:var(--dg-saffron);color:var(--dg-forest)"><x-dg.icon name="zumra" size="18" /></span>
+                <strong>ZUMRA</strong>
+                <span>Rejoignez des collectifs engagés et passez à l’action de manière coordonnée.</span>
+                <span class="dg-landing-hub-card__cta">Accéder à ZUMRA →</span>
+            </a>
+        </div>
+    </section>
+
+    {{-- De la capacité à l'action --}}
+    <section id="reseau" style="padding:0 20px 44px" class="lg:!px-10 lg:!pb-20 dg-landing-container">
+        <div style="text-align:center;margin-bottom:8px">
+            <h2 class="dg-display dg-display--section" style="font-size:30px">De la capacité à l’action</h2>
+            <p style="margin:8px 0 0;font-size:15px;color:var(--dg-muted)">Un parcours simple, collectif et efficace.</p>
+        </div>
+        <div class="dg-landing-steps">
+            <div class="dg-landing-steps__line hidden lg:block" aria-hidden="true"></div>
+            @foreach([
+                ['1', 'people', 'Rejoindre', 'Créez votre profil et rejoignez le réseau.'],
+                ['2', 'search', 'Identifier', 'Explorez les besoins et opportunités.'],
+                ['3', 'handshake', 'Collaborer', 'Apportez vos compétences et travaillez ensemble.'],
+                ['4', 'rocket', 'Agir', 'Lancez des projets et passez à l’action.'],
+                ['5', 'chart', 'Impacter', 'Mesurez l’impact et transformez des vies.'],
+            ] as [$n, $icon, $title, $body])
+                <div class="dg-landing-step">
+                    <span class="dg-landing-step__mark"><x-dg.icon :name="$icon" size="20" /></span>
+                    <strong>{{ $n }}. {{ $title }}</strong>
+                    <span>{{ $body }}</span>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+    {{-- Dans le réseau en ce moment --}}
+    <section id="besoins-projets" style="padding:0 20px 44px" class="lg:!px-10 lg:!pb-16 dg-landing-container">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4" style="margin-bottom:20px">
+            <h2 class="dg-display" style="font-size:26px">Dans le réseau en ce moment</h2>
+            <div class="dg-landing-pills" role="group" aria-label="Filtrer les exemples d’activité">
+                <button type="button" data-dg-moment-filter="tout" aria-pressed="true">Tout</button>
+                <button type="button" data-dg-moment-filter="besoin" aria-pressed="false">Besoins</button>
+                <button type="button" data-dg-moment-filter="projet" aria-pressed="false">Projets</button>
+                <button type="button" data-dg-moment-filter="zumra" aria-pressed="false">ZUMRA</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-dg-moments>
+            @foreach($exampleMoments as $moment)
+                @php([$badgeTone, $badgeLabel] = match($moment['type']) {
+                    'besoin' => ['need', 'Besoin'],
+                    'projet' => ['project', 'Projet'],
+                    default => ['neutral', 'ZUMRA'],
+                })
+                <div class="dg-card dg-card--tight" data-dg-moment="{{ $moment['type'] }}" style="display:flex;flex-direction:column;gap:12px">
+                    <span class="dg-badge dg-badge--{{ $badgeTone }}">{{ $badgeLabel }} · Exemple</span>
+                    <strong style="font-size:16px;color:var(--dg-forest);line-height:1.3">{{ $moment['titre'] }}</strong>
+                    @if(!empty($moment['lieu']))
+                        <span class="dg-meta">{{ $moment['lieu'] }}</span>
+                    @endif
+                    <span class="dg-meta">{{ $moment['meta'] }}</span>
+                    <div class="flex items-center justify-between" style="margin-top:auto">
+                        <div class="dg-people">
+                            @for($i = 0; $i < min(3, (int) ceil($moment['participants'] / 8)) + 1; $i++)
+                                <x-dg.avatar size="sm" :tone="['copper','night','saffron'][$i % 3]" initials="?" />
+                            @endfor
+                            <span class="dg-meta" style="margin-left:8px">+{{ $moment['participants'] }}</span>
+                        </div>
+                        <span class="dg-meta">{{ $moment['tempsEcoule'] }}</span>
                     </div>
                 </div>
+            @endforeach
+        </div>
 
-                <div class="dg-land-africa" aria-label="Illustration d’un réseau de capacités à travers l’Afrique">
-                    <span class="dg-land-africa__halo" aria-hidden="true"></span>
-                    <svg viewBox="0 0 440 430" role="img" aria-hidden="true">
-                        <path class="map-fill" d="M83 62 141 34 212 40 271 63 332 98 358 137 342 168 305 183 294 213 316 257 297 300 266 322 250 370 221 407 198 372 189 332 164 299 151 257 127 226 106 202 75 174 56 137 64 96Z"/>
-                        <path class="map-fill" d="M350 270 368 286 359 322 345 304Z"/>
-                        <g class="map-line">
-                            <path d="M89 104 143 80 190 104 242 84 302 118 333 151" fill="none"/>
-                            <path d="M89 104 122 161 171 144 216 169 270 146 333 151" fill="none"/>
-                            <path d="M122 161 142 214 198 201 242 232 292 210" fill="none"/>
-                            <path d="M142 214 170 270 221 252 267 284 289 329" fill="none"/>
-                            <path d="M170 270 201 323 225 370" fill="none"/>
-                            <path d="M143 80 171 144 198 201 221 252 201 323" fill="none"/>
-                            <path d="M190 104 216 169 242 232 267 284 225 370" fill="none"/>
-                            <path d="M242 84 270 146 292 210 267 284" fill="none"/>
-                            <path d="M302 118 270 146 216 169 171 144 122 161" fill="none"/>
-                        </g>
-                        <g>
-                            <circle class="map-node orange" cx="89" cy="104" r="7"/><circle class="map-node" cx="143" cy="80" r="7"/>
-                            <circle class="map-node orange" cx="190" cy="104" r="7"/><circle class="map-node" cx="242" cy="84" r="7"/>
-                            <circle class="map-node orange" cx="302" cy="118" r="7"/><circle class="map-node" cx="333" cy="151" r="6"/>
-                            <circle class="map-node" cx="122" cy="161" r="7"/><circle class="map-node orange" cx="171" cy="144" r="7"/>
-                            <circle class="map-node" cx="216" cy="169" r="7"/><circle class="map-node orange" cx="270" cy="146" r="7"/>
-                            <circle class="map-node orange" cx="142" cy="214" r="7"/><circle class="map-node" cx="198" cy="201" r="7"/>
-                            <circle class="map-node orange" cx="242" cy="232" r="7"/><circle class="map-node" cx="292" cy="210" r="7"/>
-                            <circle class="map-node" cx="170" cy="270" r="7"/><circle class="map-node orange" cx="221" cy="252" r="7"/>
-                            <circle class="map-node" cx="267" cy="284" r="7"/><circle class="map-node orange" cx="201" cy="323" r="7"/>
-                            <circle class="map-node" cx="289" cy="329" r="7"/><circle class="map-node orange" cx="225" cy="370" r="7"/>
-                        </g>
-                    </svg>
+        <div style="text-align:center;margin-top:24px">
+            <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}" style="font-size:14px;font-weight:600;color:var(--dg-copper)">Voir toutes les activités →</a>
+        </div>
+    </section>
+
+    {{-- Outils / communauté / manifeste --}}
+    <section id="outils" style="padding:40px 20px;background:var(--dg-sand)" class="lg:!px-10 lg:!py-16">
+        <div class="dg-landing-container grid grid-cols-1 lg:grid-cols-3 gap-5">
+            <div class="dg-tool" style="border-radius:20px;background:var(--dg-night);color:var(--dg-on-deep-text)">
+                <x-dg.label tone="saffron">Des outils conçus pour agir ensemble</x-dg.label>
+                <p style="margin:0;font-size:13px;line-height:1.6;color:var(--dg-on-deep-muted)">On ne part pas d’outils spécialisés pour connectés et avancer plus loin.</p>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+                    <span class="dg-tool__mark" style="background:var(--dg-saffron);color:var(--dg-forest)">GD</span>
+                    <div>
+                        <strong style="display:block;font-size:14px;color:var(--dg-on-deep-title)">GamaDrive</strong>
+                        <span style="font-size:12px;color:var(--dg-on-deep-muted)">Stocker, partager et collaborer en toute sécurité</span>
+                    </div>
+                </div>
+                <x-dg.btn variant="on-deep" :href="route('login', ['next' => route('member.space', absolute: false)])" style="margin-top:10px;align-self:flex-start">Découvrir GamaDrive →</x-dg.btn>
+            </div>
+
+            <div class="dg-card" style="display:flex;flex-direction:column;gap:16px;justify-content:center">
+                <x-dg.label>Une communauté engagée · Exemple</x-dg.label>
+                <div style="display:flex;flex-direction:column;gap:14px">
+                    <div class="flex items-center gap-3">
+                        <span class="dg-landing-stat__value">{{ $exampleStats['membresActifs'] }}</span>
+                        <span class="dg-meta">Membres actifs</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="dg-landing-stat__value">{{ $exampleStats['projetsLances'] }}</span>
+                        <span class="dg-meta">Projets lancés</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="dg-landing-stat__value">{{ $exampleStats['paysConnectes'] }}</span>
+                        <span class="dg-meta">Pays connectés</span>
+                    </div>
                 </div>
             </div>
 
-            <div id="plateforme" class="dg-land-container dg-land-pillars">
-                <a class="dg-land-pillar" href="{{ route('login', ['next' => '/activite']) }}">
-                    <span class="dg-land-pillar__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6h12M6 11h12M6 16h8" stroke-width="1.8" stroke-linecap="round"/></svg></span>
-                    <strong>Fil</strong>
-                    <p>Suivez l’activité utile du réseau et retrouvez ce qui mérite votre attention.</p>
-                    <span>Voir le Fil →</span>
-                </a>
-                <a class="dg-land-pillar" href="{{ route('login', ['next' => '/besoins']) }}">
-                    <span class="dg-land-pillar__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 20s-7-3.8-7-9.1A3.9 3.9 0 0 1 12 8a3.9 3.9 0 0 1 7 2.9C19 16.2 12 20 12 20Z" stroke-width="1.7"/><path d="M12 5v6M9 8h6" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-                    <strong>Besoins</strong>
-                    <p>Exprimez clairement ce qui manque et mobilisez les capacités adéquates.</p>
-                    <span>Explorer les besoins →</span>
-                </a>
-                <a class="dg-land-pillar" href="{{ route('login', ['next' => '/projets']) }}">
-                    <span class="dg-land-pillar__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="8" cy="9" r="3" stroke-width="1.7"/><circle cx="16.5" cy="10" r="2.5" stroke-width="1.7"/><path d="M3.5 19c.5-3.1 2.2-4.8 4.8-4.8 2.7 0 4.5 1.7 5 4.8M13 18.8c.4-2.2 1.6-3.5 3.6-3.5 2 0 3.3 1.3 3.7 3.5" stroke-width="1.7" stroke-linecap="round"/></svg></span>
-                    <strong>Projets</strong>
-                    <p>Structurez une intention, rassemblez une équipe et faites progresser une action réelle.</p>
-                    <span>Découvrir les projets →</span>
-                </a>
-                <a class="dg-land-pillar" href="{{ route('login', ['next' => '/zumra']) }}">
-                    <span class="dg-land-pillar__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke-width="1.7"/><path d="M8.5 8.5h7l-7 7h7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <strong>ZUMRA</strong>
-                    <p>Rejoignez des collectifs d’action organisés autour d’un objectif et de responsabilités explicites.</p>
-                    <span>Accéder à ZUMRA →</span>
-                </a>
+            <div class="dg-card" id="a-propos" style="background:var(--dg-tint-need);border-color:transparent;display:flex;flex-direction:column;gap:14px;justify-content:center">
+                <span style="font-family:var(--dg-font-display);font-size:22px;line-height:1.3;color:var(--dg-forest)">« Pas de likes. Pas de classement. Place à l’action utile. »</span>
+                <p style="margin:0;font-size:13px;line-height:1.6;color:var(--dg-text)">Ici, ce qui compte, c’est l’impact réel. Ensemble, transformons nos capacités en changements durables.</p>
+                <figure class="dg-photo" style="height:140px;padding:0;border-radius:14px">
+                    <img src="{{ asset('images/landing-hero.jpg') }}" alt="Une membre de DG Afrique, souriante." style="width:100%;height:100%;object-fit:cover;object-position:center 20%">
+                </figure>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <section class="dg-land-band">
-            <div class="dg-land-container dg-land-band__grid">
-                <div>
-                    <div class="dg-land-section-head">
-                        <div class="dg-land-kicker">De la capacité à l’action</div>
-                        <h2>Un parcours simple, humain et utile.</h2>
-                        <p>On ne vous demande pas d’être populaire. On vous aide à devenir utile là où quelque chose doit avancer.</p>
+    {{-- Ce que nous ne ferons pas --}}
+    <section style="padding:56px 20px 64px;display:flex;flex-direction:column;align-items:center;gap:22px;text-align:center" class="lg:!py-24 dg-landing-container">
+        <x-dg.label tone="copper">Ce que nous ne ferons pas</x-dg.label>
+        <h2 class="dg-display lg:!text-[46px]" style="font-size:32px;line-height:1.1;max-width:20ch">Pas de course à l’attention. Pas de fausse popularité.</h2>
+        <p style="margin:0;font-size:16px;line-height:1.7;color:var(--dg-text);max-width:64ch">Personne n’est noté ici. Le fil s’arrête quand il n’a plus rien d’utile à dire. Ce qui compte, c’est qu’une capacité rencontre un besoin et qu’il en sorte quelque chose de réel.</p>
+        <x-dg.btn variant="copper" :href="route('register')" style="padding:15px 28px">Créer mon compte — gratuit</x-dg.btn>
+    </section>
+
+    {{-- Footer --}}
+    <footer style="padding:44px 20px 32px;background:var(--dg-forest);color:var(--dg-on-deep-muted)" class="lg:!py-14 lg:!px-10">
+        <div class="dg-landing-container">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-8">
+                <div style="grid-column:1 / -1" class="lg:!col-span-1">
+                    <div class="flex items-center gap-2.5" style="margin-bottom:10px">
+                        <span class="dg-topbar__mark" style="width:28px;height:28px;font-size:15px">D</span>
+                        <strong style="font-size:15px;color:var(--dg-on-deep-title)">DG Afrique</strong>
                     </div>
-                    <div class="dg-land-steps">
-                        @foreach([
-                            ['1. Rejoindre', 'Déclarez ce que vous savez faire.', 'person'],
-                            ['2. Identifier', 'Repérez un besoin ou une opportunité.', 'search'],
-                            ['3. Collaborer', 'Rencontrez les bonnes personnes.', 'link'],
-                            ['4. Agir', 'Transformez l’accord en action.', 'bolt'],
-                            ['5. Transmettre', 'Laissez une capacité plus forte derrière vous.', 'rise'],
-                        ] as [$title, $body, $icon])
-                            <div class="dg-land-step">
-                                <span class="dg-land-step__icon" aria-hidden="true">
-                                    @if($icon === 'person')<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.2" stroke-width="1.7"/><path d="M5.5 19c.7-3.8 2.9-5.7 6.5-5.7s5.8 1.9 6.5 5.7" stroke-width="1.7" stroke-linecap="round"/></svg>@endif
-                                    @if($icon === 'search')<svg viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="5.5" stroke-width="1.8"/><path d="m15 15 4.5 4.5" stroke-width="1.8" stroke-linecap="round"/></svg>@endif
-                                    @if($icon === 'link')<svg viewBox="0 0 24 24" fill="none"><path d="m9 15 6-6M8.5 7H7a4 4 0 0 0 0 8h2M15.5 17H17a4 4 0 1 0 0-8h-2" stroke-width="1.7" stroke-linecap="round"/></svg>@endif
-                                    @if($icon === 'bolt')<svg viewBox="0 0 24 24" fill="none"><path d="m13.5 3-7 10h5l-1 8 7-11h-5l1-7Z" stroke-width="1.7" stroke-linejoin="round"/></svg>@endif
-                                    @if($icon === 'rise')<svg viewBox="0 0 24 24" fill="none"><path d="M5 18V12M10 18V8M15 18v-5M20 18V5M4 18h17" stroke-width="1.7" stroke-linecap="round"/></svg>@endif
-                                </span>
-                                <strong>{{ $title }}</strong>
-                                <span>{{ $body }}</span>
-                            </div>
+                    <span style="font-size:13px;line-height:1.6;max-width:30ch;display:block">Le réseau où les capacités deviennent des actions.</span>
+                    <div style="display:flex;gap:8px;margin-top:16px">
+                        @foreach(['facebook', 'linkedin', 'twitter', 'youtube', 'instagram'] as $network)
+                            <span class="dg-landing-social" aria-label="{{ ucfirst($network) }}" title="Réseau bientôt disponible">
+                                <x-dg.icon :name="$network" size="15" />
+                            </span>
                         @endforeach
                     </div>
                 </div>
-
-                <div class="dg-land-live">
-                    <div class="dg-land-live__head">
-                        <div>
-                            <div class="dg-land-kicker">Dans le réseau</div>
-                            <h2>Voyez ce qui peut se mettre en mouvement.</h2>
-                        </div>
-                        <div class="dg-land-filters" aria-hidden="true">
-                            <span class="dg-land-filter is-active">Tout</span><span class="dg-land-filter">Besoins</span><span class="dg-land-filter">Projets</span><span class="dg-land-filter">ZUMRA</span>
-                        </div>
-                    </div>
-
-                    <div class="dg-land-live__cards">
-                        <article class="dg-land-live-card">
-                            <span class="dg-land-live-card__type">Besoin · Exemple</span>
-                            <h3>{{ $exampleNeed['titre'] }}</h3>
-                            <p>{{ $exampleNeed['lieu'] }} · collaboration {{ $exampleNeed['collaboration'] }}@if(!empty($exampleNeed['capaciteRecherchee'])) · {{ $exampleNeed['capaciteRecherchee'] }}@endif</p>
-                            <div class="dg-land-live-card__footer">Exemple illustratif — connectez-vous pour voir les besoins réels.</div>
-                        </article>
-                        <article class="dg-land-live-card">
-                            <span class="dg-land-live-card__type">Projet · Exemple</span>
-                            <h3>{{ $exampleProject['titre'] }}</h3>
-                            <p>Projet illustratif · {{ count($exampleProject['competencesRecherchees']) }} compétences présentées dans la maquette d’exemple.</p>
-                            <div class="dg-land-live-card__footer">Exemple illustratif — connectez-vous pour voir les projets réels.</div>
-                        </article>
-                    </div>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">Plateforme</strong>
+                    <a href="{{ route('login', ['next' => route('activity.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Fil</a>
+                    <a href="{{ route('login', ['next' => route('needs.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Besoins</a>
+                    <a href="{{ route('login', ['next' => route('projects.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">Projets</a>
+                    <a href="{{ route('login', ['next' => route('zumra.index', absolute: false)]) }}" style="color:var(--dg-on-deep-muted)">ZUMRA</a>
+                </div>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">Ressources</strong>
+                    <a href="#outils" style="color:var(--dg-on-deep-muted)">Ressources</a>
+                    <span style="color:var(--dg-on-deep-muted);opacity:.55">Guides · bientôt</span>
+                    <span style="color:var(--dg-on-deep-muted);opacity:.55">FAQ · bientôt</span>
+                    <span style="color:var(--dg-on-deep-muted);opacity:.55">Blog · bientôt</span>
+                </div>
+                <div class="flex flex-col gap-2" style="font-size:13px">
+                    <strong style="color:var(--dg-on-deep-title)">À propos</strong>
+                    <a href="#a-propos" style="color:var(--dg-on-deep-muted)">Qui sommes-nous ?</a>
+                    <span style="color:var(--dg-on-deep-muted);opacity:.55">Actualités · bientôt</span>
+                    <span style="color:var(--dg-on-deep-muted);opacity:.55">Partenaires · bientôt</span>
+                    <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Contact</a>
                 </div>
             </div>
-        </section>
-
-        <section id="outils" class="dg-land-lower">
-            <div class="dg-land-container dg-land-lower__grid">
-                <div class="dg-land-tools">
-                    <div class="dg-land-kicker" style="color:#ffad7e">Des outils conçus pour agir ensemble</div>
-                    <h2>Le réseau reste simple. Les outils apparaissent quand l’action les appelle.</h2>
-                    <p>DG Afrique oriente vers des outils spécialisés sans transformer le réseau en tableau de bord technique.</p>
-                    <div class="dg-land-tool">
-                        <span class="dg-land-tool__mark">GD</span>
-                        <div><strong>GamaDrive</strong><span>Documents, partage et collaboration autour d’une action réelle.</span></div>
-                    </div>
-                </div>
-
-                <div class="dg-land-principles">
-                    <h3>Ce que le réseau protège</h3>
-                    <div class="dg-land-principle"><span class="dg-land-principle__icon">✓</span><div><strong>L’humain décide</strong><span>Aucune recommandation ne choisit à votre place.</span></div></div>
-                    <div class="dg-land-principle"><span class="dg-land-principle__icon">↔</span><div><strong>Les capacités se relient</strong><span>La mise en relation explique pourquoi, sans noter les personnes.</span></div></div>
-                    <div class="dg-land-principle"><span class="dg-land-principle__icon">◎</span><div><strong>L’action reste traçable</strong><span>Les engagements réels comptent plus que l’attention.</span></div></div>
-                </div>
-
-                <div id="manifeste" class="dg-land-manifesto">
-                    <div class="dg-land-kicker">Notre parti pris</div>
-                    <h2>Pas de likes. Pas de classement. Place à l’action utile.</h2>
-                    <p>DG Afrique ne transforme pas la dignité humaine en score. Ce qui compte, c’est qu’une capacité rencontre un besoin, qu’un accord devienne une action et qu’un collectif puisse avancer.</p>
-                    <div class="dg-land-manifesto__line"></div>
-                    <div class="dg-land-manifesto__photo" aria-hidden="true"><img src="{{ asset('images/landing-hero.jpg') }}" alt=""></div>
-                </div>
-            </div>
-        </section>
-
-        <section class="dg-land-container dg-land-cta">
-            <div>
-                <h2>Vous avez une capacité.<br>Quelqu’un en a peut-être besoin.</h2>
-                <p>Entrez dans le réseau, rendez vos capacités visibles et choisissez ce que vous voulez mettre en mouvement.</p>
-            </div>
-            <a class="dg-land-btn dg-land-btn--orange" href="{{ route('register') }}">ENTRER DANS DG AFRIQUE →</a>
-        </section>
-    </main>
-
-    <footer class="dg-land-footer">
-        <div class="dg-land-container dg-land-footer__inner">
-            <div class="dg-land-footer__brand">
-                <a href="{{ route('landing') }}" class="dg-land-brand"><span class="dg-land-mark">DG</span><strong>DG Afrique</strong></a>
-                <p class="dg-land-footer__tagline">Le réseau des capacités en action. Révéler, relier et mettre en mouvement ce qui existe déjà.</p>
-            </div>
-            <div><h4>Plateforme</h4><a href="{{ route('login', ['next' => '/activite']) }}">Fil</a><a href="{{ route('login', ['next' => '/besoins']) }}">Besoins</a><a href="{{ route('login', ['next' => '/projets']) }}">Projets</a><a href="{{ route('login', ['next' => '/zumra']) }}">ZUMRA</a></div>
-            <div><h4>Ressources</h4><a href="#plateforme">Découvrir le réseau</a><a href="#outils">Outils spécialisés</a><a href="#manifeste">Notre approche</a></div>
-            <div><h4>Commencer</h4><a href="{{ route('register') }}">Créer mon compte</a><a href="{{ route('login') }}">Se connecter</a><a href="{{ route('login', ['next' => '/personnes']) }}">Découvrir des personnes</a></div>
+            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
         </div>
     </footer>
+
+    <div style="height:78px" class="lg:hidden" aria-hidden="true"></div>
+
+    {{-- Barre de navigation mobile : le même composant que Fil/Mon espace/ZUMRA (un visiteur non
+         connecté est redirigé vers la connexion par le middleware core.member, avec retour
+         automatique sur la page demandée). --}}
+    <div class="lg:hidden fixed inset-x-0 bottom-0 z-30">
+        <x-dg.tabbar />
+    </div>
+
+    {{-- Feuille d'action du bouton « Agir » de la tabbar (même composant partagé que Fil/ZUMRA/
+         Mon espace) : un visiteur anonyme est redirigé vers la connexion sur chaque geste. --}}
+    <x-dg.agir-sheet />
 </div>
 </x-layouts.portal>
