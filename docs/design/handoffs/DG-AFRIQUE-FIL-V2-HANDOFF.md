@@ -37,14 +37,20 @@ Grille trois colonnes (`.dg-fil-grid`, ≥ 1024px) :
 
 **Rail gauche** (`.dg-fil-rail`), de haut en bas :
 
-1. Bouton « + Publier une action » (`.dg-fil-publish`, fond orange plein,
-   ancre `#dg-fil-composer` vers le composeur du centre — pas un menu dupliqué).
-2. « Filtrer le fil » — liste des 4 filtres réels (Tout/Besoins/Projets/ZUMRA),
+1. « Filtrer le fil » — liste des 4 filtres réels (Tout/Besoins/Projets/ZUMRA),
    l'actif en fond pétrole plein.
-3. « Mes ZUMRA » — seulement si l'identité a des adhésions actives (données réelles).
-4. « Envie de contribuer ? » (`.dg-fil-contribute`) — trois intentions pédagogiques :
+2. « Mes ZUMRA » — seulement si l'identité a des adhésions actives (données réelles).
+3. « Envie de contribuer ? » (`.dg-fil-contribute`) — trois intentions pédagogiques :
    Je peux aider / J'ai un besoin / Je veux apprendre (voir §5).
-5. Bandeau doctrinal « Le fil s'arrête » (`.dg-band`, inchangé de la V1).
+4. Bandeau doctrinal « Le fil s'arrête » (`.dg-band`, inchangé de la V1).
+
+> Correction du 19 août 2026 (suite au retour post-déploiement) : le bouton
+> « + Publier une action » du rail gauche a été retiré — redondant avec le
+> composeur du centre, déjà visible sans interaction supplémentaire. Sur
+> mobile, le composeur reste la toute première section visible de `<main>`
+> (avant les filtres horizontaux et le flux) ; les deux rails restent
+> entièrement masqués (`hidden lg:flex`, jamais affichés au-dessus ou en
+> mélange avec le flux) en dessous de 1024px.
 
 **Centre** (`<main>`) :
 

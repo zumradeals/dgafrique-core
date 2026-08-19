@@ -29,24 +29,6 @@
 
 /* ---------- Rail gauche ---------- */
 
-.dg-fil-publish {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 13px 18px;
-    border-radius: var(--dg-radius-control);
-    background: var(--dg-orange, var(--dg-copper));
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-}
-
-.dg-fil-publish:hover {
-    color: #fff;
-    filter: brightness(1.05);
-}
-
 .dg-fil-filters {
     display: flex;
     flex-direction: column;

@@ -98,6 +98,40 @@ final class FilV2Test extends TestCase
         self::assertStringNotContainsStringIgnoringCase('trending', $content);
     }
 
+    public function test_the_redundant_publish_button_is_gone_and_the_composer_is_the_first_visible_section(): void
+    {
+        // Retour post-déploiement du 19 août 2026 : le bouton « + Publier une action » du
+        // rail gauche était redondant avec le composeur, déjà visible sans interaction
+        // supplémentaire — retiré. Le composeur doit rester la toute première section
+        // visible dans <main>, avant les filtres et le flux (mobile comme desktop, puisque
+        // les deux rails restent masqués sous 1024px).
+        $this->signIn('IDN-FILV2-MOBILE-FIRST');
+
+        $content = $this->get('/activite')->assertOk()->getContent();
+
+        self::assertStringNotContainsString('Publier une action', $content);
+
+        $mainStart = strpos($content, '<main');
+        $composerPosition = strpos($content, 'id="dg-fil-composer"');
+        $toolbarPosition = strpos($content, 'class="dg-fil-toolbar"');
+        $feedPosition = strpos($content, 'class="dg-feed"');
+
+        self::assertNotFalse($mainStart);
+        self::assertNotFalse($composerPosition);
+        self::assertGreaterThan($mainStart, $composerPosition);
+        self::assertLessThan($toolbarPosition, $composerPosition, 'Le composeur doit précéder la barre de filtres.');
+        self::assertLessThan($feedPosition, $composerPosition, 'Le composeur doit précéder le flux.');
+    }
+
+    public function test_both_side_rails_stay_hidden_below_the_desktop_breakpoint(): void
+    {
+        $this->signIn('IDN-FILV2-RAILS-HIDDEN');
+
+        $content = $this->get('/activite')->assertOk()->getContent();
+
+        self::assertSame(2, substr_count($content, 'class="hidden lg:flex dg-fil-rail"'));
+    }
+
     public function test_end_of_feed_message_appears_once_real_pagination_is_exhausted(): void
     {
         $this->makeVisibleNeed('IDN-FILV2-EOF-OWNER');
