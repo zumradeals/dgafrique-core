@@ -17,14 +17,17 @@
         gap: 28px;
         align-items: start;
     }
-}
 
-.dg-fil-rail {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    position: sticky;
-    top: 24px;
+    /* La visibilité des rails est gouvernée par les utilitaires Tailwind
+       `hidden lg:flex` posés dans le markup ; ce bloc ne fait que mettre en
+       forme le contenu une fois affiché, jamais imposer `display` en dehors
+       de ce point de rupture (sinon il écraserait `hidden` sur mobile). */
+    .dg-fil-rail {
+        flex-direction: column;
+        gap: 18px;
+        position: sticky;
+        top: 24px;
+    }
 }
 
 /* ---------- Rail gauche ---------- */
@@ -150,8 +153,9 @@
     justify-content: space-between;
 }
 
+/* `display` reste gouverné par `hidden lg:flex` dans le markup (voir la note
+   sur `.dg-fil-rail` plus haut) — seule la mise en forme est fixée ici. */
 .dg-fil-toolbar__sort {
-    display: flex;
     align-items: center;
     gap: 14px;
     font-size: 13px;
