@@ -16,6 +16,7 @@ use App\Infrastructure\GamadCore\Exceptions\CoreSessionRejectedException;
 use App\Infrastructure\GamadCore\Exceptions\CoreUnavailableException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -184,7 +185,7 @@ final readonly class GamadCoreClient
 
         try {
             return $this->request($bearerToken)->get($path);
-        } catch (ConnectionException $exception) {
+        } catch (ConnectionException|RequestException $exception) {
             throw new CoreUnavailableException('GAMAD Core est temporairement injoignable.', previous: $exception);
         }
     }
@@ -198,7 +199,7 @@ final readonly class GamadCoreClient
 
         try {
             return $this->request($bearerToken)->post($path, $payload);
-        } catch (ConnectionException $exception) {
+        } catch (ConnectionException|RequestException $exception) {
             throw new CoreUnavailableException('GAMAD Core est temporairement injoignable.', previous: $exception);
         }
     }
@@ -291,7 +292,7 @@ final readonly class GamadCoreClient
     {
         try {
             $response = $this->request($bearerToken)->delete('/sessions/current');
-        } catch (ConnectionException $exception) {
+        } catch (ConnectionException|RequestException $exception) {
             throw new CoreUnavailableException('La session de preuve n’a pas pu être révoquée.', previous: $exception);
         }
 
