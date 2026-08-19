@@ -8,10 +8,6 @@
     <x-dg.shell current="fil" :identity="$identity" :is-administrator="$isAdministrator">
         <div class="dg-fil-grid">
             <aside class="hidden lg:flex dg-fil-rail">
-                <a href="#dg-fil-composer" class="dg-fil-publish">
-                    <span aria-hidden="true">+</span> Publier une action
-                </a>
-
                 <div class="dg-fil-filters">
                     <x-dg.label class="mb-2">Filtrer le fil</x-dg.label>
                     @foreach($filters as $code => $label)
