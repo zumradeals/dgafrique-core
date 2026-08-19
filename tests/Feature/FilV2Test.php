@@ -132,6 +132,30 @@ final class FilV2Test extends TestCase
         self::assertSame(2, substr_count($content, 'class="hidden lg:flex dg-fil-rail"'));
     }
 
+    public function test_fil_v2_css_never_forces_display_on_elements_hidden_by_tailwind_outside_a_media_query(): void
+    {
+        // Régression réelle observée sur mobile : `.dg-fil-rail { display: flex }` déclaré
+        // en dehors de tout @media écrasait l'utilitaire Tailwind `hidden` (même
+        // spécificité, mais fil-v2.css est chargé après app.css) — les rails restaient
+        // visibles au-dessus du composeur sur téléphone malgré `hidden lg:flex` dans le
+        // markup. Toute règle CSS ciblant un sélecteur utilisé avec `hidden` dans le Fil
+        // doit rester à l'intérieur d'un @media, jamais au niveau racine de la feuille.
+        $css = file_get_contents(resource_path('css/fil-v2.css'));
+        self::assertNotFalse($css);
+
+        // Supprime le contenu des blocs @media pour n'analyser que les règles racine.
+        $rootLevelCss = preg_replace('/@media[^{]*\{((?:[^{}]*\{[^{}]*\})*[^{}]*)\}/s', '', $css);
+        self::assertNotNull($rootLevelCss);
+
+        foreach (['.dg-fil-rail', '.dg-fil-toolbar__sort'] as $selector) {
+            self::assertDoesNotMatchRegularExpression(
+                '/'.preg_quote($selector, '/').'\s*\{[^}]*display\s*:/s',
+                $rootLevelCss,
+                "$selector ne doit jamais fixer `display` en dehors d'un @media : cela écraserait l'utilitaire Tailwind `hidden` posé dans le markup."
+            );
+        }
+    }
+
     public function test_end_of_feed_message_appears_once_real_pagination_is_exhausted(): void
     {
         $this->makeVisibleNeed('IDN-FILV2-EOF-OWNER');
