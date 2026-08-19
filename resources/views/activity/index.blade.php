@@ -44,49 +44,65 @@
             <main style="display:flex;flex-direction:column;gap:18px;min-width:0">
                 <h1 class="sr-only">Ce qui bouge dans le réseau</h1>
 
-                <div class="dg-fil-composer" id="dg-fil-composer">
-                    <div class="dg-fil-composer__head">
+                <details class="dg-fil-composer" id="dg-fil-composer">
+                    <summary class="dg-fil-composer__summary">
                         <x-dg.avatar :initials="$identity ? mb_strtoupper(mb_substr($identity->label, 0, 1)) : '?'" size="sm" tone="saffron" />
-                        <span class="dg-fil-composer__prompt">Quoi de neuf dans le réseau ?</span>
-                    </div>
+                        <span class="dg-fil-composer__prompt">
+                            <small>Créer une action</small>
+                            <strong>Quoi de neuf dans le réseau ?</strong>
+                        </span>
+                        <span class="dg-fil-composer__chevron" aria-hidden="true">⌄</span>
+                    </summary>
 
-                    <div class="dg-fil-composer__types">
-                        <a href="#dg-fil-composer-need" class="dg-fil-composer__type dg-fil-composer__type--need">Besoin</a>
-                        <a href="{{ route('projects.create') }}" class="dg-fil-composer__type dg-fil-composer__type--project">Projet</a>
-                        <a href="{{ route('zumra.groups.create') }}" class="dg-fil-composer__type dg-fil-composer__type--zumra">ZUMRA</a>
-                        <span class="dg-fil-composer__type" aria-disabled="true" title="Une Mission se crée depuis un Projet, une ZUMRA ou un Besoin existant.">Mission</span>
-                        <span class="dg-fil-composer__type" aria-disabled="true" title="Aucun objet Événement n’existe encore dans le produit.">Événement</span>
-                    </div>
-
-                    <form id="dg-fil-composer-need" method="POST" action="{{ route('needs.store') }}" enctype="multipart/form-data" class="dg-fil-composer__form">
-                        @csrf
-                        <input type="hidden" name="owner_type" value="PERSON">
-                        <input type="hidden" name="collaboration_mode" value="ANY">
-                        <input type="hidden" name="visibility" value="PUBLIC">
-                        <input type="text" name="title" class="dg-composer__title" placeholder="Quel besoin réel voulez-vous exprimer ?" minlength="5" maxlength="180" required>
-                        <textarea name="context" class="dg-composer__context" rows="2" minlength="40" maxlength="3000" required placeholder="Le contexte : pourquoi ce besoin, pour qui, dans quelles conditions… (40 caractères minimum)"></textarea>
-                        <div class="dg-composer__foot">
-                            <select name="category" class="dg-select dg-composer__category" required>
-                                <option value="">Catégorie</option>
-                                @foreach($composerCategories as $code => $label)
-                                    <option value="{{ $code }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                            <label class="dg-composer__image">
-                                <input type="file" name="image" accept="image/png,image/jpeg,image/webp">
-                            </label>
-                            <button type="submit" class="dg-btn dg-btn--need dg-composer__submit">Publier ce besoin</button>
+                    <div class="dg-fil-composer__body">
+                        <div class="dg-fil-composer__types" aria-label="Choisir le type d’action">
+                            <a href="#dg-fil-composer-need" class="dg-fil-composer__type dg-fil-composer__type--need" aria-current="true">Besoin</a>
+                            <a href="{{ route('projects.create') }}" class="dg-fil-composer__type dg-fil-composer__type--project">Projet</a>
+                            <a href="{{ route('zumra.groups.create') }}" class="dg-fil-composer__type dg-fil-composer__type--zumra">ZUMRA</a>
+                            <span class="dg-fil-composer__type" aria-disabled="true" title="Une Mission se crée depuis un Projet, une ZUMRA ou un Besoin existant.">Mission</span>
                         </div>
-                    </form>
-                </div>
+
+                        <form id="dg-fil-composer-need" method="POST" action="{{ route('needs.store') }}" enctype="multipart/form-data" class="dg-fil-composer__form">
+                            @csrf
+                            <input type="hidden" name="owner_type" value="PERSON">
+                            <input type="hidden" name="collaboration_mode" value="ANY">
+                            <input type="hidden" name="visibility" value="PUBLIC">
+                            <input type="text" name="title" class="dg-composer__title" placeholder="Quel besoin réel voulez-vous exprimer ?" minlength="5" maxlength="180" required>
+                            <textarea name="context" class="dg-composer__context" rows="2" minlength="40" maxlength="3000" required placeholder="Le contexte : pourquoi ce besoin, pour qui, dans quelles conditions… (40 caractères minimum)"></textarea>
+                            <div class="dg-composer__foot dg-fil-composer__foot">
+                                <select name="category" class="dg-select dg-composer__category" required>
+                                    <option value="">Catégorie</option>
+                                    @foreach($composerCategories as $code => $label)
+                                        <option value="{{ $code }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+
+                                <label class="dg-fil-upload" for="dg-fil-need-image">
+                                    <input id="dg-fil-need-image" class="sr-only" type="file" name="image" accept="image/png,image/jpeg,image/webp">
+                                    <span class="dg-fil-upload__mark" aria-hidden="true">＋</span>
+                                    <span class="dg-fil-upload__copy">
+                                        <strong>Ajouter une image</strong>
+                                        <small>PNG, JPG ou WebP</small>
+                                    </span>
+                                </label>
+
+                                <button type="submit" class="dg-btn dg-fil-composer__submit">Publier ce besoin</button>
+                            </div>
+                        </form>
+                    </div>
+                </details>
 
                 <div class="dg-fil-toolbar">
-                    <form method="GET" class="flex gap-2 overflow-x-auto lg:hidden" aria-label="Filtrer le fil" style="padding-bottom:2px">
-                        @foreach($filters as $code => $label)
-                            <a href="{{ route('activity.index', $code === 'ALL' ? [] : ['type' => $code]) }}"
-                               style="padding:9px 14px;border-radius:999px;font-size:13px;white-space:nowrap;{{ $filter === $code ? 'background:var(--dg-forest);color:var(--dg-ivory);font-weight:600' : 'background:var(--dg-card);border:1px solid var(--dg-line);color:var(--dg-text)' }}">{{ $label }}</a>
-                        @endforeach
-                    </form>
+                    <div class="dg-fil-toolbar__mobile lg:hidden">
+                        <span class="dg-fil-toolbar__label">Filtrer ce que je vois</span>
+                        <form method="GET" class="dg-fil-filterbar" aria-label="Filtrer le fil">
+                            @foreach($filters as $code => $label)
+                                <a href="{{ route('activity.index', $code === 'ALL' ? [] : ['type' => $code]) }}"
+                                   class="dg-fil-filter-pill"
+                                   @if($filter === $code) aria-current="page" @endif>{{ $label }}</a>
+                            @endforeach
+                        </form>
+                    </div>
                     <div class="dg-fil-toolbar__sort hidden lg:flex">
                         <span>Les plus récents</span>
                         <span class="dg-fil-follow-toggle" title="Le suivi de contextes précis arrivera avec les préférences de notification.">Voir uniquement mes suivis</span>
