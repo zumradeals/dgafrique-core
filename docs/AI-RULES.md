@@ -49,7 +49,7 @@ test ! -e docs/capacites/CAP-MASTER-TRACKER.md
 test ! -d docs/capacites/legacy/specs
 test -z "$(find docs -type f -name '*.zip.b64.part*' -print -quit)"
 test -z "$(grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md || true)"
-awk '/^Status:/ && $2 !~ /^(CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$/ { bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
+awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
 Toute nouvelle preuve sous `docs/capacites/proofs/` est interdite par revue : ce répertoire est figé en quarantaine jusqu'à décision de suppression complète.
