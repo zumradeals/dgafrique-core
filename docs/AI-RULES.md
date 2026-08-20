@@ -10,6 +10,8 @@ Ce fichier est le premier document à lire par toute IA ou tout contributeur aut
 4. **Specs et invariants actifs** — contrats à respecter, mais pas preuves d'implémentation.
 5. **Références historiques** — contexte seulement.
 
+`docs/capacites/proofs/` est legacy/quarantaine : ne jamais le lire pour déterminer le statut courant d'un CAP et ne jamais y ajouter de nouveau snapshot.
+
 Si deux documents se contredisent, ne jamais choisir silencieusement celui qui arrange la tâche. Vérifier le code, puis régulariser la documentation.
 
 ## Interdictions documentaires
@@ -44,12 +46,13 @@ La CI documentaire doit au minimum échouer si :
 
 - `docs/capacites/CAP-MASTER-TRACKER.md` réapparaît ;
 - un fichier `docs/capacites/legacy/specs/*` réapparaît ;
+- un nouveau fichier est ajouté sous `docs/capacites/proofs/` ;
 - un fragment `*.zip.b64.part*` est ajouté sous `docs/` ;
 - `CAPABILITY-INDEX.md` contient `[PLUS TARD]`, `[FAIT]`, `[CLOSED]` ou un autre statut d'avancement dans un titre ;
-- `CAPABILITY-COVERAGE.md` utilise un statut hors de la liste `CLOSED`, `PARTIAL`, `NOT_IMPLEMENTED`, `DOC_ONLY`, `DEPENDENCY_BLOCKED` ;
+- `CAPABILITY-COVERAGE.md` utilise un statut hors de `CLOSED`, `PARTIAL`, `NOT_IMPLEMENTED`, `DOC_ONLY`, `DEPENDENCY_BLOCKED` ;
 - une seconde occurrence de fichier de type tracker CAP est ajoutée sans décision explicite.
 
-Le garde-fou peut être implémenté par script shell/PHP simple : il ne doit pas inventer l'état des CAP, seulement empêcher le retour des formes documentaires interdites.
+Le garde-fou ne doit pas inventer l'état des CAP : il empêche seulement le retour des formes documentaires interdites.
 
 ## IA et mutations métier
 
