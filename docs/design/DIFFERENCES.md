@@ -212,7 +212,7 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
 - « Activité récente » est en revanche entièrement réelle : `ProjectEvent::EVENT_LABELS`
   (nouvelle constante sur le modèle) traduit les codes d'événements déjà journalisés
   (`ProjectService`, `ProjectMaturityService`, `ProjectTeamService`, `ProjectAccompanimentService`,
-  `ProjectSatelliteLauncherService`) en libellés lisibles ; l'acteur est affiché via son
+  `ProjectAutonomyPathwayService`) en libellés lisibles ; l'acteur est affiché via son
   `discovery_display_name` ou « Membre DG Afrique » (anonymat assumé). « Voir toute l'activité → »
   reste désactivé, faute de journal dédié au-delà des six derniers événements affichés.
 - « Suivre » (en-tête) et « Suivre les mises à jour » (actions rapides) restent désactivés : aucun

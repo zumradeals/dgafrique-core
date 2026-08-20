@@ -11,7 +11,7 @@
 
         <header>
             <div>
-                <p class="eyebrow">CAP‑018 · Lanceur de satellites</p>
+                <p class="eyebrow">CAP‑018 · Parcours d’autonomie</p>
                 <h1>Vers une structure plus autonome</h1>
                 <p>DG Afrique peut accompagner un projet suffisamment mûr vers une forme organisationnelle distincte, sans décider à sa place de sa forme juridique ni de sa propriété.</p>
             </div>
@@ -30,7 +30,7 @@
         <section class="project-map">
             <div>
                 <h2>Identifier</h2>
-                <p>Le parcours est ouvert uniquement aux projets situés aux repères « Structure potentielle » ou « Satellite potentiel ».</p>
+                <p>Le parcours est ouvert uniquement aux projets situés aux repères « Structure potentielle » ou « Autonomie à explorer ».</p>
             </div>
             <div>
                 <h2>Structurer</h2>
@@ -79,7 +79,7 @@
         @else
             <section class="project-decisions">
                 <h2>Projet pas encore éligible</h2>
-                <p style="color:var(--muted);font-size:.65rem;line-height:1.6">CAP‑018 n’invente pas un score de maturité. Repositionnez d’abord le projet, lorsque la situation réelle le justifie, vers « Structure potentielle » ou « Satellite potentiel ».</p>
+                <p style="color:var(--muted);font-size:.65rem;line-height:1.6">CAP‑018 n’invente pas un score de maturité. Repositionnez d’abord le projet, lorsque la situation réelle le justifie, vers « Structure potentielle » ou « Autonomie à explorer ».</p>
                 <a href="{{ route('projects.show',$project) }}" style="color:var(--ocean);font-size:.68rem;font-weight:900;text-decoration:none">Retour à la maturité du projet →</a>
             </section>
         @endif

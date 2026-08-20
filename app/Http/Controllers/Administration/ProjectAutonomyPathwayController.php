@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Administration;
 
-use App\Application\Projects\ProjectSatelliteLauncherService;
+use App\Application\Projects\ProjectAutonomyPathwayService;
 use App\Models\Project;
 use App\Models\ProjectAutonomyPathway;
 use Illuminate\View\View;
 
-final class ProjectSatelliteLauncherController
+final class ProjectAutonomyPathwayController
 {
     public function index(): View
     {
         $eligibleProjects = Project::query()
-            ->whereIn('maturity', ProjectSatelliteLauncherService::ELIGIBLE_MATURITIES)
+            ->whereIn('maturity', ProjectAutonomyPathwayService::ELIGIBLE_MATURITIES)
             ->where('status', '!=', Project::STATUS_ARCHIVED)
             ->with('autonomyPathway')
             ->latest()
@@ -28,10 +28,10 @@ final class ProjectSatelliteLauncherController
             ->limit(100)
             ->get();
 
-        return view('administration.project-satellite-launcher', [
+        return view('administration.project-autonomy-pathway', [
             'eligibleProjects' => $eligibleProjects,
             'activePathways' => $activePathways,
-            'targetForms' => ProjectSatelliteLauncherService::TARGET_FORMS,
+            'targetForms' => ProjectAutonomyPathwayService::TARGET_FORMS,
         ]);
     }
 }

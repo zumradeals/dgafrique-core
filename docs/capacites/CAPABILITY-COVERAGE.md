@@ -103,11 +103,11 @@
 
 **Status : CLOSED**
 
-**Evidence :** `ProjectAutonomyPathway`, `dg_project_autonomy_pathways`, service historique `ProjectSatelliteLauncherService`.
+**Evidence :** `ProjectAutonomyPathway`, `dg_project_autonomy_pathways`, service canonique `ProjectAutonomyPathwayService`.
 
-**Lecture correcte :** le code existant prépare et suit l’autonomie organisationnelle/économique d’un projet. Le nom `ProjectSatelliteLauncherService` est une dette historique de nommage ; il ne constitue pas une doctrine et ne crée pas de satellite logiciel.
+**Lecture correcte :** le code existant prépare et suit l’autonomie organisationnelle/économique d’un projet. L’ancien nom `ProjectSatelliteLauncherService` était une dette historique de nommage ; il ne constituait pas une doctrine et ne créait pas de satellite logiciel.
 
-**Décision :** renommer/refactorer ce service dans un lot code dédié, avec tests de non-régression. Aucun changement de comportement n’est requis par ARCH-006.
+**Décision :** renommage exécuté par REF-001B (2026-08-20) — `ProjectAutonomyController`, `Administration\ProjectAutonomyPathwayController` et l’ensemble des routes/vues/tests référencent désormais exclusivement `ProjectAutonomyPathwayService`. Aucun changement de comportement n’a été requis, conformément à ARCH-006.
 
 ### CAP-039 — ZUMRA comme capacité d’émergence
 

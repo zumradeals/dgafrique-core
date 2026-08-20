@@ -15,7 +15,7 @@ La maturité représente la progression de l’idée vers une structure potentie
 5. Projet structuré
 6. Activité
 7. Structure potentielle
-8. Satellite potentiel
+8. Autonomie à explorer
 
 Codes techniques conservés :
 
@@ -26,7 +26,7 @@ Codes techniques conservés :
 - `STRUCTURED`
 - `ACTIVITY`
 - `POTENTIAL_STRUCTURE`
-- `POTENTIAL_SATELLITE`
+- `AUTONOMY_READY`
 
 ## Invariant
 
@@ -63,9 +63,9 @@ CAP-044 — « Maturité calculée par signes, pas par décret » introduira plu
 
 ## Frontière avec CAP-018
 
-`POTENTIAL_SATELLITE` signifie seulement que le projet peut explorer l’étape suivante.
+`AUTONOMY_READY` signifie seulement que le projet peut explorer l’étape suivante.
 
-Ce repère ne crée pas un satellite et ne déclenche aucune fédération ou intégration Core.
+Ce repère ne crée pas de satellite logiciel et ne déclenche aucune fédération ou intégration Core.
 
 ## Preuve attendue
 
@@ -74,7 +74,7 @@ Ce repère ne crée pas un satellite et ne déclenche aucune fédération ou int
 - seul le porteur habilité peut repositionner la maturité ;
 - historique append-only dans `dg_project_events` ;
 - maturité indépendante du statut du projet ;
-- `POTENTIAL_SATELLITE` sans création de satellite, finance, accompagnement ou contrôle ;
+- `AUTONOMY_READY` sans création de satellite, finance, accompagnement ou contrôle ;
 - tests CAP-017 ciblés verts ;
 - régression complète verte ;
 - préproduction HTTP 200.
