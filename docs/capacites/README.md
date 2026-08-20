@@ -1,19 +1,19 @@
-# Référentiel des capacités
+# Documentation des capacités DG Afrique
 
-`CAPABILITY-INDEX.md` contient les 84 capacités canoniques de DG Afrique.
+Avant toute intervention, lire `../AI-RULES.md`.
 
-## Nouveau départ
+## Documents actifs
 
-Ce dépôt est une reconstruction. Les validations du portail précédent ne sont pas transférées. Le tracker repart donc de CAP-001.
+- `CAPABILITY-INDEX.md` — les 84 capacités, leurs domaines et leur routage. Ce n'est pas un tracker d'avancement.
+- `CAPABILITY-COVERAGE.md` — unique synthèse documentaire du statut réel des CAP, toujours subordonnée au code et aux tests de `main`.
+- `OVERRIDES.md` — décisions explicites qui modifient ou précisent le référentiel.
+- `specs/` — contrats et invariants encore utiles à l'implémentation.
+- `TEMPLATE.md` — aide à la rédaction d'une nouvelle fiche lorsqu'elle est réellement nécessaire.
 
-Les fichiers sous `legacy/specs/` sont des documents historiques utiles. Ils ne constituent ni une validation, ni une architecture à recopier. Chaque fiche doit être réauditée et réécrite lorsqu'elle devient le gate actif.
+## Historique
 
-## Séquence
+L'historique du dépôt conserve les versions précédentes ; les anciens trackers, doublons et anciennes specs n'ont donc pas à rester comme sources concurrentes dans l'arbre courant.
 
-1. `À SPÉCIFIER` ;
-2. `EN SPEC` ;
-3. `EN DÉVELOPPEMENT` ;
-4. `EN PRÉPRODUCTION` ;
-5. `VALIDÉ PROD`.
+`proofs/` est un **répertoire legacy en quarantaine** : il contient des snapshots du bootstrap et n'appartient pas à la hiérarchie de vérité. DOC-001 interdit toute nouvelle preuve dans ce répertoire. Sa suppression physique complète pourra être décidée séparément si aucune exigence d'audit ne nécessite sa présence dans l'arbre courant ; en attendant, aucune IA ne doit le lire pour déterminer l'état d'un CAP.
 
-Un seul gate principal avance à la fois, sauf dérogation écrite dans `OVERRIDES.md`.
+Les preuves courantes de livraison vivent dans les tests, les PR et les journaux CI.
