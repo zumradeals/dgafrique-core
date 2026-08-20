@@ -1,48 +1,53 @@
-# Règles de vérité du dépôt DG Afrique
+# AI RULES — DG Afrique Core
 
-Ce document est normatif pour toute contribution humaine ou assistée par IA.
+Ce fichier est le premier document à lire par toute IA ou tout contributeur automatisé intervenant sur le dépôt.
 
 ## Hiérarchie de vérité
 
-1. **Le code présent sur `main` est la vérité technique absolue.**
-2. Pour l’état d’implémentation des capacités CAP-001 à CAP-084, la seule carte documentaire autorisée est `docs/capacites/CAPABILITY-COVERAGE.md`.
-3. `docs/capacites/CAPABILITY-INDEX.md` définit le référentiel fonctionnel ; il ne prouve jamais qu’une capacité est implémentée.
-4. Une spécification décrit un contrat fonctionnel ; elle ne prouve jamais que le contrat est implémenté.
-5. Les doctrines et invariants définissent des contraintes produit/architecture ; ils ne remplacent jamais l’inspection du code.
+1. **Code + tests de `main`** — vérité technique sur ce qui existe réellement.
+2. **`docs/capacites/CAPABILITY-COVERAGE.md`** — unique synthèse documentaire des statuts CAP.
+3. **`docs/capacites/CAPABILITY-INDEX.md`** — référentiel des 84 capacités et routage ; jamais un tracker.
+4. **Specs et invariants actifs** — contrats à respecter, mais pas preuves d'implémentation.
+5. **Références historiques** — contexte seulement.
 
-## Règle de travail obligatoire
+Si deux documents se contredisent, ne jamais choisir silencieusement celui qui arrange la tâche. Vérifier le code, puis régulariser la documentation.
 
-Avant de proposer ou coder une fonctionnalité :
+## Interdictions documentaires
 
-- inspecter le code existant ;
-- inspecter les migrations ;
-- inspecter les routes ;
-- inspecter les tests ;
-- vérifier `CAPABILITY-COVERAGE.md` ;
-- réutiliser les services métier existants au lieu de recréer un moteur parallèle.
+Ne pas créer :
 
-En cas de contradiction documentation ↔ code : **le code gagne** et la documentation doit être corrigée dans la même PR.
+- un second tracker CAP (`MASTER`, `FINAL`, `STATUS`, `PROGRESS`, etc.) ;
+- une copie `v2`, `final`, `final-final` d'une spec active ;
+- une preuve datée destinée à devenir une source permanente d'état ;
+- une archive ZIP/Base64 découpée dans `docs/` pour conserver de l'historique ;
+- une nouvelle maquette déclarée autorité sans décision explicite sur les invariants ;
+- un statut « CLOSED » uniquement parce qu'une spec ou une ancienne preuve l'affirme.
 
-## Documentation interdite comme source de statut
+Git est l'archive historique. Le dépôt courant doit rester un espace de travail, pas un entrepôt de snapshots.
 
-Un ancien tracker, handoff, preuve datée, capture, maquette, plan de chantier ou document historique ne doit jamais servir à déterminer l’état actuel d’une capacité.
+## Avant toute modification métier
 
-Les preuves historiques Git restent disponibles dans l’historique du dépôt ; elles n’ont pas à rester dans l’arbre courant si elles créent une seconde vérité.
+- lire `docs/AI-HANDOFF.md` ;
+- lire l'entrée du CAP dans `CAPABILITY-INDEX.md` et `CAPABILITY-COVERAGE.md` ;
+- inspecter les modèles, services, contrôleurs, routes, migrations et tests concernés ;
+- lire la spec concernée si elle existe ;
+- pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
+- pour UI/navigation, lire `docs/design/DESIGN-INVARIANTS.md`.
 
-## Discipline documentaire
+## Après une modification qui change la couverture
 
-- Une information normative doit avoir un propriétaire documentaire unique.
-- Pas de fichier `*-FINAL`, `*-OLD`, `*-NEW`, `tracker-v2`, `roadmap-final` ou équivalent créant une vérité concurrente.
-- Lorsqu’un contrat évolue, mettre à jour le document canonique au lieu d’ajouter un nouveau document concurrent.
-- Toute PR qui change matériellement l’état d’une CAP doit mettre à jour `CAPABILITY-COVERAGE.md`.
-- Les seeds/projections produit ne constituent jamais une preuve d’implémentation métier.
+Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne pas modifier le titre canonique d'une capacité dans l'index pour encoder son statut (`[PLUS TARD]`, `[FAIT]`, etc.).
 
-## Projet vivant V2
+## IA et mutations métier
 
-La doctrine produit reste celle de `docs/architecture/ARCHITECTURE-PRODUIT-V2.md` tant qu’elle n’est pas explicitement remplacée par une décision canonique. Le Projet est le dossier vivant principal de l’action, sans remplacer le socle Personnes/Capacités/ZUMRA.
+Une IA peut analyser, proposer et préparer un brouillon. Elle ne doit pas contourner les confirmations humaines prévues par le domaine. Project Brain suit déjà ce patron : conversation → proposition structurée → brouillon → confirmation humaine → service métier.
 
-## Modules et satellites
+## Règle anti-dérive
 
-Invariant :
+Toute PR documentaire doit pouvoir répondre à trois questions :
 
-> On ne construit pas un satellite parce qu’un outil pourrait devenir énorme. On construit d’abord un module extractible. Il devient satellite lorsqu’il a besoin de vivre indépendamment.
+- ce document est-il actif ou historique ?
+- quelle source gagne en cas de conflit ?
+- ce fichier apporte-t-il une information qui n'existe pas déjà dans une autorité supérieure ?
+
+Si la troisième réponse est non, supprimer ou fusionner le fichier au lieu de le conserver par inertie.
