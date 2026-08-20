@@ -25,7 +25,7 @@ Ne pas créer :
 - une nouvelle maquette déclarée autorité sans décision explicite sur les invariants ;
 - un statut `CLOSED` uniquement parce qu'une spec ou une ancienne preuve l'affirme.
 
-Git est l'archive historique.
+L'historique du dépôt est l'archive des versions précédentes ; il n'est pas nécessaire de maintenir des copies concurrentes dans l'arbre courant.
 
 ## Avant toute modification métier
 
@@ -52,7 +52,7 @@ test -z "$(grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DE
 awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
-Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsque la politique d'audit historique autorisera cette dernière purge.
+Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
 
 Ce garde-fou est aujourd'hui une règle de revue reproductible. Son automatisation CI éventuelle doit faire l'objet d'un changement de workflow explicite ; la documentation ne doit pas prétendre qu'un contrôle CI existe tant qu'il n'est pas réellement présent dans le dépôt.
 
