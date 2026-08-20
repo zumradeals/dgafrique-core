@@ -11,6 +11,7 @@
     @else
         <p class="dg-body">{{ $item['summary'] }}</p>
     @endif
+    <x-dg.feed.relevance :item="$item" />
 
     <x-dg.actions>
         <x-dg.btn variant="learn" disabled title="L’intention « je veux apprendre » n’est pas encore distinguée par le besoin métier.">Je veux apprendre à faire pareil</x-dg.btn>

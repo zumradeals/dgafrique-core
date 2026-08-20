@@ -18,6 +18,7 @@
         <a href="{{ $item['action_url'] }}" style="color:inherit">{{ $item['title'] }}</a>
     </h2>
     <p class="dg-body">{{ $item['summary'] }}</p>
+    <x-dg.feed.relevance :item="$item" />
 
     <x-dg.actions>
         <x-dg.btn variant="quiet" :href="$item['action_url']">Voir la preuve</x-dg.btn>

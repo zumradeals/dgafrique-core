@@ -27,6 +27,7 @@
     @if($item['context'])
         <x-dg.note>{{ $item['context'] }}</x-dg.note>
     @endif
+    <x-dg.feed.relevance :item="$item" />
 
     <x-dg.actions>
         @if(! $item['can_decide'])
