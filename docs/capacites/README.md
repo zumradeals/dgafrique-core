@@ -12,6 +12,8 @@ Avant toute intervention, lire `../AI-RULES.md`.
 
 ## Historique
 
-Git est l'archive. Les anciens trackers, doublons, anciennes specs et snapshots de preuve de bootstrap ne doivent pas être restaurés dans l'arbre courant pour « garder une trace » : cette trace existe déjà dans l'historique Git.
+Git est l'archive. Les anciens trackers, doublons et anciennes specs ne doivent pas être restaurés dans l'arbre courant pour « garder une trace » : cette trace existe déjà dans l'historique Git.
 
-Les preuves de livraison doivent vivre dans les tests, les PR et les journaux CI. Aucun nouveau fichier daté sous `docs/capacites/proofs/` ne doit être créé comme source permanente d'état.
+`proofs/` est un **répertoire legacy en quarantaine** : il contient des snapshots du bootstrap et n'appartient pas à la hiérarchie de vérité. DOC-001 interdit toute nouvelle preuve dans ce répertoire. Sa suppression physique complète pourra être faite séparément si aucune politique d'audit externe n'exige sa conservation ; en attendant, aucune IA ne doit le lire pour déterminer l'état d'un CAP.
+
+Les preuves courantes de livraison vivent dans les tests, les PR et les journaux CI.
