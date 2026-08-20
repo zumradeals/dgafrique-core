@@ -18,9 +18,13 @@ La contribution mensuelle alimente une capacité financière communautaire desti
 
 Les états `not_started`, `up_to_date`, `grace` et `late` peuvent exister. Aucune suspension automatique ou pénalité nouvelle n'est codée sans décision métier explicite.
 
-## OVR-005 — Fédération des satellites
+## OVR-005 — Outils spécialisés, extractibilité et fédération
 
-GAMAD Core fournit la primitive réelle de fédération. DG Afrique déclenche l'ouverture d'un satellite sous session Core ; le satellite vérifie le jeton avec ses propres identifiants. Le mot de passe GAMAD ne transite jamais.
+Un outil spécialisé commence comme **module extractible**. Il ne devient satellite autonome que lorsqu'un besoin réel d'autonomie technique le justifie et qu'un ADR d'extraction est accepté.
+
+Lorsqu'un outil est effectivement autonome, GAMAD Core fournit la primitive de fédération. DG Afrique peut déclencher son ouverture sous session Core ; l'outil autonome vérifie le jeton avec ses propres identifiants. Le mot de passe GAMAD ne transite jamais.
+
+Cette mécanique n'a aucun lien avec la maturité d'un Projet : **un Projet ne devient pas satellite logiciel**.
 
 ## OVR-006 — Stack canonique reconstruite
 
