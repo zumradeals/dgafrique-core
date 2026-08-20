@@ -10,9 +10,11 @@
 4. les specs décrivent des contrats et invariants ; elles ne prouvent jamais qu'une fonctionnalité est livrée ;
 5. Git conserve l'historique : aucun ancien tracker, preuve ponctuelle ou archive design ne doit devenir une seconde vérité courante.
 
+`docs/capacites/proofs/` est un reliquat historique en quarantaine : ne pas le consulter pour déterminer l'état courant et ne pas l'alimenter.
+
 Pour toute capacité ZUMRA, respecter `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`.
 
-Pour toute modification d'interface, navigation ou design, lire `docs/design/DESIGN-INVARIANTS.md`. Les références visuelles versionnées sous `docs/design/reference/` servent à expliquer les décisions adoptées ; elles ne remplacent ni l'interface actuelle de `main`, ni les invariants.
+Pour toute modification d'interface, navigation ou design, lire `docs/design/DESIGN-INVARIANTS.md`. Les références sous `docs/design/reference/` sont de la provenance historique, pas une autorité supérieure au code courant.
 
 ## Projet canonique
 
@@ -50,4 +52,4 @@ Avant de coder une capacité :
 
 Ne jamais utiliser ce handoff pour savoir quel est « le prochain CAP ». Cette information change avec `main` et appartient exclusivement à `CAPABILITY-COVERAGE.md` après vérification du code.
 
-Le chantier de reconstruction historique est terminé comme principe directeur : le dépôt courant est désormais la base. Les mentions de « premier gate », « repartir de zéro » ou « anciennes specs à réauditer » ne doivent plus piloter les nouvelles sessions comme si le projet était encore à son bootstrap.
+Le dépôt courant est désormais la base. Les anciennes consignes de bootstrap telles que « premier gate » ou « repartir de zéro » sont historiques et ne doivent plus piloter une nouvelle session.
