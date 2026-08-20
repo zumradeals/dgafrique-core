@@ -9,7 +9,7 @@ interface ProjectBrainAiProvider
     /**
      * @param array<int, array{role:string,content:string}> $messages
      * @param array<string, mixed> $currentContext
-     * @return array{reply:string,project_state:array<string,mixed>,suggested_next_action:?string,confidence:?float}
+     * @return array{reply:string,project_state:array<string,mixed>,suggested_next_action:?string,confidence:?float,proposed_actions?:array<int,array<string,mixed>>}
      */
     public function respond(array $messages, array $currentContext = []): array;
 }
