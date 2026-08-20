@@ -52,11 +52,7 @@ test -z "$(grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DE
 awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
-Pour une PR, le gel du legacy `proofs/` se vérifie en plus par :
-
-```bash
-test -z "$(git diff --diff-filter=A --name-only origin/main...HEAD -- docs/capacites/proofs/)"
-```
+Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsque la politique d'audit historique autorisera cette dernière purge.
 
 Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
 
