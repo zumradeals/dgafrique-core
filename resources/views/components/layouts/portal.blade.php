@@ -20,6 +20,9 @@
     if (request()->routeIs('projects.index')) {
         $pageStyles[] = 'resources/css/projects-directory.css';
     }
+    if (request()->routeIs('projects.show')) {
+        $pageStyles[] = 'resources/css/project-detail.css';
+    }
     if ($isProjectWorkspace) {
         $pageStyles[] = 'resources/css/project-workspace-v2.css';
     }
