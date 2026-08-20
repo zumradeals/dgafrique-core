@@ -97,9 +97,13 @@ final class DesignInvariantsPhase2Test extends TestCase
 
     public function test_besoins_directory_shows_an_honest_empty_state(): void
     {
+        // Depuis l'addendum daté du 20 août 2026 (DESIGN-INVARIANTS.md §21), le portail Besoins
+        // comble l'absence de données réelles par des cartes de démonstration (DEMO-FIRST,
+        // REAL-DATA-TAKES-OVER — voir NeedsDirectoryDemoTest). L'état vide honnête reste donc
+        // vérifiable pour une catégorie qu'aucun besoin réel ni carte d'exemple ne couvre.
         $this->signIn('IDN-P2-BESOINS-EMPTY');
 
-        $this->get('/besoins')
+        $this->get('/besoins?category=LOGISTICS')
             ->assertOk()
             ->assertSee('Aucun besoin visible ici');
     }

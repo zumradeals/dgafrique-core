@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Needs\NeedConfiguration;
+use App\Application\Needs\NeedDirectoryDemoContent;
 use App\Application\Needs\NeedService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Need;
@@ -22,27 +23,39 @@ use Illuminate\View\View;
 
 final class NeedController
 {
-    public function index(Request $request, NeedConfiguration $configuration, NeedService $service): View
+    public function index(Request $request, NeedConfiguration $configuration, NeedService $service, NeedDirectoryDemoContent $demoContent): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $settings = $configuration->get();
+        $categoryFilter = $request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories']) ? (string) $request->query('category') : null;
+        $statusFilter = $request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true) ? (string) $request->query('status') : null;
         $query = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->latest('created_at')->limit(300);
-        if ($request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories'])) {
-            $query->where('category', $request->query('category'));
+        if ($categoryFilter !== null) {
+            $query->where('category', $categoryFilter);
         }
-        if ($request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true)) {
-            $query->where('status', $request->query('status'));
+        if ($statusFilter !== null) {
+            $query->where('status', $statusFilter);
         }
         $visible = $query->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference))->values();
         $page = max(1, (int) $request->query('page', 1));
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
+        $demoCards = $demoContent->demoCards($visible, $page, $categoryFilter);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
         $projects = Project::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_PROJECT)->pluck('owner_reference'))->get()->keyBy('id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.index', compact('identity', 'needs', 'groups', 'projects', 'isAdministrator') + ['configuration' => $settings]);
+        // « Aperçu des besoins » : un calcul réel sur l'ensemble des besoins accessibles à l'identité
+        // (indépendant des filtres appliqués à la liste), jamais une projection — le modèle le permet.
+        $allVisible = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->limit(300)->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference));
+        $overview = [
+            'open' => $allVisible->where('status', Need::STATUS_OPEN)->count(),
+            'pending' => $allVisible->where('status', Need::STATUS_PROPOSED)->count(),
+            'resolved' => $allVisible->where('status', Need::STATUS_RESOLVED)->count(),
+        ];
+
+        return view('needs.index', compact('identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview') + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View

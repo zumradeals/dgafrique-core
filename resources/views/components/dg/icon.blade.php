@@ -148,5 +148,12 @@
         @case('chevron-down')
             <path d="M6 9.5 12 15l6-5.5" {!! $stroke !!} />
             @break
+        @case('calendar')
+            <rect x="3.5" y="5" width="17" height="15.5" rx="2.3" {!! $stroke !!} />
+            <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3" {!! $stroke !!} />
+            @break
+        @case('bookmark')
+            <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.6L6 20V5a1 1 0 0 1 1-1Z" {!! $stroke !!} stroke-linejoin="round" />
+            @break
     @endswitch
 </svg>

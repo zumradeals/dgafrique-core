@@ -1,0 +1,125 @@
+/* Portail Besoins — refonte visuelle (docs/design/DESIGN-INVARIANTS.md §21).
+   Additif à dg.css : ne redéfinit aucun token, n'affecte aucune autre page. */
+
+.dg-needs-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+@media (min-width: 1100px) {
+    .dg-needs-layout { grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; }
+    .dg-needs-aside { position: sticky; top: 88px; }
+}
+
+/* ---------- Barre d'exploration ---------- */
+
+.dg-needs-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.dg-needs-toolbar .dg-filters { margin-bottom: 0; flex: 1; min-width: 280px; }
+
+.dg-needs-view-toggle {
+    display: inline-flex;
+    flex: none;
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-control);
+    overflow: hidden;
+    align-self: center;
+}
+
+.dg-needs-view-toggle button {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    min-height: var(--dg-touch-min);
+    border: 0;
+    background: var(--dg-card);
+    color: var(--dg-faint);
+    cursor: not-allowed;
+}
+
+.dg-needs-view-toggle button[aria-current='true'] { background: var(--dg-tint-need); color: var(--dg-copper); }
+
+/* ---------- Entête de section ---------- */
+
+.dg-needs-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: var(--dg-muted);
+}
+
+.dg-needs-section-head strong { color: var(--dg-ink); }
+
+.dg-needs-refresh { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+
+/* ---------- Cartes besoin ---------- */
+
+.dg-needs-card { display: flex; flex-direction: column; gap: 12px; }
+
+.dg-needs-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; }
+.dg-needs-card__head .dg-badge { flex-shrink: 1; min-width: 0; }
+.dg-needs-card__state { flex: none; }
+
+.dg-needs-card__state { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: var(--dg-forest-action); }
+.dg-needs-card__state i { width: 7px; height: 7px; border-radius: 50%; background: var(--dg-forest-action); display: inline-block; flex: none; }
+.dg-needs-card__state[data-status='RESOLVED'] { color: var(--dg-faint); }
+.dg-needs-card__state[data-status='RESOLVED'] i { background: var(--dg-faint); }
+.dg-needs-card__state[data-status='IN_PROGRESS'] { color: var(--dg-saffron-ink); }
+.dg-needs-card__state[data-status='IN_PROGRESS'] i { background: var(--dg-saffron); }
+.dg-needs-card__state[data-status='PROPOSED'] { color: var(--dg-muted); }
+.dg-needs-card__state[data-status='PROPOSED'] i { background: var(--dg-faint); }
+
+.dg-needs-card__title { font-size: 21px; line-height: 1.25; margin: 0; max-width: 28ch; }
+.dg-needs-card__title a { color: inherit; }
+
+.dg-needs-card__meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 12.5px; color: var(--dg-muted); }
+.dg-needs-card__meta span { display: inline-flex; align-items: center; gap: 5px; }
+.dg-needs-card__meta strong { color: var(--dg-ink); font-weight: 600; }
+
+.dg-needs-card__tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.dg-needs-card__tag { font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: var(--dg-radius-pill); background: var(--dg-sand); color: var(--dg-text); }
+
+.dg-needs-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 4px; }
+
+.dg-needs-card__save {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--dg-radius-control);
+    border: 1px solid var(--dg-line);
+    background: var(--dg-card);
+    color: var(--dg-faint);
+    flex: none;
+    cursor: not-allowed;
+}
+
+/* ---------- Aperçu des besoins ---------- */
+
+.dg-needs-overview { display: flex; flex-direction: column; gap: 4px; padding: 22px; }
+
+.dg-needs-stat { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--dg-line-inner); }
+.dg-needs-stat:last-of-type { border-bottom: 0; }
+
+.dg-needs-stat__mark { display: grid; place-items: center; flex: none; width: 40px; height: 40px; border-radius: var(--dg-radius-control); background: var(--dg-tint-need); color: var(--dg-copper); }
+
+.dg-needs-stat__value { font-family: var(--dg-font-display); font-size: 24px; color: var(--dg-forest); line-height: 1; }
+.dg-needs-stat__label { font-size: 13px; color: var(--dg-ink); font-weight: 600; }
+.dg-needs-stat__delta { font-size: 11.5px; color: var(--dg-muted); }
+
+/* ---------- Voir plus ---------- */
+
+.dg-needs-more { display: flex; justify-content: center; margin-top: 8px; }

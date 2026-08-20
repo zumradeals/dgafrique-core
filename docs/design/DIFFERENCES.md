@@ -257,6 +257,34 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
   philosophie « seeds de projection produit » explicitement demandée pour ces deux blocs
   spécifiquement (aucun module Documents/Preuves ni Opportunités n'existe encore pour un projet).
 
+## Portail Besoins — refonte visuelle du 20 août 2026 (addendum §21)
+
+- La carte d'exemple « Apprendre le forex » visible dans la maquette n'existait nulle part dans le
+  dépôt avant ce chantier (vérifié par recherche exhaustive) — ce n'est pas une donnée
+  précédemment présente à conserver, mais une nouvelle carte de démonstration introduite en
+  suivant le patron déjà établi par `projets-demo.json` (§18) : `resources/design-reference/needs-demo.json`,
+  chargée par `NeedDirectoryDemoContent`, jamais lue directement par la vue.
+- Les tags multiples affichés sur la carte de démonstration (« Formation », « Finance »,
+  « Développement personnel ») ne sont **pas** reproduits sur les cartes de besoins réels : le
+  modèle `Need` n'a qu'un seul champ optionnel de ce type (`capability_label`), pas une liste de
+  tags. Une carte réelle affiche donc au plus un seul tag (si `capability_label` est renseigné),
+  jamais trois tags inventés — différence visuelle assumée plutôt qu'une donnée fabriquée.
+- Le bouton signet (bookmark) est visuellement présent sur toutes les cartes mais désactivé avec
+  sa raison (« La sauvegarde de besoins favoris arrivera prochainement. ») : aucune fonctionnalité
+  de favoris n'existe aujourd'hui dans le dépôt, pour aucun objet (recherche exhaustive effectuée
+  avant implémentation — aucun modèle, migration ou route).
+- « Aperçu des besoins » (besoins ouverts/en attente/pourvus) est un calcul réel effectué par
+  `NeedController::index()` sur l'ensemble des besoins visibles de l'identité (`NeedService::canView`),
+  indépendant des filtres appliqués à la liste principale — pas une projection comme les
+  statistiques réseau de `/projets` (§18), le modèle le permettant déjà.
+- « Trier par » (fixé sur « Plus récents », déjà le comportement réel par défaut) et la bascule
+  grille/liste restent visuellement présents mais désactivés avec leur raison, faute de contrat de
+  tri alternatif ou de vue liste implémentés aujourd'hui.
+- Le formulaire de filtre réel (catégorie + état, `method="GET" class="dg-filters"`, bouton
+  « Filtrer ») est inchangé dans son contrat et positionné dans le même conteneur visuel que les
+  contrôles projetés (tri, bascule vue), sans jamais être imbriqué dans un même `<form>` qui
+  soumettrait des champs sans contrat métier.
+
 ## Périmètre non touché après la Phase 2
 
 Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,

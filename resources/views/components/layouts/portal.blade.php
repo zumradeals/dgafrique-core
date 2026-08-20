@@ -24,6 +24,9 @@
     if (request()->routeIs('projects.index')) {
         $pageStyles[] = 'resources/css/projects-directory.css';
     }
+    if (request()->routeIs('needs.index')) {
+        $pageStyles[] = 'resources/css/needs-directory.css';
+    }
     if (request()->routeIs('projects.show')) {
         $pageStyles[] = 'resources/css/project-detail.css';
     }

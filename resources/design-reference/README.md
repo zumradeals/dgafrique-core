@@ -26,6 +26,15 @@ V2 — chaque carte de démonstration ne s'affiche, domaine par domaine, que tan
 réel visible n'existe pour ce domaine, et disparaît dès qu'un projet réel apparaît. Chargé et
 filtré par `App\Application\Projects\ProjectDirectoryDemoContent`, jamais lu directement par la vue.
 
+`needs-demo.json` est un cinquième fichier de fixtures, introduit pour le portail Besoins (voir
+l'addendum daté du 20 août 2026 dans `docs/design/DESIGN-INVARIANTS.md` §21) : une carte de besoin
+d'exemple (« Apprendre le forex »), sous la même règle **DEMO-FIRST, REAL-DATA-TAKES-OVER** que
+`/projets` — elle ne s'affiche, catégorie par catégorie, que tant qu'aucun besoin réel visible
+n'existe pour cette catégorie, et disparaît dès qu'un besoin réel apparaît. Contrairement à
+`/projets`, aucune statistique réseau n'y est stockée : « Aperçu des besoins » est un calcul réel
+(`NeedController::index()`), jamais une projection, car le modèle le permet déjà. Chargé et filtré
+par `App\Application\Needs\NeedDirectoryDemoContent`, jamais lu directement par la vue.
+
 Règles, conformes à `docs/design/DESIGN-INVARIANTS.md` §11 et à son addendum §17 :
 
 - Ces fichiers ne sont **jamais** seedés dans les tables métier (`database/seeders/DatabaseSeeder.php`
@@ -42,5 +51,9 @@ Règles, conformes à `docs/design/DESIGN-INVARIANTS.md` §11 et à son addendum
   via `ProjectDirectoryDemoContent`), et uniquement en l'absence de projet réel visible pour le
   domaine de la carte — même suffixe **« · Exemple »**, mêmes actions désactivées avec la même
   raison accessible, mêmes statistiques réseau annoncées **« · Exemple »**.
+- `needs-demo.json` n'est lu que par le portail Besoins (`resources/views/needs/index.blade.php`
+  via `NeedDirectoryDemoContent`), et uniquement en l'absence de besoin réel visible pour la
+  catégorie de la carte — même suffixe **« · Exemple »**, mêmes actions désactivées avec la même
+  raison accessible.
 - Mon espace n'affiche toujours aucun contenu de démonstration : ces écrans restent réels ou
   à état vide honnête.
