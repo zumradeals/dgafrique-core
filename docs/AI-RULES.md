@@ -2,6 +2,28 @@
 
 Ce fichier est le premier document à lire par toute IA ou tout contributeur automatisé intervenant sur le dépôt.
 
+## Identité produit — invariant supérieur
+
+**DG Afrique est un réseau social d'action.** Il accompagne le développement humain et l'action collective, notamment à travers ZUMRA, les capacités, besoins, projets, missions, apprentissages, transmissions, preuves, opportunités et outils spécialisés.
+
+DG Afrique **n'est pas** un portail web de type moteur de recherche, un catalogue d'applications, ni un « lanceur de satellites » comme finalité produit. La navigation, les recommandations et l'intelligence du produit doivent servir le passage de la capacité à l'action humaine et collective.
+
+ZUMRA est le moteur humain et collectif de cet écosystème. Les outils spécialisés servent l'action ; ils ne deviennent jamais le centre conceptuel de DG Afrique.
+
+### Modules spécialisés et satellites
+
+Un outil spécialisé naît par défaut comme **module extractible** dans l'architecture DG Afrique lorsqu'il peut raisonnablement vivre dans le monolithe modulaire. Exemples de direction : G-POS, GamaDrive et futurs outils spécialisés du réseau.
+
+Un module extractible possède des frontières métier explicites et évite les couplages qui rendraient son extraction artificiellement coûteuse. Il peut rester durablement un module.
+
+Un **satellite** est la forme technique autonome d'un outil spécialisé lorsqu'un besoin réel d'indépendance apparaît : déploiement séparé, cycle de vie propre, charge, sécurité, données, équipe, disponibilité ou contraintes d'intégration distinctes. Il reste fédéré à l'écosystème et à GAMAD Core selon les contrats actifs.
+
+Invariant : **« On ne construit pas un satellite parce qu'un outil pourrait devenir énorme. On construit d'abord un module extractible. Il devient satellite lorsqu'il a besoin de vivre indépendamment. »**
+
+Un projet humain ou économique qui atteint sa maturité **ne devient pas automatiquement un satellite logiciel**. Sa structuration ou son autonomie métier/juridique est un concept distinct du cycle de vie technique module → satellite.
+
+Toute occurrence documentaire ou future implémentation qui assimile directement « projet mature → satellite » doit être considérée comme obsolète et régularisée avant développement.
+
 ## Hiérarchie de vérité
 
 1. **Code + tests de `main`** — vérité technique sur ce qui existe réellement.

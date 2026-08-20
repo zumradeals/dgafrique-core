@@ -21,7 +21,9 @@ Pour toute modification d'interface, navigation ou design, lire `docs/design/DES
 - stack : Laravel, PHP 8.4, PostgreSQL, Blade, Tailwind, Alpine.js, Redis ;
 - identité et fédération : GAMAD Core ;
 - DG Afrique possède son métier et son orchestration ;
-- les satellites gardent leur métier et leurs données ;
+- les outils spécialisés commencent comme modules isolés et extractibles dans l'écosystème ;
+- un module ne devient satellite autonome que lorsqu'un besoin technique réel d'autonomie le justifie ;
+- un satellite autonome garde la propriété logique de son métier et de ses données ;
 - aucune duplication locale concurrente de l'identité canonique Core.
 
 ## Règles de chantier
@@ -37,9 +39,11 @@ Avant de coder une capacité :
 
 ## Invariants produit
 
-- DG Afrique est un réseau d'action orienté capacités, besoins, projets et coordination ;
+- DG Afrique est un **réseau social d'action** orienté développement humain, capacités, besoins, projets, ZUMRA et coordination ;
 - ZUMRA est le moteur humain et collectif ;
-- les satellites sont des outils spécialisés secondaires et fédérés ;
+- les outils spécialisés servent le réseau et ne constituent pas sa finalité ;
+- **Projet et Satellite sont deux concepts sans relation de maturité** : un projet reste un projet, même lorsqu'il devient autonome économiquement ou organisationnellement ;
+- doctrine technique : **fonction interne → module spécialisé extractible → satellite autonome seulement sur besoin réel** ;
 - aucune interface ne doit introduire likes, followers, score humain ou popularité comme mesure de valeur ;
 - les recommandations doivent rester explicables ;
 - les données de démonstration ne doivent jamais être présentées comme réelles ;
