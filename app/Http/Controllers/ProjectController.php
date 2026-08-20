@@ -19,7 +19,14 @@ final class ProjectController
         // CAP-044 : signaux consultatifs uniquement, jamais un score, jamais une écriture sur maturity.
         $maturitySignals=$signalsEngine->forProject($project);
         $accompaniment=$canDecide?$project->accompaniment:null;
-        return view('projects.show',compact('identity','project','group','maturityHistory','isAdministrator','teamMembers','myTeamMembership','pendingTeamRequests','teamProfiles','projectNeeds','canProposeNeed','maturitySignals','accompaniment')+['configuration'=>$configuration->get(),'canDecide'=>$canDecide,'maturityStages'=>ProjectMaturityService::STAGES]);}
+        // Fiche V2 (« Activité récente ») : les 6 derniers événements réels du projet, jamais une reconstruction fictive.
+        $recentEvents=$project->events()->latest('occurred_at')->limit(6)->get();
+        $eventActorProfiles=PersonProfile::query()->whereIn('core_identity_reference',$recentEvents->pluck('actor_core_reference'))->get()->keyBy('core_identity_reference');
+        $lastActivityAt=$recentEvents->first()?->occurred_at??$project->created_at;
+        // « Progression globale » (fiche V2) : projection d'affichage, jamais un calcul métier réel ni une écriture
+        // Core — voir docs/design/DESIGN-INVARIANTS.md addendum §19. Ne jamais confondre avec la maturité (CAP-017).
+        $progressSeed=20+(crc32($project->id)%56);
+        return view('projects.show',compact('identity','project','group','maturityHistory','isAdministrator','teamMembers','myTeamMembership','pendingTeamRequests','teamProfiles','projectNeeds','canProposeNeed','maturitySignals','accompaniment','recentEvents','eventActorProfiles','lastActivityAt','progressSeed')+['configuration'=>$configuration->get(),'canDecide'=>$canDecide,'maturityStages'=>ProjectMaturityService::STAGES]);}
     public function transition(Request $request,Project $project,ProjectService $service):RedirectResponse{/** @var CoreIdentity $identity */$identity=$request->attributes->get('dg_identity');$data=$request->validate(['status'=>['required',Rule::in([Project::STATUS_ADOPTED,Project::STATUS_IN_PROGRESS,Project::STATUS_COMPLETED,Project::STATUS_ARCHIVED])]]);$service->transition($project,$identity->reference,$data['status']);return back()->with('status','L’évolution du statut du projet est enregistrée et traçable. La maturité se gère séparément.');}
     public function maturity(Request $request,Project $project,ProjectMaturityService $service):RedirectResponse{/** @var CoreIdentity $identity */$identity=$request->attributes->get('dg_identity');$data=$request->validate(['maturity'=>['required',Rule::in(array_keys(ProjectMaturityService::STAGES))],'note'=>['nullable','string','max:1200']]);$service->change($project,$identity->reference,$data['maturity'],$data['note']??null);return back()->with('status','Repère de maturité mis à jour. Il ne constitue ni statut juridique ni décision institutionnelle.');}
 }

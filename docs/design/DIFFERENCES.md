@@ -189,6 +189,40 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
   la barre de filtre, `people.index`, `projects.brain.start`, `activity.index`) : aucune destination
   fictive.
 
+## Dossier Projet / Vue d’ensemble — refonte visuelle du 20 août 2026 (addendum §19)
+
+- Les onglets internes de la maquette (Activités/Équipe/Besoins/Ressources/Documents/
+  Conversations) n'ont pas de route dédiée séparée aujourd'hui : ce sont des ancres réelles
+  (`#dg-project-activite`, `#dg-project-equipe-detail`, etc.) vers des sections déjà présentes sur
+  la page « Vue d'ensemble ». Rien n'a été fabriqué : cliquer sur un onglet mène toujours à un
+  contenu réel, jamais à un lien mort ou à une page vide.
+- Le bandeau horizontal de maturité réutilise `x-dg.stagewalk` sans modifier son DOM ni sa classe
+  testée — seule `resources/css/project-detail.css` change la disposition (ligne + marqueurs
+  circulaires en rang, au lieu d'une liste verticale), et uniquement à partir de 900px ; sous ce
+  seuil la présentation d'origine du composant reste inchangée. Toujours aucun pourcentage
+  (CAP-017).
+- « Progression globale » (pourcentage affiché en colonne latérale) **n'est pas** un calcul
+  métier : c'est une projection d'affichage dérivée de `crc32($project->id)`, jamais persistée,
+  annoncée « · Projection ». Elle est volontairement indépendante du repère de maturité (qui, lui,
+  reste gouverné par CAP-017) pour ne jamais laisser croire à un second calcul de maturité déguisé.
+- « Documents & Preuves » est un état honnête nouveau : aucun modèle ne relie de document à un
+  projet aujourd'hui (`Proof::ORIGIN_PROJECT` existe mais sert uniquement à construire le pool
+  d'acquittement personnel d'un porteur, pas une liste de documents par projet). Le bouton
+  « Ajouter un document » reste désactivé avec sa raison (espace GamaDrive non relié).
+- « Activité récente » est en revanche entièrement réelle : `ProjectEvent::EVENT_LABELS`
+  (nouvelle constante sur le modèle) traduit les codes d'événements déjà journalisés
+  (`ProjectService`, `ProjectMaturityService`, `ProjectTeamService`, `ProjectAccompanimentService`,
+  `ProjectSatelliteLauncherService`) en libellés lisibles ; l'acteur est affiché via son
+  `discovery_display_name` ou « Membre DG Afrique » (anonymat assumé). « Voir toute l'activité → »
+  reste désactivé, faute de journal dédié au-delà des six derniers événements affichés.
+- « Suivre » (en-tête) et « Suivre les mises à jour » (actions rapides) restent désactivés : aucun
+  système de notification par objet n'existe aujourd'hui pour un projet.
+- L'« Espace porteur » (invitation par référence publique) et la gestion complète de l'équipe
+  (demander/inviter/accepter/quitter/retirer, approbation des demandes en attente) sont
+  entièrement conservés et fonctionnels — seulement redisposés : un aperçu compact (avatars +
+  « Voir toute l'équipe → ») apparaît dans le flux principal, la gestion détaillée reste sur la
+  même page, ancrée par l'onglet « Équipe ».
+
 ## Périmètre non touché après la Phase 2
 
 Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,

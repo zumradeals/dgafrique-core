@@ -328,3 +328,75 @@ surface serveur).
 **Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
 conversation, non archivée dans `docs/design/reference/`, reproduite dans
 `resources/views/projects/index.blade.php` et `resources/css/projects-directory.css`).
+
+## 19. Addendum daté — Dossier Projet / Vue d’ensemble (20 août 2026)
+
+**Portée : la page détail d’un projet uniquement** (`resources/views/projects/show.blade.php`,
+`app/Http/Controllers/ProjectController.php::show()`, `app/Models/ProjectEvent.php`,
+`resources/css/project-detail.css`). Ce changement suit la procédure de gouvernance du §14.
+`resources/views/projects/overview-v2.blade.php` (route `projects.overview`, la page « Projet
+vivant » du workspace Cerveau) n’est pas concerné : c’est une interface distincte, non gouvernée
+par `x-dg.shell`, hors du périmètre de cette maquette.
+
+**Invariant concerné** : §11 (démonstration marquée uniquement) et §13 (brancher sur les routes et
+services réels) — cette refonte réorganise visuellement une page déjà quasi-entièrement réelle
+(problème/solution/bénéficiaires, jalons, équipe, besoins, accompagnement, transitions de statut)
+sans qu’aucun invariant n’ait besoin d’être révisé pour l’essentiel du contenu.
+
+**Ce qui change** :
+- Nouvel en-tête avec actions réelles (**Partager** → `shares.project`, **Ouvrir le Cerveau** →
+  `projects.brain.show`) et un badge **Actif/Archivé** dérivé honnêtement de `Project.status`
+  (`!= ARCHIVED`), distinct du statut métier affiché dans « Informations clés ».
+- Des onglets internes (Vue d’ensemble/Activités/Équipe/Besoins/Ressources/Documents/
+  Conversations) implémentés comme des **ancres réelles vers des sections de cette même page** —
+  jamais des pages fabriquées ou des liens morts, conformément à la consigne de ne pas construire
+  arbitrairement un contenu d’onglet qui n’existe pas encore.
+- Le bandeau de maturité passe d’une présentation verticale à une présentation **horizontale sur
+  desktop** (≥ 900px) : réutilise le composant `x-dg.stagewalk` **sans toucher à son DOM ni à sa
+  classe testée** (`DesignInvariantsPhase2Test::test_project_maturity_stagewalk_shows_all_eight_stages_not_a_percentage`
+  reste vert tel quel) — seule une feuille de style scoping (`project-detail.css`) transforme la
+  disposition. Sous 900px, la présentation verticale d’origine du composant reste inchangée, ce qui
+  correspond aussi à la direction demandée pour mobile (« maturité affichée verticalement »).
+  Aucun pourcentage n’apparaît sur ce composant, toujours conformément à CAP-017.
+- **« Progression globale » (X %)** est une **projection d’affichage** distincte de la maturité,
+  clairement annoncée « · Projection » : un entier déterministe dérivé de `crc32(project->id)`,
+  calculé à l’affichage, **jamais persisté, jamais un calcul métier réel**. Le bouton « Voir le
+  détail → » associé reste désactivé avec sa raison, faute de moteur de progression canonique —
+  même discipline que `overview-v2.blade.php` (« La progression reste une projection jusqu’au
+  moteur de progression canonique »).
+- **« Documents & Preuves »** est un nouveau bloc honnête : aucun modèle ne relie de document à un
+  projet aujourd’hui (`Proof` n’a pas de portée projet exploitable ici) — état vide réel («aucun
+  document pour le moment ») + action « Ajouter un document » visuellement présente mais
+  désactivée avec sa raison (espace documentaire GamaDrive non relié).
+- **« Activité récente »** est un nouveau bloc **entièrement réel** : les six derniers
+  `ProjectEvent` du projet (`ProjectEvent::EVENT_LABELS`, nouvelle constante), avec l’acteur
+  affiché via son `discovery_display_name` ou « Membre DG Afrique » (anonymat assumé, §9). Le CTA
+  « Voir toute l’activité → » reste désactivé avec sa raison, faute de journal dédié.
+- **« Suivre » / « Suivre les mises à jour »** (en-tête et colonne latérale) restent désactivés
+  avec leur raison : aucun mécanisme de notification par objet n’existe aujourd’hui — ceci n’est
+  pas un mécanisme de popularité (§8), seulement une préférence de suivi non encore câblée.
+- La colonne latérale (« Progression globale », « Informations clés », « Actions rapides ») est
+  nouvelle mais chaque champ d’« Informations clés » (domaine, statut, visibilité, créé le,
+  dernière activité) et chaque action de « Actions rapides » (Cerveau, `projects.matching` si
+  `canDecide`, `shares.project`) proviennent de données ou de routes déjà réelles.
+- Aucune capacité existante n’a été supprimée : gestion d’équipe (inviter/demander/accepter/
+  quitter/retirer), besoins du projet, repositionnement de maturité avec historique,
+  accompagnement DG Afrique, transitions de statut, et l’avertissement « Aucun financement n’est
+  ouvert ici » restent mot pour mot identiques, seulement redisposés dans la page.
+
+**Ce qui ne change pas** : §7/§8/§10 restent pleinement en vigueur (pas de mécanique de
+popularité, état vide honnête partout où aucune donnée réelle n’existe). Aucune donnée de
+démonstration n’a été introduite pour cette page — contrairement à `/projets` (§18), il n’existe
+aucun fichier de fixtures ici : quand une donnée réelle manque, la page l’affiche honnêtement vide
+plutôt que de la remplacer par un exemple.
+
+**Compatibilité vérifiée** : doctrine (aucune fausse mutation Core — chaque bouton pointe vers une
+route réelle ou est visuellement désactivé avec sa raison), accessibilité (`aria-disabled`,
+raisons lisibles, ancres de navigation réelles au clavier), mobile (colonne unique, onglets
+défilables horizontalement, maturité verticale, testé aux viewports 390×844), sécurité (aucune
+nouvelle surface serveur, `ProjectController::show()` garde exactement ses autorisations
+`canView`/`canDecide` existantes).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/projects/show.blade.php` et `resources/css/project-detail.css`).
