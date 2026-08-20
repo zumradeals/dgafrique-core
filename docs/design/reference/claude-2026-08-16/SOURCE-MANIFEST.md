@@ -7,7 +7,7 @@
 
 Ce fichier conserve uniquement la provenance de la référence design adoptée le 16 août 2026.
 
-Dans le cadre de DOC-001, les sept fragments Base64 du ZIP ont été retirés de l'arbre courant : Git conserve déjà leur historique, et leur présence dans `docs/` créait une archive opaque de plus de 90 Ko susceptible d'être traitée à tort comme une autorité documentaire active.
+Dans le cadre de DOC-001, les sept fragments Base64 du ZIP ont été retirés de l'arbre courant : leur présence dans `docs/` créait une archive opaque de plus de 90 Ko susceptible d'être traitée à tort comme une autorité documentaire active. Les commits antérieurs du dépôt conservent la trace versionnée de ces fragments selon la politique de rétention Git applicable au dépôt.
 
 `README.md` et `DECISIONS.md` restent disponibles comme contexte historique lisible. Les règles actives appartiennent à `docs/design/DESIGN-INVARIANTS.md`, puis à l'interface réellement présente sur `main`.
 
