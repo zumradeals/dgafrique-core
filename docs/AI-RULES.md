@@ -55,6 +55,10 @@ Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fic
 
 Ce garde-fou est actuellement une règle de revue reproductible, pas un job automatisé. Toute automatisation future doit être ajoutée explicitement au dépôt avant d'être présentée comme active.
 
+## Portée de DOC-001
+
+DOC-001 régularise l'autorité et les contradictions documentaires. Il ne certifie pas à lui seul chaque ligne métier des 84 CAP. Lorsqu'une entrée de couverture n'a pas été réauditée en profondeur pendant DOC-001, elle reste soumise à la règle n°1 : le code et les tests de `main` gagnent. Toute future divergence découverte doit corriger `CAPABILITY-COVERAGE.md` dans la PR qui la révèle.
+
 ## Checklist de clôture DOC-001
 
 Une régularisation documentaire n'est terminée que si le code n'a pas été modifié pour correspondre artificiellement à une vieille documentation, chaque statut modifié est soutenu par du code courant inspecté, les documents historiques restants sont explicitement marqués, les points d'entrée ne renvoient plus vers des fichiers supprimés et la PR peut être relue sans mémoire de conversation externe.
