@@ -16,39 +16,35 @@ final class DeepSeekProjectBrainProvider implements ProjectBrainAiProvider
         if ($apiKey === '') throw new RuntimeException('DeepSeek API key is not configured.');
 
         $system = <<<'PROMPT'
-Vous êtes le Cerveau Projet de DG Afrique. Vous transformez une idée racontée naturellement en projet structuré sans imposer de formulaire.
+Vous êtes le Cerveau Projet permanent de DG Afrique. Vous accompagnez un projet vivant par conversation naturelle.
 
 Règles impératives :
-- Français simple, chaleureux, concret.
-- Comprenez les changements d'avis, demandes de suggestion et réponses multiples.
-- N'inventez ni partenaire, argent, ressource, personne, preuve ou résultat déjà acquis.
-- Vous pouvez proposer une formulation professionnelle pour le résumé, le problème, la solution, les objectifs, étapes, risques, capacités et ressources à partir des faits réellement exprimés.
-- Distinguez faits exprimés et structuration proposée.
+- Français simple, chaleureux, concret. Répondez d'abord à la personne, pas à un formulaire.
+- Utilisez l'historique, l'état du projet et ses besoins Core déjà actifs.
+- N'inventez ni partenaire, argent, ressource, personne, preuve ou résultat acquis.
+- Vous pouvez conseiller, structurer, signaler un manque et proposer une prochaine action.
 - Ne créez et ne modifiez jamais le Core vous-même.
+- Si un manque réel est assez précis et mérite un Besoin DG Afrique, proposez UNE action NEED_CREATE dans proposed_actions. Sinon proposed_actions=[] et conversez normalement.
+- Une suggestion ou une question générale ne doit pas devenir automatiquement un Besoin.
+- Un NEED_CREATE doit contenir title, context, category, capability_label, collaboration_mode, location. category ∈ SKILL, PARTNER, TRAINING, RESOURCE, TECHNICAL, LOGISTICS. collaboration_mode ∈ LOCAL, REMOTE, ANY.
+- La visibilité d'un besoin préparé depuis le Cerveau reste privée au projet jusqu'à confirmation et règles Core.
 - Une seule question utile maximum par réponse.
-- Quand les éléments essentiels sont assez clairs, mettez ready_for_confirmation=true et dites que la première structure peut être confirmée.
-- ready_for_confirmation exige au minimum : un nom ou nom proposé, activité, objectif, bénéficiaires, problème, solution, mode et premières étapes cohérentes. Le lieu peut rester vide si le projet est numérique.
 - Retournez UNIQUEMENT un objet JSON valide.
 
 Format :
 {
  "reply":"...",
- "project_state":{
-   "name":null,"activity":null,"goal":null,"beneficiaries":[],"location":null,"mode":null,
-   "problem":null,"proposed_solution":null,"summary":null,"objectives":[],"milestones":[],
-   "existing_people_or_skills":[],"existing_resources":[],"identified_needs":[],"constraints":[],
-   "required_capabilities":[],"required_resources":[],"risks":[],"open_questions":[],
-   "ready_for_confirmation":false
- },
+ "project_state":{},
  "suggested_next_action":null,
- "confidence":0.0
+ "confidence":0.0,
+ "proposed_actions":[
+   {"type":"NEED_CREATE","title":"...","context":"...","category":"RESOURCE","capability_label":null,"collaboration_mode":"LOCAL","location":"Bouaké","reason":"Pourquoi ce besoin mérite d'être préparé"}
+ ]
 }
-
-Conservez les informations fiables du contexte précédent lorsqu'elles ne sont pas contredites. La correction explicite la plus récente prime.
 PROMPT;
 
         $conversation = [['role' => 'system', 'content' => $system]];
-        if ($currentContext !== []) $conversation[] = ['role' => 'system', 'content' => 'Contexte structuré retenu (JSON non canonique) : '.json_encode($currentContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
+        if ($currentContext !== []) $conversation[] = ['role' => 'system', 'content' => 'Contexte DG Afrique actuel (JSON) : '.json_encode($currentContext, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)];
         foreach ($messages as $message) {
             $role = ($message['role'] ?? '') === 'brain' ? 'assistant' : ($message['role'] ?? 'user');
             if (in_array($role, ['user','assistant'], true)) $conversation[] = ['role'=>$role,'content'=>(string)($message['content'] ?? '')];
@@ -58,7 +54,7 @@ PROMPT;
             ->timeout((int) config('services.deepseek.timeout', 30))->retry(1,250)->post('/chat/completions', [
                 'model'=>(string) config('services.deepseek.model','deepseek-v4-flash'), 'messages'=>$conversation,
                 'thinking'=>['type'=>'disabled'], 'response_format'=>['type'=>'json_object'],
-                'max_tokens'=>(int) config('services.deepseek.max_tokens',900), 'stream'=>false,
+                'max_tokens'=>(int) config('services.deepseek.max_tokens',2000), 'stream'=>false,
             ]);
         if (! $response->successful()) throw new RuntimeException('DeepSeek request failed with HTTP '.$response->status().'.');
         $content=$response->json('choices.0.message.content');
@@ -70,6 +66,7 @@ PROMPT;
             'project_state'=>is_array($decoded['project_state']??null)?$decoded['project_state']:[],
             'suggested_next_action'=>is_string($decoded['suggested_next_action']??null)?$decoded['suggested_next_action']:null,
             'confidence'=>is_numeric($decoded['confidence']??null)?max(0.0,min(1.0,(float)$decoded['confidence'])):null,
+            'proposed_actions'=>is_array($decoded['proposed_actions']??null)?$decoded['proposed_actions']:[],
         ];
     }
 }
