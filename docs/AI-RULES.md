@@ -38,8 +38,8 @@ Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne jamais encoder un s
 Avant merge d'une PR documentaire, exécuter ce contrôle local :
 
 ```bash
-test "$(find docs/capacites -maxdepth 1 -type f -name '*MASTER*TRACKER*' | wc -l)" -eq 0
-test ! -d docs/capacites/legacy/specs
+test "$(find docs/capacites -maxdepth 1 -type f -iname '*tracker*' | wc -l)" -eq 0
+test "$(find docs/capacites/legacy -type f 2>/dev/null | wc -l)" -eq 0
 test "$(find docs -type f -name '*.b64.part*' | wc -l)" -eq 0
 test "$(grep '^| CAP-' docs/capacites/CAPABILITY-INDEX.md | wc -l)" -eq 84
 test "$(grep '^## CAP-' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
