@@ -39,7 +39,6 @@ Avant merge d'une PR documentaire, exécuter ce contrôle local :
 
 ```bash
 test "$(find docs/capacites -maxdepth 1 -type f -iname '*tracker*' | wc -l)" -eq 0
-test -z "$(find docs/capacites/legacy -type f -print 2>/dev/null || true)"
 test "$(find docs -type f -name '*.b64.part*' | wc -l)" -eq 0
 test "$(grep '^| CAP-' docs/capacites/CAPABILITY-INDEX.md | wc -l)" -eq 84
 test "$(grep '^## CAP-' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
@@ -49,7 +48,7 @@ awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTE
 awk '/^## CAP-/ { if (seen && statuses != 1) bad=1; seen=1; statuses=0; next } /^Status:/ { statuses++ } END { if (seen && statuses != 1) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
-En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun, dans l'index et la couverture.
+En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun, dans l'index et la couverture, et qu'aucune ancienne spec supprimée n'est recréée sous une arborescence `legacy`.
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
 
