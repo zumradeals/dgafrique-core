@@ -6,6 +6,13 @@ use App\Http\Controllers\ContextShareController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
+    // Project Workspace V2 exposes an "Accueil" destination in its persistent
+    // navigation. Keep that semantic route stable while the member space remains
+    // the current implementation of the authenticated home screen.
+    Route::redirect('/accueil', '/espace')
+        ->middleware('core.member')
+        ->name('home');
+
     Route::get('/partages', [ContextShareController::class, 'index'])
         ->middleware(['core.member', 'throttle:shares-read'])
         ->name('shares.index');
