@@ -223,6 +223,40 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
   « Voir toute l'équipe → ») apparaît dans le flux principal, la gestion détaillée reste sur la
   même page, ancrée par l'onglet « Équipe ».
 
+## Cerveau du Projet — refonte visuelle du 20 août 2026 (addendum §20, PVB-I05 V1)
+
+- L'écran rejoint `x-dg.shell` (navigation globale réelle) et perd le bandeau de contournement
+  `.dg-global-nav` ainsi que son propre `.pw-top`/`.pw-bottom` : ces deux navigations dupliquaient
+  déjà la navigation réelle et sont supprimées plutôt que fusionnées.
+- La colonne « Projets & conversations » liste désormais les vrais projets accessibles de l'acteur
+  (même filtrage `ProjectService::canView` que `/projets`) au lieu d'un unique projet réel complété
+  par une liste fabriquée non marquée (`Coopérative Maraîchère`, `Transformation Manioc`, etc. dans
+  l'ancienne version). Les sous-conversations par projet (« Financement & Apports », « Équipement &
+  Matériel »…) ont été retirées : aucun modèle ne les représente aujourd'hui — une seule
+  `ProjectBrainConversation` existe par (projet, acteur) — et le conserver aurait maintenu un seed
+  conversationnel alors qu'une vraie conversation existe déjà, contraire à la demande produit.
+- « Missions (N) » est un nouveau bloc entièrement réel (`Mission::where('context_type','PROJECT')`,
+  filtré par `MissionVisibilityService::canViewMission`) — l'ancienne version affichait deux
+  Missions fictives non filtrées et non marquées.
+- « Prochain jalon » devient réel (le prochain `ProjectMilestone` non complété), remplaçant un
+  texte fixe « Validation local · dans 5 jours » sans aucune donnée réelle sous-jacente.
+- « Avancement » (pourcentage) reste une projection d'affichage, mais désormais calculée par
+  `Project::progressionSeed()` — la même formule que « Progression globale » sur la fiche projet
+  (`/projets/{project}`, §19) — pour que les deux écrans montrent le même chiffre pour un même
+  projet, plutôt que deux nombres fixes différents (35 % ici, 45 % sur la fiche) qui auraient laissé
+  croire à deux calculs distincts.
+- La carte d'exemple « Créer une équipe projet » (illustrant une action en attente de validation)
+  est conservée uniquement dans l'état vide de la conversation, avec ses boutons explicitement
+  `aria-disabled` et leur raison — l'ancienne version les affichait en permanence dans le fil réel,
+  avec des `<button type="button">` sans aucune action, ambigus quant à leur fonctionnalité.
+- « Projets archivés » affiche désormais un compte réel (filtré par visibilité) plutôt qu'un
+  chiffre fixe (« 8 » dans l'ancienne version) ; reste désactivé avec sa raison tant qu'aucune vue
+  dédiée n'existe pour parcourir ces projets.
+- « Preuves récentes » et « Opportunités pour vous » restent des projections métier explicitement
+  annoncées « · Exemple », avec leurs actions désactivées et leur raison — conformément à la
+  philosophie « seeds de projection produit » explicitement demandée pour ces deux blocs
+  spécifiquement (aucun module Documents/Preuves ni Opportunités n'existe encore pour un projet).
+
 ## Périmètre non touché après la Phase 2
 
 Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,

@@ -400,3 +400,75 @@ nouvelle surface serveur, `ProjectController::show()` garde exactement ses autor
 **Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
 conversation, non archivée dans `docs/design/reference/`, reproduite dans
 `resources/views/projects/show.blade.php` et `resources/css/project-detail.css`).
+
+## 20. Addendum daté — Cerveau du Projet / PVB-I05 V1 (20 août 2026)
+
+**Portée : l'écran de conversation du Cerveau uniquement** (`resources/views/projects/brain.blade.php`
+et ses partiels `resources/views/projects/partials/brain-*.blade.php`,
+`app/Http/Controllers/ProjectBrainController.php::show()`, `resources/css/project-brain.css`,
+`Project::progressionSeed()`). Ce changement suit la procédure de gouvernance du §14. Le flux de
+naissance du projet (`projects.brain.start.*`, `resources/views/projects/brain-start.blade.php`)
+et `resources/views/projects/overview-v2.blade.php` (route `projects.overview`) ne sont pas
+concernés — périmètres distincts, non touchés par cette refonte.
+
+**Invariant concerné** : §11 (démonstration marquée uniquement), §13 (brancher sur les routes et
+services réels), et corrige une régression accumulée au fil de PVB-I05.1/.2/.3 : l'écran affichait
+deux bandeaux de navigation superposés (le contournement `.dg-global-nav` injecté par
+`portal.blade.php` **et** son propre en-tête `.pw-top`), sa palette pétrole/orange
+(`project-workspace-v2.css`, PVB-I05.2) était neutralisée par un bloc `&lt;style&gt;` inline navy/violet
+resté dans la vue, et la colonne « Projets & conversations » ne listait jamais qu'un seul projet
+réel (`Project::query()-&gt;whereKey($project-&gt;id)`) complétée par une liste de projets et de
+sous-conversations **entièrement fabriquée et non marquée** — en contradiction directe avec §11.
+
+**Ce qui change** :
+- L'écran rejoint enfin `x-dg.shell` (navigation globale réelle, identique à `/projets` et
+  `/projets/{project}`) : plus de double bandeau, plus de pied de page dupliqué. Le bloc `&lt;style&gt;`
+  inline est supprimé ; `resources/css/project-brain.css` (nouveau, scopé à `projects.brain.show`
+  uniquement) porte la palette pétrole/orange déjà établie.
+- **Colonne gauche** : `ProjectBrainController::show()` construit désormais une vraie liste « mes
+  projets » (même filtrage `ProjectService::canView` que `ProjectController::index()`), avec un
+  indicateur réel « conversation active » par projet (existence d'une `ProjectBrainConversation`
+  pour l'acteur courant) — les sous-conversations fictives (« Financement & Apports », etc.) ont
+  été retirées : une seule conversation réelle existe par (projet, acteur) aujourd'hui, et le §12
+  de la demande produit demande explicitement d'éviter les seeds conversationnels quand une vraie
+  conversation existe.
+- **Fil de conversation** : entièrement inchangé dans son contrat métier — mêmes messages
+  (`ProjectBrainMessage`), même carte de brouillon en attente liée à `message.meta.draft_reference`
+  et `ProjectBrainDraft`, mêmes routes `projects.brain.needs.confirm`/`.drafts.cancel`, même
+  formulaire de composition (`projects.brain.needs.prepare`, champ `message`). L'ancienne carte
+  d'exemple « Créer une équipe projet » (non reliée à un brouillon réel, boutons
+  `type="button"` sans action) est conservée comme illustration **uniquement dans l'état vide**
+  (avant toute conversation réelle), avec ses actions explicitement désactivées
+  (`aria-disabled="true"`, raison accessible) plutôt que des boutons silencieusement inertes.
+- **Colonne droite « Projet vivant »** : Besoins, Missions (nouveau : `Mission::where('context_type',
+  'PROJECT')`, filtré par `MissionVisibilityService::canViewMission`, jamais interrogé depuis cet
+  écran auparavant) et Équipe sont désormais entièrement réels, avec état vide honnête quand ils
+  sont vides — remplaçant le remplissage silencieux par des données fictives non marquées. Le
+  « Prochain jalon » devient réel (`$project-&gt;milestones()-&gt;where('status','!=','COMPLETED')-&gt;first()`)
+  au lieu d'un texte fixe avec un faux compte à rebours. L'« Avancement » (pourcentage) reste une
+  projection d'affichage clairement annoncée, désormais portée par `Project::progressionSeed()`
+  (même formule que « Progression globale » sur `/projets/{project}`, §19, pour que les deux écrans
+  montrent le même chiffre pour un même projet plutôt que deux projections divergentes). « Preuves
+  récentes » et « Opportunités pour vous » restent des projections métier explicitement annoncées
+  « · Exemple », cohérentes avec la demande produit (§12) — aucune n'est jamais écrite en base.
+- La liste « Projets archivés » affiche un compte réel (filtré `canView`) plutôt qu'un chiffre fixe,
+  et reste désactivée avec sa raison tant qu'aucune vue dédiée n'existe pour la parcourir.
+- Tiroirs mobiles (`&lt;details&gt;`, sans JavaScript) pour « Projets & conversations » et
+  « Projet vivant », conformément à la consigne de rendre les deux colonnes latérales accessibles
+  sans jamais réduire simplement les trois colonnes desktop.
+
+**Ce qui ne change pas** : aucune mutation Core silencieuse — chaque bouton pointe vers une route
+réelle ou est désactivé avec sa raison ; la confirmation explicite avant création d'un besoin
+(CAP existant) reste l'unique chemin d'écriture. §7/§8/§10 restent pleinement en vigueur.
+
+**Compatibilité vérifiée** : doctrine (les seuls contenus de démonstration restants — carte
+d'exemple à l'état vide, Preuves récentes, Opportunités — sont explicitement marqués et
+désactivés), accessibilité (`aria-disabled`, raisons lisibles, tiroirs `&lt;details&gt;` navigables au
+clavier), mobile (colonne unique, tiroirs pour les deux panneaux latéraux, testé au viewport
+390×844), sécurité (`ProjectBrainController::show()` garde `ProjectService::canView` sur le projet
+courant et sur chaque projet listé dans la colonne gauche ; `MissionVisibilityService::canViewMission`
+filtre les Missions affichées).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/projects/brain.blade.php` et `resources/css/project-brain.css`).
