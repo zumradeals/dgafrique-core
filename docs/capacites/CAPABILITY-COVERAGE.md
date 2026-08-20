@@ -13,7 +13,7 @@
 ## CAP-001 — Identité personne
 Status: CLOSED
 Evidence: `app/Domain/Identity/CoreIdentity.php`, `app/Infrastructure/GamadCore/GamadCoreClient.php`, `app/Http/Middleware/RequireCoreMember.php`
-Gap: aucun — délégation à GAMAD Core par design (fiche `CAP-001-identite-personne.md`)
+Gap: aucun — délégation à GAMAD Core par design
 Dependencies: aucune
 Decision: aucune action requise
 Implementation PR: antérieur au workflow PR-par-module
@@ -21,7 +21,7 @@ Final SHA: —
 
 ## CAP-002 — Compte DG Afrique
 Status: CLOSED
-Evidence: `AccountRegistrationController.php`, `MemberSessionController.php`, routes `/connexion` `/creer-un-compte` (`routes/web.php`)
+Evidence: `AccountRegistrationController.php`, `MemberSessionController.php`, routes `/connexion` `/creer-un-compte`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -30,7 +30,7 @@ Final SHA: —
 
 ## CAP-003 — Profil de capacités
 Status: CLOSED
-Evidence: migration `dg_person_profiles`, `app/Models/PersonProfile.php`, `MemberProfileController.php`, `/espace/profil`
+Evidence: `dg_person_profiles`, `PersonProfile.php`, `MemberProfileController.php`, `/espace/profil`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -39,7 +39,7 @@ Final SHA: —
 
 ## CAP-004 — Compétences
 Status: CLOSED
-Evidence: `dg_capability_statements` (KIND_POSSESSED), `app/Application/Profile/CapabilityStatementSynchronizer.php`
+Evidence: `dg_capability_statements` (KIND_POSSESSED), `CapabilityStatementSynchronizer.php`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -57,7 +57,7 @@ Final SHA: —
 
 ## CAP-006 — Transmission
 Status: CLOSED
-Evidence: module dédié complet — `app/Application/Transmission/*`, `routes/cap006.php`, fiche `docs/capacites/specs/TRANSMISSION.md`
+Evidence: `app/Application/Transmission/*`, `routes/cap006.php`, `docs/capacites/specs/TRANSMISSION.md`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -75,7 +75,7 @@ Final SHA: —
 
 ## CAP-008 — Carte ZUMRA
 Status: CLOSED
-Evidence: `dg_zumra_cards`, `app/Application/Zumra/ZumraCardIssuer.php`, vérification signée
+Evidence: `dg_zumra_cards`, `ZumraCardIssuer.php`, vérification signée
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -93,7 +93,7 @@ Final SHA: —
 
 ## CAP-010 — Recommandation
 Status: CLOSED
-Evidence: `app/Application/Recommendation/PersonRecommendationEngine.php`, `dg_recommendation_decisions`
+Evidence: `PersonRecommendationEngine.php`, `dg_recommendation_decisions`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -102,11 +102,11 @@ Final SHA: —
 
 ## CAP-011 — ZUMRA / Groupe humain
 Status: CLOSED
-Evidence: `app/Application/Zumra/ZumraGroupService.php`, `dg_zumra_groups`
+Evidence: `ZumraGroupService.php`, `dg_zumra_groups`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module ; recomposition visuelle additive de la fiche (#40) — voir `docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
+Implementation PR: antérieur au workflow PR-par-module ; recomposition visuelle #40
 Final SHA: e8db741bc0274b48a27b77d2a9a06e83b9eb51b6
 
 ## CAP-012 — Capacité collective
@@ -120,20 +120,20 @@ Final SHA: —
 
 ## CAP-013 — Besoin
 Status: CLOSED
-Evidence: `app/Models/Need.php`, `app/Application/Needs/NeedService.php`, `/besoins`
+Evidence: `Need.php`, `NeedService.php`, `/besoins`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative + composeur direct dans le Fil) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Implementation PR: antérieur au workflow PR-par-module ; extension #38
 Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-014 — Projet
 Status: CLOSED
-Evidence: `app/Models/Project.php`, `app/Application/Projects/ProjectService.php`, `/projets`
+Evidence: `Project.php`, `ProjectService.php`, `/projets`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module ; extension additive (image facultative) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Implementation PR: antérieur au workflow PR-par-module ; extension #38
 Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-015 — Mise en relation projet ↔ compétences
@@ -166,7 +166,7 @@ Final SHA: —
 ## CAP-018 — Lanceur de satellites
 Status: CLOSED
 Evidence: `ProjectSatelliteLauncherService.php`, `dg_project_autonomy_pathways`
-Gap: aucun — portée volontairement bornée (parcours de préparation, pas un vrai satellite ; réservé CAP-047/048)
+Gap: aucun — parcours de préparation ; la bascule réelle reste CAP-047
 Dependencies: aucune
 Decision: aucune action requise
 Implementation PR: antérieur au workflow PR-par-module
@@ -174,16 +174,16 @@ Final SHA: —
 
 ## CAP-019 — Fil d'activité
 Status: CLOSED
-Evidence: `app/Application/Activity/ActivityFeedService.php`, `/activite`
+Evidence: `ActivityFeedService.php`, `/activite`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module ; extension additive (composeur de publication directe, image facultative sur les cartes, allègement visuel des mentions doctrinales via un motif de divulgation `<details>`) — voir `docs/capacites/specs/CAP-013-014-019-fil-publication-directe.md` (#38)
+Implementation PR: antérieur au workflow PR-par-module ; extension #38
 Final SHA: f150e515b9cb87e57e78235e94f4a84ec1cea320
 
 ## CAP-020 — Messagerie
 Status: CLOSED
-Evidence: `app/Application/Messaging/MessagingService.php`, `routes/cap020.php`
+Evidence: `MessagingService.php`, `routes/cap020.php`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -192,7 +192,7 @@ Final SHA: —
 
 ## CAP-021 — Commentaire
 Status: CLOSED
-Evidence: `app/Application/Comments/ContextCommentService.php`, `routes/cap021.php`
+Evidence: `ContextCommentService.php`, `routes/cap021.php`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -201,7 +201,7 @@ Final SHA: —
 
 ## CAP-022 — Partage
 Status: CLOSED
-Evidence: `app/Application/Sharing/ContextShareService.php`, `/partages`
+Evidence: `ContextShareService.php`, `/partages`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -211,37 +211,37 @@ Final SHA: —
 ## CAP-023 — Le graphe des capacités
 Status: PARTIAL
 Evidence: `CapabilityStatement`, `CapabilityStatementSynchronizer::matchingLabels()` alimente plusieurs moteurs
-Gap: pas de vue « graphe » navigable — tables appariées par label, pas de traversée exposée
+Gap: pas de vue graphe navigable ni de traversée exposée
 Dependencies: aucune
-Decision: documenter comme graphe implicite ; construire une vue de traversée seulement si un besoin produit réel apparaît
+Decision: construire seulement sur besoin produit réel
 Implementation PR: —
 Final SHA: —
 
 ## CAP-024 — Le profil n'est pas une page, c'est une source de capacités
 Status: CLOSED
-Evidence: `CapabilityStatementSynchronizer::sync()` régénère des `CapabilityStatement` à chaque édition de profil
+Evidence: `CapabilityStatementSynchronizer::sync()` régénère les statements après édition du profil
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-025 — Disponibilité
 Status: CLOSED
-Evidence: `dg_person_profiles.availability_status/note/updated_at`, formulaire de profil (section collaboration), fiche personne découvrable, `PersonRecommendationEngine` (raison supplémentaire) — fiche `docs/capacites/specs/CAP-025-disponibilite.md`
-Gap: intégration aux flux d'invitation Mission/Transmission non faite — documentée hors périmètre v1 (POST-BETA), non bloquante pour le contrat CAP-025 lui-même
+Evidence: champs de disponibilité du profil + fiche personne + signal de recommandation
+Gap: intégration Mission/Transmission différée POST-BETA, non bloquante pour CAP-025 v1
 Dependencies: aucune
-Decision: aucune action requise pour la v1
+Decision: aucune action requise v1
 Implementation PR: #17
 Final SHA: 4e7df340881595800f94b1dcf8072ed94d6433ab
 
 ## CAP-026 — Intention
 Status: CLOSED
 Evidence: `PersonProfile.intentions`, édité dans le profil
-Gap: le champ n'est pas encore utilisé comme signal par le moteur de recommandation
+Gap: non utilisé comme signal de recommandation
 Dependencies: aucune
-Decision: ajouter comme signal de matching si prioritaire — non bloquant
-Implementation PR: antérieur au workflow PR-par-module
+Decision: extension éventuelle, non bloquante
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-027 — Le tableau de bord comme « prochaine action »
@@ -250,21 +250,21 @@ Evidence: `MemberSpaceController::priority()`, `/espace`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-028 — Home personnalisée
 Status: CLOSED
-Evidence: `/espace` (`MemberSpaceController`) est confirmé comme la destination réelle du retour connecté — `routes/web.php` redirige `/connexion` vers `/espace`. Il agrège déjà recommandations, groupes ZUMRA, aperçu d'activité et partages reçus.
-Gap: aucun — décision de consolidation validée : CAP-028 = CAP-027, pas un second écran distinct
+Evidence: `/espace` agrège priorité, recommandations, ZUMRA, activité et partages
+Gap: aucun — consolidée avec CAP-027
 Dependencies: CAP-027 (CLOSED)
-Decision: consolidé avec CAP-027 dans le référentiel ; aucune construction séparée
-Implementation PR: — (consolidation documentaire uniquement)
+Decision: pas de second écran distinct
+Implementation PR: consolidation documentaire
 Final SHA: —
 
 ## CAP-029 — Découverte
 Status: DOC_ONLY
-Evidence: réalisée par les listings existants (`/personnes`, `/besoins`, `/projets`, `/zumra/groupes`, Fil)
+Evidence: listings existants personnes/besoins/projets/ZUMRA/Fil
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -273,28 +273,28 @@ Final SHA: —
 
 ## CAP-030 — Moteur de correspondance
 Status: CLOSED
-Evidence: 4 moteurs dédiés — Personne, Projet, Mission, Transmission
-Gap: logique dupliquée par domaine plutôt qu'un moteur générique unique
+Evidence: moteurs Personne, Projet, Mission, Transmission
+Gap: logique dupliquée par domaine
 Dependencies: aucune
-Decision: factoriser seulement si un 5e domaine de matching apparaît
-Implementation PR: antérieur au workflow PR-par-module
+Decision: factoriser seulement si besoin réel
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-031 — Explicabilité des recommandations
 Status: CLOSED
-Evidence: chaque moteur retourne des `reasons` en langage humain, jamais un score
+Evidence: moteurs retournent des raisons humaines, jamais un score humain
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-032 — L'objet « Besoin »
 Status: DOC_ONLY
-Evidence: `Need.php`, déjà objet de 1ère classe consommé transversalement
+Evidence: `Need.php`, déjà objet de première classe
 Gap: aucun
-Dependencies: aucune
-Decision: référencer CAP-013 comme implémentation
+Dependencies: CAP-013 (CLOSED)
+Decision: CAP-013 porte l'implémentation
 Implementation PR: —
 Final SHA: —
 
@@ -302,23 +302,23 @@ Final SHA: —
 Status: CLOSED
 Evidence: `MissionAssignmentService::offer()/acceptOffer()`
 Gap: aucun
-Dependencies: aucune
+Dependencies: CAP-069 (CLOSED)
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module (`routes/cap069.php`)
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-034 — Apprentissage comme réponse à un besoin
 Status: CLOSED
-Evidence: `Transmission::CONTEXT_NEED`, résolu par `TransmissionContextService`
+Evidence: `Transmission::CONTEXT_NEED`, `TransmissionContextService`
 Gap: aucun
-Dependencies: aucune
+Dependencies: CAP-006, CAP-013
 Decision: aucune action requise
 Implementation PR: #13
 Final SHA: 46318988d9d1dee8ca56bf4861802c3b294b721e
 
 ## CAP-035 — Mémoire d'expérience
 Status: DOC_ONLY
-Evidence: vue agrégée des Preuves — `CARNET-DE-PREUVES.md` §3, `ProofController::memory()`
+Evidence: mémoire agrégée des preuves via `ProofController::memory()`
 Gap: aucun — volontairement pas d'objet séparé
 Dependencies: CAP-036 (CLOSED)
 Decision: aucune action requise
@@ -327,7 +327,7 @@ Final SHA: 7571089c6d71309d5e7272bb6faf045b4bb60d60
 
 ## CAP-036 — Preuve de capacité
 Status: CLOSED
-Evidence: module dédié complet — `app/Application/Proof/*`, `routes/cap036.php`
+Evidence: `app/Application/Proof/*`, `routes/cap036.php`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -336,65 +336,65 @@ Final SHA: 7571089c6d71309d5e7272bb6faf045b4bb60d60
 
 ## CAP-037 — La ZUMRA comme micro-espace de travail
 Status: CLOSED
-Evidence: `ZumraGroupController::show` agrège les `Need`/`Project` du groupe (owner_type=GROUP), filtrés par `NeedService::canView`/`ProjectService::canView`, affichés dans `zumra/groups/show.blade.php`
+Evidence: fiche groupe agrège besoins/projets avec contrôles d'accès
 Gap: aucun
 Dependencies: aucune
-Decision: extension additive de la fiche existante, aucune nouvelle table
-Implementation PR: #21 ; recomposition visuelle additive (#40) — voir `docs/capacites/specs/CAP-ZUMRA-PROJET-composition-visuelle.md`
+Decision: aucune action requise
+Implementation PR: #21 ; UI #40
 Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-038 — Tableau de bord collectif
 Status: CLOSED
-Evidence: `ZumraGroupController::collectivePriority()` — une seule priorité dominante pour les responsables
+Evidence: `ZumraGroupController::collectivePriority()`
 Gap: aucun
 Dependencies: aucune
-Decision: aucun siège vacant en priorité (aucune action réelle n'existe pour en proposer un)
-Implementation PR: #21 ; recomposition visuelle additive (#40)
+Decision: aucune action requise
+Implementation PR: #21 ; UI #40
 Final SHA: d1152ac45b2489ad52dcbb6cfc039d71606e01df
 
 ## CAP-039 — La ZUMRA comme capacité d'émergence
 Status: CLOSED
-Evidence: chaîne `MATURITY_EMERGING` → `OWNER_GROUP` → `ProjectSatelliteLauncherService`
+Evidence: `MATURITY_EMERGING` → `OWNER_GROUP` → `ProjectSatelliteLauncherService`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-040 — Projet comme objet indépendant
 Status: CLOSED
-Evidence: `Project.php`, `/projets` autonome
+Evidence: `Project.php`, `/projets`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-041 — Équipe projet
 Status: CLOSED
-Evidence: `ProjectTeamMember`, `ProjectTeamService`, section équipe sur `/projets/{project}`
+Evidence: `ProjectTeamMember`, `ProjectTeamService`, section équipe projet
 Gap: aucun
 Dependencies: aucune
-Decision: table additive distincte de `ProjectMatchDecision`
+Decision: aucune action requise
 Implementation PR: #23
 Final SHA: 5699162d908ebad20df9104c6a488a50fc8ceb4d
 
 ## CAP-042 — Besoin projet
 Status: CLOSED
-Evidence: `Need::OWNER_PROJECT` + `NeedService` étendu ; carte « Besoins du projet » sur `/projets/{project}`
+Evidence: `Need::OWNER_PROJECT`, `NeedService`, besoins projet
 Gap: aucun
-Dependencies: aucune
-Decision: `ProjectAuthority` réutilisée pour l'autorité projet
+Dependencies: CAP-013, CAP-014
+Decision: aucune action requise
 Implementation PR: #25
 Final SHA: d7b456c2ba17fb726be7b18400e64a756629f44d
 
 ## CAP-043 — Dossier de projet vivant
 Status: CLOSED
-Evidence: `/projets/{p}` agrège jalons, maturité, accompagnement, autonomie
+Evidence: fiche projet agrège jalons, maturité, accompagnement, autonomie
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-044 — Maturité calculée par signes, pas par décret
@@ -402,13 +402,13 @@ Status: CLOSED
 Evidence: `ProjectSignalsEngine::forProject()`
 Gap: aucun
 Dependencies: aucune
-Decision: panneau strictement consultatif ; aucune transition automatique
+Decision: signaux consultatifs, aucune transition automatique
 Implementation PR: #27
 Final SHA: 0e6958ddb167c446c80f9b47776b812d2a6f53ed
 
 ## CAP-045 — Accompagnement
 Status: CLOSED
-Evidence: `ProjectAccompanimentService`, `dg_project_accompaniment_requests`, administration accompagnement
+Evidence: `ProjectAccompanimentService`, demandes d'accompagnement et administration
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -417,25 +417,25 @@ Final SHA: 9f48dc91c4fda8d9737c2dd92a7f0cd9b4372295
 
 ## CAP-046 — Dossier d'accompagnement
 Status: CLOSED
-Evidence: synthèse et filtres sur `/projets/{project}/accompagnement` depuis les actions réelles
+Evidence: synthèse/filtres depuis les actions d'accompagnement réelles
 Gap: aucun
-Dependencies: aucune
-Decision: enrichissement de vue uniquement
+Dependencies: CAP-045
+Decision: aucune action requise
 Implementation PR: #31
 Final SHA: 5106974204115f473283e217aa3c4d5288d15f92
 
 ## CAP-047 — Le « satellite » comme changement de nature
 Status: NOT_IMPLEMENTED
-Evidence: `ProjectAutonomyPathway` ne fait que signaler une intention ; CAP-018 réserve le changement réel à CAP-047
-Gap: aucun mécanisme technique de bascule réelle projet→satellite
-Dependencies: CAP-048, CAP-049
-Decision: à construire sur le registre existant
+Evidence: `ProjectAutonomyPathway` prépare l'autonomie ; `dg_satellites` et la fédération existent déjà via CAP-048/049
+Gap: aucune bascule métier explicite d'un projet mature vers une déclaration/activation de satellite
+Dependencies: CAP-048 (CLOSED), CAP-049 (CLOSED), CAP-050 (CLOSED)
+Decision: construire la transition métier sur les primitives satellites déjà livrées ; ne pas recréer registre ou fédération
 Implementation PR: —
 Final SHA: —
 
 ## CAP-048 — Registre des satellites
 Status: CLOSED
-Evidence: table `dg_satellites` + `Satellite` + `Administration\\SatelliteController`
+Evidence: `dg_satellites`, `Satellite`, administration des satellites
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -444,7 +444,7 @@ Final SHA: 6f25ef392fd89afb7f1a77511717d2962893e569
 
 ## CAP-049 — Relation satellite ↔ Core
 Status: CLOSED
-Evidence: `FederationContinuationController` résout le satellite par `slug` depuis `dg_satellites`; menus alimentés par le registre
+Evidence: résolution du satellite par registre, continuité fédérée et menus alimentés par registre
 Gap: aucun
 Dependencies: CAP-048 (CLOSED)
 Decision: aucune action requise
@@ -457,70 +457,70 @@ Evidence: `GamadCoreClient`, `RequireCoreMember`, `FederatedProductGateway::open
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-051 — Portabilité de l'identité
 Status: PARTIAL
-Evidence: `PortalMemberSession` + passerelle fédérée ; le registre de satellites existe désormais
-Gap: la portabilité dépend encore des contrats réellement exposés par chaque satellite
-Dependencies: CAP-048, CAP-049
-Decision: étendre satellite par satellite sans réintroduire de configuration en dur
+Evidence: session portail + passerelle fédérée + registre multi-satellites
+Gap: la portabilité dépend encore du contrat réellement exposé par chaque satellite
+Dependencies: CAP-048, CAP-049, CAP-050 (CLOSED)
+Decision: étendre par contrat satellite, sans configuration en dur
 Implementation PR: —
 Final SHA: —
 
 ## CAP-052 — Séparation des contextes
 Status: DOC_ONLY
-Evidence: `app/Infrastructure/GamadCore/` isolé ; aucun nom Core exposé en erreur
+Evidence: infrastructure Core isolée et erreurs sans fuite du nom interne
 Gap: aucun
 Dependencies: aucune
-Decision: surveiller les futures vues
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-053 — Consentement
 Status: PARTIAL
-Evidence: `orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent`
-Gap: pas de centre de consentement unifié
+Evidence: consentements orientation, découverte, matching et capacité collective
+Gap: pas de centre transversal unifié
 Dependencies: aucune
-Decision: modèle transversal seulement si besoin produit confirmé
+Decision: modèle transversal seulement sur besoin produit
 Implementation PR: —
 Final SHA: —
 
 ## CAP-054 — Notifications
 Status: CLOSED
-Evidence: `app/Application/Notifications/*`, `routes/cap054.php`, `docs/capacites/specs/NOTIFICATIONS.md`
-Gap: canal in-app uniquement — POST-BETA documenté
+Evidence: `app/Application/Notifications/*`, `routes/cap054.php`
+Gap: canal in-app uniquement, POST-BETA documenté
 Dependencies: aucune
-Decision: aucune action requise pour la v1
+Decision: aucune action requise v1
 Implementation PR: #15
 Final SHA: 5030bf50d2d4e258ee8e040ed730f3fae299c98a
 
 ## CAP-055 — Fil d'activité intelligent
 Status: NOT_IMPLEMENTED
-Evidence: `ActivityFeedService` = priorité globale fixe, identique pour tout spectateur
+Evidence: priorité globale fixe dans `ActivityFeedService`
 Gap: aucune personnalisation par spectateur
 Dependencies: aucune
-Decision: spécifier « intelligent » sous contrainte anti-score avant construction
+Decision: spécifier sous contrainte anti-score
 Implementation PR: —
 Final SHA: —
 
 ## CAP-056 — Publication
 Status: PARTIAL
-Evidence: cycle brouillon→publication existe par objet (`Need`, `Mission`)
-Gap: patron dupliqué par domaine, aucun contrat transversal CAP-056
+Evidence: cycles de publication existent par objet
+Gap: pas de contrat transversal CAP-056
 Dependencies: aucune
-Decision: documenter le patron existant avant éventuelle abstraction
+Decision: documenter avant abstraction
 Implementation PR: —
 Final SHA: —
 
 ## CAP-057 — Commentaire comme contribution
 Status: CLOSED
-Evidence: `ContextComment` (purposes QUESTION/PRECISION/ADVICE/RESOURCE/COORDINATION)
+Evidence: `ContextComment` avec finalités structurées
 Gap: aucun
 Dependencies: CAP-021 (CLOSED)
 Decision: consolidé avec CAP-021
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-058 — Messagerie contextuelle
@@ -529,40 +529,40 @@ Evidence: `MessageConversation` multi-contexte
 Gap: aucun
 Dependencies: CAP-020 (CLOSED)
 Decision: consolidé avec CAP-020
-Implementation PR: antérieur au workflow PR-par-module
+Implementation PR: antérieur
 Final SHA: —
 
 ## CAP-059 — Conversation → action
 Status: CLOSED
-Evidence: `app/Application/ProjectBrain/ProjectBrainNeedDraftService.php`, modèles `ProjectBrainConversation`, `ProjectBrainMessage`, `ProjectBrainDraft`, `routes/project_brain.php`. Une conversation projet peut produire un brouillon `NEED_CREATE`; aucune mutation Core n'a lieu avant confirmation humaine explicite, puis `NeedService::create()` matérialise le besoin.
-Gap: aucun pour le contrat actuellement matérialisé « conversation projet → besoin ». Les futures promotions vers Mission/Transmission restent des extensions et ne rendent pas cette implémentation inexistante.
+Evidence: `ProjectBrainNeedDraftService.php`, `ProjectBrainConversation`, `ProjectBrainMessage`, `ProjectBrainDraft`, `routes/project_brain.php`. Une conversation projet peut produire un brouillon `NEED_CREATE`; aucune mutation Core n'a lieu avant confirmation humaine explicite, puis `NeedService::create()` matérialise le besoin.
+Gap: aucun pour le contrat matérialisé « conversation projet → besoin ». Mission/Transmission sont des extensions futures.
 Dependencies: CAP-013 (CLOSED), CAP-014 (CLOSED)
-Decision: conserver le principe conversation-first + brouillon + confirmation humaine ; ne jamais laisser le fournisseur IA muter directement le Core.
+Decision: conversation-first + brouillon + confirmation humaine ; jamais de mutation directe par le fournisseur IA
 Implementation PR: antérieur à DOC-001 ; Project Brain présent sur `main`
 Final SHA: —
 
 ## CAP-060 — Réputation : grande prudence
 Status: DOC_ONLY
-Evidence: doctrine anti-score répétée, aucun modèle de score
+Evidence: doctrine anti-score, aucun modèle de score humain
 Gap: aucun
 Dependencies: aucune
-Decision: garder comme invariant
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-061 — Contributions financières
 Status: NOT_IMPLEMENTED
-Evidence: seul `ZumraPayment` (`PURPOSE_MEMBERSHIP`) existe
-Gap: aucune contribution financière générale
+Evidence: seul `ZumraPayment` d'adhésion existe
+Gap: aucune contribution générale
 Dependencies: aucune
-Decision: spécifier avant construction ; ne pas réutiliser `ZumraPayment`
+Decision: spécifier avant construction
 Implementation PR: —
 Final SHA: —
 
 ## CAP-062 — Ledger / traçabilité
 Status: NOT_IMPLEMENTED
-Evidence: journaux d'événements métier, pas de ledger financier
-Gap: aucun objet de traçabilité financière
+Evidence: journaux métier, pas de ledger financier
+Gap: ledger financier absent
 Dependencies: CAP-061
 Decision: dépend de CAP-061
 Implementation PR: —
@@ -570,8 +570,8 @@ Final SHA: —
 
 ## CAP-063 — Financement de projet
 Status: DEPENDENCY_BLOCKED
-Evidence: aucun financement projet structuré
-Gap: dépend de contributions + ledger
+Evidence: financement projet structuré absent
+Gap: contributions + ledger requis
 Dependencies: CAP-061, CAP-062
 Decision: construire 061/062 d'abord
 Implementation PR: —
@@ -579,28 +579,28 @@ Final SHA: —
 
 ## CAP-064 — Moteur d'opportunités
 Status: NOT_IMPLEMENTED
-Evidence: aucun objet métier Opportunité canonique
-Gap: objet Opportunité absent
+Evidence: aucun objet Opportunité canonique
+Gap: objet absent
 Dependencies: aucune
-Decision: définir l'objet avant le moteur
+Decision: définir objet avant moteur
 Implementation PR: —
 Final SHA: —
 
 ## CAP-065 — Le partenaire comme fournisseur de capacité
 Status: NOT_IMPLEMENTED
-Evidence: `SOURCE_PARTNER` n'est qu'un label sur l'accompagnement
-Gap: pas d'entité Partenaire structurée
+Evidence: partenaire seulement représenté par labels d'accompagnement
+Gap: entité Partenaire absente
 Dependencies: CAP-066, CAP-067
-Decision: dépend de CAP-066/067
+Decision: dépend des organisations
 Implementation PR: —
 Final SHA: —
 
 ## CAP-066 — Organisation
 Status: NOT_IMPLEMENTED
-Evidence: `ZumraGroup` est un groupe humain distinct
-Gap: aucune entité Organisation
+Evidence: `ZumraGroup` est un concept distinct
+Gap: entité Organisation absente
 Dependencies: aucune
-Decision: spécifier distinctement de ZumraGroup
+Decision: spécifier distinctement de ZUMRA
 Implementation PR: —
 Final SHA: —
 
@@ -615,8 +615,8 @@ Final SHA: —
 
 ## CAP-068 — Événement
 Status: NOT_IMPLEMENTED
-Evidence: les `*Event` présents sont des journaux d'audit, pas un objet calendrier
-Gap: aucun objet calendrier/réunion
+Evidence: `*Event` = audit, pas calendrier
+Gap: objet événement/RSVP absent
 Dependencies: aucune
 Decision: spécifier distinctement de l'audit
 Implementation PR: —
@@ -624,7 +624,7 @@ Final SHA: —
 
 ## CAP-069 — Tâche
 Status: CLOSED
-Evidence: module Missions complet — `app/Application/Missions/*`, `routes/cap069.php`
+Evidence: `app/Application/Missions/*`, `routes/cap069.php`
 Gap: aucun
 Dependencies: aucune
 Decision: aucune action requise
@@ -633,8 +633,8 @@ Final SHA: —
 
 ## CAP-070 — Document
 Status: DEPENDENCY_BLOCKED
-Evidence: continuité fédérée, aucune API de stockage documentaire locale
-Gap: aucun stockage/versionnement documentaire réel
+Evidence: fédération présente, aucune API documentaire locale
+Gap: stockage/versionnement documentaire réel absent côté intégration
 Dependencies: GamaDrive
 Decision: ne pas construire de stockage parallèle
 Implementation PR: —
@@ -642,89 +642,89 @@ Final SHA: —
 
 ## CAP-071 — Architecture de navigation future
 Status: DOC_ONLY
-Evidence: invariants design et shell
+Evidence: shell + invariants design
 Gap: aucun
 Dependencies: aucune
-Decision: aucune action requise
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-072 — La règle UX principale
 Status: DOC_ONLY
-Evidence: invariants design ; priorité réelle dans Mon espace
+Evidence: invariants design + priorité Mon espace
 Gap: aucun
 Dependencies: aucune
-Decision: aucune action requise
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-073 — Progressive disclosure
 Status: DOC_ONLY
-Evidence: principe pratiqué dans les flux progressifs
-Gap: aucun comportement métier manquant
+Evidence: principe appliqué dans les flux progressifs
+Gap: aucun module métier attendu
 Dependencies: aucune
-Decision: invariant UX, pas module métier
+Decision: invariant UX
 Implementation PR: —
 Final SHA: —
 
 ## CAP-074 — DG Afrique comme orchestrateur
 Status: DOC_ONLY
-Evidence: séparation `GamadCore` / `Application`
+Evidence: séparation Core/infrastructure et Application
 Gap: aucun
 Dependencies: aucune
-Decision: aucune action requise
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-075 — Le Core ne doit pas connaître toute la philosophie ZUMRA
 Status: DOC_ONLY
-Evidence: `GamadCoreClient` n'expose que les primitives nécessaires
+Evidence: client Core limité aux primitives nécessaires
 Gap: aucun
 Dependencies: aucune
-Decision: surveiller les futurs appels Core
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-076 — Primitives vs produits
 Status: DOC_ONLY
-Evidence: séparation infrastructure/application honorée
+Evidence: séparation infrastructure/application
 Gap: aucun
 Dependencies: aucune
-Decision: aucune action requise
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-077 — API de capacités
 Status: NOT_IMPLEMENTED
-Evidence: aucune surface API publique de capacités déclarée
-Gap: API externe absente
+Evidence: aucune API publique de capacités déclarée
+Gap: surface d'intégration externe absente
 Dependencies: aucune
-Decision: construire seulement sur besoin d'intégration explicite
+Decision: construire sur besoin explicite
 Implementation PR: —
 Final SHA: —
 
 ## CAP-078 — Le satellite peut devenir fournisseur de capacité
 Status: DEPENDENCY_BLOCKED
-Evidence: registre CAP-048 et relation CAP-049 existent, mais aucun contrat de capacité fourni par satellite
+Evidence: CAP-048/049/050 fournissent registre, relation et client Core ; aucun contrat « capacité fournie par satellite » n'existe
 Gap: contrat fournisseur absent
-Dependencies: CAP-047, CAP-048, CAP-049, CAP-050
-Decision: le registre ne suffit pas à fermer CAP-078
+Dependencies: CAP-047 (NOT_IMPLEMENTED), CAP-048 (CLOSED), CAP-049 (CLOSED), CAP-050 (CLOSED)
+Decision: bloqué uniquement par la matérialisation métier restante, pas par l'absence de registre
 Implementation PR: —
 Final SHA: —
 
 ## CAP-079 — Boucle d'écosystème
 Status: DEPENDENCY_BLOCKED
-Evidence: passerelle vers satellites, aucune remontée de capacités vers DG Afrique
+Evidence: passerelle vers satellites disponible ; aucune remontée de capacités/actions depuis un satellite vers DG Afrique
 Gap: boucle retour absente
-Dependencies: CAP-047, CAP-048, CAP-049, CAP-050
-Decision: bloqué
+Dependencies: CAP-047 (NOT_IMPLEMENTED), CAP-048 (CLOSED), CAP-049 (CLOSED), CAP-050 (CLOSED), CAP-078
+Decision: bloqué par la boucle fournisseur/retour, pas par le registre
 Implementation PR: —
 Final SHA: —
 
 ## CAP-080 — Ce que devrait mesurer DG Afrique
 Status: NOT_IMPLEMENTED
-Evidence: exclusions doctrinales, aucune définition positive canonique des indicateurs
-Gap: indicateurs de succès non définis
+Evidence: exclusions doctrinales sans indicateurs positifs canoniques
+Gap: indicateurs non définis
 Dependencies: aucune
 Decision: doctrine avant analytics
 Implementation PR: —
@@ -732,36 +732,36 @@ Final SHA: —
 
 ## CAP-081 — La grande différence avec un réseau social
 Status: DOC_ONLY
-Evidence: doctrine anti-classement ; recommandations expliquées sans score
+Evidence: anti-classement, recommandations explicables sans score humain
 Gap: aucun
 Dependencies: aucune
-Decision: maintenir l'invariant anti-score
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-082 — La grande différence avec LinkedIn
 Status: NOT_IMPLEMENTED
-Evidence: distinction seulement implicite dans les mécanismes existants
+Evidence: distinction seulement implicite
 Gap: note doctrinale dédiée absente
 Dependencies: aucune
-Decision: documenter si cette position doit être contractuelle
+Decision: documenter si position contractuelle
 Implementation PR: —
 Final SHA: —
 
 ## CAP-083 — La grande différence avec une plateforme d'incubation
 Status: DOC_ONLY
-Evidence: l'accompagnement exclut le workflow d'incubation lourd
+Evidence: accompagnement léger distinct d'un workflow d'incubation lourd
 Gap: aucun
 Dependencies: aucune
-Decision: aucune action requise
+Decision: invariant
 Implementation PR: —
 Final SHA: —
 
 ## CAP-084 — La phrase « lanceur de satellites » devient technique
 Status: DEPENDENCY_BLOCKED
-Evidence: CAP-018 prépare l'autonomie ; CAP-048/049 matérialisent registre et relation Core ; la bascule réelle CAP-047 manque encore
-Gap: chaîne technique incomplète tant que CAP-047 n'existe pas
-Dependencies: CAP-047, CAP-048, CAP-049, CAP-050
-Decision: jalon final de la chaîne satellites
+Evidence: CAP-018 prépare ; CAP-048/049/050 fournissent déjà registre, relation et primitives Core ; CAP-047 manque pour la bascule métier
+Gap: transition projet→satellite incomplète
+Dependencies: CAP-047 (NOT_IMPLEMENTED), CAP-048 (CLOSED), CAP-049 (CLOSED), CAP-050 (CLOSED)
+Decision: fermer seulement lorsque la transition CAP-047 matérialise la chaîne complète
 Implementation PR: —
 Final SHA: —
