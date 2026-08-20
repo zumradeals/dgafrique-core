@@ -48,7 +48,7 @@ awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTE
 awk '/^## CAP-/ { if (seen && statuses != 1) bad=1; seen=1; statuses=0; next } /^Status:/ { statuses++ } END { if (seen && statuses != 1) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
-En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun, dans l'index et la couverture, et qu'aucune ancienne spec supprimée n'est recréée sous une arborescence `legacy`.
+En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun, dans l'index et la couverture, et qu'aucune ancienne spec supprimée n'est recréée sous une arborescence historique concurrente.
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
 
