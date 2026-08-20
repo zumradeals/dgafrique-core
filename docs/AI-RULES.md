@@ -49,10 +49,10 @@ test ! -e docs/capacites/CAP-MASTER-TRACKER.md
 test ! -d docs/capacites/legacy/specs
 ! find docs -type f -name '*.zip.b64.part*' -print -quit | grep -q .
 ! grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md
-! grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | grep -Ev '^Status: (CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$'
+test -z "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | grep -Ev '^Status: (CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$')"
 ```
 
-La dernière commande doit produire zéro ligne. Toute nouvelle preuve sous `docs/capacites/proofs/` est interdite par revue : ce répertoire est figé en quarantaine jusqu'à décision de suppression complète.
+Toute nouvelle preuve sous `docs/capacites/proofs/` est interdite par revue : ce répertoire est figé en quarantaine jusqu'à décision de suppression complète.
 
 Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
 
