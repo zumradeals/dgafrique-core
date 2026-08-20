@@ -39,9 +39,9 @@ final class ProjectMaturityService
             'label' => 'Structure potentielle',
             'description' => 'Le projet peut explorer une structure plus autonome, sans que cela constitue un statut juridique.',
         ],
-        'POTENTIAL_SATELLITE' => [
-            'label' => 'Satellite potentiel',
-            'description' => 'Le projet peut explorer l’étape satellite ; ce repère ne crée ni satellite ni intégration automatique.',
+        'AUTONOMY_READY' => [
+            'label' => 'Autonomie à explorer',
+            'description' => 'Le projet présente des éléments suffisants pour explorer une autonomie organisationnelle, économique ou juridique, sans transformation automatique de sa nature.',
         ],
     ];
 
