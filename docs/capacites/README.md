@@ -12,8 +12,10 @@ Avant toute intervention, lire `../AI-RULES.md`.
 
 ## Historique
 
-L'historique du dépôt conserve les versions précédentes ; les anciens trackers, doublons et anciennes specs n'ont donc pas à rester comme sources concurrentes dans l'arbre courant.
+L'historique Git conserve les versions précédentes. Les anciens trackers, snapshots, doublons, quarantaines et anciennes specs ne doivent pas rester dans l'arbre courant comme sources concurrentes.
 
-`proofs/` est un **répertoire legacy en quarantaine** : il contient des snapshots du bootstrap et n'appartient pas à la hiérarchie de vérité. DOC-001 interdit toute nouvelle preuve dans ce répertoire. Sa suppression physique complète pourra être décidée séparément si aucune exigence d'audit ne nécessite sa présence dans l'arbre courant ; en attendant, aucune IA ne doit le lire pour déterminer l'état d'un CAP.
+Les preuves courantes de livraison vivent dans le code, les tests, les PR et les journaux CI.
 
-Les preuves courantes de livraison vivent dans les tests, les PR et les journaux CI.
+## Règle satellite
+
+La maturité d'un Projet ne produit jamais un satellite logiciel. Les satellites éventuels proviennent uniquement de l'extraction justifiée d'un outil spécialisé conçu d'abord comme module extractible. Voir `../architecture/ADR-005-extractable-specialized-tools.md`.
