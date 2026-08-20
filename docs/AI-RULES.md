@@ -42,7 +42,7 @@ Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne jamais encoder un s
 
 ## Garde-fou mécanique DOC-001
 
-Avant merge d'une PR documentaire, exécuter ce contrôle local (et le porter en CI dès que le workflow documentaire est disponible) :
+Avant merge d'une PR documentaire, exécuter ce contrôle local :
 
 ```bash
 test ! -e docs/capacites/CAP-MASTER-TRACKER.md
@@ -54,7 +54,7 @@ awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTE
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsque la politique d'audit historique autorisera cette dernière purge.
 
-Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
+Ce garde-fou est aujourd'hui une règle de revue reproductible. Son automatisation CI éventuelle doit faire l'objet d'un changement de workflow explicite ; la documentation ne doit pas prétendre qu'un contrôle CI existe tant qu'il n'est pas réellement présent dans le dépôt.
 
 ## Checklist de clôture DOC-001
 
