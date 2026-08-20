@@ -51,7 +51,7 @@ awk '/^## CAP-/ { if (seen && statuses != 1) bad=1; seen=1; statuses=0; next } /
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
 
-Ce garde-fou est aujourd'hui une règle de revue reproductible. Son automatisation CI éventuelle doit faire l'objet d'un changement de workflow explicite ; la documentation ne doit pas prétendre qu'un contrôle CI existe tant qu'il n'est pas réellement présent dans le dépôt.
+Ce garde-fou est actuellement une règle de revue reproductible, pas un job CI dédié. Une automatisation ultérieure doit être ajoutée explicitement au workflow avant d'être présentée comme active.
 
 ## Checklist de clôture DOC-001
 
