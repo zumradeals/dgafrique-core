@@ -61,13 +61,20 @@ final class ProjectBrainNeedDraftService
             }
 
             $draft = null;
-            $action = collect($result['proposed_actions'] ?? [])->first(fn ($candidate): bool => is_array($candidate) && ($candidate['type'] ?? null) === 'NEED_CREATE');
+            $action = collect($result['proposed_actions'] ?? [])->first(fn ($candidate): bool => is_array($candidate) && strtoupper((string)($candidate['type'] ?? '')) === 'NEED_CREATE');
             if (is_array($action)) {
                 $payload = $this->normalizeNeed($project, $action, $text);
                 if ($payload !== null) {
                     $draft = ProjectBrainDraft::query()->create([
                         'conversation_id'=>$conversation->id,'project_id'=>$project->id,'actor_core_reference'=>$actor,
                         'kind'=>ProjectBrainDraft::KIND_NEED_CREATE,'status'=>ProjectBrainDraft::STATUS_PENDING,'payload'=>$payload,
+                    ]);
+                } else {
+                    Log::notice('Permanent Project Brain ignored incomplete NEED_CREATE action.', [
+                        'project'=>$project->public_reference,
+                        'category'=>$action['category'] ?? null,
+                        'has_title'=>trim((string)($action['title'] ?? '')) !== '',
+                        'has_context'=>trim((string)($action['context'] ?? '')) !== '',
                     ]);
                 }
             }
@@ -103,11 +110,13 @@ final class ProjectBrainNeedDraftService
     private function normalizeNeed(Project $project, array $action, string $source): ?array
     {
         $categories=array_keys($this->configuration->get()['categories'] ?? []);
-        $category=in_array($action['category'] ?? null,$categories,true)?$action['category']:null;
+        $requestedCategory=strtoupper(trim((string)($action['category'] ?? '')));
+        $category=in_array($requestedCategory,$categories,true)?$requestedCategory:null;
         $title=trim((string)($action['title'] ?? ''));
         $context=trim((string)($action['context'] ?? ''));
         if ($category===null || mb_strlen($title)<4 || mb_strlen($context)<8) return null;
-        $mode=in_array($action['collaboration_mode'] ?? null,['LOCAL','REMOTE','ANY'],true)?$action['collaboration_mode']:'ANY';
+        $requestedMode=strtoupper(trim((string)($action['collaboration_mode'] ?? 'ANY')));
+        $mode=in_array($requestedMode,['LOCAL','REMOTE','ANY'],true)?$requestedMode:'ANY';
         $location=isset($action['location']) && is_string($action['location']) ? trim($action['location']) : null;
         return [
             'owner_type'=>Need::OWNER_PROJECT,'project_reference'=>$project->public_reference,
