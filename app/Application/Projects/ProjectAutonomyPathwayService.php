@@ -9,11 +9,11 @@ use App\Models\ProjectAutonomyPathway;
 use App\Models\ProjectEvent;
 use Illuminate\Support\Facades\DB;
 
-final class ProjectSatelliteLauncherService
+final class ProjectAutonomyPathwayService
 {
     public const ELIGIBLE_MATURITIES = [
         'POTENTIAL_STRUCTURE',
-        'POTENTIAL_SATELLITE',
+        'AUTONOMY_READY',
     ];
 
     public const TARGET_FORMS = [
