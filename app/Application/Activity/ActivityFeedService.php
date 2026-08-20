@@ -18,6 +18,7 @@ use App\Models\Need;
 use App\Models\NeedEvent;
 use App\Models\Project;
 use App\Models\ProjectEvent;
+use App\Models\ProjectTeamMember;
 use App\Models\Proof;
 use App\Models\ProofEvent;
 use App\Models\Transmission;
@@ -42,6 +43,13 @@ final class ActivityFeedService
 
     private const PER_PAGE = 12;
     private const SOURCE_LIMIT = 80;
+
+    // CAP-055 : une relation métier réelle avec l'objet (porteur, équipe, mission assignée,
+    // ZUMRA active) fait remonter l'activité au-dessus de la hiérarchie de priorité métier
+    // habituelle — jamais un score de valeur humaine, seulement « ceci vous concerne
+    // directement ». La marge dépasse la plus haute priorité métier existante (300) pour
+    // rester un simple tri, jamais un calcul additif ambigu entre les deux échelles.
+    private const RELEVANCE_BOOST = 500;
 
     private const NEED_EVENTS = [
         'NEED_PUBLISHED' => ['priority' => 300, 'label' => 'Besoin ouvert'],
@@ -172,13 +180,15 @@ final class ActivityFeedService
             }
 
             $meta = self::NEED_EVENTS[$event->event];
+            $relevanceReason = $need->author_core_reference === $actor ? 'Besoin que vous avez publié.' : null;
             $items->push([
                 'key' => 'need:'.$need->id,
                 'kind' => 'NEEDS',
                 'kind_label' => 'Besoin',
                 'event' => $event->event,
                 'event_label' => $meta['label'],
-                'priority' => $meta['priority'],
+                'priority' => $meta['priority'] + ($relevanceReason !== null ? self::RELEVANCE_BOOST : 0),
+                'relevance_reason' => $relevanceReason,
                 'title' => $need->title,
                 'summary' => Str::limit(trim($need->context), 180),
                 'context' => $need->capability_label ? 'Capacité recherchée : '.$need->capability_label : null,
@@ -211,6 +221,13 @@ final class ActivityFeedService
             ->get()
             ->keyBy('id');
 
+        $activeTeamProjectIds = ProjectTeamMember::query()
+            ->whereIn('project_id', $projects->keys())
+            ->where('core_identity_reference', $actor)
+            ->where('status', ProjectTeamMember::STATUS_ACTIVE)
+            ->pluck('project_id')
+            ->all();
+
         $seen = [];
         $items = collect();
 
@@ -227,6 +244,13 @@ final class ActivityFeedService
             }
 
             $meta = self::PROJECT_EVENTS[$event->event];
+            $isOwner = $project->initiator_core_reference === $actor
+                || ($project->owner_type === Project::OWNER_PERSON && $project->owner_reference === $actor);
+            $relevanceReason = match (true) {
+                $isOwner => 'Projet que vous portez.',
+                in_array($project->id, $activeTeamProjectIds, true) => 'Projet auquel vous participez.',
+                default => null,
+            };
             $context = null;
 
             if ($event->event === 'PROJECT_MATURITY_CHANGED') {
@@ -244,7 +268,8 @@ final class ActivityFeedService
                 'kind_label' => 'Projet',
                 'event' => $event->event,
                 'event_label' => $meta['label'],
-                'priority' => $meta['priority'],
+                'priority' => $meta['priority'] + ($relevanceReason !== null ? self::RELEVANCE_BOOST : 0),
+                'relevance_reason' => $relevanceReason,
                 'title' => $project->name,
                 'summary' => Str::limit(trim($project->summary), 180),
                 'context' => $context,
@@ -297,13 +322,17 @@ final class ActivityFeedService
             }
 
             $meta = self::ZUMRA_EVENTS[$event->event];
+            $relevanceReason = $memberships->get($group->id) === ZumraGroupMembership::STATUS_ACTIVE
+                ? 'Activité de votre ZUMRA.'
+                : null;
             $items->push([
                 'key' => 'zumra:'.$group->id,
                 'kind' => 'ZUMRA',
                 'kind_label' => 'ZUMRA',
                 'event' => $event->event,
                 'event_label' => $meta['label'],
-                'priority' => $meta['priority'],
+                'priority' => $meta['priority'] + ($relevanceReason !== null ? self::RELEVANCE_BOOST : 0),
+                'relevance_reason' => $relevanceReason,
                 'title' => $group->name,
                 'summary' => Str::limit(trim($group->founding_objective), 180),
                 'context' => $group->active_member_count > 0 ? $group->active_member_count.' membre(s) actif(s)' : null,
@@ -341,6 +370,13 @@ final class ActivityFeedService
             ->get()
             ->keyBy('id');
 
+        $myAssignedMissionIds = MissionAssignment::query()
+            ->whereIn('mission_id', $missions->keys())
+            ->where('core_identity_reference', $actor)
+            ->whereIn('status', MissionAssignment::CURRENT_STATUSES)
+            ->pluck('mission_id')
+            ->all();
+
         $seen = [];
         $items = collect();
 
@@ -377,6 +413,11 @@ final class ActivityFeedService
                 default => ['Mission officialisée', 210],
             };
 
+            $relevanceReason = in_array($mission->id, $myAssignedMissionIds, true) ? 'Mission qui vous concerne.' : null;
+            if ($relevanceReason !== null) {
+                $priority += self::RELEVANCE_BOOST;
+            }
+
             $items->push([
                 'key' => 'mission:'.$mission->id,
                 'kind' => $kind,
@@ -386,6 +427,7 @@ final class ActivityFeedService
                 'event_label' => $label,
                 'badge_tone' => Mission::STATUS_BADGE_TONES[$mission->status] ?? 'neutral',
                 'priority' => $priority,
+                'relevance_reason' => $relevanceReason,
                 'title' => $mission->title,
                 'summary' => Str::limit(trim($mission->description), 180),
                 'context' => null,
@@ -448,6 +490,13 @@ final class ActivityFeedService
                 default => ['Transmission proposée', 240],
             };
 
+            $relevanceReason = $transmission->proposed_by_core_reference === $actor
+                ? 'Transmission que vous avez proposée.'
+                : null;
+            if ($relevanceReason !== null) {
+                $priority += self::RELEVANCE_BOOST;
+            }
+
             $items->push([
                 'key' => 'transmission:'.$transmission->id,
                 'kind' => $kind,
@@ -457,6 +506,7 @@ final class ActivityFeedService
                 'event_label' => $label,
                 'badge_tone' => Transmission::STATUS_BADGE_TONES[$transmission->status] ?? 'neutral',
                 'priority' => $priority,
+                'relevance_reason' => $relevanceReason,
                 'title' => $transmission->capability_label,
                 'summary' => Str::limit(trim($transmission->learning_objective), 180),
                 'context' => null,
@@ -518,6 +568,11 @@ final class ActivityFeedService
                 default => ['Preuve enregistrée', 170],
             };
 
+            $relevanceReason = $proof->submitted_by_core_reference === $actor ? 'Preuve que vous avez soumise.' : null;
+            if ($relevanceReason !== null) {
+                $priority += self::RELEVANCE_BOOST;
+            }
+
             $items->push([
                 'key' => 'proof:'.$proof->id,
                 'kind' => $kind,
@@ -527,6 +582,7 @@ final class ActivityFeedService
                 'event_label' => $label,
                 'badge_tone' => Proof::STATUS_BADGE_TONES[$proof->status] ?? 'neutral',
                 'priority' => $priority,
+                'relevance_reason' => $relevanceReason,
                 'title' => $proof->title,
                 'summary' => Str::limit(trim($proof->description), 180),
                 'context' => null,

@@ -66,7 +66,7 @@
 | CAP-052 | Séparation des contextes | DOC_ONLY |
 | CAP-053 | Consentement | PARTIAL |
 | CAP-054 | Notifications | CLOSED |
-| CAP-055 | Fil d’activité intelligent | NOT_IMPLEMENTED |
+| CAP-055 | Fil d’activité intelligent | CLOSED |
 | CAP-056 | Publication | PARTIAL |
 | CAP-057 | Commentaire comme contribution | CLOSED |
 | CAP-058 | Messagerie contextuelle | CLOSED |
