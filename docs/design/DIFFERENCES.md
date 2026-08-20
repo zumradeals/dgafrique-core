@@ -147,6 +147,48 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
   doit de toute façon jamais recevoir la coquille membre (`x-dg.shell`) — il reste dans son propre
   gabarit minimal, charte incluse ou non selon un chantier ultérieur.
 
+## Portail Projets — refonte visuelle du 20 août 2026 (addendum §18)
+
+- Le formulaire de filtre (`method="GET" class="dg-filters"`, sélecteur de domaine, bouton
+  « Explorer ») reste exactement le contrat existant et testé
+  (`DesignInvariantsPhase2Test::test_besoins_projets_personnes_filter_forms_actually_submit`).
+- La recherche par mot-clé, le tri et le bascule grille/liste ajoutés par la maquette n'ont pas de
+  contrat métier aujourd'hui (aucune recherche indexée, le tri « Récents » est déjà le
+  comportement par défaut de `Project::query()->latest()`, aucune vue liste n'existe) : ils restent
+  visuellement présents mais désactivés (`disabled`, `title` expliquant pourquoi), jamais une
+  fausse mutation Core — même discipline que la recherche du bandeau (`dg-topbar__search`).
+- La progression de carte de la maquette (barre + pourcentage, ex. « 45 % ») n'a **pas** été
+  reproduite littéralement : `ProjectMaturityService`/CAP-017 interdit explicitement d'afficher la
+  maturité comme une note ou un pourcentage (voir le commentaire de `x-dg.maturity` et
+  `DesignInvariantsPhase2Test::test_project_maturity_stagewalk_shows_all_eight_stages_not_a_percentage`).
+  Chaque carte réutilise `x-dg.maturity` (repères en pointillés) accompagné du **libellé du repère
+  courant** (« Prototype / expérimentation », etc.) plutôt qu'un chiffre.
+- Le visuel de carte de la maquette (photographie par projet) n'a pas été reproduit : DG Afrique
+  n'a pas de fichier image par domaine et `DESIGN-INVARIANTS.md` §9 interdit une banque d'images
+  générique pour simuler une réalité qui n'existe pas encore. Chaque carte affiche à la place un
+  aplat de teinte fonctionnelle + une icône de domaine (`x-dg.icon`), dans le même langage que le
+  reste du design system.
+- **Cartes de démonstration** : en l'absence de projet réel visible pour un domaine donné, le
+  portail affiche jusqu'à trois cartes d'exemple (dont « GAMAD Technology ») issues de
+  `resources/design-reference/projets-demo.json` via `ProjectDirectoryDemoContent`, sous la règle
+  **DEMO-FIRST, REAL-DATA-TAKES-OVER** déjà appliquée au Fil V2 (§17) — appliquée ici domaine par
+  domaine plutôt qu'à l'échelle de tout l'écran, pour rester fidèle au scénario demandé (« si la
+  base ne contient que GAMAD Technology, les autres cartes restent des projections »). Chaque carte
+  porte le suffixe **« · Exemple »**, toutes ses actions sont désactivées avec la raison accessible
+  « Objet de démonstration — aucune action réelle n'est rattachée. », et elle disparaît dès qu'un
+  projet réel existe pour son domaine. Ceci **modifie** le comportement de
+  `DesignInvariantsPhase2Test::test_projets_directory_shows_an_honest_empty_state`, qui vérifie
+  désormais l'état vide honnête sur un domaine qu'aucune carte réelle ni d'exemple ne couvre
+  (`?domain=HEALTH`) plutôt qu'à la racine `/projets` — changement assumé et documenté, pas
+  silencieux, couvert par `tests/Feature/ProjectsDirectoryDemoTest.php`.
+- Le panneau « Aperçu de la communauté » (28 projets proposés, 156 membres impliqués…) est un
+  agrégat de démonstration du même fichier, annoncé **« · Exemple »** — jamais un agrégat Core réel
+  (aucune requête d'agrégation métier n'existe aujourd'hui pour ces quatre compteurs réseau).
+- Le bandeau inférieur (« Explorez les domaines », « Trouvez des capacités », « Passez à
+  l'action », « Ici, chaque idée compte ») pointe vers des routes réelles existantes (l'ancre vers
+  la barre de filtre, `people.index`, `projects.brain.start`, `activity.index`) : aucune destination
+  fictive.
+
 ## Périmètre non touché après la Phase 2
 
 Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,

@@ -17,6 +17,9 @@
     if (request()->routeIs('activity.index')) {
         $pageStyles[] = 'resources/css/fil-v2.css';
     }
+    if (request()->routeIs('projects.index')) {
+        $pageStyles[] = 'resources/css/projects-directory.css';
+    }
     if ($isProjectWorkspace) {
         $pageStyles[] = 'resources/css/project-workspace-v2.css';
     }

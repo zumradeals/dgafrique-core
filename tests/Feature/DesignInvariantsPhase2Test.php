@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
 use App\Models\Need;
+use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -105,9 +106,13 @@ final class DesignInvariantsPhase2Test extends TestCase
 
     public function test_projets_directory_shows_an_honest_empty_state(): void
     {
+        // Depuis l'addendum daté du 20 août 2026 (DESIGN-INVARIANTS.md §18), le portail Projets
+        // comble l'absence de données réelles par des cartes de démonstration (DEMO-FIRST,
+        // REAL-DATA-TAKES-OVER — voir ProjectsDirectoryDemoTest). L'état vide honnête reste donc
+        // vérifiable pour un domaine qu'aucune carte réelle ni carte d'exemple ne couvre.
         $this->signIn('IDN-P2-PROJETS-EMPTY');
 
-        $this->get('/projets')
+        $this->get('/projets?domain=HEALTH')
             ->assertOk()
             ->assertSee('Aucun projet visible');
     }
@@ -254,9 +259,9 @@ final class DesignInvariantsPhase2Test extends TestCase
     private function activateProgramMembership(string $reference): void
     {
         $body = str_repeat('Respect et transmission. ', 5);
-        $charter = \App\Models\ZumraCharter::query()->firstOrCreate(
+        $charter = ZumraCharter::query()->firstOrCreate(
             ['version' => '2026.1'],
-            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => \App\Models\ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
+            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
         );
         ZumraProgramMembership::query()->create([
             'core_identity_reference' => $reference,

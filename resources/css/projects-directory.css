@@ -1,0 +1,287 @@
+/* Portail Projets — refonte visuelle (docs/design/DESIGN-INVARIANTS.md §18).
+   Additif à dg.css : ne redéfinit aucun token, n'affecte aucune autre page. */
+
+.dg-projects-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+@media (min-width: 1100px) {
+    .dg-projects-layout {
+        grid-template-columns: minmax(0, 1fr) 300px;
+        gap: 28px;
+    }
+
+    .dg-projects-aside { position: sticky; top: 88px; }
+}
+
+/* ---------- Barre d'exploration ---------- */
+
+.dg-projects-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 22px;
+}
+
+.dg-projects-toolbar .dg-filters { margin-bottom: 0; flex: none; }
+
+.dg-projects-search-row {
+    flex: 1 1 320px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    padding: 18px 20px;
+    background: var(--dg-card);
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card);
+}
+
+.dg-projects-search {
+    flex: 1 1 220px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: var(--dg-touch-min);
+    padding: 0 14px;
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-control);
+    color: var(--dg-faint);
+    background: var(--dg-ivory);
+}
+
+.dg-projects-search[aria-disabled='true'] { cursor: not-allowed; }
+.dg-projects-search input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 14px;
+    color: var(--dg-ink);
+    outline: none;
+}
+.dg-projects-search input::placeholder { color: var(--dg-faint); }
+.dg-projects-search input[disabled] { cursor: not-allowed; }
+
+.dg-projects-view-toggle {
+    display: inline-flex;
+    flex: none;
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-control);
+    overflow: hidden;
+}
+
+.dg-projects-view-toggle button {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    min-height: var(--dg-touch-min);
+    border: 0;
+    background: var(--dg-card);
+    color: var(--dg-faint);
+    cursor: not-allowed;
+}
+
+.dg-projects-view-toggle button[aria-current='true'] {
+    background: var(--dg-tint-project);
+    color: var(--dg-night);
+}
+
+.dg-projects-sort {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--dg-muted);
+}
+
+.dg-projects-sort select {
+    min-height: var(--dg-touch-min);
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-control);
+    padding: 0 12px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--dg-ink);
+    background: var(--dg-card);
+}
+
+/* ---------- Section « Projets proposés » ---------- */
+
+.dg-projects-section-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.dg-projects-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 8px;
+    border-radius: var(--dg-radius-pill);
+    background: var(--dg-orange-soft, var(--dg-tint-decision));
+    color: var(--dg-orange-deep, var(--dg-saffron-ink));
+    font-size: 13px;
+    font-weight: 700;
+}
+
+/* ---------- Cartes projet ---------- */
+
+.dg-projects-card { display: flex; flex-direction: column; gap: 0; padding: 0; overflow: hidden; }
+
+.dg-projects-card__visual {
+    position: relative;
+    height: 132px;
+    display: grid;
+    place-items: center;
+    background: var(--dg-tint-project);
+    color: var(--dg-night);
+}
+.dg-projects-card__visual[data-domain='DIGITAL'] { background: var(--dg-tint-project); color: var(--dg-night); }
+.dg-projects-card__visual[data-domain='EDUCATION'] { background: var(--dg-tint-need); color: var(--dg-copper); }
+.dg-projects-card__visual[data-domain='ENVIRONMENT'],
+.dg-projects-card__visual[data-domain='SOCIAL'],
+.dg-projects-card__visual[data-domain='AGRICULTURE'] { background: var(--dg-tint-action); color: var(--dg-forest-action); }
+.dg-projects-card__visual[data-domain='HEALTH'],
+.dg-projects-card__visual[data-domain='CRAFT'],
+.dg-projects-card__visual[data-domain='CULTURE'],
+.dg-projects-card__visual[data-domain='OTHER'] { background: var(--dg-tint-decision); color: var(--dg-saffron-ink); }
+
+.dg-projects-card__mark {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--dg-radius-control);
+    background: rgba(255, 253, 247, .55);
+}
+
+.dg-projects-card__state {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 5px 10px;
+    border-radius: var(--dg-radius-pill);
+    background: rgba(255, 253, 247, .9);
+    color: var(--dg-ink);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.dg-projects-card__body { display: flex; flex-direction: column; gap: 12px; padding: 20px 22px 22px; }
+
+.dg-projects-card__title { font-size: 21px; line-height: 1.2; margin: 0; }
+.dg-projects-card__title a { color: inherit; }
+
+.dg-projects-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    font-size: 12.5px;
+    color: var(--dg-muted);
+}
+.dg-projects-card__meta span { display: inline-flex; align-items: center; gap: 5px; }
+
+.dg-projects-card__progress { display: flex; align-items: center; gap: 10px; }
+.dg-projects-card__progress .dg-maturity { flex: 1; }
+.dg-projects-card__progress-label {
+    flex: none;
+    font-family: var(--dg-font-mono);
+    font-size: 11px;
+    color: var(--dg-muted);
+}
+
+/* ---------- Aperçu de la communauté ---------- */
+
+.dg-projects-community {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px;
+}
+
+.dg-projects-stat {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--dg-line-inner);
+}
+.dg-projects-stat:last-of-type { border-bottom: 0; }
+
+.dg-projects-stat__mark {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--dg-radius-control);
+    background: var(--dg-tint-decision);
+    color: var(--dg-saffron-ink);
+}
+
+.dg-projects-stat__value { font-family: var(--dg-font-display); font-size: 24px; color: var(--dg-forest); line-height: 1; }
+.dg-projects-stat__label { font-size: 13px; color: var(--dg-ink); font-weight: 600; }
+.dg-projects-stat__delta { font-size: 11.5px; color: var(--dg-muted); }
+
+/* ---------- Bandeau inférieur ---------- */
+
+.dg-projects-footer {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0;
+    margin-top: 26px;
+    border: 1px solid var(--dg-line);
+    border-radius: var(--dg-radius-card);
+    background: var(--dg-card);
+    overflow: hidden;
+}
+
+.dg-projects-footer__item {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 24px;
+    color: inherit;
+    border-left: 1px solid var(--dg-line-inner);
+}
+.dg-projects-footer__item:first-child { border-left: 0; }
+
+.dg-projects-footer__mark {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--dg-radius-control);
+    background: var(--dg-tint-project);
+    color: var(--dg-night);
+}
+
+.dg-projects-footer__item strong { font-size: 14.5px; color: var(--dg-ink); }
+.dg-projects-footer__item span { font-size: 12.5px; line-height: 1.5; color: var(--dg-muted); }
+.dg-projects-footer__item em {
+    margin-top: 2px;
+    font-style: normal;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--dg-forest-action);
+}
+
+@media (max-width: 760px) {
+    .dg-projects-footer { grid-template-columns: 1fr; }
+    .dg-projects-footer__item { border-left: 0; border-top: 1px solid var(--dg-line-inner); }
+    .dg-projects-footer__item:first-child { border-top: 0; }
+}
+
+/* ---------- Voir plus ---------- */
+
+.dg-projects-more { display: flex; justify-content: center; margin-top: 8px; }

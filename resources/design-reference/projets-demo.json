@@ -1,0 +1,49 @@
+{
+  "__avertissement": "Contenu fictif à des fins de maquette uniquement. Jamais écrit dans les tables métier (dg_projects), jamais mélangé silencieusement aux données réelles. Le portail Projets applique la même règle DEMO-FIRST, REAL-DATA-TAKES-OVER que le Fil V2 (docs/design/handoffs/DG-AFRIQUE-FIL-V2-HANDOFF.md §9) : une carte de démonstration ne s'affiche que lorsqu'aucun projet réel visible n'existe encore pour son domaine, et uniquement en première page. Dès qu'un projet réel existe pour ce domaine, la carte de démonstration correspondante disparaît d'elle-même. Voir App\\Application\\Projects\\ProjectDirectoryDemoContent.",
+  "statistiques": {
+    "__demonstration": true,
+    "projets_proposes": "28",
+    "projets_proposes_delta": "+4 cette semaine",
+    "membres_impliques": "156",
+    "membres_impliques_delta": "+18 cette semaine",
+    "projets_en_cours": "07",
+    "projets_en_cours_delta": "+2 cette semaine",
+    "projets_realises": "11",
+    "projets_realises_delta": "+1 cette semaine"
+  },
+  "cards": [
+    {
+      "__demonstration": true,
+      "domain_slug": "DIGITAL",
+      "domain_label": "Numérique",
+      "icon": "device",
+      "name": "GAMAD Technology",
+      "summary": "Centre d’initiation informatique à Bouaké pour former les jeunes étudiants et ceux du secteur informel à l’utilisation des outils numériques.",
+      "location": "Bouaké, Côte d’Ivoire",
+      "created_label": "Créé le 18/08/2026",
+      "maturity": "EXPERIMENT"
+    },
+    {
+      "__demonstration": true,
+      "domain_slug": "EDUCATION",
+      "domain_label": "Éducation",
+      "icon": "book",
+      "name": "Bibliothèque Solidaire",
+      "summary": "Mettre à disposition des ressources éducatives et un espace de lecture pour les élèves et étudiants du quartier.",
+      "location": "Abidjan, Côte d’Ivoire",
+      "created_label": "Créé le 16/08/2026",
+      "maturity": "TEAM"
+    },
+    {
+      "__demonstration": true,
+      "domain_slug": "ENVIRONMENT",
+      "domain_label": "Environnement",
+      "icon": "leaf",
+      "name": "Ensemble pour la propreté",
+      "summary": "Mobiliser les jeunes pour des actions de sensibilisation et de nettoyage dans notre communauté.",
+      "location": "Yamoussoukro, Côte d’Ivoire",
+      "created_label": "Créé le 15/08/2026",
+      "maturity": "EXPLORATION"
+    }
+  ]
+}
