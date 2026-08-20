@@ -47,9 +47,9 @@ Avant merge d'une PR documentaire, exécuter ce contrôle local (et le porter en
 ```bash
 test ! -e docs/capacites/CAP-MASTER-TRACKER.md
 test ! -d docs/capacites/legacy/specs
-! find docs -type f -name '*.zip.b64.part*' -print -quit | grep -q .
-! grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md
-test -z "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | grep -Ev '^Status: (CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$')"
+test -z "$(find docs -type f -name '*.zip.b64.part*' -print -quit)"
+test -z "$(grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md || true)"
+test -z "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | grep -Ev '^Status: (CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$' || true)"
 ```
 
 Toute nouvelle preuve sous `docs/capacites/proofs/` est interdite par revue : ce répertoire est figé en quarantaine jusqu'à décision de suppression complète.
