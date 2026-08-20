@@ -21,7 +21,7 @@ Ne pas créer :
 - une preuve datée destinée à devenir une source permanente d'état ;
 - une archive ZIP/Base64 découpée dans `docs/` pour conserver de l'historique ;
 - une nouvelle maquette déclarée autorité sans décision explicite sur les invariants ;
-- un statut « CLOSED » uniquement parce qu'une spec ou une ancienne preuve l'affirme.
+- un statut `CLOSED` uniquement parce qu'une spec ou une ancienne preuve l'affirme.
 
 Git est l'archive historique. Le dépôt courant doit rester un espace de travail, pas un entrepôt de snapshots.
 
@@ -29,7 +29,7 @@ Git est l'archive historique. Le dépôt courant doit rester un espace de travai
 
 - lire `docs/AI-HANDOFF.md` ;
 - lire l'entrée du CAP dans `CAPABILITY-INDEX.md` et `CAPABILITY-COVERAGE.md` ;
-- inspecter les modèles, services, contrôleurs, routes, migrations et tests concernés ;
+- inspecter modèles, services, contrôleurs, routes, migrations et tests concernés ;
 - lire la spec concernée si elle existe ;
 - pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
 - pour UI/navigation, lire `docs/design/DESIGN-INVARIANTS.md`.
@@ -37,6 +37,19 @@ Git est l'archive historique. Le dépôt courant doit rester un espace de travai
 ## Après une modification qui change la couverture
 
 Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne pas modifier le titre canonique d'une capacité dans l'index pour encoder son statut (`[PLUS TARD]`, `[FAIT]`, etc.).
+
+## Garde-fou mécanique DOC-001
+
+La CI documentaire doit au minimum échouer si :
+
+- `docs/capacites/CAP-MASTER-TRACKER.md` réapparaît ;
+- un fichier `docs/capacites/legacy/specs/*` réapparaît ;
+- un fragment `*.zip.b64.part*` est ajouté sous `docs/` ;
+- `CAPABILITY-INDEX.md` contient `[PLUS TARD]`, `[FAIT]`, `[CLOSED]` ou un autre statut d'avancement dans un titre ;
+- `CAPABILITY-COVERAGE.md` utilise un statut hors de la liste `CLOSED`, `PARTIAL`, `NOT_IMPLEMENTED`, `DOC_ONLY`, `DEPENDENCY_BLOCKED` ;
+- une seconde occurrence de fichier de type tracker CAP est ajoutée sans décision explicite.
+
+Le garde-fou peut être implémenté par script shell/PHP simple : il ne doit pas inventer l'état des CAP, seulement empêcher le retour des formes documentaires interdites.
 
 ## IA et mutations métier
 
