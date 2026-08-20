@@ -41,6 +41,7 @@ Avant merge d'une PR documentaire, exécuter ce contrôle local :
 test "$(find docs/capacites -maxdepth 1 -type f -name '*MASTER*TRACKER*' | wc -l)" -eq 0
 test ! -d docs/capacites/legacy/specs
 test "$(find docs -type f -name '*.b64.part*' | wc -l)" -eq 0
+test "$(grep '^| CAP-' docs/capacites/CAPABILITY-INDEX.md | wc -l)" -eq 84
 test "$(grep '^## CAP-' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
 test "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
 awk '/^\| CAP-/ && ($0 ~ /\[PLUS TARD\]/ || $0 ~ /\[FAIT\]/ || $0 ~ /\[CLOSED\]/ || $0 ~ /\[PARTIAL\]/ || $0 ~ /\[NOT_IMPLEMENTED\]/ || $0 ~ /\[DOC_ONLY\]/ || $0 ~ /\[DEPENDENCY_BLOCKED\]/) { bad=1 } END { exit bad }' docs/capacites/CAPABILITY-INDEX.md
