@@ -75,5 +75,52 @@
             <circle cx="12" cy="12" r="3.6" {!! $stroke !!} />
             <circle cx="17" cy="7" r=".9" fill="currentColor" stroke="none" />
             @break
+        @case('device')
+            <rect x="3.5" y="5" width="17" height="11" rx="2" {!! $stroke !!} />
+            <path d="M8.5 20h7M12 16v4" {!! $stroke !!} />
+            <path d="M7.5 9h5M7.5 12h3.5" {!! $stroke !!} />
+            @break
+        @case('book')
+            <path d="M12 6.3c-1.6-1.2-3.6-1.8-6-1.8v13c2.4 0 4.4.6 6 1.8 1.6-1.2 3.6-1.8 6-1.8v-13c-2.4 0-4.4.6-6 1.8Z" {!! $stroke !!} />
+            <path d="M12 6.3v13" {!! $stroke !!} />
+            @break
+        @case('leaf')
+            <path d="M6 19c-1.6-5.6.8-11 9.5-12.7C17 12.6 13.7 17.7 6 19Z" {!! $stroke !!} />
+            <path d="M6 19c1-3.6 3-6.5 8-9.4" {!! $stroke !!} />
+            @break
+        @case('target')
+            <circle cx="12" cy="12" r="8" {!! $stroke !!} />
+            <circle cx="12" cy="12" r="4" {!! $stroke !!} />
+            <circle cx="12" cy="12" r=".6" fill="currentColor" stroke="none" />
+            @break
+        @case('check-circle')
+            <circle cx="12" cy="12" r="8" {!! $stroke !!} />
+            <path d="M8.3 12.3 11 15l4.7-5.6" {!! $stroke !!} />
+            @break
+        @case('grid')
+            <rect x="4" y="4" width="7" height="7" rx="1.5" {!! $stroke !!} />
+            <rect x="13" y="4" width="7" height="7" rx="1.5" {!! $stroke !!} />
+            <rect x="4" y="13" width="7" height="7" rx="1.5" {!! $stroke !!} />
+            <rect x="13" y="13" width="7" height="7" rx="1.5" {!! $stroke !!} />
+            @break
+        @case('list')
+            <path d="M8.5 6.5h11M8.5 12h11M8.5 17.5h11" {!! $stroke !!} />
+            <path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" />
+            @break
+        @case('compass')
+            <circle cx="12" cy="12" r="8.5" {!! $stroke !!} />
+            <path d="M14.8 9.2 13 13l-3.8 1.8L11 11l3.8-1.8Z" {!! $stroke !!} />
+            @break
+        @case('spark')
+            <path d="M12 4v4M12 16v4M4 12h4M16 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8" {!! $stroke !!} />
+            @break
+        @case('star')
+            <path d="M12 3.6 14.3 9l5.9.5-4.5 3.9 1.4 5.8L12 16.1l-5.1 3.1 1.4-5.8L3.8 9.5 9.7 9Z" {!! $stroke !!} stroke-linejoin="round" />
+            @break
+        @case('brain')
+            <path d="M9.3 4.6c-1.9 0-3.4 1.5-3.4 3.3 0 .4.06.8.2 1.1-1.2.5-2 1.7-2 3 0 1.1.6 2.1 1.5 2.7-.2.4-.3.9-.3 1.4 0 1.8 1.5 3.3 3.3 3.3.3 0 .6 0 .9-.1.4 1 1.4 1.7 2.5 1.7V6.1c0-.8-.9-1.5-2.7-1.5Z" {!! $stroke !!} />
+            <path d="M14.7 4.6c1.9 0 3.4 1.5 3.4 3.3 0 .4-.06.8-.2 1.1 1.2.5 2 1.7 2 3 0 1.1-.6 2.1-1.5 2.7.2.4.3.9.3 1.4 0 1.8-1.5 3.3-3.3 3.3-.3 0-.6 0-.9-.1-.4 1-1.4 1.7-2.5 1.7V6.1c0-.8.9-1.5 2.7-1.5Z" {!! $stroke !!} />
+            <path d="M12 6.8v14M8.3 10.2c.8.3 1.6.3 2.4 0M13.3 10.2c.8.3 1.6.3 2.4 0M7.8 14.6c.8.3 1.7.3 2.5 0M13.7 14.6c.8.3 1.7.3 2.5 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7" />
+            @break
     @endswitch
 </svg>

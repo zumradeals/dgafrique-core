@@ -18,6 +18,14 @@ disparaissent dès qu'un objet réel apparaît. **Ceci modifie l'invariant préc
 tout contenu de démonstration du Fil pour un utilisateur connecté ; le changement est assumé et
 documenté, pas silencieux.
 
+`projets-demo.json` est un quatrième fichier de fixtures, introduit pour le portail Projets (voir
+l'addendum daté du 20 août 2026 dans `docs/design/DESIGN-INVARIANTS.md` §18) : des statistiques
+d'orientation réseau (« Aperçu de la communauté ») et jusqu'à trois cartes de projet d'exemple
+(dont « GAMAD Technology »), sous la même règle **DEMO-FIRST, REAL-DATA-TAKES-OVER** que le Fil
+V2 — chaque carte de démonstration ne s'affiche, domaine par domaine, que tant qu'aucun projet
+réel visible n'existe pour ce domaine, et disparaît dès qu'un projet réel apparaît. Chargé et
+filtré par `App\Application\Projects\ProjectDirectoryDemoContent`, jamais lu directement par la vue.
+
 Règles, conformes à `docs/design/DESIGN-INVARIANTS.md` §11 et à son addendum §17 :
 
 - Ces fichiers ne sont **jamais** seedés dans les tables métier (`database/seeders/DatabaseSeeder.php`
@@ -30,5 +38,9 @@ Règles, conformes à `docs/design/DESIGN-INVARIANTS.md` §11 et à son addendum
   suffixe **« · EXEMPLE »** sur son badge et désactive toutes ses actions (aucune n'est
   rattachée à un objet réel), avec la raison accessible « Objet de démonstration — aucune
   action réelle n'est rattachée. ».
+- `projets-demo.json` n'est lu que par le portail Projets (`resources/views/projects/index.blade.php`
+  via `ProjectDirectoryDemoContent`), et uniquement en l'absence de projet réel visible pour le
+  domaine de la carte — même suffixe **« · Exemple »**, mêmes actions désactivées avec la même
+  raison accessible, mêmes statistiques réseau annoncées **« · Exemple »**.
 - Mon espace n'affiche toujours aucun contenu de démonstration : ces écrans restent réels ou
   à état vide honnête.

@@ -264,3 +264,67 @@ affichage).
 **Référence visuelle** : maquette + correctifs fonctionnels fournis par le demandeur le
 19 août 2026 (transmis en conversation, non archivés dans `docs/design/reference/` ; handoff
 complet dans `docs/design/handoffs/DG-AFRIQUE-FIL-V2-HANDOFF.md`).
+
+## 18. Addendum daté — Portail Projets (20 août 2026)
+
+**Portée : écran Projets uniquement** (`resources/views/projects/index.blade.php`,
+`app/Http/Controllers/ProjectController.php`, `app/Application/Projects/ProjectDirectoryDemoContent.php`).
+Ce changement suit la procédure de gouvernance du §14.
+
+**Invariant concerné** : §11 (les fixtures « Exemple » étaient jusqu'ici réservées à la landing et
+au Fil) et révise, pour cet écran, l'énoncé implicite selon lequel Besoins/Projets/Personnes/ZUMRA
+n'affichent que des données réelles ou un état vide honnête — comme le Fil V2 (§17) l'avait déjà
+fait pour le Fil.
+
+**Problème utilisateur justifiant le changement** : une maquette a été fournie pour le portail
+Projets, avec une demande produit explicite : DG Afrique est encore en construction, et le réseau
+réel ne contient aujourd'hui aucun projet publié (ni même le projet « GAMAD Technology » cité en
+exemple, absent de toute table métier ou seed existant — vérifié avant implémentation). Plutôt que
+d'inventer une fausse donnée Core pour « GAMAD Technology », ou de montrer un écran vide alors que
+la maquette montre volontairement plusieurs projets, la même règle **DEMO-FIRST,
+REAL-DATA-TAKES-OVER** que le Fil V2 est appliquée ici, avec un raffinement : domaine par domaine
+plutôt qu'à l'échelle de tout l'écran, pour rester fidèle au scénario explicitement demandé
+(« si la base réelle ne contient que GAMAD Technology, conserve GAMAD Technology comme projet réel
+et complète l'écran avec des projections pour les autres »).
+
+**Ce qui change** :
+- le portail Projets peut désormais afficher jusqu'à trois cartes d'exemple (dont « GAMAD
+  Technology », « Bibliothèque Solidaire », « Ensemble pour la propreté » — voir
+  `resources/design-reference/projets-demo.json`), chacune marquée **« · Exemple »** sur son
+  badge de domaine, **uniquement lorsqu'aucun projet réel visible n'existe pour le domaine de la
+  carte** et seulement en première page (`page=1`) — dès qu'un projet réel existe pour ce domaine,
+  il prend le pas et la carte d'exemple correspondante disparaît d'elle-même
+  (`ProjectDirectoryDemoContent::demoCards()`) ;
+- une carte d'exemple ne porte **aucune action câblée** : ses trois actions (« Ouvrir le
+  Cerveau », « Trouver des capacités », « Dossier ») restent visuellement présentes mais
+  désactivées, avec la raison accessible « Objet de démonstration — aucune action réelle n'est
+  rattachée. » (conforme au §13 — jamais un faux backend pour satisfaire une maquette) ;
+- un panneau « Aperçu de la communauté » affiche quatre compteurs réseau de démonstration
+  (projets proposés/membres impliqués/projets en cours/projets réalisés), également issus de
+  `projets-demo.json` et annoncés **« · Exemple »** — aucun agrégat métier réel n'existe
+  aujourd'hui pour ces quatre compteurs ;
+- ces cartes et compteurs ne sont jamais écrits dans `dg_projects` ni aucune autre table métier,
+  jamais seedés (`database/seeders/DatabaseSeeder.php` reste intentionnellement vide), et restent
+  gouvernés par le §11 (marquage Exemple obligatoire, pas de faux compteurs de traction) ;
+- la maturité d'un projet (CAP-017) continue de **ne jamais** s'afficher comme un pourcentage, y
+  compris sur ces cartes de démonstration : la maquette montre une barre de progression chiffrée
+  (« 45 % »), reproduite ici par `x-dg.maturity` (repères en pointillés) accompagné du libellé du
+  repère courant plutôt que d'un chiffre — voir `docs/design/DIFFERENCES.md`.
+
+**Ce qui ne change pas** : Mon espace continue de n'afficher aucun contenu de démonstration (§10
+sans exception) ; §7 (une priorité dominante) et §8 (pas de mécaniques de popularité) restent
+pleinement en vigueur — aucune carte n'affiche de likes, d'abonnés ou de classement. Le formulaire
+de filtre par domaine (`method="GET" class="dg-filters"`) garde exactement son contrat et son test
+existants.
+
+**Compatibilité vérifiée** : doctrine (démonstration jamais confondue avec du réel — badge
+« · Exemple » + actions désactivées avec raison, exactement le contrat du Fil V2), accessibilité
+(`aria-disabled`, raisons de désactivation lisibles au clavier/lecteur d'écran, alternatives
+textuelles sur les icônes décoratives), mobile (grille à une carte par ligne, panneau communauté
+repositionné sous la grille, testé aux viewports 390×844 et 430×932), sécurité (fixtures JSON
+statiques servies en lecture seule, aucune écriture déclenchée par leur affichage, aucune nouvelle
+surface serveur).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/projects/index.blade.php` et `resources/css/projects-directory.css`).

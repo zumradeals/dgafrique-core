@@ -15,6 +15,7 @@ export default defineConfig({
                 'resources/css/auth-v2.css',
                 'resources/css/fil-v2.css',
                 'resources/css/project-workspace-v2.css',
+                'resources/css/projects-directory.css',
                 'resources/js/app.js',
             ],
             refresh: true,
