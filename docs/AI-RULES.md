@@ -56,6 +56,17 @@ Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fic
 
 Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
 
+## Checklist de clôture DOC-001
+
+Une régularisation documentaire n'est terminée que si :
+
+- le code n'a pas été modifié pour « faire correspondre » artificiellement une vieille documentation ;
+- tout statut modifié dans `CAPABILITY-COVERAGE.md` est soutenu par du code courant inspecté ;
+- aucun tracker concurrent, spec legacy active ou archive opaque n'a été réintroduit ;
+- les documents historiques restants sont explicitement marqués comme tels ;
+- les liens vers des fichiers supprimés ont été retirés des points d'entrée actifs ;
+- la PR reste documentaire et son diff peut être relu sans dépendre d'une mémoire de conversation externe.
+
 ## IA et mutations métier
 
 Une IA peut analyser, proposer et préparer un brouillon. Elle ne doit pas contourner les confirmations humaines prévues par le domaine. Project Brain suit déjà : conversation → proposition structurée → brouillon → confirmation humaine → service métier.
