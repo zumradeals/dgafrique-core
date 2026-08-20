@@ -12,6 +12,6 @@ Avant toute intervention, lire `../AI-RULES.md`.
 
 ## Historique
 
-Git est l'archive. Les anciens trackers, doublons, preuves ponctuelles de chantier et anciennes specs ne doivent pas être restaurés dans l'arbre courant pour « garder une trace » : cette trace existe déjà dans l'historique Git.
+Git est l'archive. Les anciens trackers, doublons et anciennes specs ne doivent pas être restaurés dans l'arbre courant pour « garder une trace » : cette trace existe déjà dans l'historique Git.
 
-Une preuve datée peut être utile pendant une livraison, mais elle ne doit jamais devenir une autorité concurrente au code ou à `CAPABILITY-COVERAGE.md`.
+Le répertoire `proofs/` contient encore des snapshots de preuve produits pendant le bootstrap historique. **Ils sont dépréciés comme autorité et ne doivent jamais être utilisés pour déduire l'état courant.** Leur suppression physique est traitée séparément afin de ne pas mélanger nettoyage d'autorité et éventuels besoins d'audit externe. Toute nouvelle preuve doit vivre dans la PR, les tests ou les journaux CI, pas comme nouveau snapshot permanent sous `docs/capacites/proofs/`.
