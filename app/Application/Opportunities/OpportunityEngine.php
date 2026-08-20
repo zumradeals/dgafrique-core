@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Opportunities;
 
+use App\Application\Missions\MissionVisibilityService;
 use App\Models\CapabilityStatement;
 use App\Models\Mission;
 use App\Models\PersonProfile;
@@ -12,10 +13,16 @@ use App\Models\PersonProfile;
  * CAP-064 — transforme les objets métier déjà existants en possibilités d'action
  * explicables. Une opportunité est une projection : elle n'assigne personne,
  * ne mute aucun objet métier et ne produit aucun score de valeur humaine.
+ *
+ * La visibilité déclarée d'une Mission (PUBLIC/PROGRAM) n'est jamais suffisante à elle
+ * seule : chaque candidate est revalidée par MissionVisibilityService::canViewMission(),
+ * la même intersection contexte×visibilité que le reste du domaine Missions.
  */
 final class OpportunityEngine
 {
     private const MAX_RESULTS = 20;
+
+    public function __construct(private readonly MissionVisibilityService $visibility) {}
 
     /**
      * @return list<array{
@@ -38,11 +45,13 @@ final class OpportunityEngine
             return [];
         }
 
+        // Les capacités PRIVATE consenties (matching_consent) restent utilisables pour les
+        // opportunités de la personne elle-même : VISIBILITY_DISCOVERABLE ne gouverne que la
+        // découvrabilité PAR AUTRUI (cf. PersonRecommendationEngine sur les capacités du viewer).
         $statements = CapabilityStatement::query()
             ->where('core_identity_reference', $identityReference)
             ->whereNull('archived_at')
             ->where('matching_consent', true)
-            ->where('visibility', CapabilityStatement::VISIBILITY_DISCOVERABLE)
             ->get();
 
         if ($statements->isEmpty()) {
@@ -66,6 +75,10 @@ final class OpportunityEngine
 
         $results = [];
         foreach ($missions as $mission) {
+            if (! $this->visibility->canViewMission($mission, $identityReference)) {
+                continue;
+            }
+
             $reasons = $mission->capabilityRequirements
                 ->pluck('label')
                 ->filter()

@@ -3,32 +3,33 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountRegistrationController;
-use App\Http\Controllers\GatewayController;
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\Administration\ProfileConfigurationController;
-use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
-use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
-use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
-use App\Http\Controllers\Administration\RecommendationConfigurationController;
-use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
+use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
+use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ProjectConfigurationController;
 use App\Http\Controllers\Administration\ProjectMatchingConfigurationController;
+use App\Http\Controllers\Administration\RecommendationConfigurationController;
+use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
+use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
+use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
+use App\Http\Controllers\GatewayController;
+use App\Http\Controllers\LandingController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
-use App\Http\Controllers\ZumraSpaceController;
-use App\Http\Controllers\ZumraProgramMembershipController;
-use App\Http\Controllers\ZumraMembershipPaymentController;
-use App\Http\Controllers\ZumraCardController;
-use App\Http\Controllers\PeopleDiscoveryController;
-use App\Http\Controllers\RecommendationController;
-use App\Http\Controllers\ZumraGroupController;
-use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\NeedController;
+use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
+use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ZumraCardController;
+use App\Http\Controllers\ZumraCollectiveCapabilityController;
+use App\Http\Controllers\ZumraGroupController;
+use App\Http\Controllers\ZumraMembershipPaymentController;
+use App\Http\Controllers\ZumraProgramMembershipController;
+use App\Http\Controllers\ZumraSpaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', GatewayController::class)->name('gateway');
@@ -62,6 +63,8 @@ Route::post('/recommandations/personnes/{reference}/masquer', [RecommendationCon
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.hide');
 Route::post('/recommandations/personnes/{reference}/restaurer', [RecommendationController::class, 'restore'])
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.restore');
+Route::get('/opportunites', [OpportunityController::class, 'index'])
+    ->middleware(['core.member', 'throttle:opportunities'])->name('opportunities.index');
 Route::get('/besoins', [NeedController::class, 'index'])->middleware('core.member')->name('needs.index');
 Route::get('/besoins/exprimer', [NeedController::class, 'create'])->middleware('core.member')->name('needs.create');
 Route::post('/besoins', [NeedController::class, 'store'])->middleware(['core.member', 'throttle:need-write'])->name('needs.store');
