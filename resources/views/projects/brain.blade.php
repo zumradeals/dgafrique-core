@@ -1,24 +1,130 @@
+{{--
+    Cerveau du Projet — refonte visuelle V1 (PVB-I05, docs/design/DESIGN-INVARIANTS.md addendum
+    §20), fidèle à la maquette du 20 août 2026. Rejoint enfin la navigation globale DG Afrique
+    (x-dg.shell) et le langage visuel de /projets et /projets/{project} : le Cerveau ne doit plus
+    sembler appartenir à un autre produit.
+
+    Le moteur n'est pas touché : conversation, brouillons (ProjectBrainDraft) et leur confirmation
+    obligatoire (projects.brain.needs.confirm / .drafts.cancel) restent exactement ceux de
+    ProjectBrainNeedDraftService — aucune mutation Core silencieuse.
+--}}
+@php
+    $statusLabels = ['PROPOSED' => 'Proposé', 'ADOPTED' => 'Adopté', 'IN_PROGRESS' => 'En action', 'COMPLETED' => 'Réalisé'];
+@endphp
 <x-layouts.portal title="Cerveau — {{ $project->name }} — DG Afrique">
-<style>
-:root{--pw-navy:#061a36;--pw-navy2:#0b2749;--pw-blue:#356cff;--pw-purple:#643cff;--pw-line:#e1e6ef;--pw-muted:#65718a;--pw-green:#0c9b58;--pw-soft:#f7f9fd}.pw{min-height:calc(100vh - 64px);background:#fff;color:#111827;font-family:Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}.pw-top{height:64px;background:linear-gradient(90deg,#071a35,#06152c);color:#fff;display:grid;grid-template-columns:308px 1fr 420px;align-items:center;position:sticky;top:0;z-index:30}.pw-brand{display:flex;align-items:center;gap:13px;padding:0 20px;font-weight:800}.pw-logo{width:38px;height:38px;border-radius:12px;background:#163252;display:grid;place-items:center;font-size:21px}.pw-selected{display:flex;align-items:center;gap:12px;font-size:13px}.pw-selected strong{font-size:15px}.pw-search{justify-self:center;width:min(440px,70%);border:1px solid #3a4d68;border-radius:9px;padding:10px 14px;color:#dce6f7}.pw-user{display:flex;justify-content:flex-end;align-items:center;gap:16px;padding-right:24px}.pw-avatar{width:34px;height:34px;border-radius:50%;background:#d9e1ec;display:grid;place-items:center;font-weight:800;color:#17304f}.pw-grid{display:grid;grid-template-columns:308px minmax(620px,1fr) 420px;min-height:calc(100vh - 122px)}.pw-left{background:linear-gradient(180deg,#0b213e,#06182f);color:#fff;padding:18px;border-right:1px solid #142d4d}.pw-kicker{font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase}.pw-new{display:block;background:linear-gradient(90deg,#4a80ff,#3769f4);border-radius:8px;padding:13px;text-align:center;margin:15px 0;color:#fff;text-decoration:none;font-weight:700}.pw-filter{border:1px solid #304764;border-radius:8px;padding:10px 12px;color:#b8c7dc;margin-bottom:14px}.pw-project{border-top:1px solid rgba(255,255,255,.11);padding:13px 8px}.pw-project.active{border-left:3px solid #4c82ff;background:rgba(65,110,185,.08)}.pw-project-title{display:flex;justify-content:space-between;gap:8px;font-weight:700}.pw-badge{font-size:11px;padding:3px 8px;border-radius:999px;background:#0f694d;color:#d9fff0}.pw-conv{margin:9px 0 0 15px;padding:8px 10px;border-radius:7px;color:#dce7f7;font-size:13px}.pw-conv.current{background:#173b69;color:#8fb8ff}.pw-ai{position:sticky;bottom:0;margin-top:28px;padding:13px 4px;color:#fff;font-size:13px}.pw-main{display:flex;flex-direction:column;min-width:0;background:#fff}.pw-main-head{height:88px;padding:18px 28px;border-bottom:1px solid var(--pw-line);display:flex;align-items:center;justify-content:space-between}.pw-brain-title{display:flex;gap:14px;align-items:center}.pw-brain-icon{font-size:34px;color:var(--pw-purple)}.pw-brain-title h1{font-size:18px;margin:0}.pw-sub{font-size:13px;color:var(--pw-muted);margin-top:5px}.pw-mode{border:1px solid var(--pw-line);padding:10px 14px;border-radius:9px;font-size:13px}.pw-thread{padding:22px 26px 16px;display:flex;flex-direction:column;gap:15px}.pw-msg{max-width:78%;padding:14px 18px;border-radius:12px;line-height:1.55;font-size:14px}.pw-msg.user{align-self:flex-end;background:#e5edff;border-top-right-radius:2px}.pw-msg.assistant,.pw-msg.system{align-self:flex-start;background:#fff;border:1px solid var(--pw-line);box-shadow:0 1px 2px rgba(18,38,63,.04)}.pw-msg.system{background:#f7f9fc;color:#536078;font-size:12px}.pw-draft{border:1px solid #dce3ef;border-radius:10px;box-shadow:0 2px 7px rgba(20,42,70,.06);overflow:hidden}.pw-draft-head{padding:11px 14px;border-bottom:1px solid var(--pw-line);font-size:12px;font-weight:800;color:#315cf5}.pw-draft-body{display:grid;grid-template-columns:44px 1fr auto;gap:14px;padding:14px;align-items:start}.pw-draft-icon{width:42px;height:42px;border-radius:8px;background:#eef0ff;display:grid;place-items:center;font-size:22px}.pw-draft h3{margin:0 0 5px;font-size:14px}.pw-draft p{margin:0;color:#4f5e77;font-size:12px;line-height:1.45}.pw-meta{display:flex;gap:28px;margin-top:12px;font-size:11px}.pw-actions{display:flex;gap:8px;align-items:center}.pw-btn{border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;background:#edf2ff;color:#234fe5}.pw-btn.green{background:#e6f7ed;color:#08763f}.pw-btn.ghost{background:#f3f5f9;color:#253047}.pw-compose{margin:0 26px 18px;border:1px solid #bdcbe5;border-radius:12px;padding:12px 14px}.pw-compose textarea{border:0;outline:0;resize:none;width:100%;min-height:50px;font:inherit}.pw-compose-row{display:flex;justify-content:space-between;align-items:center;color:#73809a;font-size:12px}.pw-send{width:40px;height:40px;border-radius:50%;border:0;background:linear-gradient(135deg,#315df7,#753bff);color:#fff;font-size:20px}.pw-mantra{text-align:center;color:#64738d;font-size:12px;padding-bottom:12px}.pw-right{border-left:1px solid var(--pw-line);padding:20px;background:#fff}.pw-right h2{font-size:15px;margin:0 0 18px}.pw-section{margin:0 0 24px}.pw-section-title{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;margin-bottom:10px}.pw-link{color:#2763ee;font-weight:500}.pw-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.pw-stat,.pw-card,.pw-empty{border:1px solid var(--pw-line);border-radius:9px;padding:12px;background:#fff}.pw-stat small{color:#65718a}.pw-stat strong{display:block;margin-top:8px}.pw-need{font-size:13px}.pw-need small{display:block;color:#65718a;margin-top:5px}.pw-empty{text-align:center;color:#71809a;font-size:12px;line-height:1.5;background:#fbfcfe}.pw-opportunity{background:#effbf3;border:1px solid #cbeed7;border-radius:9px;padding:13px;font-size:12px}.pw-bottom{height:58px;position:sticky;bottom:0;background:#fff;border-top:1px solid var(--pw-line);display:flex;align-items:center;justify-content:space-around;z-index:20;font-size:13px}.pw-bottom a{color:#263650;text-decoration:none}.pw-bottom .active{background:#eef1ff;color:#315cf5;padding:10px 18px;border-radius:8px}.pw-seed{font-size:10px;color:#8b96aa;margin-top:4px}@media(max-width:1180px){.pw-top{grid-template-columns:250px 1fr}.pw-user{display:none}.pw-grid{grid-template-columns:250px 1fr}.pw-right{display:none}}@media(max-width:760px){.pw-top{grid-template-columns:1fr;height:58px}.pw-brand{justify-content:space-between}.pw-selected,.pw-search{display:none}.pw-grid{display:block}.pw-left{display:none}.pw-main-head{height:auto;padding:14px}.pw-thread{padding:14px}.pw-msg{max-width:94%}.pw-compose{margin:0 14px 14px}.pw-bottom{overflow:auto;justify-content:flex-start;gap:22px;padding:0 16px}}
-</style>
-<div class="pw">
-<header class="pw-top"><div class="pw-brand"><span class="pw-logo">🌍</span><span>DG<br><small>AFRIQUE</small></span><span style="margin-left:auto">☰</span></div><div class="pw-selected"><span>Projet sélectionné<br><strong>{{ $project->name }}</strong></span><span class="pw-badge">● Actif</span><div class="pw-search">⌕ &nbsp; Rechercher (projets, personnes, besoins...) <span style="float:right">Ctrl + K</span></div></div><div class="pw-user"><span>🔔</span><span>▢</span><span class="pw-avatar">{{ mb_substr($identity['display_name'] ?? 'Z',0,1) }}</span><span><strong>{{ $identity['display_name'] ?? 'Zakaria Koné' }}</strong><br><small>Responsable du projet</small></span>⌄</div></header>
-<div class="pw-grid">
-<aside class="pw-left"><div class="pw-kicker">⚑ Projets & conversations</div><a class="pw-new" href="{{ route('projects.create') }}">＋ Nouveau projet</a><div class="pw-filter">⌁ &nbsp; Filtrer les projets...</div>@foreach($visibleProjects as $candidate)<div class="pw-project {{ $candidate->id===$project->id?'active':'' }}"><a href="{{ route('projects.brain.show',$candidate) }}" style="color:inherit;text-decoration:none"><div class="pw-project-title"><span>▣ {{ $candidate->name }}</span><span class="pw-badge">{{ $candidate->id===$project->id?'Actif':(mb_strtolower($candidate->status)==='proposed'?'En cours':'Actif') }}</span></div></a>@if($candidate->id===$project->id)<div class="pw-conv current">▢ &nbsp; Conversation actuelle <span style="float:right">10:42</span></div><div class="pw-conv">▢ &nbsp; Financement & Apports <span style="float:right">Hier</span></div><div class="pw-conv">▢ &nbsp; Équipement & Matériel <span style="float:right">2 j</span></div><div class="pw-conv">▢ &nbsp; Local & Aménagement <span style="float:right">5 j</span></div>@else<div class="pw-conv">{{ ($candidate->id % 3)+1 }} conversations</div>@endif</div>@endforeach
-@php($seedProjects=['Coopérative Maraîchère'=>'En cours','Transformation Manioc'=>'Actif','Centre de Formation'=>'En pause','Projet Elevage Porcin'=>'En cours'])
-@foreach($seedProjects as $seedName=>$seedStatus)<div class="pw-project"><div class="pw-project-title"><span>▣ {{ $seedName }}</span><span class="pw-badge">{{ $seedStatus }}</span></div><div class="pw-conv">{{ (strlen($seedName)%3)+1 }} conversations</div></div>@endforeach<div class="pw-project" style="margin-top:12px">▣ Projets archivés <span style="float:right">8</span></div><div class="pw-ai">🧠 <strong>IA opérationnelle</strong><br><small style="color:#6fe5a8">● En ligne</small></div></aside>
-<main class="pw-main"><div class="pw-main-head"><div class="pw-brain-title"><span class="pw-brain-icon">🧠</span><div><h1>CERVEAU DU PROJET <span style="background:#7048ff;color:#fff;border-radius:5px;padding:2px 7px;font-size:10px">BETA</span></h1><div class="pw-sub">Votre assistant stratégique pour réaliser ce projet</div></div></div><div><span style="font-size:12px;color:#63708a">Mode</span> <span class="pw-mode">Collaboratif⌄</span> ⚙</div></div>
-@if(session('status'))<div style="padding:10px 26px;background:#f4f8ff;color:#41516c;font-size:12px">{{ session('status') }}</div>@endif
-<section class="pw-thread">@if($messages->isEmpty())<div class="pw-msg assistant">Bonjour. Parlons du projet naturellement. Je peux réfléchir avec vous et proposer des actions, mais vous gardez toujours la décision finale.</div>@endif
-@foreach($messages as $message)<div class="pw-msg {{ mb_strtolower($message->role) }}">{{ $message->content }}</div>@if(($message->meta['draft_reference']??null)&&($draft=$drafts->get($message->meta['draft_reference'])))@php($p=$draft->payload)<div class="pw-draft"><div class="pw-draft-head">▣ &nbsp; BROUILLONS PROPOSÉS <span style="color:#7c879c;font-weight:400">(en attente de votre confirmation)</span></div><div class="pw-draft-body"><div class="pw-draft-icon">🛒</div><div><h3>{{ $p['title'] }}</h3><p>{{ $p['context'] }}</p><div class="pw-meta"><span>Catégorie<br><strong>{{ $needConfiguration['categories'][$p['category']]??$p['category'] }}</strong></span><span>Lieu<br><strong>{{ $p['location']??'—' }}</strong></span><span>Mode<br><strong>{{ $p['collaboration_mode'] }}</strong></span><span>Estimation<br><strong>—</strong></span></div></div><div class="pw-actions"><form method="POST" action="{{ route('projects.brain.needs.confirm',[$project,$draft]) }}">@csrf<button class="pw-btn green">Créer ce besoin</button></form><form method="POST" action="{{ route('projects.brain.drafts.cancel',[$project,$draft]) }}">@csrf<button class="pw-btn ghost">Pas maintenant</button></form></div></div></div>@endif@endforeach
-<div class="pw-draft"><div class="pw-draft-head" style="color:#07934f">☑ &nbsp; ACTIONS EN ATTENTE DE VOTRE VALIDATION</div><div class="pw-draft-body"><div class="pw-draft-icon" style="background:#eaf8ef">👥</div><div><h3>Créer une équipe projet (minimum 3 personnes)</h3><p>Rôles recommandés : Responsable, Technicien, Formateur</p><div class="pw-seed">Projection seed — futur module équipe</div></div><div class="pw-actions"><button class="pw-btn green" type="button">Valider</button><button class="pw-btn ghost" type="button">Modifier</button></div></div></div></section>
-<form class="pw-compose" method="POST" action="{{ route('projects.brain.needs.prepare',$project) }}">@csrf<textarea name="message" required minlength="2" maxlength="3000" placeholder="Parlez au Cerveau de votre projet...">{{ old('message') }}</textarea><div class="pw-compose-row"><span>🎙 &nbsp; 🖼 &nbsp; ▣</span><button class="pw-send" type="submit">➤</button></div></form><div class="pw-mantra">♢ Le Cerveau propose, vous décidez, le projet avance.</div></main>
-<aside class="pw-right"><h2>PROJET VIVANT</h2><div class="pw-section"><div class="pw-section-title"><span>▣ &nbsp; Aujourd'hui</span></div><div class="pw-stats"><div class="pw-stat"><small>Avancement</small><strong>35%</strong><div class="pw-seed">seed</div></div><div class="pw-stat"><small>Budget mobilisé</small><strong>1 250 000 F</strong><div class="pw-seed">sur 3 600 000 F</div></div><div class="pw-stat"><small>Prochain jalon</small><strong>Validation local</strong><div class="pw-seed">dans 5 jours</div></div></div></div>
-<div class="pw-section"><div class="pw-section-title"><span>BESOINS ({{ max(3,$projectNeeds->count()) }})</span><span class="pw-link">Voir tout</span></div>@foreach($projectNeeds as $need)<a href="{{ route('needs.show',$need) }}" class="pw-card pw-need" style="display:block;color:inherit;text-decoration:none"><strong>{{ $need->title }}</strong><small>{{ $needConfiguration['categories'][$need->category]??$need->category }} · {{ mb_strtolower($need->status) }}</small></a>@endforeach@if($projectNeeds->count()<3)<div class="pw-card pw-need"><strong>Équipement informatique de base</strong><small>Nouveau · Est. 2 850 000 F</small></div><div class="pw-card pw-need"><strong>Mobilier & Aménagement</strong><small>En attente · Est. 450 000 F</small></div>@endif</div>
-<div class="pw-section"><div class="pw-section-title"><span>MISSIONS (2)</span><span class="pw-link">Voir tout</span></div><div class="pw-card pw-need"><strong>Étude du marché local</strong><small>18 Mai · En cours</small></div><div class="pw-card pw-need"><strong>Visite de locaux disponibles</strong><small>20 Mai · Planifiée</small></div></div>
-<div class="pw-section"><div class="pw-section-title"><span>ÉQUIPE (4)</span><span class="pw-link">Gérer</span></div><div style="display:flex;gap:6px"><span class="pw-avatar">Z</span><span class="pw-avatar">A</span><span class="pw-avatar">M</span><span class="pw-avatar">K</span><span class="pw-avatar" style="background:#fff;border:1px dashed #8ca0bd">＋</span></div></div>
-<div class="pw-section"><div class="pw-section-title"><span>PREUVES RÉCENTES (2)</span><span class="pw-link">Voir tout</span></div><div class="pw-card pw-need"><strong>📄 Étude marché Bouaké.pdf</strong><small>Ajouté le 13 Mai · 1.2 Mo</small></div><div class="pw-card pw-need"><strong>🖼 Photo local visité.jpg</strong><small>Ajouté le 12 Mai · 2.4 Mo</small></div></div>
-<div class="pw-section"><div class="pw-section-title"><span>OPPORTUNITÉS POUR VOUS</span><span class="pw-link">Voir tout</span></div><div class="pw-opportunity"><strong>🎁 Appel à projets - Formation Numérique</strong><br>Financement jusqu'à 5 000 000 F CFA<br><span style="color:#64748b">Date limite : 30 Mai 2027</span><span class="pw-badge" style="float:right">Pertinent</span><div class="pw-seed">Projection seed — futur module appels à projets</div></div></div></aside>
-</div><nav class="pw-bottom"><a href="{{ route('home') }}">⌂ &nbsp; Accueil</a><a href="{{ route('people.index') }}">♙ &nbsp; Réseau</a><a class="active" href="{{ route('projects.index') }}">▣ &nbsp; Projets</a><a href="#">♨ &nbsp; Fonds</a><a href="#">🛒 &nbsp; G-POS</a><a href="#">⌘ &nbsp; Outils</a><a href="#">☰ &nbsp; Plus</a><a href="#">? &nbsp; Centre d'aide</a></nav></div>
+    <x-dg.shell current="projets" :identity="$identity" :is-administrator="$isAdministrator">
+        <div class="dg-brain-layout">
+            <aside class="dg-brain-sidebar dg-brain-sidebar--desktop">
+                @include('projects.partials.brain-sidebar')
+            </aside>
+
+            <main class="dg-brain-main">
+                <details class="dg-brain-drawer dg-brain-drawer--sidebar">
+                    <summary>Projets &amp; conversations <x-dg.icon name="chevron-down" size="16" /></summary>
+                    <div class="dg-brain-sidebar">
+                        @include('projects.partials.brain-sidebar')
+                    </div>
+                </details>
+
+                <div class="dg-brain-head">
+                    <div class="dg-brain-head__title">
+                        <span class="dg-brain-head__icon" aria-hidden="true"><x-dg.icon name="brain" size="24" /></span>
+                        <div>
+                            <h1>Cerveau du projet <span class="dg-brain-beta">BETA</span></h1>
+                            <p>Votre assistant stratégique pour réaliser {{ $project->name }}.</p>
+                        </div>
+                    </div>
+                    <div class="dg-brain-head__actions">
+                        <span class="dg-brain-mode" title="D’autres modes arriveront avec les futurs rôles d’équipe.">Mode · Collaboratif</span>
+                        <x-dg.btn variant="quiet" :href="route('projects.show', $project)">Voir le projet →</x-dg.btn>
+                    </div>
+                </div>
+
+                @if(session('status'))
+                    <div class="dg-brain-status-flash">{{ session('status') }}</div>
+                @endif
+
+                <section class="dg-brain-thread" aria-label="Conversation avec le Cerveau">
+                    @if($messages->isEmpty())
+                        <div class="dg-brain-msg dg-brain-msg--assistant">Bonjour. Parlons du projet naturellement. Je peux réfléchir avec vous et proposer des actions, mais vous gardez toujours la décision finale.</div>
+
+                        <div class="dg-brain-draft">
+                            <div class="dg-brain-draft__head"><x-dg.icon name="check-circle" size="14" /> Exemple d’action en attente de validation <span>· Exemple, pas encore de conversation</span></div>
+                            <div class="dg-brain-draft__body">
+                                <span class="dg-brain-draft__icon" aria-hidden="true"><x-dg.icon name="team" size="20" /></span>
+                                <div>
+                                    <h3>Créer une équipe projet (minimum 3 personnes)</h3>
+                                    <p>Rôles recommandés : Responsable, Technicien, Formateur.</p>
+                                </div>
+                                <div class="dg-brain-draft__actions">
+                                    <x-dg.btn variant="project" disabled title="Exemple d’illustration — parlez au Cerveau ci-dessous pour obtenir de vraies propositions.">Valider</x-dg.btn>
+                                    <x-dg.btn variant="quiet" disabled title="Exemple d’illustration — parlez au Cerveau ci-dessous pour obtenir de vraies propositions.">Modifier</x-dg.btn>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @foreach($messages as $message)
+                        <div class="dg-brain-msg dg-brain-msg--{{ mb_strtolower($message->role) }}">{{ $message->content }}</div>
+
+                        @php($draftReference = $message->meta['draft_reference'] ?? null)
+                        @if($draftReference && ($draft = $drafts->get($draftReference)))
+                            @php($payload = $draft->payload)
+                            <div class="dg-brain-draft">
+                                <div class="dg-brain-draft__head"><x-dg.icon name="check-circle" size="14" /> Action proposée <span>en attente de votre confirmation</span></div>
+                                <div class="dg-brain-draft__body">
+                                    <span class="dg-brain-draft__icon" aria-hidden="true"><x-dg.icon name="target" size="20" /></span>
+                                    <div>
+                                        <h3>{{ $payload['title'] }}</h3>
+                                        <p>{{ $payload['context'] }}</p>
+                                        <div class="dg-brain-draft__meta">
+                                            <span>Catégorie<strong>{{ $needConfiguration['categories'][$payload['category']] ?? $payload['category'] }}</strong></span>
+                                            <span>Lieu<strong>{{ $payload['location'] ?? '—' }}</strong></span>
+                                            <span>Mode<strong>{{ $payload['collaboration_mode'] }}</strong></span>
+                                        </div>
+                                    </div>
+                                    <div class="dg-brain-draft__actions">
+                                        <form method="POST" action="{{ route('projects.brain.needs.confirm', [$project, $draft]) }}">
+                                            @csrf
+                                            <button type="submit" class="dg-btn dg-btn--project">Créer ce besoin</button>
+                                        </form>
+                                        <form method="POST" action="{{ route('projects.brain.drafts.cancel', [$project, $draft]) }}">
+                                            @csrf
+                                            <button type="submit" class="dg-btn dg-btn--quiet">Pas maintenant</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    @endforeach
+                </section>
+
+                <form class="dg-brain-compose" method="POST" action="{{ route('projects.brain.needs.prepare', $project) }}">
+                    @csrf
+                    <textarea name="message" required minlength="2" maxlength="3000" placeholder="Parlez au Cerveau de votre projet…">{{ old('message') }}</textarea>
+                    <div class="dg-brain-compose__row">
+                        <div class="dg-brain-compose__tools">
+                            <button type="button" disabled title="L’envoi de pièces jointes arrivera avec l’espace documentaire du projet."><x-dg.icon name="paperclip" size="17" /></button>
+                            <button type="button" disabled title="L’envoi d’images arrivera avec l’espace documentaire du projet."><x-dg.icon name="image" size="17" /></button>
+                            <button type="button" disabled title="L’envoi de documents arrivera avec l’espace documentaire du projet."><x-dg.icon name="document" size="17" /></button>
+                            <button type="button" disabled title="La saisie vocale n’est pas encore disponible."><x-dg.icon name="mic" size="17" /></button>
+                        </div>
+                        <button type="submit" class="dg-brain-send" aria-label="Envoyer"><x-dg.icon name="send" size="17" /></button>
+                    </div>
+                </form>
+                <p class="dg-brain-mantra">Le Cerveau propose, vous décidez, le projet avance.</p>
+            </main>
+
+            <aside class="dg-brain-aside dg-brain-aside--desktop">
+                @include('projects.partials.brain-aside')
+            </aside>
+        </div>
+
+        <details class="dg-brain-drawer dg-brain-drawer--aside" style="margin:0 16px 16px">
+            <summary>Projet vivant <x-dg.icon name="chevron-down" size="16" /></summary>
+            <div class="dg-brain-aside" style="border-left:0">
+                @include('projects.partials.brain-aside')
+            </div>
+        </details>
+    </x-dg.shell>
 </x-layouts.portal>

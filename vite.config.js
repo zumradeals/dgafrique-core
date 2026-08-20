@@ -17,6 +17,7 @@ export default defineConfig({
                 'resources/css/project-workspace-v2.css',
                 'resources/css/projects-directory.css',
                 'resources/css/project-detail.css',
+                'resources/css/project-brain.css',
                 'resources/js/app.js',
             ],
             refresh: true,

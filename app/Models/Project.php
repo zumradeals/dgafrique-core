@@ -16,4 +16,8 @@ final class Project extends Model
     public function events(): HasMany { return $this->hasMany(ProjectEvent::class); }
     public function accompaniment(): HasOne { return $this->hasOne(ProjectAccompaniment::class); }
     public function autonomyPathway(): HasOne { return $this->hasOne(ProjectAutonomyPathway::class); }
+    // « Progression globale » (fiche V2, Cerveau) : projection d'affichage déterministe, jamais un
+    // calcul métier réel ni une écriture Core — voir docs/design/DESIGN-INVARIANTS.md §19/§20.
+    // Ne jamais confondre avec la maturité (CAP-017, jamais un pourcentage).
+    public function progressionSeed(): int { return 20 + (crc32($this->id) % 56); }
 }
