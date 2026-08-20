@@ -53,7 +53,7 @@ En revue, vérifier également que les identifiants vont exactement de `CAP-001`
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
 
-Ce garde-fou est actuellement une règle de revue reproductible, pas un job CI dédié. Une automatisation ultérieure doit être ajoutée explicitement au workflow avant d'être présentée comme active.
+Ce garde-fou est actuellement une règle de revue reproductible, pas un job automatisé. Toute automatisation future doit être ajoutée explicitement au dépôt avant d'être présentée comme active.
 
 ## Checklist de clôture DOC-001
 
