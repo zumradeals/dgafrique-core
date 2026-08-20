@@ -7,14 +7,13 @@
 1. le code et les tests de `main` décrivent ce qui existe réellement ;
 2. `docs/capacites/CAPABILITY-COVERAGE.md` est l'unique synthèse des statuts CAP ;
 3. `docs/capacites/CAPABILITY-INDEX.md` définit le référentiel et le routage, pas l'avancement ;
-4. les specs décrivent des contrats et invariants ; elles ne prouvent jamais qu'une fonctionnalité est livrée ;
-5. les versions précédentes du dépôt servent d'historique : aucun ancien tracker, preuve ponctuelle ou archive design ne doit devenir une seconde vérité courante.
+4. les specs et invariants actifs décrivent des contrats ; ils ne prouvent jamais qu'une fonctionnalité est livrée.
 
-`docs/capacites/proofs/` est un reliquat historique en quarantaine : ne pas le consulter pour déterminer l'état courant et ne pas l'alimenter.
+Les versions précédentes du dépôt vivent dans l'historique Git. Aucun ancien tracker, snapshot de preuve, handoff daté, archive design ou quarantaine documentaire ne doit être maintenu comme seconde vérité dans l'arbre courant.
 
 Pour toute capacité ZUMRA, respecter `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`.
 
-Pour toute modification d'interface, navigation ou design, lire `docs/design/DESIGN-INVARIANTS.md`. Les références sous `docs/design/reference/` sont de la provenance historique, pas une autorité supérieure au code courant.
+Pour toute modification d'interface, navigation ou design, lire `docs/design/DESIGN-INVARIANTS.md`.
 
 ## Projet canonique
 
@@ -29,7 +28,7 @@ Pour toute modification d'interface, navigation ou design, lire `docs/design/DES
 
 Avant de coder une capacité :
 
-1. lire `AI-RULES.md`, `CAPABILITY-INDEX.md`, `CAPABILITY-COVERAGE.md` et la spec concernée si elle existe ;
+1. lire `AI-RULES.md`, `CAPABILITY-INDEX.md`, `CAPABILITY-COVERAGE.md` et la spec active concernée si elle existe ;
 2. inspecter le code et les tests actuels avant de conclure qu'un CAP manque ;
 3. ne jamais se fier à un nom de fichier historique, un ancien tracker, une preuve datée ou une maquette pour déduire l'état courant ;
 4. si le code contredit la documentation, corriger la documentation dans la même PR ou signaler explicitement le conflit ;
@@ -52,4 +51,4 @@ Avant de coder une capacité :
 
 Ne jamais utiliser ce handoff pour savoir quel est « le prochain CAP ». Cette information change avec `main` et appartient exclusivement à `CAPABILITY-COVERAGE.md` après vérification du code.
 
-Le dépôt courant est désormais la base. Les anciennes consignes de bootstrap telles que « premier gate » ou « repartir de zéro » sont historiques et ne doivent plus piloter une nouvelle session.
+Le dépôt courant est la base. Les anciennes consignes de bootstrap telles que « premier gate » ou « repartir de zéro » appartiennent à l'historique Git et ne doivent plus piloter une nouvelle session.
