@@ -8,7 +8,7 @@
 2. `docs/capacites/CAPABILITY-COVERAGE.md` est l'unique synthèse des statuts CAP ;
 3. `docs/capacites/CAPABILITY-INDEX.md` définit le référentiel et le routage, pas l'avancement ;
 4. les specs décrivent des contrats et invariants ; elles ne prouvent jamais qu'une fonctionnalité est livrée ;
-5. Git conserve l'historique : aucun ancien tracker, preuve ponctuelle ou archive design ne doit devenir une seconde vérité courante.
+5. les versions précédentes du dépôt servent d'historique : aucun ancien tracker, preuve ponctuelle ou archive design ne doit devenir une seconde vérité courante.
 
 `docs/capacites/proofs/` est un reliquat historique en quarantaine : ne pas le consulter pour déterminer l'état courant et ne pas l'alimenter.
 
