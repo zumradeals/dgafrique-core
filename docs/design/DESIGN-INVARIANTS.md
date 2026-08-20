@@ -472,3 +472,65 @@ filtre les Missions affichées).
 **Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
 conversation, non archivée dans `docs/design/reference/`, reproduite dans
 `resources/views/projects/brain.blade.php` et `resources/css/project-brain.css`).
+
+## 21. Addendum daté — Portail Besoins (20 août 2026)
+
+**Portée : l'écran `/besoins` uniquement** (`resources/views/needs/index.blade.php`,
+`app/Http/Controllers/NeedController.php::index()`,
+`app/Application/Needs/NeedDirectoryDemoContent.php`, `resources/css/needs-directory.css`). Ce
+changement suit la procédure de gouvernance du §14. `needs.show`, `needs.create` et les routes
+satellites (commentaires, partages, missions liées à un besoin) ne sont pas concernés.
+
+**Invariant concerné** : §11 (fixtures « Exemple », centralisées, jamais persistées) et §18
+(DEMO-FIRST, REAL-DATA-TAKES-OVER, déjà appliqué à `/projets`), étendus ici à un troisième écran.
+
+**Problème utilisateur justifiant le changement** : une maquette a été fournie pour le portail
+Besoins, avec une carte d'exemple (« Apprendre le forex ») déjà présente dans la maquette aux
+côtés d'un besoin réel. Vérification effectuée avant implémentation : cette chaîne n'existe nulle
+part dans le dépôt (ni vue, ni fixture, ni seeder) — ce n'est donc pas une dette existante à
+corriger, mais un contenu à introduire comme démonstration, suivant exactement le même patron que
+« GAMAD Technology » sur `/projets` (§18).
+
+**Ce qui change** :
+- Le portail Besoins peut désormais afficher une carte d'exemple (« Apprendre le forex », voir
+  `resources/design-reference/needs-demo.json`), marquée **« · Exemple »** sur son badge de
+  catégorie, **uniquement lorsqu'aucun besoin réel visible n'existe pour la catégorie de la
+  carte** et seulement en première page — dès qu'un besoin réel existe pour cette catégorie
+  (`TRAINING` pour cette carte), elle disparaît d'elle-même
+  (`NeedDirectoryDemoContent::demoCards()`), et n'est jamais écrite dans `dg_needs` ni seedée
+  (`database/seeders/DatabaseSeeder.php` reste intentionnellement vide) ;
+- ses actions (« Comprendre le besoin → », signet) restent visuellement présentes mais
+  désactivées, avec la raison accessible « Objet de démonstration — aucune action réelle n'est
+  rattachée. » (conforme au §13) ;
+- **« Aperçu des besoins »** (besoins ouverts/en attente/pourvus) est en revanche un **calcul
+  réel**, pas une projection : `NeedController::index()` tallie les statuts réels
+  (`OPEN`/`PROPOSED`/`RESOLVED`) sur l'ensemble des besoins visibles de l'identité, indépendamment
+  des filtres appliqués à la liste — le modèle permettait déjà ce calcul, la règle §12 de la
+  demande produit (« préférer systématiquement un calcul réel lorsqu'il est disponible ») a été
+  suivie plutôt que d'en faire une projection comme les statistiques réseau de `/projets` (§18) ;
+- l'action « signet » (sauvegarder un besoin) apparaît visuellement sur toutes les cartes,
+  réelles et de démonstration, mais reste désactivée avec sa raison sur les deux : aucune
+  fonctionnalité de favoris n'existe aujourd'hui pour aucun objet du portail (vérifié avant
+  implémentation — aucun modèle, migration ou route ne l'implémente) ;
+- le tri (« Trier par ») et la bascule grille/liste sont présentés visuellement (fidélité à la
+  maquette) mais désactivés avec leur raison : aucun contrat de tri autre que « plus récents »
+  (déjà le comportement réel par défaut) ni de vue liste n'existe aujourd'hui.
+
+**Ce qui ne change pas** : le formulaire de filtre réel (`method="GET" class="dg-filters"`,
+catégorie + état, bouton « Filtrer ») garde exactement son contrat et son test existants ; aucune
+capacité métier de `NeedController` n'a été retirée. Les tags multiples visibles sur la carte de
+démonstration ne sont **pas** reproduits sur les cartes réelles : `Need` n'a pas de champ de tags
+multiples (seul `capability_label`, un champ unique optionnel, existe et s'affiche comme tel) —
+fabriquer plusieurs tags pour un besoin réel aurait été une donnée inventée, écart assumé et
+documenté plutôt qu'une fausse fonctionnalité (voir `docs/design/DIFFERENCES.md`).
+
+**Compatibilité vérifiée** : doctrine (démonstration jamais confondue avec du réel — badge
+« · Exemple » + actions désactivées avec raison, exactement le contrat de `/projets`),
+accessibilité (`aria-disabled`, raisons lisibles au clavier/lecteur d'écran), mobile (filtres
+empilés, cartes pleine largeur, panneau « Aperçu des besoins » repositionné dans le flux, testé au
+viewport 390×844), sécurité (aucune nouvelle surface serveur, `NeedController::index()` garde
+exactement `NeedService::canView` existant sur chaque besoin).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/needs/index.blade.php` et `resources/css/needs-directory.css`).
