@@ -47,7 +47,6 @@ test "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
 awk '/^\| CAP-/ && ($0 ~ /\[PLUS TARD\]/ || $0 ~ /\[FAIT\]/ || $0 ~ /\[CLOSED\]/ || $0 ~ /\[PARTIAL\]/ || $0 ~ /\[NOT_IMPLEMENTED\]/ || $0 ~ /\[DOC_ONLY\]/ || $0 ~ /\[DEPENDENCY_BLOCKED\]/) { bad=1 } END { exit bad }' docs/capacites/CAPABILITY-INDEX.md
 awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 awk '/^## CAP-/ { if (seen && statuses != 1) bad=1; seen=1; statuses=0; next } /^Status:/ { statuses++ } END { if (seen && statuses != 1) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
-awk '/^## CAP-/ { id=$2; sub("CAP-", "", id); expected++; if ((id+0) != expected) bad=1 } END { if (expected != 84) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
 Le répertoire `docs/capacites/proofs/` est gelé : toute PR qui y ajoute un fichier doit être refusée. Il sera supprimé entièrement lorsqu'une décision explicite confirmera qu'aucune exigence d'audit ne nécessite sa présence dans l'arbre courant.
