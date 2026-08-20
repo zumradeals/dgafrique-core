@@ -12,7 +12,7 @@ Ce fichier est le premier document à lire par toute IA ou tout contributeur aut
 
 `docs/capacites/proofs/` est legacy/quarantaine : ne jamais le lire pour déterminer le statut courant d'un CAP et ne jamais y ajouter de nouveau snapshot.
 
-Si deux documents se contredisent, ne jamais choisir silencieusement celui qui arrange la tâche. Vérifier le code, puis régulariser la documentation.
+Si deux documents se contredisent, vérifier le code puis régulariser la documentation.
 
 ## Interdictions documentaires
 
@@ -21,16 +21,16 @@ Ne pas créer :
 - un second tracker CAP (`MASTER`, `FINAL`, `STATUS`, `PROGRESS`, etc.) ;
 - une copie `v2`, `final`, `final-final` d'une spec active ;
 - une preuve datée destinée à devenir une source permanente d'état ;
-- une archive ZIP/Base64 découpée dans `docs/` pour conserver de l'historique ;
+- une archive ZIP/Base64 découpée dans `docs/` ;
 - une nouvelle maquette déclarée autorité sans décision explicite sur les invariants ;
 - un statut `CLOSED` uniquement parce qu'une spec ou une ancienne preuve l'affirme.
 
-Git est l'archive historique. Le dépôt courant doit rester un espace de travail, pas un entrepôt de snapshots.
+Git est l'archive historique.
 
 ## Avant toute modification métier
 
 - lire `docs/AI-HANDOFF.md` ;
-- lire l'entrée du CAP dans `CAPABILITY-INDEX.md` et `CAPABILITY-COVERAGE.md` ;
+- lire `CAPABILITY-INDEX.md` et `CAPABILITY-COVERAGE.md` ;
 - inspecter modèles, services, contrôleurs, routes, migrations et tests concernés ;
 - lire la spec concernée si elle existe ;
 - pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
@@ -38,25 +38,27 @@ Git est l'archive historique. Le dépôt courant doit rester un espace de travai
 
 ## Après une modification qui change la couverture
 
-Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne pas modifier le titre canonique d'une capacité dans l'index pour encoder son statut (`[PLUS TARD]`, `[FAIT]`, etc.).
+Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne jamais encoder un statut dans le titre d'une capacité de l'index.
 
 ## Garde-fou mécanique DOC-001
 
-La CI documentaire doit au minimum échouer si :
+Avant merge d'une PR documentaire, exécuter ce contrôle local (et le porter en CI dès que le workflow documentaire est disponible) :
 
-- `docs/capacites/CAP-MASTER-TRACKER.md` réapparaît ;
-- un fichier `docs/capacites/legacy/specs/*` réapparaît ;
-- un nouveau fichier est ajouté sous `docs/capacites/proofs/` ;
-- un fragment `*.zip.b64.part*` est ajouté sous `docs/` ;
-- `CAPABILITY-INDEX.md` contient `[PLUS TARD]`, `[FAIT]`, `[CLOSED]` ou un autre statut d'avancement dans un titre ;
-- `CAPABILITY-COVERAGE.md` utilise un statut hors de `CLOSED`, `PARTIAL`, `NOT_IMPLEMENTED`, `DOC_ONLY`, `DEPENDENCY_BLOCKED` ;
-- une seconde occurrence de fichier de type tracker CAP est ajoutée sans décision explicite.
+```bash
+test ! -e docs/capacites/CAP-MASTER-TRACKER.md
+test ! -d docs/capacites/legacy/specs
+! find docs -type f -name '*.zip.b64.part*' -print -quit | grep -q .
+! grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md
+! grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | grep -Ev '^Status: (CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)$'
+```
 
-Le garde-fou ne doit pas inventer l'état des CAP : il empêche seulement le retour des formes documentaires interdites.
+La dernière commande doit produire zéro ligne. Toute nouvelle preuve sous `docs/capacites/proofs/` est interdite par revue : ce répertoire est figé en quarantaine jusqu'à décision de suppression complète.
+
+Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
 
 ## IA et mutations métier
 
-Une IA peut analyser, proposer et préparer un brouillon. Elle ne doit pas contourner les confirmations humaines prévues par le domaine. Project Brain suit déjà ce patron : conversation → proposition structurée → brouillon → confirmation humaine → service métier.
+Une IA peut analyser, proposer et préparer un brouillon. Elle ne doit pas contourner les confirmations humaines prévues par le domaine. Project Brain suit déjà : conversation → proposition structurée → brouillon → confirmation humaine → service métier.
 
 ## Règle anti-dérive
 
