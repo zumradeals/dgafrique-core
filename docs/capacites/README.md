@@ -1,19 +1,17 @@
-# Référentiel des capacités
+# Documentation des capacités DG Afrique
 
-`CAPABILITY-INDEX.md` contient les 84 capacités canoniques de DG Afrique.
+Avant toute intervention, lire `../AI-RULES.md`.
 
-## Nouveau départ
+## Documents actifs
 
-Ce dépôt est une reconstruction. Les validations du portail précédent ne sont pas transférées. Le tracker repart donc de CAP-001.
+- `CAPABILITY-INDEX.md` — les 84 capacités, leurs domaines et leur routage. Ce n'est pas un tracker d'avancement.
+- `CAPABILITY-COVERAGE.md` — unique synthèse documentaire du statut réel des CAP, toujours subordonnée au code et aux tests de `main`.
+- `OVERRIDES.md` — décisions explicites qui modifient ou précisent le référentiel.
+- `specs/` — contrats et invariants encore utiles à l'implémentation.
+- `TEMPLATE.md` — aide à la rédaction d'une nouvelle fiche lorsqu'elle est réellement nécessaire.
 
-Les fichiers sous `legacy/specs/` sont des documents historiques utiles. Ils ne constituent ni une validation, ni une architecture à recopier. Chaque fiche doit être réauditée et réécrite lorsqu'elle devient le gate actif.
+## Historique
 
-## Séquence
+Git est l'archive. Les anciens trackers, doublons, preuves ponctuelles de chantier et anciennes specs ne doivent pas être restaurés dans l'arbre courant pour « garder une trace » : cette trace existe déjà dans l'historique Git.
 
-1. `À SPÉCIFIER` ;
-2. `EN SPEC` ;
-3. `EN DÉVELOPPEMENT` ;
-4. `EN PRÉPRODUCTION` ;
-5. `VALIDÉ PROD`.
-
-Un seul gate principal avance à la fois, sauf dérogation écrite dans `OVERRIDES.md`.
+Une preuve datée peut être utile pendant une livraison, mais elle ne doit jamais devenir une autorité concurrente au code ou à `CAPABILITY-COVERAGE.md`.
