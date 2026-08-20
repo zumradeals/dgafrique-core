@@ -1,4 +1,4 @@
-/* PVB-I05.1 — Project Workspace V2 / identité DG Afrique
+/* PVB-I05.2 — Project Workspace V2 / identité DG Afrique
    Invariant: pétrole = réseau/structure/confiance ; orange = action/mouvement/énergie.
    Cette couche ne modifie ni le métier, ni les seeds, ni le Cerveau. */
 
@@ -15,7 +15,6 @@
     color: var(--dg-night-v2);
 }
 
-/* Le workspace reste immersif, mais appartient visuellement au même DG Afrique. */
 .pw-top {
     background: linear-gradient(105deg, var(--dg-petrol-deep), var(--dg-petrol));
     box-shadow: 0 1px 0 rgba(255,255,255,.08), 0 8px 24px rgba(14,53,64,.12);
@@ -73,9 +72,29 @@
 .pw-brain-title h1, .pw-right h2, .pw-section-title { color: var(--dg-petrol-deep); }
 .pw-mode { border-color: var(--dg-line-v2); color: var(--dg-petrol-deep); background: #fff; }
 
-.pw-msg.user { background: var(--dg-petrol); color: #fff; }
-.pw-msg.assistant { border-color: var(--dg-line-v2); background: #fff; }
-.pw-msg.system { background: #f5eee7; color: var(--dg-text-v2); border-color: var(--dg-line-v2); }
+/* Conversation : contraste volontairement fort. Le contenu ne doit jamais dépendre
+   d'une variable de thème héritée pour rester lisible en production. */
+.pw-thread { background: #fff; }
+.pw-msg { color: #16282d; }
+.pw-msg.user {
+    background: #0e3540 !important;
+    color: #ffffff !important;
+    border: 1px solid #0e3540;
+    box-shadow: 0 2px 8px rgba(14,53,64,.12);
+    font-weight: 500;
+}
+.pw-msg.assistant {
+    background: #fffdfa !important;
+    color: #16282d !important;
+    border-color: #d8e0df;
+    box-shadow: 0 1px 4px rgba(14,53,64,.05);
+}
+.pw-msg.system {
+    background: #f5eee7 !important;
+    color: #33464b !important;
+    border-color: #e2d8cf;
+}
+
 .pw-draft { border-color: var(--dg-line-v2); box-shadow: 0 3px 12px rgba(14,53,64,.05); }
 .pw-draft-head { color: var(--dg-petrol); border-bottom-color: var(--dg-line-v2); background: #fbfdfd; }
 .pw-draft-icon { background: var(--dg-petrol-soft); }
