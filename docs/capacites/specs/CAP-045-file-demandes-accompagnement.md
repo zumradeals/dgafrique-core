@@ -30,7 +30,7 @@ traitent dans l'ordre — jamais un score, jamais une priorité cachée.
 - **pas** un remplacement de l'activation directe (`activate()`/`end()`, inchangés) — la demande
   n'est possible qu'une fois l'accompagnement déjà actif, elle ne l'ouvre pas ;
 - **pas** une notation ou une priorisation calculée — la file est strictement ordonnée par date de
-  demande (la plus ancienne d'abord), comme le lanceur de satellites (CAP-018) l'affirme déjà :
+  demande (la plus ancienne d'abord), comme le parcours d'autonomie du projet (CAP-018) l'affirme déjà :
   « liste déterministe … aucun score caché n'est calculé » ;
 - **pas** le dossier enrichi (CAP-046, distinct) — ici uniquement le cycle de vie de la demande
   elle-même (transmise → prise en charge → close).

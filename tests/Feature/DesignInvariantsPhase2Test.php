@@ -251,7 +251,7 @@ final class DesignInvariantsPhase2Test extends TestCase
 
         $content = $this->get('/projets/'.$project->public_reference)->assertOk()->getContent();
 
-        foreach (['Idée', 'Exploration', 'Équipe', 'Prototype / expérimentation', 'Projet structuré', 'Activité', 'Structure potentielle', 'Satellite potentiel'] as $stageLabel) {
+        foreach (['Idée', 'Exploration', 'Équipe', 'Prototype / expérimentation', 'Projet structuré', 'Activité', 'Structure potentielle', 'Autonomie à explorer'] as $stageLabel) {
             self::assertStringContainsString($stageLabel, $content);
         }
         // La maturité est un chemin de repères, jamais un pourcentage (CAP-017).

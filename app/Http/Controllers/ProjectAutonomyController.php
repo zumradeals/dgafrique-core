@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Application\Projects\ProjectSatelliteLauncherService;
+use App\Application\Projects\ProjectAutonomyPathwayService;
 use App\Application\Projects\ProjectService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Project;
@@ -19,7 +19,7 @@ final class ProjectAutonomyController
         Request $request,
         Project $project,
         ProjectService $projects,
-        ProjectSatelliteLauncherService $launcher
+        ProjectAutonomyPathwayService $pathways
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -31,25 +31,25 @@ final class ProjectAutonomyController
         return view('projects.autonomy', [
             'project' => $project,
             'pathway' => $project->autonomyPathway,
-            'eligible' => $launcher->isEligible($project),
-            'targetForms' => ProjectSatelliteLauncherService::TARGET_FORMS,
+            'eligible' => $pathways->isEligible($project),
+            'targetForms' => ProjectAutonomyPathwayService::TARGET_FORMS,
         ]);
     }
 
     public function open(
         Request $request,
         Project $project,
-        ProjectSatelliteLauncherService $launcher
+        ProjectAutonomyPathwayService $pathways
     ): RedirectResponse {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
 
         $data = $request->validate([
-            'target_form' => ['required', Rule::in(array_keys(ProjectSatelliteLauncherService::TARGET_FORMS))],
+            'target_form' => ['required', Rule::in(array_keys(ProjectAutonomyPathwayService::TARGET_FORMS))],
             'other_form_label' => ['nullable', 'string', 'max:180'],
         ]);
 
-        $launcher->open($project, $identity->reference, $data);
+        $pathways->open($project, $identity->reference, $data);
 
         return redirect()
             ->route('projects.autonomy.show', $project)
@@ -59,12 +59,12 @@ final class ProjectAutonomyController
     public function close(
         Request $request,
         Project $project,
-        ProjectSatelliteLauncherService $launcher
+        ProjectAutonomyPathwayService $pathways
     ): RedirectResponse {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
 
-        $launcher->close($project, $identity->reference);
+        $pathways->close($project, $identity->reference);
 
         return redirect()
             ->route('projects.autonomy.show', $project)

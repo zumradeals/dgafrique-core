@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Projects\ProjectAutonomyPathwayService;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectMaturityService;
-use App\Application\Projects\ProjectSatelliteLauncherService;
 use App\Application\Projects\ProjectService;
+use App\Models\Organization;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ProjectAccompaniment;
@@ -18,39 +19,45 @@ use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
-final class ProjectSatelliteLauncherTest extends TestCase
+/**
+ * REF-001B — le service canonique est ProjectAutonomyPathwayService (renommé depuis
+ * ProjectSatelliteLauncherService). Doctrine invariante : PROJET ≠ SATELLITE. Ouvrir un
+ * parcours d'autonomie ne crée jamais de satellite logiciel (CAP-048, registre distinct) ni
+ * d'Organisation (CAP-066, geste humain distinct) — seulement un marqueur de statut/intention
+ * attaché au projet.
+ */
+final class ProjectAutonomyPathwayTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_only_potential_structure_or_satellite_projects_are_eligible(): void
+    public function test_only_potential_structure_or_autonomy_ready_projects_are_eligible(): void
     {
         $this->member('IDN-OWNER');
         $project = $this->project('IDN-OWNER');
-        $launcher = app(ProjectSatelliteLauncherService::class);
+        $pathways = app(ProjectAutonomyPathwayService::class);
         $maturity = app(ProjectMaturityService::class);
 
-        self::assertFalse($launcher->isEligible($project));
+        self::assertFalse($pathways->isEligible($project));
 
         $maturity->change($project, 'IDN-OWNER', 'ACTIVITY');
-        self::assertFalse($launcher->isEligible($project->refresh()));
+        self::assertFalse($pathways->isEligible($project->refresh()));
 
         $maturity->change($project->refresh(), 'IDN-OWNER', 'POTENTIAL_STRUCTURE');
-        self::assertTrue($launcher->isEligible($project->refresh()));
+        self::assertTrue($pathways->isEligible($project->refresh()));
 
-        $maturity->change($project->refresh(), 'IDN-OWNER', 'POTENTIAL_SATELLITE');
-        self::assertTrue($launcher->isEligible($project->refresh()));
+        $maturity->change($project->refresh(), 'IDN-OWNER', 'AUTONOMY_READY');
+        self::assertTrue($pathways->isEligible($project->refresh()));
     }
 
-    public function test_owner_opens_autonomy_pathway_without_creating_satellite_or_changing_control(): void
+    public function test_owner_opens_autonomy_pathway_without_creating_satellite_organization_or_changing_control(): void
     {
         $this->member('IDN-OWNER');
         $project = $this->matureProject('IDN-OWNER');
 
-        $pathway = app(ProjectSatelliteLauncherService::class)->open($project, 'IDN-OWNER', [
+        $pathway = app(ProjectAutonomyPathwayService::class)->open($project, 'IDN-OWNER', [
             'target_form' => 'STARTUP',
         ]);
 
@@ -61,7 +68,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         self::assertSame('POTENTIAL_STRUCTURE', $project->maturity);
         self::assertSame(0, ProjectAccompaniment::query()->count());
         self::assertSame(1, Satellite::query()->count(), 'ouvrir un parcours d’autonomie ne doit jamais créer de satellite (CAP-048, registre distinct et administratif)');
-        self::assertFalse(Schema::hasTable('dg_organizations'));
+        self::assertSame(0, Organization::query()->count(), 'ouvrir un parcours d’autonomie ne doit jamais créer d’Organisation (CAP-066, geste humain distinct)');
     }
 
     public function test_outsider_cannot_open_autonomy_pathway(): void
@@ -70,7 +77,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         $project = $this->matureProject('IDN-OWNER');
 
         $this->expectException(HttpException::class);
-        app(ProjectSatelliteLauncherService::class)->open($project, 'IDN-OUTSIDER', [
+        app(ProjectAutonomyPathwayService::class)->open($project, 'IDN-OUTSIDER', [
             'target_form' => 'ASSOCIATION',
         ]);
     }
@@ -81,7 +88,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         $project = $this->project('IDN-OWNER');
 
         $this->expectException(HttpException::class);
-        app(ProjectSatelliteLauncherService::class)->open($project, 'IDN-OWNER', [
+        app(ProjectAutonomyPathwayService::class)->open($project, 'IDN-OWNER', [
             'target_form' => 'COOPERATIVE',
         ]);
     }
@@ -92,7 +99,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
         $project = $this->matureProject('IDN-OWNER');
 
         $this->expectException(HttpException::class);
-        app(ProjectSatelliteLauncherService::class)->open($project, 'IDN-OWNER', [
+        app(ProjectAutonomyPathwayService::class)->open($project, 'IDN-OWNER', [
             'target_form' => 'OTHER',
             'other_form_label' => '',
         ]);
@@ -102,11 +109,11 @@ final class ProjectSatelliteLauncherTest extends TestCase
     {
         $this->member('IDN-OWNER');
         $project = $this->matureProject('IDN-OWNER');
-        $launcher = app(ProjectSatelliteLauncherService::class);
+        $pathways = app(ProjectAutonomyPathwayService::class);
 
-        $launcher->open($project, 'IDN-OWNER', ['target_form' => 'PLATFORM']);
-        $launcher->close($project, 'IDN-OWNER');
-        $launcher->open($project, 'IDN-OWNER', ['target_form' => 'COMPANY']);
+        $pathways->open($project, 'IDN-OWNER', ['target_form' => 'PLATFORM']);
+        $pathways->close($project, 'IDN-OWNER');
+        $pathways->open($project, 'IDN-OWNER', ['target_form' => 'COMPANY']);
 
         self::assertSame(ProjectAutonomyPathway::STATUS_ACTIVE, $project->autonomyPathway()->sole()->status);
         self::assertSame('COMPANY', $project->autonomyPathway()->sole()->target_form);
@@ -127,14 +134,22 @@ final class ProjectSatelliteLauncherTest extends TestCase
         ])->assertRedirect();
 
         self::assertSame(1, ProjectAutonomyPathway::query()->count());
+        self::assertSame(0, Organization::query()->count());
         Http::assertNotSent(fn ($request): bool => str_contains($request->url(), '/organisations'));
 
         PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-MATURE']);
 
-        $this->get('/administration/lanceur-satellites')
+        $this->get('/administration/parcours-autonomie')
             ->assertOk()
             ->assertSee('Projet mûr pour autonomie')
             ->assertDontSee('Projet encore en exploration');
+    }
+
+    public function test_no_runtime_reference_to_the_deleted_launcher_service_remains(): void
+    {
+        self::assertFalse(class_exists('App\\Application\\Projects\\ProjectSatelliteLauncherService'), 'REF-001B : ce service historique ne doit plus exister.');
+        self::assertTrue(class_exists(ProjectAutonomyPathwayService::class), 'Le service canonique doit être résolu par le container.');
+        self::assertInstanceOf(ProjectAutonomyPathwayService::class, app(ProjectAutonomyPathwayService::class));
     }
 
     private function matureProject(string $identity, array $overrides = []): Project
@@ -169,7 +184,7 @@ final class ProjectSatelliteLauncherTest extends TestCase
                 'property_regime' => 'PERSONAL_SUPPORTED',
                 'visibility' => 'PUBLIC',
             ], $overrides),
-            (new ProjectConfiguration())->defaults()
+            (new ProjectConfiguration)->defaults()
         );
     }
 

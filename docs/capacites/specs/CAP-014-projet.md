@@ -1,6 +1,6 @@
 # CAP-014 — Projet
 
-- **Domaine :** Projects & Satellites
+- **Domaine :** Projects
 - **Propriétaire d’exécution :** DG Afrique
 - **Statut :** implémenté — preuve VPS requise
 - **Sources :** référentiel des 84 capacités, doctrine ZUMRA v1.1, CAP-013
@@ -21,7 +21,7 @@ Un adhérent actif peut proposer un projet. Dans une ZUMRA, tout membre actif pe
 
 ## Maturité
 
-Les repères progressifs sont : idée, exploration, équipe, expérimentation, structuré, activité, structure potentielle et satellite potentiel. Ils décrivent des signes observables et ne constituent ni une note de valeur ni une validation juridique.
+Les repères progressifs sont : idée, exploration, équipe, expérimentation, structuré, activité, structure potentielle et autonomie à explorer. Ils décrivent des signes observables et ne constituent ni une note de valeur ni une validation juridique.
 
 ## Cycle opérationnel
 

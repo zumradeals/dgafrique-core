@@ -42,7 +42,7 @@ Toute extraction fait l’objet d’un ADR et d’un plan de migration.
 
 Le cycle d’un projet reste dans le domaine Projet : idée, structuration, équipe, besoins, accompagnement, maturité et autonomie organisationnelle/économique éventuelle. Cette autonomie n’implique aucune extraction logicielle.
 
-Les mécanismes historiques nommés `ProjectSatelliteLauncherService` ou assimilés doivent être interprétés comme dette de nommage tant qu’ils servent un parcours d’autonomie de projet. Ils ne doivent plus dicter la doctrine produit et pourront être renommés/refactorés lors d’un lot métier dédié avec tests de non-régression.
+Le mécanisme historiquement nommé `ProjectSatelliteLauncherService` a été renommé `ProjectAutonomyPathwayService` (REF-001/REF-001B) : plus aucune classe, route, vue ou test actif ne porte ce nom de dette. Ce nom historique n’a jamais dicté la doctrine produit.
 
 ## Application aux outils spécialisés
 

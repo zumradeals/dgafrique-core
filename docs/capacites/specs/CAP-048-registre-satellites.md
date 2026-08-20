@@ -11,7 +11,7 @@ explicitement réservée à CAP-049)
 **Base de conception :** `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` (l.622 : « ZUMRA, GamaDrive,
 Wasplex, G-Market et G-POS peuvent être présentés comme satellites de DG Afrique lorsqu'ils sont
 officiellement raccordés. Cette présentation ne révèle pas l'autorité mère invisible. »),
-`config/federation.php` (seule entrée codée en dur aujourd'hui), `docs/capacites/specs/CAP-018-lanceur-satellites.md`
+`config/federation.php` (seule entrée codée en dur aujourd'hui), `docs/capacites/specs/CAP-018-parcours-autonomie-projet.md`
 (« CAP-048 introduira le registre des satellites » — confirme que `dg_project_autonomy_pathways`
 n'est ni un registre de satellites ni une table d'organisations)
 

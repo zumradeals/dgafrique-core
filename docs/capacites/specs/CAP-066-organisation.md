@@ -19,7 +19,7 @@ Une **structure durable** qui porte des responsabilités, des membres, des rôle
 
 `ProjectAutonomyPathwayService::TARGET_FORMS` (`COMPANY`, `ASSOCIATION`, `COOPERATIVE`, `STARTUP`, `PLATFORM`, `OTHER`) déclare déjà l'intention d'un porteur de Projet explorant une forme d'autonomie — sans jamais créer d'entité. `Organization::TYPES` réutilise exactement ce même vocabulaire pour rester cohérent dans tout le dépôt.
 
-Ouvrir un parcours d'autonomie (CAP-018) ne crée **aucune** Organisation automatiquement — vérifié par `ProjectSatelliteLauncherTest` (`assertFalse(Schema::hasTable('dg_organizations'))`, une régression pré-existante indépendante de ce chantier, cf. « Dette découverte » ci-dessous). CAP-066 V1 ne relie donc pas encore `ProjectAutonomyPathway` à `Organization` : la création reste un geste humain volontaire et distinct, jamais une mutation automatique déclenchée par la maturité d'un Projet ou d'une ZUMRA.
+Ouvrir un parcours d'autonomie (CAP-018) ne crée **aucune** Organisation automatiquement — vérifié par `ProjectAutonomyPathwayTest` (`assertSame(0, Organization::query()->count())`, corrigé par REF-001B après la fermeture de CAP-066, cf. « Dette découverte » ci-dessous). CAP-066 V1 ne relie donc pas encore `ProjectAutonomyPathway` à `Organization` : la création reste un geste humain volontaire et distinct, jamais une mutation automatique déclenchée par la maturité d'un Projet ou d'une ZUMRA.
 
 ## Gouvernance
 
@@ -51,7 +51,7 @@ Cycle de vie de l'adhésion (`OrganizationMembership.status`) : `REQUESTED → A
 
 ## Dette découverte (non traitée ici)
 
-L'audit a confirmé que `ProjectAutonomyController` et `Administration/ProjectSatelliteLauncherController` référencent encore la classe `App\Application\Projects\ProjectSatelliteLauncherService`, supprimée par REF-001 (renommée `ProjectAutonomyPathwayService`). C'est la cause racine des 4 échecs `ProjectSatelliteLauncherTest` déjà présents dans la baseline connue de `main`. Cette dette est adjacente à CAP-066 mais n'en fait pas partie — non corrigée ici pour ne pas mélanger le nettoyage REF-001 à ce chantier, conformément à la consigne. Recommandée comme correction séparée à part entière.
+**Corrigée par REF-001B (2026-08-20).** L'audit CAP-066 avait confirmé que `ProjectAutonomyController` et `Administration/ProjectSatelliteLauncherController` référençaient encore la classe `App\Application\Projects\ProjectSatelliteLauncherService`, supprimée par REF-001 (renommée `ProjectAutonomyPathwayService`) — cause racine des échecs `ProjectSatelliteLauncherTest`. Cette dette était adjacente à CAP-066 et n'en faisait pas partie ; elle a été fermée séparément par REF-001B, qui a également renommé `Administration/ProjectSatelliteLauncherController` → `Administration/ProjectAutonomyPathwayController` et le test en `ProjectAutonomyPathwayTest`.
 
 ## Preuve
 

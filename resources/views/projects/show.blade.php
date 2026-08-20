@@ -273,7 +273,7 @@
                             <x-dg.actions flush style="margin-top:12px">
                                 <x-dg.btn variant="quiet" :href="route('projects.accompaniment.show', $project)">Accompagnement DG Afrique →</x-dg.btn>
                                 <x-dg.btn variant="quiet" :href="route('messages.project', $project)" method="POST">Conversation du projet →</x-dg.btn>
-                                @if(in_array($project->maturity, ['POTENTIAL_STRUCTURE', 'POTENTIAL_SATELLITE']) || $project->autonomyPathway)
+                                @if(in_array($project->maturity, ['POTENTIAL_STRUCTURE', 'AUTONOMY_READY']) || $project->autonomyPathway)
                                     <x-dg.btn variant="quiet" :href="route('projects.autonomy.show', $project)">Parcours d’autonomie →</x-dg.btn>
                                 @endif
                             </x-dg.actions>

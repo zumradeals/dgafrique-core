@@ -1,9 +1,9 @@
-<x-layouts.portal title="Lanceur de satellites — Administration DG Afrique">
+<x-layouts.portal title="Parcours d’autonomie — Administration DG Afrique">
 <main class="admin-content">
     <div class="admin-heading">
         <div>
             <p class="eyebrow dark">Administration DG Afrique</p>
-            <h1>Lanceur de satellites</h1>
+            <h1>Parcours d’autonomie des projets</h1>
             <p>Repérer les projets suffisamment mûrs et suivre leur parcours vers une autonomie organisationnelle plus forte, sans créer automatiquement une structure ni en déterminer la propriété.</p>
         </div>
         <div class="admin-links">
@@ -33,7 +33,7 @@
 
     <section class="admin-form" style="margin-top:1rem">
         <h2>Projets mûrs à examiner</h2>
-        <p>Cette liste est déterministe : seuls les repères « Structure potentielle » et « Satellite potentiel » sont retenus. Aucun score caché n’est calculé.</p>
+        <p>Cette liste est déterministe : seuls les repères « Structure potentielle » et « Autonomie à explorer » sont retenus. Aucun score caché n’est calculé.</p>
         @forelse($eligibleProjects as $project)
             <div class="admin-sections">
                 <div>
