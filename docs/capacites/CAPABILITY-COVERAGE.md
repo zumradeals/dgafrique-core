@@ -75,7 +75,7 @@
 | CAP-061 | Contributions financières | NOT_IMPLEMENTED |
 | CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED |
 | CAP-063 | Financement de projet | DEPENDENCY_BLOCKED |
-| CAP-064 | Moteur d’opportunités | NOT_IMPLEMENTED |
+| CAP-064 | Moteur d’opportunités | CLOSED |
 | CAP-065 | Partenaire comme fournisseur de capacité | NOT_IMPLEMENTED |
 | CAP-066 | Organisation | NOT_IMPLEMENTED |
 | CAP-067 | Identité organisationnelle | DEPENDENCY_BLOCKED |
