@@ -57,7 +57,16 @@ Ce garde-fou est actuellement une règle de revue reproductible, pas un job auto
 
 ## Portée de DOC-001
 
-DOC-001 régularise l'autorité et les contradictions documentaires. Il ne certifie pas à lui seul chaque ligne métier des 84 CAP. Lorsqu'une entrée de couverture n'a pas été réauditée en profondeur pendant DOC-001, elle reste soumise à la règle n°1 : le code et les tests de `main` gagnent. Toute future divergence découverte doit corriger `CAPABILITY-COVERAGE.md` dans la PR qui la révèle.
+DOC-001 régularise l'autorité et les contradictions documentaires. Il ne certifie pas à lui seul chaque ligne métier des 84 CAP. Lorsqu'une entrée de couverture n'a pas été réauditée en profondeur pendant DOC-001, elle reste soumise à la règle n°1 : le code et les tests de `main` gagnent.
+
+Corrections de couverture explicitement réauditées pendant DOC-001 :
+
+- CAP-019 à CAP-022 : retrait des marqueurs `[PLUS TARD]` de l'index, les modules étant déjà présents ;
+- CAP-047/048/049/050/051/078/079/084 : dépendances satellites réalignées après présence du registre et de la fédération sur `main` ;
+- CAP-059 : passage de `NOT_IMPLEMENTED` à `CLOSED` après inspection de Project Brain (`ProjectBrainNeedDraftService`, modèles de conversation/brouillon, routes et confirmation humaine) ;
+- CAP-077 : preuve reformulée contre le routage actuel pour distinguer les surfaces web internes d'une API de capacités externe.
+
+Toute future divergence découverte doit corriger `CAPABILITY-COVERAGE.md` dans la PR qui la révèle.
 
 ## Checklist de clôture DOC-001
 
