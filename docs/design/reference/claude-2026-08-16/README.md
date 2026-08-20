@@ -22,4 +22,4 @@ En cas de divergence :
 3. décisions explicitement versionnées plus récentes ;
 4. ce dossier uniquement comme provenance historique.
 
-Le ZIP source opaque qui était embarqué sous forme de fragments Base64 a été retiré de l'arbre courant pendant DOC-001. Son empreinte historique reste consignée dans `SOURCE-MANIFEST.md` et son contenu reste récupérable via l'historique Git.
+Le ZIP source opaque qui était embarqué sous forme de fragments Base64 a été retiré de l'arbre courant pendant DOC-001. Son empreinte historique reste consignée dans `SOURCE-MANIFEST.md`; les commits antérieurs conservent la trace versionnée des fragments selon la politique de rétention Git du dépôt.
