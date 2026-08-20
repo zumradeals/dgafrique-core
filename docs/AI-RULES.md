@@ -55,7 +55,7 @@ awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTE
 Pour une PR, le gel du legacy `proofs/` se vérifie en plus par :
 
 ```bash
-test -z "$(git diff --diff-filter=A --name-only origin/main...HEAD -- 'docs/capacites/proofs/**')"
+test -z "$(git diff --diff-filter=A --name-only origin/main...HEAD -- docs/capacites/proofs/)"
 ```
 
 Le garde-fou ne doit jamais inventer l'état des CAP ; il empêche seulement le retour des formes documentaires interdites.
