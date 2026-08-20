@@ -23,7 +23,7 @@ final class OpportunityEngine
      *   reference: string,
      *   title: string,
      *   reasons: list<string>,
-     *   action: array{kind: string, route_name: string, route_parameter: string},
+     *   action: array{kind: string, context_type: string, context_reference: string},
      *   priority: int
      * }>
      */
@@ -42,6 +42,7 @@ final class OpportunityEngine
             ->where('core_identity_reference', $identityReference)
             ->whereNull('archived_at')
             ->where('matching_consent', true)
+            ->where('visibility', CapabilityStatement::VISIBILITY_DISCOVERABLE)
             ->get();
 
         if ($statements->isEmpty()) {
@@ -86,26 +87,31 @@ final class OpportunityEngine
                 $reasons[] = 'Vous vous déclarez disponible pour de nouvelles sollicitations.';
             }
 
+            $reasons = array_values(array_unique($reasons));
+
             $results[] = [
                 'type' => 'MISSION',
                 'reference' => (string) $mission->public_reference,
                 'title' => (string) $mission->title,
-                'reasons' => array_values(array_unique($reasons)),
+                'reasons' => $reasons,
                 'action' => [
-                    'kind' => 'VIEW_MISSION',
-                    'route_name' => 'missions.show',
-                    'route_parameter' => (string) $mission->public_reference,
+                    'kind' => 'OPEN_MISSION_CONTEXT',
+                    'context_type' => (string) $mission->context_type,
+                    'context_reference' => (string) $mission->context_reference,
                 ],
                 // Priorité d'action, jamais valeur humaine : plus de raisons métier
                 // rapprochent l'objet du contexte de la personne.
-                'priority' => count(array_unique($reasons)),
+                'priority' => count($reasons),
             ];
         }
 
-        usort($results, static fn (array $left, array $right): int =>
-            [$right['priority'], mb_strtolower($left['title'])]
-            <=> [$left['priority'], mb_strtolower($right['title'])]
-        );
+        usort($results, static function (array $left, array $right): int {
+            $priority = $right['priority'] <=> $left['priority'];
+
+            return $priority !== 0
+                ? $priority
+                : strcasecmp($left['title'], $right['title']);
+        });
 
         return array_slice($results, 0, self::MAX_RESULTS);
     }
