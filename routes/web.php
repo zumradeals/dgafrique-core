@@ -20,6 +20,7 @@ use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
 use App\Http\Controllers\NeedController;
 use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
@@ -77,6 +78,11 @@ Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid(
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
 Route::get('/projets/{project}/correspondances', [ProjectMatchingController::class, 'index'])->whereUuid('project')->middleware(['core.member', 'throttle:project-matching'])->name('projects.matching');
 Route::post('/projets/{project}/correspondances/{profile}/masquer', [ProjectMatchingController::class, 'hide'])->whereUuid('project')->whereUuid('profile')->middleware(['core.member', 'throttle:project-match-decisions'])->name('projects.matching.hide');
+Route::get('/organisations', [OrganizationController::class, 'index'])->middleware('core.member')->name('organizations.index');
+Route::get('/organisations/creer', [OrganizationController::class, 'create'])->middleware('core.member')->name('organizations.create');
+Route::post('/organisations', [OrganizationController::class, 'store'])->middleware(['core.member', 'throttle:organization-write'])->name('organizations.store');
+Route::get('/organisations/{organization}', [OrganizationController::class, 'show'])->whereUuid('organization')->middleware('core.member')->name('organizations.show');
+Route::post('/organisations/{organization}/rejoindre', [OrganizationController::class, 'requestToJoin'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-membership'])->name('organizations.join');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
