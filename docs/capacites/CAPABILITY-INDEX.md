@@ -1,6 +1,8 @@
 # Index des 84 capacités
 
-> Les titres sont repris du référentiel V0.1. Les colonnes Domaine / Exécution servent au routage de développement et peuvent être affinées par fiche. Cet index décrit le référentiel ; le statut réel d'implémentation appartient exclusivement à `CAPABILITY-COVERAGE.md`.
+> Les titres historiques proviennent du référentiel V0.1, mais les libellés ci-dessous sont régularisés lorsqu'une ancienne formulation contredit l'architecture active. Les colonnes Domaine / Exécution servent au routage de développement. Cet index décrit le référentiel ; le statut réel d'implémentation appartient exclusivement à `CAPABILITY-COVERAGE.md`.
+>
+> **Invariant actif :** DG Afrique est un réseau social d'action centré sur le développement humain et ZUMRA. Un projet n'a pas pour destination naturelle de devenir un satellite. Les outils spécialisés suivent la progression `fonction interne → module spécialisé extractible → satellite autonome si besoin réel`.
 
 | Capacité | Domaine | Exécution |
 |---|---|---|
@@ -17,11 +19,11 @@
 | CAP-011 — ZUMRA / GROUPE HUMAIN | ZUMRA & Capabilities | DG |
 | CAP-012 — CAPACITÉ COLLECTIVE | ZUMRA & Capabilities | DG |
 | CAP-013 — BESOIN | Needs | DG |
-| CAP-014 — PROJET | Projects & Satellites | DG |
-| CAP-015 — MISE EN RELATION PROJET ↔ COMPÉTENCES | Projects & Satellites | DG |
-| CAP-016 — ACCOMPAGNEMENT DG AFRIQUE | Projects & Satellites | DG |
-| CAP-017 — MATURITÉ | Projects & Satellites | DG |
-| CAP-018 — LANCEUR DE SATELLITES | Projects & Satellites | HYBRID |
+| CAP-014 — PROJET | Projects | DG |
+| CAP-015 — MISE EN RELATION PROJET ↔ COMPÉTENCES | Projects | DG |
+| CAP-016 — ACCOMPAGNEMENT DG AFRIQUE | Projects | DG |
+| CAP-017 — MATURITÉ | Projects | DG |
+| CAP-018 — PARCOURS D’AUTONOMIE DU PROJET | Projects | DG |
 | CAP-019 — FIL D’ACTIVITÉ | Social | DG |
 | CAP-020 — MESSAGERIE | Social | DG |
 | CAP-021 — COMMENTAIRE | Social | DG |
@@ -50,10 +52,10 @@
 | CAP-044 — MATURITÉ CALCULÉE PAR SIGNES, PAS PAR DÉCRET | Projects | DG |
 | CAP-045 — ACCOMPAGNEMENT | Projects | DG |
 | CAP-046 — DOSSIER D’ACCOMPAGNEMENT | Projects | DG |
-| CAP-047 — LE « SATELLITE » COMME CHANGEMENT DE NATURE | Satellites & Core Integration | HYBRID |
-| CAP-048 — REGISTRE DES SATELLITES | Satellites & Core Integration | HYBRID |
-| CAP-049 — RELATION SATELLITE ↔ CORE | Satellites & Core Integration | HYBRID |
-| CAP-050 — DG AFRIQUE COMME CLIENT DU CORE | Satellites & Core Integration | HYBRID |
+| CAP-047 — MODULE SPÉCIALISÉ EXTRACTIBLE → SATELLITE AUTONOME | Specialized Tools & Satellites | HYBRID |
+| CAP-048 — REGISTRE DES SATELLITES | Specialized Tools & Satellites | HYBRID |
+| CAP-049 — RELATION SATELLITE ↔ CORE | Specialized Tools & Satellites | HYBRID |
+| CAP-050 — DG AFRIQUE COMME CLIENT DU CORE | Core Integration | HYBRID |
 | CAP-051 — PORTABILITÉ DE L’IDENTITÉ | Identity Federation | HYBRID |
 | CAP-052 — SÉPARATION DES CONTEXTES | Trust & Consent | HYBRID |
 | CAP-053 — CONSENTEMENT | Trust & Consent | HYBRID |
@@ -84,7 +86,7 @@
 | CAP-078 — LE SATELLITE PEUT DEVENIR FOURNISSEUR DE CAPACITÉ | Ecosystem Architecture | HYBRID |
 | CAP-079 — BOUCLE D’ÉCOSYSTÈME | Ecosystem Architecture | HYBRID |
 | CAP-080 — CE QUE DEVRAIT MESURER DG AFRIQUE | Ecosystem Architecture | HYBRID |
-| CAP-081 — LA GRANDE DIFFÉRENCE AVEC UN RÉSEAU SOCIAL | Ecosystem Architecture | HYBRID |
+| CAP-081 — LA GRANDE DIFFÉRENCE AVEC UN RÉSEAU SOCIAL PASSIF | Ecosystem Architecture | HYBRID |
 | CAP-082 — LA GRANDE DIFFÉRENCE AVEC LINKEDIN | Ecosystem Architecture | HYBRID |
 | CAP-083 — LA GRANDE DIFFÉRENCE AVEC UNE PLATEFORME D’INCUBATION | Ecosystem Architecture | HYBRID |
-| CAP-084 — LA PHRASE « LANCEUR DE SATELLITES » DEVIENT TECHNIQUE | Ecosystem Architecture | HYBRID |
+| CAP-084 — « SATELLITE » EST UN TERME TECHNIQUE D’AUTONOMIE | Ecosystem Architecture | HYBRID |
