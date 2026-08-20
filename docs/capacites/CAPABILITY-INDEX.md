@@ -1,6 +1,6 @@
 # Index des 84 capacités
 
-> Les titres sont repris du référentiel V0.1. Les colonnes Domaine / Exécution servent au routage de développement et peuvent être affinées par fiche.
+> Les titres sont repris du référentiel V0.1. Les colonnes Domaine / Exécution servent au routage de développement et peuvent être affinées par fiche. Cet index décrit le référentiel ; le statut réel d'implémentation appartient exclusivement à `CAPABILITY-COVERAGE.md`.
 
 | Capacité | Domaine | Exécution |
 |---|---|---|
@@ -22,10 +22,10 @@
 | CAP-016 — ACCOMPAGNEMENT DG AFRIQUE | Projects & Satellites | DG |
 | CAP-017 — MATURITÉ | Projects & Satellites | DG |
 | CAP-018 — LANCEUR DE SATELLITES | Projects & Satellites | HYBRID |
-| CAP-019 — FIL D’ACTIVITÉ [PLUS TARD] | Social | DG |
-| CAP-020 — MESSAGERIE [PLUS TARD] | Social | DG |
-| CAP-021 — COMMENTAIRE [PLUS TARD] | Social | DG |
-| CAP-022 — PARTAGE [PLUS TARD] | Social | DG |
+| CAP-019 — FIL D’ACTIVITÉ | Social | DG |
+| CAP-020 — MESSAGERIE | Social | DG |
+| CAP-021 — COMMENTAIRE | Social | DG |
+| CAP-022 — PARTAGE | Social | DG |
 | CAP-023 — LE GRAPHE DES CAPACITÉS | Capabilities & Intelligence | DG |
 | CAP-024 — LE PROFIL N’EST PAS UNE PAGE, C’EST UNE SOURCE DE CAPACITÉS | Capabilities & Intelligence | DG |
 | CAP-025 — DISPONIBILITÉ | Capabilities & Intelligence | DG |
