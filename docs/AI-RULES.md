@@ -16,16 +16,9 @@ Si deux documents se contredisent, vérifier le code puis régulariser la docume
 
 ## Interdictions documentaires
 
-Ne pas créer :
+Ne pas créer un second tracker CAP, une copie `v2/final` concurrente d'une spec active, une preuve datée permanente, une archive opaque découpée dans `docs/`, une maquette promue silencieusement en autorité, ni un statut `CLOSED` fondé uniquement sur une vieille documentation.
 
-- un second tracker CAP (`MASTER`, `FINAL`, `STATUS`, `PROGRESS`, etc.) ;
-- une copie `v2`, `final`, `final-final` d'une spec active ;
-- une preuve datée destinée à devenir une source permanente d'état ;
-- une archive ZIP/Base64 découpée dans `docs/` ;
-- une nouvelle maquette déclarée autorité sans décision explicite sur les invariants ;
-- un statut `CLOSED` uniquement parce qu'une spec ou une ancienne preuve l'affirme.
-
-L'historique du dépôt est l'archive des versions précédentes ; il n'est pas nécessaire de maintenir des copies concurrentes dans l'arbre courant.
+L'historique du dépôt conserve les versions précédentes ; il n'est pas nécessaire de maintenir des copies concurrentes dans l'arbre courant.
 
 ## Avant toute modification métier
 
@@ -45,9 +38,9 @@ Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne jamais encoder un s
 Avant merge d'une PR documentaire, exécuter ce contrôle local :
 
 ```bash
-test ! -e docs/capacites/CAP-MASTER-TRACKER.md
+test "$(find docs/capacites -maxdepth 1 -type f -name '*MASTER*TRACKER*' | wc -l)" -eq 0
 test ! -d docs/capacites/legacy/specs
-test -z "$(find docs -type f -name '*.zip.b64.part*' -print -quit)"
+test "$(find docs -type f -name '*.b64.part*' | wc -l)" -eq 0
 test -z "$(grep -E '\[(PLUS TARD|FAIT|CLOSED|PARTIAL|NOT_IMPLEMENTED|DOC_ONLY|DEPENDENCY_BLOCKED)\]' docs/capacites/CAPABILITY-INDEX.md || true)"
 awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
@@ -58,14 +51,7 @@ Ce garde-fou est aujourd'hui une règle de revue reproductible. Son automatisati
 
 ## Checklist de clôture DOC-001
 
-Une régularisation documentaire n'est terminée que si :
-
-- le code n'a pas été modifié pour « faire correspondre » artificiellement une vieille documentation ;
-- tout statut modifié dans `CAPABILITY-COVERAGE.md` est soutenu par du code courant inspecté ;
-- aucun tracker concurrent, spec legacy active ou archive opaque n'a été réintroduit ;
-- les documents historiques restants sont explicitement marqués comme tels ;
-- les liens vers des fichiers supprimés ont été retirés des points d'entrée actifs ;
-- la PR reste documentaire et son diff peut être relu sans dépendre d'une mémoire de conversation externe.
+Une régularisation documentaire n'est terminée que si le code n'a pas été modifié pour correspondre artificiellement à une vieille documentation, chaque statut modifié est soutenu par du code courant inspecté, les documents historiques restants sont explicitement marqués, les points d'entrée ne renvoient plus vers des fichiers supprimés et la PR peut être relue sans mémoire de conversation externe.
 
 ## IA et mutations métier
 
@@ -73,10 +59,4 @@ Une IA peut analyser, proposer et préparer un brouillon. Elle ne doit pas conto
 
 ## Règle anti-dérive
 
-Toute PR documentaire doit pouvoir répondre à trois questions :
-
-- ce document est-il actif ou historique ?
-- quelle source gagne en cas de conflit ?
-- ce fichier apporte-t-il une information qui n'existe pas déjà dans une autorité supérieure ?
-
-Si la troisième réponse est non, supprimer ou fusionner le fichier au lieu de le conserver par inertie.
+Toute PR documentaire doit pouvoir répondre à trois questions : ce document est-il actif ou historique ? quelle source gagne en cas de conflit ? apporte-t-il une information absente d'une autorité supérieure ? Si la dernière réponse est non, supprimer ou fusionner le fichier au lieu de le conserver par inertie.
