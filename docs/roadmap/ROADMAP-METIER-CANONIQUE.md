@@ -352,9 +352,19 @@ Preuve : `tests/Feature/CommunityEventTest.php` (22 cas). Détail complet : `doc
 
 ---
 
+## CAP-080 — Ce que devrait mesurer DG Afrique (livrée)
+
+**CLOSED — 2026-10-01.** Branche `feat/cap-080-impact-metrics`, PR draft. Était `NOT_IMPLEMENTED`/`DOCTRINE-À-CLARIFIER` (ROADMAP-003) : aucune doctrine positive ne définissait quoi mesurer — seule occurrence du corpus (art. 6.5), une interdiction : « Aucune contribution financière ne mesure la dignité, la moralité ou la valeur humaine d'une personne. » Clarification validée par l'invariant produit supérieur (`AI-RULES.md` : « le passage de la capacité à l'action humaine et collective »), cohérente avec l'unique occurrence doctrinale existante.
+
+Décision produit V1 : mesurer la capacité collective à transformer des capacités disponibles en actions et résultats réels — des faits collectifs et des flux métier, jamais la valeur des personnes. Aucun score humain, classement, réputation, gamification ni KPI d'engagement. `ImpactMetricsService` — projection de lecture pure dérivée des domaines existants (Besoin, Projet, Mission, Transmission, Preuve, ZUMRA, Organisation, Partenariat, Événement, `LedgerEntry` pour un compte de contributions confirmées, jamais un montant) — aucune nouvelle table, aucun snapshot, aucun ETL, aucun cron. Granularité portail/ZUMRA/Organisation, jamais individuelle/comparative. Autorité intégralement réutilisée : `ZumraGroupService::isLeader()`+adhésion active, `OrganizationService::canView()`.
+
+Preuve : `tests/Feature/ImpactMetricsTest.php` (11 cas). Détail complet : `docs/capacites/specs/CAP-080-mesure-collective.md`.
+
+---
+
 ## Priorité canonique actuelle
 
-**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062**, **CAP-063**, **MODERATION-COMP-001** et **CAP-068** sont closes. La priorité canonique #1 déterminée par ROADMAP-003 (audit puis implémentation de MODERATION-COMP-001, art. 19) est livrée — voir `docs/roadmap/MODERATION-COMP-001.md`. CAP-068, qui restait `DOCTRINE-À-CLARIFIER`, a été clarifiée puis close séparément (voir section dédiée ci-dessus). **Aucune nouvelle priorité canonique n'est fixée par ce chantier** : conformément à la règle de gouvernance de cette roadmap (« ne jamais conserver artificiellement une priorité devenue fausse »), déterminer la prochaine priorité exige un nouveau réaudit explicite du graphe métier (prochain chantier ROADMAP), pas une décision silencieuse ici. CAP-053, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080 restent dans l'état constaté par ROADMAP-003 (`PARTIAL` par conception ou bloquées par absence de dépendance/consommateur externe).
+**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062**, **CAP-063**, **MODERATION-COMP-001**, **CAP-068** et **CAP-080** sont closes. La priorité canonique #1 déterminée par ROADMAP-003 (audit puis implémentation de MODERATION-COMP-001, art. 19) est livrée — voir `docs/roadmap/MODERATION-COMP-001.md`. CAP-068 et CAP-080, qui restaient `DOCTRINE-À-CLARIFIER`, ont chacune été clarifiées puis closes séparément (voir sections dédiées ci-dessus). **Plus aucune CAP `DOCTRINE-À-CLARIFIER` ne subsiste.** **Aucune nouvelle priorité canonique n'est fixée par ce chantier** : conformément à la règle de gouvernance de cette roadmap (« ne jamais conserver artificiellement une priorité devenue fausse »), déterminer la prochaine priorité exige un nouveau réaudit explicite du graphe métier (prochain chantier ROADMAP), pas une décision silencieuse ici. CAP-053, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079 restent dans l'état constaté par ROADMAP-003 (`PARTIAL` par conception ou bloquées par absence de dépendance/consommateur externe).
 
 ---
 
