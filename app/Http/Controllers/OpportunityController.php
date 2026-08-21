@@ -6,23 +6,24 @@ namespace App\Http\Controllers;
 
 use App\Application\Opportunities\OpportunityEngine;
 use App\Domain\Identity\CoreIdentity;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
- * CAP-064 — exposition applicative minimale du moteur d'opportunités : une projection
- * en lecture seule, jamais une mutation. Aucune UI dédiée n'est construite ici ; ce
- * point d'entrée existe pour que le Cerveau du Projet ou un futur écran puisse
- * consommer la même projection sans dupliquer le moteur.
+ * CAP-064 — surface humaine dédiée (UIUX-002 décision #5). Réutilise `OpportunityEngine`
+ * strictement tel quel : aucun recalcul, aucun second moteur. La vue n'affiche que
+ * `title`/`reasons`/l'action vers la Mission — jamais `priority` (entier interne) ni aucun
+ * identifiant technique.
  */
 final class OpportunityController
 {
-    public function index(Request $request, OpportunityEngine $engine): JsonResponse
+    public function index(Request $request, OpportunityEngine $engine): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
 
-        return response()->json([
+        return view('opportunities.index', [
+            'identity' => $identity,
             'opportunities' => $engine->forIdentity($identity->reference),
         ]);
     }

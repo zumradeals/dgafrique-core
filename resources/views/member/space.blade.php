@@ -151,6 +151,15 @@
                         </section>
                     @endif
 
+                    @if($hasOtherAttention)
+                        {{-- UIUX-002 — décision #2 : un signal texte, jamais un badge numérique, vers
+                             /notifications — la source complète du reste de l'attention. --}}
+                        <p class="dg-space-attention-note">
+                            {{ $priority ? 'D’autres éléments attendent votre attention.' : 'Des éléments attendent votre attention ailleurs.' }}
+                            <a href="{{ route('notifications.index') }}">Voir mes notifications →</a>
+                        </p>
+                    @endif
+
                     @if($nextItems->isNotEmpty())
                         <section class="dg-space-section" aria-labelledby="dg-space-needs-title">
                             <div class="dg-space-section__head">
@@ -305,6 +314,14 @@
                             <div>
                                 <strong><a href="{{ route('missions.index') }}">Mes Missions</a></strong>
                                 <span>À décider, invitations, engagements, à valider et terminées.</span>
+                            </div>
+                        </div>
+
+                        <div class="dg-space-rail-row">
+                            <span class="dg-space-rail-row__mark">O</span>
+                            <div>
+                                <strong><a href="{{ route('opportunities.index') }}">Opportunités</a></strong>
+                                <span>Des Missions rapprochées de vos capacités déclarées.</span>
                             </div>
                         </div>
 

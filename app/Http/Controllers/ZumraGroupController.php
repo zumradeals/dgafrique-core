@@ -84,6 +84,15 @@ final class ZumraGroupController
         $membership = $group->memberships()->where('core_identity_reference', $identity->reference)->first();
         $roles = $group->roles()->orderByRaw("case role when 'PRIMARY_LEAD' then 1 when 'FIRST_DEPUTY' then 2 when 'SECOND_DEPUTY' then 3 when 'FINANCE_LEAD' then 4 else 5 end")->get();
         $roleProfiles = PersonProfile::query()->whereIn('core_identity_reference', $roles->pluck('core_identity_reference')->filter())->get()->keyBy('core_identity_reference');
+
+        // UIUX-002 — décision #4 : découvrir/comprendre/accepter une responsabilité qui vous est
+        // personnellement proposée, directement sur la fiche de la ZUMRA — aucune requête
+        // supplémentaire, dérivé de $roles déjà chargé.
+        $myPendingRoleProposal = $roles->first(
+            fn (ZumraGroupRole $role): bool => $role->status === ZumraGroupRole::STATUS_PROPOSED
+                && $role->core_identity_reference !== null
+                && hash_equals($role->core_identity_reference, $identity->reference),
+        );
         $pendingRequests = $isLeader
             ? $group->memberships()->where('status', ZumraGroupMembership::STATUS_REQUESTED)->oldest('requested_at')->get()
             : collect();
@@ -112,7 +121,8 @@ final class ZumraGroupController
 
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
-            'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects', 'collectivePriority',
+            'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
+            'collectivePriority', 'myPendingRoleProposal',
         ) + ['isLeader' => $isLeader]);
     }
 

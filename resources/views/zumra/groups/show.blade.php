@@ -38,6 +38,22 @@
                 <div class="dg-disclosure__body">Chaque responsabilité est acceptée explicitement par la personne qui la porte. Un siège vacant reste visible comme vacant — jamais rempli par un profil fictif. Rejoindre cette ZUMRA se fait par demande approuvée ou invitation acceptée, jamais automatiquement.</div>
             </details>
 
+            @if($myPendingRoleProposal)
+                {{-- UIUX-002 — décision #4 : découvrir/comprendre/accepter une responsabilité
+                     proposée personnellement. Aucun refus n'est proposé ici : cette transition
+                     n'existe pas dans le métier (ZumraGroupRole ne connaît que
+                     VACANT → PROPOSED → ACCEPTED). --}}
+                <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
+                    <x-dg.label tone="saffron">Une responsabilité vous est proposée</x-dg.label>
+                    <h2 class="dg-display" style="font-size:20px;margin-top:8px">{{ \App\Models\ZumraGroupRole::LABELS[$myPendingRoleProposal->role] ?? $myPendingRoleProposal->role }} — {{ $group->name }}</h2>
+                    <p class="dg-body" style="margin-top:6px">Cette responsabilité fondatrice vous a été proposée par un responsable de cette ZUMRA. Accepter reste entièrement votre choix.</p>
+                    <form method="POST" action="{{ route('zumra.groups.roles.accept', [$group, $myPendingRoleProposal->role]) }}" style="margin-top:14px">
+                        @csrf
+                        <button type="submit" class="dg-btn dg-btn--saffron">Accepter cette responsabilité</button>
+                    </form>
+                </div>
+            @endif
+
             @if($collectivePriority)
                 <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
                     <x-dg.label tone="saffron">Aujourd’hui — une seule chose compte pour cette ZUMRA</x-dg.label>
