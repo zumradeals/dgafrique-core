@@ -504,9 +504,15 @@ inférieure (numéro plus petit) ; en cas de doute, la hiérarchie tranche, jama
 rédaction.
 
 **Mission UI suivante recommandée (UIUX-001, sous réserve de revue de ce document par
-l'auteur du mandat) :** traiter en priorité l'incohérence la plus visible identifiée en §17-18 —
-donner une interface humaine minimale à un des domaines « JSON uniquement » à fort potentiel
-d'usage immédiat (Partenariats ou Événements, tous deux déjà dotés d'une autorité métier réutilisable
-et d'une doctrine stable), en respectant strictement §9 (pas de nouvelle entrée de navigation de
-premier niveau), §12-13 (aucune donnée de démonstration sans nécessité prouvée) et la procédure de
-gouvernance de `docs/design/DESIGN-INVARIANTS.md` §14.
+l'auteur du mandat) : le parcours nouvel utilisateur / première compréhension de DG Afrique**,
+périmètre conceptuel `Gateway → Compréhension → Compte/Identité → Première intention → Première
+action utile → Retour via Fil personnalisé` (§15 ci-dessus). Ce choix découle directement du
+principe établi par la présente mission (§14) : l'interface s'organise selon l'expérience humaine,
+pas selon la liste des CAP ni les trous d'interface du backend — **la priorité n'est donc pas
+choisie en fonction des surfaces actuellement JSON uniquement** (§17-18). Partenariats,
+Événements, Opportunités, Finance, Modération et Mesure collective restent des surfaces UI à
+construire, mais seront intégrées progressivement dans les parcours pertinents plutôt que traitées
+comme la prochaine priorité isolée. Toute future mission UIUX-001 doit respecter §9 (pas de
+nouvelle entrée de navigation de premier niveau imposée par un trou d'interface), §12-13 (aucune
+donnée de démonstration sans nécessité prouvée) et la procédure de gouvernance de
+`docs/design/DESIGN-INVARIANTS.md` §14.
