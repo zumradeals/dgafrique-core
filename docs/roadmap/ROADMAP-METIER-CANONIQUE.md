@@ -156,7 +156,7 @@ Cette priorité passe devant CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-04
 
 ### Dettes non-CAP réauditées
 
-Préservées à l'identique (voir section dédiée plus bas), avec une précision : `MissionReviewFixesTest::test_invitation_never_fabricates_context_access` reste un vrai bug de robustesse (validation UUID manquante avant requête), petit correctif technique isolé, à traiter séparément par hygiène — il ne devient pas prioritaire, mais ne doit plus être oublié indéfiniment.
+Préservées à l'identique (voir section dédiée plus bas), avec une précision : `MissionReviewFixesTest::test_invitation_never_fabricates_context_access` était un vrai bug de robustesse (validation UUID manquante avant requête) — **fermé par REF-MISSION-UUID-001** (voir « Dettes non-CAP » plus bas). Ce n'était pas une CAP incomplète et ne le devient pas rétroactivement : aucun impact sur CAP-069.
 
 ### MODERATION-COMP-001 — livrée (Phase A + Phase B, 2026-09-22)
 
@@ -385,8 +385,8 @@ La chaîne **CAP-077 → CAP-078 → CAP-079** reste **non prioritaire** tant qu
 ## Dettes non-CAP (ne modifient pas cette roadmap)
 
 - **CAP-016 ↔ CAP-065 non réconciliées.** `ProjectAccompanimentAction::provider_label` (texte libre, CAP-016) coexiste avec `Partnership` (relation gouvernable, CAP-065) sans lien structurel. Réconciliation à envisager ultérieurement (ex. `provider_label` référençant un `Partnership` réel), **non bloquante**, non traitée maintenant.
-- **`MissionReviewFixesTest`** → dette de robustesse (validation UUID manquante avant requête DB), pas un gap métier.
-- **`DesignInvariantsTest` / `ProofHttpSmokeTest` / `TransmissionHttpSmokeTest`** → contenu de démonstration/design désynchronisé, pas un manque métier.
+- **`MissionReviewFixesTest::test_invitation_never_fabricates_context_access`** — **fermée (REF-MISSION-UUID-001, 2026-09-22).** Était une dette de robustesse (validation de format UUID manquante avant une requête PostgreSQL typée `uuid`), jamais un gap métier ; `MissionAssignmentService::resolveInvitableSubject()` rejette désormais tout identifiant non conforme au format UUID avant toute requête (même comportement 422 qu'un identifiant inconnu, pour ne rien distinguer de l'extérieur). Aucune autorisation, aucune règle de contexte, aucun modèle métier modifié.
+- **`DesignInvariantsTest` / `ProofHttpSmokeTest` / `TransmissionHttpSmokeTest`** → contenu de démonstration/design désynchronisé, pas un manque métier. **Non traitées par REF-MISSION-UUID-001** (hors périmètre explicite de ce chantier).
 
 Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre ni les priorités de cette roadmap.
 

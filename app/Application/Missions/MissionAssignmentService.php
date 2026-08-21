@@ -10,6 +10,7 @@ use App\Models\MissionBlocker;
 use App\Models\MissionEvent;
 use App\Models\PersonProfile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Participation et affectations (v0.4 §6, retrait final v0.5 §6). Aucune affectation
@@ -332,8 +333,17 @@ final class MissionAssignmentService
      * non consentante échoue explicitement : elle ne devient jamais silencieusement une
      * invitation.
      */
+    /**
+     * REF-MISSION-UUID-001 : discovery_reference est une colonne uuid côté Postgres. Une valeur
+     * non conforme au format UUID fait échouer la requête elle-même (SQLSTATE 22P02) avant que
+     * abort_unless() ci-dessous ne puisse jamais s'exécuter — d'où ce contrôle de format, placé
+     * avant toute requête, plutôt qu'une validation de la valeur trouvée. Même message que le cas
+     * « non trouvé » : ni le format ni l'existence ne doivent être distinguables de l'extérieur.
+     */
     private function resolveInvitableSubject(string $discoveryReference): string
     {
+        abort_unless(Str::isUuid($discoveryReference), 422, 'Cette personne n’est pas disponible pour une invitation.');
+
         $profile = PersonProfile::query()
             ->where('discovery_reference', $discoveryReference)
             ->where('orientation_consent', true)
