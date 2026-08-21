@@ -199,7 +199,7 @@
 
                 <div class="dg-band">
                     <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Apprentissages et transmissions</strong>
-                    Cette source rejoindra le fil lorsqu’un objet métier canonique la produira (CAP-005 / CAP-006). Rien n’est simulé en attendant.
+                    Cette source rejoindra le fil lorsqu’un objet métier réel la produira. Rien n’est simulé en attendant.
                 </div>
             </aside>
         </div>

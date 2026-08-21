@@ -30,6 +30,7 @@ use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
+use App\Http\Controllers\QuickCapabilityController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
@@ -60,6 +61,8 @@ Route::get('/espace/profil', [MemberProfileController::class, 'edit'])
     ->middleware('core.member')->name('member.profile.edit');
 Route::put('/espace/profil', [MemberProfileController::class, 'update'])
     ->middleware(['core.member', 'throttle:profile-update'])->name('member.profile.update');
+Route::post('/espace/capacite-rapide', [QuickCapabilityController::class, 'store'])
+    ->middleware(['core.member', 'throttle:profile-update'])->name('member.capability.quick');
 Route::get('/personnes', [PeopleDiscoveryController::class, 'index'])
     ->middleware(['core.member', 'throttle:people-discovery'])->name('people.index');
 Route::get('/personnes/{reference}', [PeopleDiscoveryController::class, 'show'])

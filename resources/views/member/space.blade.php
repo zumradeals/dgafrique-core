@@ -31,47 +31,106 @@
                 </div>
             </section>
 
-            <nav class="dg-space-actions" aria-label="Actions rapides">
-                <a class="dg-space-action dg-space-action--primary" href="{{ route('needs.create') }}">
-                    <span class="dg-space-action__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
-                    </span>
-                    <span class="dg-space-action__text">
-                        <strong>Exprimer un besoin</strong>
-                        <span>Faire apparaître ce qui vous manque pour avancer.</span>
-                    </span>
-                </a>
+            @if($isNewMember)
+                {{--
+                    UIUX-001 — routeur de « première intention ». Un membre encore sans relation
+                    réelle avec le réseau (docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md §15) voit
+                    d'abord ces quatre intentions plutôt que les actions rapides habituelles — et
+                    n'y rencontre plus « Ouvrir ZUMRA » en premier niveau. Un routeur UX uniquement :
+                    aucun nouveau modèle métier, chaque intention mène à une capacité existante.
+                --}}
+                <nav class="dg-space-actions dg-space-intent" aria-label="Qu’est-ce que vous voulez mettre en mouvement ?">
+                    <details class="dg-space-action">
+                        <summary>
+                            <span class="dg-space-action__icon" aria-hidden="true">+</span>
+                            <span class="dg-space-action__text">
+                                <strong>Je peux apporter quelque chose</strong>
+                                <span>Déclarer une première capacité, en une phrase.</span>
+                            </span>
+                        </summary>
+                        <div class="dg-space-intent-reveal">
+                            <form method="POST" action="{{ route('member.capability.quick') }}">
+                                @csrf
+                                <input type="text" name="capability" minlength="3" maxlength="200" required
+                                       placeholder="Ex. : Je sais réparer des vélos.">
+                                <button type="submit" class="dg-btn dg-btn--primary">Déclarer</button>
+                            </form>
+                        </div>
+                    </details>
 
-                <a class="dg-space-action" href="{{ route('projects.create') }}">
-                    <span class="dg-space-action__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none"><path d="M5 18.5V9.5l7-4 7 4v9M8.5 13h7M12 9.5v7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <span class="dg-space-action__text">
-                        <strong>Lancer un projet</strong>
-                        <span>Transformer une intention en projet structuré.</span>
-                    </span>
-                </a>
+                    <a class="dg-space-action dg-space-action--primary" href="{{ route('needs.create') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">!</span>
+                        <span class="dg-space-action__text">
+                            <strong>J’ai un besoin</strong>
+                            <span>Exprimer ce qui vous manque pour avancer.</span>
+                        </span>
+                    </a>
 
-                <a class="dg-space-action" href="{{ route('people.index') }}">
-                    <span class="dg-space-action__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="10" cy="9" r="3" stroke-width="1.7"/><path d="M4.5 18c.5-3 2.4-4.7 5.5-4.7s5 1.7 5.5 4.7M17 6.5v5M14.5 9h5" stroke-width="1.7" stroke-linecap="round"/></svg>
-                    </span>
-                    <span class="dg-space-action__text">
-                        <strong>Trouver une personne</strong>
-                        <span>Découvrir des capacités rendues volontairement visibles.</span>
-                    </span>
-                </a>
+                    <a class="dg-space-action" href="{{ route('activity.index') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">↗</span>
+                        <span class="dg-space-action__text">
+                            <strong>Je veux découvrir</strong>
+                            <span>Voir ce qui bouge réellement dans le réseau.</span>
+                        </span>
+                    </a>
 
-                <a class="dg-space-action" href="{{ route('zumra.index') }}">
-                    <span class="dg-space-action__icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7.5" stroke-width="1.7"/><path d="M8.5 8.5h7l-7 7h7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <span class="dg-space-action__text">
-                        <strong>Ouvrir ZUMRA</strong>
-                        <span>Rejoindre vos collectifs et leurs actions.</span>
-                    </span>
-                </a>
-            </nav>
+                    <details class="dg-space-action">
+                        <summary>
+                            <span class="dg-space-action__icon" aria-hidden="true">→</span>
+                            <span class="dg-space-action__text">
+                                <strong>Je veux participer</strong>
+                                <span>Rejoindre une action collective déjà en cours.</span>
+                            </span>
+                        </summary>
+                        <div class="dg-space-intent-reveal dg-space-intent-links">
+                            <a href="{{ route('zumra.groups.index') }}">Rejoindre un collectif actif →</a>
+                            <a href="{{ route('organizations.index') }}">Rejoindre une organisation →</a>
+                        </div>
+                    </details>
+                </nav>
+            @else
+                <nav class="dg-space-actions" aria-label="Actions rapides">
+                    <a class="dg-space-action dg-space-action--primary" href="{{ route('needs.create') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke-width="2" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="dg-space-action__text">
+                            <strong>Exprimer un besoin</strong>
+                            <span>Faire apparaître ce qui vous manque pour avancer.</span>
+                        </span>
+                    </a>
+
+                    <a class="dg-space-action" href="{{ route('projects.create') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M5 18.5V9.5l7-4 7 4v9M8.5 13h7M12 9.5v7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="dg-space-action__text">
+                            <strong>Lancer un projet</strong>
+                            <span>Transformer une intention en projet structuré.</span>
+                        </span>
+                    </a>
+
+                    <a class="dg-space-action" href="{{ route('people.index') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="10" cy="9" r="3" stroke-width="1.7"/><path d="M4.5 18c.5-3 2.4-4.7 5.5-4.7s5 1.7 5.5 4.7M17 6.5v5M14.5 9h5" stroke-width="1.7" stroke-linecap="round"/></svg>
+                        </span>
+                        <span class="dg-space-action__text">
+                            <strong>Trouver une personne</strong>
+                            <span>Découvrir des capacités rendues volontairement visibles.</span>
+                        </span>
+                    </a>
+
+                    <a class="dg-space-action" href="{{ route('zumra.index') }}">
+                        <span class="dg-space-action__icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="7.5" stroke-width="1.7"/><path d="M8.5 8.5h7l-7 7h7" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span class="dg-space-action__text">
+                            <strong>Ouvrir ZUMRA</strong>
+                            <span>Rejoindre vos collectifs et leurs actions.</span>
+                        </span>
+                    </a>
+                </nav>
+            @endif
 
             <div class="dg-space-layout">
                 <main class="dg-space-main">

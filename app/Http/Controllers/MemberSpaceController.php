@@ -12,6 +12,7 @@ use App\Application\Recommendation\RecommendationConfiguration;
 use App\Application\Sharing\ContextShareService;
 use App\Application\Transmission\TransmissionService;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\CapabilityStatement;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
@@ -88,6 +89,17 @@ final class MemberSpaceController
 
         $receivedShares = array_slice($shares->personalInbox($identity->reference)['shares']->all(), 0, 2);
 
+        $isNewMember = $this->isNewMember(
+            $identity->reference,
+            $ownProject,
+            $zumraMembership,
+            $myGroups,
+            $nextMissionAction,
+            $nextTransmissionAction,
+            $nextProofAction,
+            $activityPreview,
+        );
+
         return view('member.space', [
             'identity' => $identity,
             'profile' => $profile,
@@ -96,12 +108,52 @@ final class MemberSpaceController
             'greetingName' => $greetingName,
             'profileCompletion' => $profileCompletion,
             'priority' => $priority,
+            'isNewMember' => $isNewMember,
             'nextItems' => $rest->where('kind', 'NEEDS')->where('event', '!=', 'NEED_RESOLVED')->take(2)->values(),
             'weekItems' => $rest->whereIn('kind', ['PROJECTS', 'ZUMRA'])->take(2)->values(),
             'myGroups' => $myGroups,
             'recommendedPeople' => $recommendedPeople,
             'receivedShares' => $receivedShares,
         ]);
+    }
+
+    /**
+     * UIUX-001 : détermine si le membre est encore sans relation réelle avec le réseau, à partir
+     * des données métier existantes uniquement — jamais un champ `onboarding_completed` séparé
+     * qui pourrait diverger de la réalité. Un membre déjà actif (une seule relation réelle suffit)
+     * ne repasse jamais par le routeur de « première intention » : il garde les actions rapides
+     * habituelles, y compris l'accès à ZUMRA.
+     */
+    private function isNewMember(
+        string $actor,
+        ?Project $ownProject,
+        ?ZumraProgramMembership $zumraMembership,
+        Collection $myGroups,
+        ?array $nextMissionAction,
+        ?array $nextTransmissionAction,
+        ?array $nextProofAction,
+        Collection $activityPreview,
+    ): bool {
+        if ($ownProject !== null || $zumraMembership !== null || $myGroups->isNotEmpty()) {
+            return false;
+        }
+        if ($nextMissionAction !== null || $nextTransmissionAction !== null || $nextProofAction !== null) {
+            return false;
+        }
+        if ($activityPreview->contains(static fn (array $item): bool => ($item['relevance_reason'] ?? null) !== null)) {
+            return false;
+        }
+        if (CapabilityStatement::query()->where('core_identity_reference', $actor)->whereNull('archived_at')->exists()) {
+            return false;
+        }
+        if (Need::query()->where('author_core_reference', $actor)->exists()) {
+            return false;
+        }
+        if (Project::query()->where('initiator_core_reference', $actor)->exists()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -179,8 +231,18 @@ final class MemberSpaceController
             ];
         }
 
-        if ($activityPreview->isNotEmpty()) {
-            $item = $activityPreview->first();
+        // UIUX-001 : un objet sans relation personnelle réelle (relevance_reason absent, CAP-055)
+        // ne peut jamais devenir la priorité dominante du membre — sinon Mon espace présenterait
+        // l'activité d'un inconnu comme « la seule chose qui compte aujourd'hui ». Seule une
+        // activité réellement rattachée à ce membre (besoin publié, projet porté ou rejoint,
+        // mission assignée, ZUMRA active…) peut occuper ce rang ; le reste du réseau reste visible
+        // ailleurs (Fil, sections « Pour vous »/« Cette semaine »), jamais ici.
+        $relevantPreview = $activityPreview->filter(
+            static fn (array $item): bool => ($item['relevance_reason'] ?? null) !== null,
+        );
+
+        if ($relevantPreview->isNotEmpty()) {
+            $item = $relevantPreview->first();
 
             return [
                 'label' => 'Aujourd’hui — une seule chose compte',
