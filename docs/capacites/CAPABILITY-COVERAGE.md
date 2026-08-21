@@ -93,7 +93,7 @@
 | CAP-077 | API de capacités | NOT_IMPLEMENTED |
 | CAP-078 | Outil spécialisé autonome comme fournisseur de capacité | NOT_IMPLEMENTED |
 | CAP-079 | Boucle d’écosystème | DEPENDENCY_BLOCKED |
-| CAP-080 | Ce que devrait mesurer DG Afrique | NOT_IMPLEMENTED |
+| CAP-080 | Ce que devrait mesurer DG Afrique | CLOSED |
 | CAP-081 | Différence avec un réseau social classique | DOC_ONLY |
 | CAP-082 | Différence avec LinkedIn | DOC_ONLY |
 | CAP-083 | Différence avec une plateforme d’incubation | DOC_ONLY |
@@ -206,6 +206,16 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Evidence :** `ProjectFunding`, `ProjectFundingService`, `ProjectFundingController`, migration `2026_09_15_100000_create_project_fundings_table.php`, `tests/Feature/ProjectFundingTest.php` (31 cas).
 
 **Détail complet :** voir `docs/capacites/specs/CAP-063-financement-projet.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-063 — Financement de projet (livrée) »). Ce fichier ne duplique pas leur contenu.
+
+## CAP-080 — Ce que devrait mesurer DG Afrique
+
+**Status : CLOSED** *(clarification doctrinale validée puis implémentation V1 — était `NOT_IMPLEMENTED`, marquée `DOCTRINE-À-CLARIFIER` par ROADMAP-003)*
+
+**Décision produit validée :** mesurer la capacité collective à transformer des capacités disponibles en actions et résultats réels — des faits collectifs et des flux métier, jamais la valeur des personnes. Aucun score humain, classement, réputation, gamification ou KPI d'engagement.
+
+**Evidence :** `ImpactMetricsService`, `ImpactMetricsController`, `routes/cap080.php`, `tests/Feature/ImpactMetricsTest.php` (11 cas). Aucune nouvelle table : projection de lecture pure dérivée des domaines existants.
+
+**Détail complet :** voir `docs/capacites/specs/CAP-080-mesure-collective.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md`. Ce fichier ne duplique pas leur contenu.
 
 ## CAP-068 — Événement
 
