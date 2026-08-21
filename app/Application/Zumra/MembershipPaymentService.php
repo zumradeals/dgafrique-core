@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Zumra;
 
+use App\Application\Ledger\LedgerService;
 use App\Infrastructure\Payments\GeniusPayClient;
 use App\Models\ZumraPayment;
 use App\Models\ZumraPaymentReceipt;
@@ -15,7 +16,7 @@ use RuntimeException;
 
 final class MembershipPaymentService
 {
-    public function __construct(private readonly GeniusPayClient $provider) {}
+    public function __construct(private readonly GeniusPayClient $provider, private readonly LedgerService $ledger) {}
 
     public function start(ZumraProgramMembership $membership, string $successUrl, string $errorUrl): ZumraPayment
     {
@@ -70,6 +71,8 @@ final class MembershipPaymentService
                     'actor_core_reference' => 'SYSTEM:PAYMENT_PROVIDER', 'context' => ['payment_reference' => $locked->reference, 'environment' => $locked->environment], 'occurred_at' => now(),
                 ]);
                 $this->issueReceipt($locked, $membership);
+                // CAP-062 : projection ledger uniquement après confirmation réelle et activation.
+                $this->ledger->postMembershipPayment($locked);
             }
 
             return $locked->refresh();
@@ -78,7 +81,9 @@ final class MembershipPaymentService
 
     private function issueReceipt(ZumraPayment $payment, ZumraProgramMembership $membership): void
     {
-        if (ZumraPaymentReceipt::query()->where('payment_id', $payment->id)->exists()) return;
+        if (ZumraPaymentReceipt::query()->where('payment_id', $payment->id)->exists()) {
+            return;
+        }
         $issuedAt = now();
         $number = 'DGZ-'.$issuedAt->format('Y').'-'.strtoupper(Str::random(12));
         $canonical = implode('|', [$number, $payment->reference, $membership->core_identity_reference, '500', 'XOF', $issuedAt->toIso8601String()]);
@@ -93,6 +98,7 @@ final class MembershipPaymentService
     private function snapshotHash(array $snapshot): string
     {
         ksort($snapshot);
+
         return hash('sha256', json_encode($snapshot, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
     }
 }

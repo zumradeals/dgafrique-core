@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\AccountRegistrationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
 use App\Http\Controllers\Administration\ContributionConfigurationController;
+use App\Http\Controllers\Administration\LedgerController as AdministrationLedgerController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
 use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\Administration\ProfileConfigurationController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LedgerController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
@@ -157,6 +159,11 @@ Route::get('/contributions/{contribution}/paiements/retour', [ContributionContro
 Route::get('/contributions/recus/{receipt}', [ContributionController::class, 'receipt'])
     ->middleware('core.member')->name('contributions.receipt');
 
+Route::get('/finances/ledger', [LedgerController::class, 'index'])
+    ->middleware(['core.member', 'throttle:ledger-read'])->name('ledger.index');
+Route::get('/finances/ledger/{entry}', [LedgerController::class, 'show'])
+    ->whereUuid('entry')->middleware(['core.member', 'throttle:ledger-read'])->name('ledger.show');
+
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
     Route::put('/profil-capacites', [ProfileConfigurationController::class, 'update'])
@@ -200,6 +207,8 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.retire');
     Route::post('/contributions/finalites/{purpose}/reactivation', [ContributionConfigurationController::class, 'reactivatePurpose'])
         ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.reactivate');
+    Route::get('/ledger', [AdministrationLedgerController::class, 'index'])
+        ->middleware('throttle:ledger-read')->name('administration.ledger.index');
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
