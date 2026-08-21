@@ -10,6 +10,8 @@ DG Afrique **n'est pas** un portail web de type moteur de recherche, un catalogu
 
 ZUMRA est le moteur humain et collectif de cet écosystème. Les outils spécialisés servent l'action ; ils ne deviennent jamais le centre conceptuel de DG Afrique.
 
+La synthèse produit/UX de couche 04 (modèle mental, parcours utilisateur, architecture UX conceptuelle) est canonisée dans `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` — à lire avant toute mission d'interface.
+
 ### Modules spécialisés et satellites
 
 Un outil spécialisé naît par défaut comme **module extractible** dans l'architecture DG Afrique lorsqu'il peut raisonnablement vivre dans le monolithe modulaire. Exemples de direction : G-POS, GamaDrive et futurs outils spécialisés du réseau.
