@@ -48,6 +48,29 @@ final class PartnershipTest extends TestCase
         self::assertSame(Partnership::PROVIDER_PERSON, $partnership->provider_type);
         self::assertSame('IDN-PROVIDER', $partnership->provider_reference);
         self::assertSame($statement->id, $partnership->capability_statement_id);
+        self::assertSame($statement->label, $partnership->capability_label);
+    }
+
+    public function test_a_person_without_a_capability_statement_id_is_refused(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $this->profile('IDN-PROVIDER');
+
+        $this->assertAborts(422, fn () => app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($project)));
+    }
+
+    public function test_a_contradictory_capability_label_is_overridden_by_the_real_capability_statement(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $this->profile('IDN-PROVIDER');
+        $statement = $this->capability('IDN-PROVIDER', 'Formation numérique');
+
+        $partnership = app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($project, [
+            'capability_statement_id' => $statement->id,
+            'capability_label' => 'Une capacité totalement différente inventée par le client',
+        ]));
+
+        self::assertSame('Formation numérique', $partnership->capability_label);
     }
 
     public function test_creation_without_identity_is_refused_via_http(): void
@@ -96,8 +119,9 @@ final class PartnershipTest extends TestCase
     {
         $project = $this->project('IDN-OWNER');
         $this->profile('IDN-PROVIDER', ['availability_status' => PersonProfile::AVAILABILITY_PAUSED]);
+        $statement = $this->capability('IDN-PROVIDER', 'Formation numérique');
 
-        $this->assertAborts(409, fn () => app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($project)));
+        $this->assertAborts(409, fn () => app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($project, ['capability_statement_id' => $statement->id])));
     }
 
     public function test_activation_requires_context_authority(): void
@@ -328,8 +352,6 @@ final class PartnershipTest extends TestCase
     {
         $projectOne = $this->project('IDN-OWNER-1', ['name' => 'Premier projet']);
         $projectTwo = $this->project('IDN-OWNER-2', ['name' => 'Second projet']);
-        $this->profile('IDN-PROVIDER');
-        $this->capability('IDN-PROVIDER', 'Formation numérique');
 
         $this->partnership($projectOne, 'IDN-PROVIDER');
         $this->partnership($projectTwo, 'IDN-PROVIDER');
@@ -340,15 +362,17 @@ final class PartnershipTest extends TestCase
     public function test_a_zumra_context_partnership_is_gated_by_active_membership(): void
     {
         $group = $this->group('IDN-LEADER');
+        $this->profile('IDN-PROVIDER');
+        $statement = $this->capability('IDN-PROVIDER', 'Formation numérique');
 
-        $this->assertAborts(404, fn () => app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($group)));
+        $this->assertAborts(404, fn () => app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($group, ['capability_statement_id' => $statement->id])));
 
         ZumraGroupMembership::query()->create([
             'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-PROVIDER',
             'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST',
             'initiated_by_core_reference' => 'IDN-PROVIDER', 'requested_at' => now(), 'joined_at' => now(),
         ]);
-        $partnership = app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($group));
+        $partnership = app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($group, ['capability_statement_id' => $statement->id]));
         self::assertSame(Partnership::CONTEXT_ZUMRA, $partnership->context_type);
 
         $activated = app(PartnershipService::class)->activate($partnership, 'IDN-LEADER');
@@ -358,8 +382,10 @@ final class PartnershipTest extends TestCase
     public function test_a_need_context_partnership_can_be_proposed_and_activated(): void
     {
         $need = $this->need('IDN-OWNER');
+        $this->profile('IDN-PROVIDER');
+        $statement = $this->capability('IDN-PROVIDER', 'Formation numérique');
 
-        $partnership = app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($need));
+        $partnership = app(PartnershipService::class)->propose('IDN-PROVIDER', $this->payload($need, ['capability_statement_id' => $statement->id]));
         self::assertSame(Partnership::CONTEXT_NEED, $partnership->context_type);
 
         $activated = app(PartnershipService::class)->activate($partnership, 'IDN-OWNER');
@@ -369,12 +395,15 @@ final class PartnershipTest extends TestCase
     public function test_the_member_route_renders_a_real_created_partnership(): void
     {
         $project = $this->project('IDN-OWNER');
+        $this->profile('IDN-PROVIDER');
+        $statement = $this->capability('IDN-PROVIDER', 'Mentorat technique');
         $this->signIn('IDN-PROVIDER');
 
-        $this->post('/partenariats', $this->payload($project, ['capability_label' => 'Mentorat technique']))
+        $this->post('/partenariats', $this->payload($project, ['capability_statement_id' => $statement->id]))
             ->assertRedirect();
 
         self::assertSame(1, Partnership::query()->count());
+        self::assertSame('Mentorat technique', Partnership::query()->first()->capability_label);
     }
 
     private function assertAborts(int $status, callable $fn): void
@@ -390,6 +419,17 @@ final class PartnershipTest extends TestCase
     private function partnership(Project|Need|ZumraGroup $context, string $provider, array $overrides = []): Partnership
     {
         $this->profile($provider);
+
+        if (($overrides['provider_type'] ?? Partnership::PROVIDER_PERSON) === Partnership::PROVIDER_PERSON
+            && ! isset($overrides['capability_statement_id'])) {
+            $label = $overrides['capability_label'] ?? 'Formation numérique';
+            unset($overrides['capability_label']);
+            $statement = CapabilityStatement::query()->firstOrCreate(
+                ['core_identity_reference' => $provider, 'kind' => CapabilityStatement::KIND_POSSESSED, 'normalized_label' => mb_strtolower($label)],
+                ['label' => $label, 'matching_consent' => true, 'visibility' => CapabilityStatement::VISIBILITY_DISCOVERABLE]
+            );
+            $overrides['capability_statement_id'] = $statement->id;
+        }
 
         return app(PartnershipService::class)->propose($provider, $this->payload($context, $overrides));
     }

@@ -46,9 +46,17 @@ final class PartnershipService
         [$context, $contextReference] = $this->resolveContext($contextType, (string) ($data['context_reference'] ?? ''));
         abort_unless($this->canViewContext($contextType, $context, $actor), 404);
 
-        $capabilityStatementId = $this->assertCapability($providerType, $providerReference, $data);
+        $statement = $this->assertCapability($providerType, $providerReference, $data);
+        $capabilityStatementId = $statement?->id;
 
-        $label = trim((string) ($data['capability_label'] ?? ''));
+        // Une Personne fournit toujours une capacité réelle du domaine Capacité : le libellé est
+        // dérivé de la CapabilityStatement liée, jamais déclaré librement par le client, pour
+        // qu'aucune capacité textuelle contradictoire ne puisse être affichée (CAP-065, correctif
+        // post-revue). Une Organisation, tant que CAP-067 la prive d'identité Core, reste sur une
+        // déclaration libre.
+        $label = $providerType === Partnership::PROVIDER_PERSON
+            ? (string) $statement?->label
+            : trim((string) ($data['capability_label'] ?? ''));
         abort_if($label === '', 422, 'La capacité proposée doit être décrite.');
 
         return DB::transaction(function () use ($providerType, $providerReference, $contextType, $contextReference, $capabilityStatementId, $label, $data, $actor): Partnership {
@@ -190,7 +198,7 @@ final class PartnershipService
         return $organization->id;
     }
 
-    private function assertCapability(string $providerType, string $providerReference, array $data): ?string
+    private function assertCapability(string $providerType, string $providerReference, array $data): ?CapabilityStatement
     {
         if ($providerType === Partnership::PROVIDER_ORGANIZATION) {
             // CAP-067 (identité organisationnelle Core) n'existe pas encore : une Organisation ne
@@ -199,13 +207,11 @@ final class PartnershipService
             return null;
         }
 
+        // CAP-065 est « Partenaire comme fournisseur de CAPACITÉ » : une Personne doit toujours
+        // lier une CapabilityStatement réelle du domaine Capacité, jamais une simple déclaration
+        // textuelle libre (correctif post-revue).
         $statementReference = $data['capability_statement_id'] ?? null;
-        if ($statementReference === null) {
-            $profile = PersonProfile::query()->find($providerReference);
-            abort_if($profile !== null && $profile->availability_status === PersonProfile::AVAILABILITY_PAUSED, 409, 'Vous vous déclarez en pause : aucune nouvelle proposition de capacité.');
-
-            return null;
-        }
+        abort_if(! is_string($statementReference) || $statementReference === '', 422, 'Une capacité réelle du domaine Capacité doit être liée (capability_statement_id).');
 
         $statement = CapabilityStatement::query()->find($statementReference);
         abort_if($statement === null, 422, 'Capacité introuvable.');
@@ -216,7 +222,7 @@ final class PartnershipService
         $profile = PersonProfile::query()->find($providerReference);
         abort_if($profile !== null && $profile->availability_status === PersonProfile::AVAILABILITY_PAUSED, 409, 'Vous vous déclarez en pause : aucune nouvelle proposition de capacité.');
 
-        return $statement->id;
+        return $statement;
     }
 
     /** @return array{0: Need|Project|ZumraGroup|null, 1: string} */

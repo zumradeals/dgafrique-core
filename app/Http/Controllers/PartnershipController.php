@@ -44,8 +44,8 @@ final class PartnershipController
             'organization_reference' => ['nullable', 'uuid', 'required_if:provider_type,ORGANIZATION'],
             'context_type' => ['required', Rule::in([Partnership::CONTEXT_PROJECT, Partnership::CONTEXT_ZUMRA, Partnership::CONTEXT_NEED])],
             'context_reference' => ['required', 'uuid'],
-            'capability_statement_id' => ['nullable', 'uuid'],
-            'capability_label' => ['required', 'string', 'max:200'],
+            'capability_statement_id' => ['nullable', 'uuid', 'required_if:provider_type,PERSON'],
+            'capability_label' => ['nullable', 'string', 'max:200', 'required_if:provider_type,ORGANIZATION'],
             'description' => ['nullable', 'string', 'max:2000'],
             'visibility' => ['required', Rule::in([Partnership::VISIBILITY_PRIVATE, Partnership::VISIBILITY_PUBLIC])],
         ]);
