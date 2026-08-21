@@ -562,3 +562,47 @@ catégorie C — question ouverte — de la « première intention » posée au 
 **Question ouverte non tranchée par cette mission** : le comportement des liens de découverte de
 la Landing menant à un domaine complet (Fil/Besoins/Projets/ZUMRA) reste un mur de connexion —
 seule la section « Dans le réseau en ce moment » a été rendue réelle. Reste catégorie C.
+
+---
+
+## 22. Addendum daté — UIUX-002 Phase B, boucle d'action quotidienne (21 août 2026)
+
+**Portée : Mon espace, Notifications, Fil, Opportunités** (`MemberSpaceController.php`,
+`NotificationSourceRegistry.php`/`NotificationService.php`, `ZumraAttentionSource.php`,
+`OpportunityController.php`, `ZumraSpaceController.php`, `ZumraGroupController.php`). Suit la
+procédure de gouvernance du §20.
+
+**Responsabilités respectives, rendues stables par cette mission** :
+
+- **Mon espace = priorité personnelle.** Une seule action dominante à la fois, jamais une liste —
+  invariant conservé (§9 ci-dessus). Le reste de l'attention reste découvrable via un signal
+  texte discret (jamais un badge), pas une seconde liste.
+- **Notifications = l'ensemble des éléments qui demandent information ou action.** Source complète
+  et personnelle, jamais concurrente de la priorité dominante de Mon espace (CAP-054).
+- **Fil = circulation du réseau.** Ce que fait bouger le réseau, avec pertinence personnelle
+  explicable quand elle existe, jamais un filtre (CAP-055, inchangé).
+- **Opportunités = possibilités d'action pertinentes et explicables.** Une projection en lecture
+  seule des objets métier existants (CAP-064), jamais un score ni un classement affiché — chaque
+  carte explique « pourquoi » à partir d'une relation métier réelle.
+
+**Décisions rendues durables** :
+
+- Les signaux ZUMRA réellement actionnables (demande d'adhésion à décider pour un responsable,
+  responsabilité fondatrice proposée personnellement) ont désormais **une seule source
+  applicative** (`ZumraAttentionSource`), réutilisée par Mon espace, Notifications et le hub ZUMRA
+  — jamais trois définitions indépendantes du même fait.
+- Une responsabilité proposée (`ZumraGroupRole::STATUS_PROPOSED`) est désormais découvrable et
+  acceptable via la fiche de la ZUMRA — aucun refus n'est proposé, cette transition n'existant pas
+  dans le métier.
+- « Pour vous maintenant »/« Cette semaine » sur Mon espace ne montrent plus que des items
+  personnellement pertinents (relevance_reason réel) — jamais une activité générique du réseau
+  présentée comme personnellement destinée au membre.
+- L'ordre inter-domaines de la priorité dominante reste volontairement inchangé (historique de
+  construction, pas un moteur de score) — seule une insertion minimale (ZUMRA, à côté de l'unique
+  autre maillon ZUMRA déjà présent) a été faite. Une révision plus large de cet ordre reste hors
+  périmètre, à documenter séparément si elle devient nécessaire.
+
+**Hors périmètre, restant catégorie C** : CommunityEvent, Partnership, « Mes organisations »
+(gaps backend réels, cf. rapport UIUX-002 Phase A §18) ; toute transformation de « À faire » en
+liste sur Mon espace (tension explicitement non résolue avec l'invariant d'une seule priorité
+dominante, cf. rapport Phase A §9).

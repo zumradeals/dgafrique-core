@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\Need;
 use App\Models\NeedEvent;
 use App\Models\PersonProfile;
+use App\Models\ZumraCharter;
+use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
+use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -121,6 +126,141 @@ final class MemberSpaceTest extends TestCase
 
         self::assertStringContainsString('une seule chose compte', $content);
         self::assertStringContainsString('Mon propre besoin réel', $content);
+    }
+
+    public function test_a_pending_zumra_join_request_becomes_priority_for_the_authorized_leader(): void
+    {
+        $group = $this->zumraGroup('IDN-SPACE-LEADER');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-SPACE-APPLICANT',
+            'status' => ZumraGroupMembership::STATUS_REQUESTED, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-SPACE-APPLICANT', 'requested_at' => now(),
+        ]);
+
+        $this->signIn('IDN-SPACE-LEADER');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringContainsString('demande d’adhésion attend votre décision', $content);
+        self::assertStringContainsString($group->name, $content);
+    }
+
+    public function test_a_pending_zumra_join_request_is_not_priority_for_an_unrelated_member(): void
+    {
+        $group = $this->zumraGroup('IDN-SPACE-LEADER2');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-SPACE-APPLICANT2',
+            'status' => ZumraGroupMembership::STATUS_REQUESTED, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-SPACE-APPLICANT2', 'requested_at' => now(),
+        ]);
+
+        $this->signIn('IDN-SPACE-UNRELATED2');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringNotContainsString('demande d’adhésion attend votre décision', $content);
+        self::assertStringNotContainsString($group->name, $content);
+    }
+
+    public function test_a_pending_role_proposal_becomes_priority_for_the_proposed_member(): void
+    {
+        $group = $this->zumraGroup('IDN-SPACE-LEADER3');
+        app(ZumraGroupService::class)->proposeRole($group, 'IDN-SPACE-LEADER3', 'FIRST_DEPUTY', 'IDN-SPACE-PROPOSED3');
+
+        $this->signIn('IDN-SPACE-PROPOSED3');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringContainsString('Une responsabilité vous est proposée', $content);
+        self::assertStringContainsString($group->name, $content);
+    }
+
+    public function test_a_pending_role_proposal_is_invisible_to_another_member(): void
+    {
+        $group = $this->zumraGroup('IDN-SPACE-LEADER4');
+        app(ZumraGroupService::class)->proposeRole($group, 'IDN-SPACE-LEADER4', 'FIRST_DEPUTY', 'IDN-SPACE-PROPOSED4');
+
+        $this->signIn('IDN-SPACE-OTHER4');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringNotContainsString('Une responsabilité vous est proposée', $content);
+    }
+
+    public function test_the_notifications_discoverability_signal_appears_when_other_actionable_items_exist(): void
+    {
+        $group = $this->zumraGroup('IDN-SPACE-LEADER5');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-SPACE-APPLICANT5A',
+            'status' => ZumraGroupMembership::STATUS_REQUESTED, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-SPACE-APPLICANT5A', 'requested_at' => now(),
+        ]);
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-SPACE-APPLICANT5B',
+            'status' => ZumraGroupMembership::STATUS_REQUESTED, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-SPACE-APPLICANT5B', 'requested_at' => now()->subMinute(),
+        ]);
+
+        $this->signIn('IDN-SPACE-LEADER5');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        // La priorité dominante montre une seule chose ; le reste (la seconde demande) doit
+        // rester découvrable via un signal texte vers /notifications, jamais un second CTA ici.
+        self::assertStringContainsString('D’autres éléments attendent votre attention.', $content);
+        self::assertStringContainsString(route('notifications.index'), $content);
+    }
+
+    public function test_the_calm_state_is_preserved_when_nothing_needs_attention(): void
+    {
+        $this->signIn('IDN-SPACE-CALM');
+        // Un profil déjà déclaré, sans aucune relation active, pour éviter la variante "déclarer
+        // une capacité" et exercer l'état calme pur.
+        $this->put('/espace/profil', ['existing_skills_text' => 'Couture', 'orientation_consent' => '0'])
+            ->assertRedirect('/espace/profil');
+
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringContainsString('Rien ne réclame une décision maintenant.', $content);
+        self::assertStringNotContainsString('D’autres éléments attendent votre attention.', $content);
+        self::assertStringNotContainsString('Des éléments attendent votre attention ailleurs.', $content);
+    }
+
+    public function test_pour_vous_sections_no_longer_show_unrelated_network_activity(): void
+    {
+        $this->makeVisibleNeed('IDN-SPACE-STRANGER-PV');
+        $this->signIn('IDN-SPACE-VIEWER-PV');
+
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        // Ni la priorité, ni les sections « Pour vous maintenant »/« Cette semaine » ne doivent
+        // présenter le besoin d'un inconnu comme personnellement destiné à ce membre.
+        self::assertStringNotContainsString('Besoin réel visible dans le Fil', $content);
+    }
+
+    private function zumraGroup(string $leader): ZumraGroup
+    {
+        $body = str_repeat('Respect et transmission. ', 5);
+        $charter = ZumraCharter::query()->firstOrCreate(
+            ['version' => '2026.1'],
+            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()],
+        );
+        if (! ZumraProgramMembership::query()->where('core_identity_reference', $leader)->exists()) {
+            ZumraProgramMembership::query()->create([
+                'core_identity_reference' => $leader,
+                'status' => ZumraProgramMembership::STATUS_ACTIVE,
+                'accepted_charter_id' => $charter->id,
+                'accepted_charter_version' => $charter->version,
+                'accepted_charter_hash' => $charter->content_hash,
+                'charter_accepted_at' => now(),
+                'submitted_at' => now(),
+                'activated_at' => now(),
+            ]);
+        }
+
+        return app(ZumraGroupService::class)->create($leader, [
+            'name' => 'ZUMRA Espace '.Str::random(6),
+            'domain' => 'Formation',
+            'founding_objective' => 'Réunir des personnes pour apprendre et transmettre des capacités utiles au développement.',
+            'participation_mode' => 'HYBRID',
+            'internal_charter' => 'Respect, dignité, transmission, hiérarchie responsable et décisions conformes à la charte commune.',
+            'assume_primary_lead' => true,
+        ]);
     }
 
     private function makeVisibleNeed(string $owner): void

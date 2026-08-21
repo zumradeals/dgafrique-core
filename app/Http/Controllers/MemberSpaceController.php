@@ -6,11 +6,13 @@ namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
 use App\Application\Missions\MissionService;
+use App\Application\Notifications\NotificationService;
 use App\Application\Proof\ProofService;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Application\Sharing\ContextShareService;
 use App\Application\Transmission\TransmissionService;
+use App\Application\Zumra\ZumraAttentionSource;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CapabilityStatement;
 use App\Models\Need;
@@ -19,6 +21,7 @@ use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
+use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -35,6 +38,8 @@ final class MemberSpaceController
         MissionService $missions,
         TransmissionService $transmissions,
         ProofService $proofs,
+        ZumraAttentionSource $zumraAttention,
+        NotificationService $notifications,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -45,6 +50,13 @@ final class MemberSpaceController
         $greetingName = preg_split('/\s+/u', trim($identity->label))[0] ?? $identity->label;
         $profileCompletion = $this->profileCompletion($profile);
         $activityPreview = $activity->preview($identity->reference, 6);
+
+        // UIUX-002 — décision #3 : même source que NotificationSourceRegistry/ZumraSpaceController,
+        // jamais une requête ZUMRA recalculée ici. Une responsabilité proposée personnellement
+        // prime sur une demande d'adhésion à décider pour un collectif (les deux restent, par
+        // construction, adressées explicitement au membre).
+        $zumraRoleProposal = $zumraAttention->myPendingRoleProposals($identity->reference)->first();
+        $zumraJoinRequest = $zumraRoleProposal ? null : $zumraAttention->pendingJoinRequestsForLeader($identity->reference)->first();
 
         // Un besoin personnel s'ouvre toujours directement en OPEN (NeedService::create) : il n'y a
         // pas de « besoin personnel proposé ». Le seul cas réel d'un besoin proposé par ce membre et
@@ -67,10 +79,15 @@ final class MemberSpaceController
         $nextTransmissionAction = $transmissions->nextAction($identity->reference);
         $nextProofAction = $proofs->nextAction($identity->reference);
 
-        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $nextMissionAction, $nextTransmissionAction, $nextProofAction, $activityPreview, $profile);
+        $priority = $this->priority($ownProposedNeed, $ownProject, $zumraMembership, $zumraRoleProposal, $zumraJoinRequest, $nextMissionAction, $nextTransmissionAction, $nextProofAction, $activityPreview, $profile);
 
         $usedKey = $priority['source_key'] ?? null;
-        $rest = $activityPreview->reject(fn (array $item): bool => $item['key'] === $usedKey);
+        // UIUX-002 : « Pour vous maintenant »/« Cette semaine » ne montrent plus que des items
+        // adossés à une relation personnelle réelle (relevance_reason, CAP-055) — jamais une
+        // activité générique du réseau présentée comme personnellement destinée au membre.
+        $rest = $activityPreview
+            ->reject(fn (array $item): bool => $item['key'] === $usedKey)
+            ->filter(fn (array $item): bool => ($item['relevance_reason'] ?? null) !== null);
 
         $myGroups = ZumraGroup::query()
             ->whereIn('id', ZumraGroupMembership::query()
@@ -100,6 +117,10 @@ final class MemberSpaceController
             $activityPreview,
         );
 
+        // UIUX-002 — décision #2 : un signal discret vers /notifications, jamais un badge ni une
+        // seconde liste ici. Réutilise NotificationService::sections() tel quel — aucun recalcul.
+        $hasOtherAttention = $notifications->sections($identity->reference)['a_traiter']->isNotEmpty();
+
         return view('member.space', [
             'identity' => $identity,
             'profile' => $profile,
@@ -109,6 +130,7 @@ final class MemberSpaceController
             'profileCompletion' => $profileCompletion,
             'priority' => $priority,
             'isNewMember' => $isNewMember,
+            'hasOtherAttention' => $hasOtherAttention,
             'nextItems' => $rest->where('kind', 'NEEDS')->where('event', '!=', 'NEED_RESOLVED')->take(2)->values(),
             'weekItems' => $rest->whereIn('kind', ['PROJECTS', 'ZUMRA'])->take(2)->values(),
             'myGroups' => $myGroups,
@@ -165,6 +187,8 @@ final class MemberSpaceController
         ?Need $ownProposedNeed,
         ?Project $ownProject,
         ?ZumraProgramMembership $zumraMembership,
+        ?array $zumraRoleProposal,
+        ?array $zumraJoinRequest,
         ?array $nextMissionAction,
         ?array $nextTransmissionAction,
         ?array $nextProofAction,
@@ -197,6 +221,40 @@ final class MemberSpaceController
                 'heading' => 'Votre adhésion au Programme ZUMRA attend d’être finalisée.',
                 'body' => 'Le dossier est prêt mais la contribution n’a pas encore été réglée.',
                 'primary' => ['label' => 'Finaliser mon adhésion', 'href' => route('zumra.membership.show')],
+                'secondary' => null,
+            ];
+        }
+
+        // UIUX-002 — décision #3 : une responsabilité fondatrice qui vous est personnellement
+        // proposée, ou une demande d'adhésion que votre responsabilité vous demande de décider,
+        // sont toutes deux des obligations explicitement adressées au membre (art. 7
+        // ZUMRA-DOCTRINE-INVARIANTE.md) — insérée ici, à côté du seul autre maillon ZUMRA déjà
+        // présent dans cette chaîne, sans réordonner les maillons Mission/Transmission/Preuve/Fil
+        // déjà établis (évolution minimale, cf. rapport UIUX-002 Phase A).
+        if ($zumraRoleProposal) {
+            /** @var ZumraGroup $group */
+            $group = $zumraRoleProposal['group'];
+            /** @var ZumraGroupRole $role */
+            $role = $zumraRoleProposal['role'];
+
+            return [
+                'label' => 'Aujourd’hui — une seule chose compte',
+                'heading' => 'Une responsabilité vous est proposée dans « '.$group->name.' ».',
+                'body' => 'Accepter reste entièrement votre choix.',
+                'primary' => ['label' => 'Voir la proposition', 'href' => route('zumra.groups.show', $group)],
+                'secondary' => null,
+            ];
+        }
+
+        if ($zumraJoinRequest) {
+            /** @var ZumraGroup $group */
+            $group = $zumraJoinRequest['group'];
+
+            return [
+                'label' => 'Aujourd’hui — une seule chose compte',
+                'heading' => 'Une demande d’adhésion attend votre décision dans « '.$group->name.' ».',
+                'body' => 'Votre responsabilité dans cette ZUMRA vous permet d’examiner cette demande.',
+                'primary' => ['label' => 'Examiner la demande', 'href' => route('zumra.groups.show', $group).'#demandes'],
                 'secondary' => null,
             ];
         }

@@ -386,6 +386,19 @@ details.dg-space-action[open] {
     background: linear-gradient(145deg, var(--dg-petrol-deep), #174c58);
 }
 
+/* UIUX-002 — décision #2 : signal texte discret vers /notifications, jamais un badge. */
+.dg-space-attention-note {
+    margin: 10px 0 0;
+    font-size: 13px;
+    color: var(--dg-muted-v2);
+}
+
+.dg-space-attention-note a {
+    margin-left: 6px;
+    font-weight: 600;
+    color: var(--dg-orange-deep);
+}
+
 .dg-space-section {
     display: flex;
     flex-direction: column;

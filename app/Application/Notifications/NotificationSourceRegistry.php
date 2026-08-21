@@ -12,6 +12,7 @@ use App\Application\Proof\ProofService;
 use App\Application\Proof\ProofVisibilityService;
 use App\Application\Transmission\TransmissionService;
 use App\Application\Transmission\TransmissionVisibilityService;
+use App\Application\Zumra\ZumraAttentionSource;
 use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
@@ -24,8 +25,6 @@ use App\Models\Transmission;
 use App\Models\TransmissionEvent;
 use App\Models\TransmissionParticipant;
 use App\Models\ZumraGroup;
-use App\Models\ZumraGroupMembership;
-use App\Models\ZumraGroupRole;
 use Illuminate\Support\Collection;
 
 /**
@@ -47,6 +46,7 @@ final class NotificationSourceRegistry
         private readonly NeedService $needs,
         private readonly ProjectService $projects,
         private readonly ZumraGroupService $zumraGroups,
+        private readonly ZumraAttentionSource $zumraAttention,
     ) {}
 
     public function actionable(string $actor): Collection
@@ -198,7 +198,7 @@ final class NotificationSourceRegistry
     /** Besoins portés par une ZUMRA que l'acteur dirige, en attente de publication. */
     private function needActionable(string $actor): Collection
     {
-        $ledGroupIds = $this->ledGroupIds($actor);
+        $ledGroupIds = $this->zumraAttention->ledGroupIds($actor);
         if ($ledGroupIds->isEmpty()) {
             return collect();
         }
@@ -223,7 +223,7 @@ final class NotificationSourceRegistry
     /** Projets portés par une ZUMRA que l'acteur dirige, en attente d'adoption. */
     private function projectActionable(string $actor): Collection
     {
-        $ledGroupIds = $this->ledGroupIds($actor);
+        $ledGroupIds = $this->zumraAttention->ledGroupIds($actor);
         if ($ledGroupIds->isEmpty()) {
             return collect();
         }
@@ -245,59 +245,50 @@ final class NotificationSourceRegistry
             ));
     }
 
+    /**
+     * UIUX-002 : les trois faits ZUMRA « ceci vous concerne » (demandes d'adhésion à décider,
+     * invitations reçues, propositions de responsabilité reçues) viennent tous de
+     * `ZumraAttentionSource` — la même source que `MemberSpaceController::priority()` et
+     * `ZumraSpaceController`, jamais une requête recalculée ici.
+     */
     private function zumraActionable(string $actor): Collection
     {
         $items = collect();
-        $ledGroupIds = $this->ledGroupIds($actor);
 
-        if ($ledGroupIds->isNotEmpty()) {
-            $requests = ZumraGroupMembership::query()
-                ->whereIn('zumra_group_id', $ledGroupIds)
-                ->where('status', ZumraGroupMembership::STATUS_REQUESTED)
-                ->get();
-
-            $groups = ZumraGroup::query()->whereIn('id', $requests->pluck('zumra_group_id')->unique())->get()->keyBy('id');
-
-            foreach ($requests as $membership) {
-                $group = $groups->get($membership->zumra_group_id);
-                if (! $group) {
-                    continue;
-                }
-                $items->push($this->item(
-                    'ZUMRA',
-                    $membership->id.':'.$membership->status,
-                    'À décider — demande d’adhésion à « '.$group->name.' »',
-                    'Une personne souhaite rejoindre cette ZUMRA que vous dirigez.',
-                    'zumra.groups.show',
-                    $group,
-                    $membership->requested_at ?? $membership->updated_at,
-                ));
-            }
+        foreach ($this->zumraAttention->pendingJoinRequestsForLeader($actor) as $row) {
+            $items->push($this->item(
+                'ZUMRA',
+                $row['membership']->id.':'.$row['membership']->status,
+                'À décider — demande d’adhésion à « '.$row['group']->name.' »',
+                'Une personne souhaite rejoindre cette ZUMRA que vous dirigez.',
+                'zumra.groups.show',
+                $row['group'],
+                $row['membership']->requested_at ?? $row['membership']->updated_at,
+            ));
         }
 
-        $invitations = ZumraGroupMembership::query()
-            ->where('core_identity_reference', $actor)
-            ->where('status', ZumraGroupMembership::STATUS_INVITED)
-            ->get();
+        foreach ($this->zumraAttention->myPendingInvitations($actor) as $row) {
+            $items->push($this->item(
+                'ZUMRA',
+                $row['membership']->id.':'.$row['membership']->status,
+                'Invitation — ZUMRA « '.$row['group']->name.' »',
+                'Rejoindre reste entièrement votre choix.',
+                'zumra.groups.show',
+                $row['group'],
+                $row['membership']->invited_at ?? $row['membership']->updated_at,
+            ));
+        }
 
-        if ($invitations->isNotEmpty()) {
-            $groups = ZumraGroup::query()->whereIn('id', $invitations->pluck('zumra_group_id')->unique())->get()->keyBy('id');
-
-            foreach ($invitations as $membership) {
-                $group = $groups->get($membership->zumra_group_id);
-                if (! $group) {
-                    continue;
-                }
-                $items->push($this->item(
-                    'ZUMRA',
-                    $membership->id.':'.$membership->status,
-                    'Invitation — ZUMRA « '.$group->name.' »',
-                    'Rejoindre reste entièrement votre choix.',
-                    'zumra.groups.show',
-                    $group,
-                    $membership->invited_at ?? $membership->updated_at,
-                ));
-            }
+        foreach ($this->zumraAttention->myPendingRoleProposals($actor) as $row) {
+            $items->push($this->item(
+                'ZUMRA',
+                $row['role']->id.':'.$row['role']->status,
+                'Proposition de responsabilité — « '.$row['group']->name.' »',
+                'Accepter reste entièrement votre choix.',
+                'zumra.groups.show',
+                $row['group'],
+                $row['role']->proposed_at ?? $row['role']->updated_at,
+            ));
         }
 
         return $items;
@@ -490,14 +481,6 @@ final class NotificationSourceRegistry
     }
 
     // ===== Commun =====
-
-    private function ledGroupIds(string $actor): Collection
-    {
-        return ZumraGroupRole::query()
-            ->where('core_identity_reference', $actor)
-            ->where('status', ZumraGroupRole::STATUS_ACCEPTED)
-            ->pluck('zumra_group_id');
-    }
 
     /** @param Mission|Transmission|Proof|Need|Project|ZumraGroup $subject */
     private function item(
