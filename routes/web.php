@@ -21,6 +21,7 @@ use App\Http\Controllers\MemberSpaceController;
 use App\Http\Controllers\NeedController;
 use App\Http\Controllers\OpportunityController;
 use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
@@ -83,6 +84,14 @@ Route::get('/organisations/creer', [OrganizationController::class, 'create'])->m
 Route::post('/organisations', [OrganizationController::class, 'store'])->middleware(['core.member', 'throttle:organization-write'])->name('organizations.store');
 Route::get('/organisations/{organization}', [OrganizationController::class, 'show'])->whereUuid('organization')->middleware('core.member')->name('organizations.show');
 Route::post('/organisations/{organization}/rejoindre', [OrganizationController::class, 'requestToJoin'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-membership'])->name('organizations.join');
+Route::get('/partenariats', [PartnershipController::class, 'index'])->middleware('core.member')->name('partnerships.index');
+Route::post('/partenariats', [PartnershipController::class, 'store'])->middleware(['core.member', 'throttle:partnership-write'])->name('partnerships.store');
+Route::get('/partenariats/{partnership}', [PartnershipController::class, 'show'])->whereUuid('partnership')->middleware('core.member')->name('partnerships.show');
+Route::post('/partenariats/{partnership}/activation', [PartnershipController::class, 'activate'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.activate');
+Route::post('/partenariats/{partnership}/pause', [PartnershipController::class, 'pause'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.pause');
+Route::post('/partenariats/{partnership}/reprise', [PartnershipController::class, 'resume'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.resume');
+Route::post('/partenariats/{partnership}/retrait', [PartnershipController::class, 'withdraw'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.withdraw');
+Route::post('/partenariats/{partnership}/fin', [PartnershipController::class, 'end'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.end');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
