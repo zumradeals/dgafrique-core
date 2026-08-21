@@ -29,7 +29,9 @@ use Illuminate\Support\Str;
 final class MessagingService
 {
     private const MAX_BODY_LENGTH = 3000;
+
     private const INBOX_LIMIT = 100;
+
     private const THREAD_LIMIT = 100;
 
     public function __construct(
@@ -37,8 +39,7 @@ final class MessagingService
         private readonly ProjectService $projects,
         private readonly MissionVisibilityService $missionVisibility,
         private readonly TransmissionVisibilityService $transmissionVisibility,
-    ) {
-    }
+    ) {}
 
     public function startDirect(string $actor, string $discoveryReference): MessageConversation
     {
@@ -294,7 +295,7 @@ final class MessagingService
             ->filter(fn (MessageConversation $conversation): bool => $this->canAccess($conversation, $actor))
             ->map(function (MessageConversation $conversation) use ($actor): array {
                 $participant = $conversation->participants->firstWhere('core_identity_reference', $actor);
-                $last = MessageEntry::query()->where('conversation_id', $conversation->id)->latest('sent_at')->first();
+                $last = MessageEntry::query()->where('conversation_id', $conversation->id)->whereNull('hidden_at')->latest('sent_at')->first();
                 $context = $this->contextData($conversation, $actor);
 
                 return [
@@ -320,6 +321,7 @@ final class MessagingService
 
         $entries = MessageEntry::query()
             ->where('conversation_id', $conversation->id)
+            ->whereNull('hidden_at')
             ->latest('sent_at')
             ->limit(self::THREAD_LIMIT)
             ->get()
@@ -500,19 +502,23 @@ final class MessagingService
     {
         if ($conversation->context_type === MessageConversation::CONTEXT_NEED) {
             $need = Need::query()->where('public_reference', $conversation->context_reference)->first();
+
             return ['label' => $need ? 'Besoin · '.$need->title : 'Besoin', 'url' => $need ? route('needs.show', $need) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_ZUMRA) {
             $group = ZumraGroup::query()->where('public_reference', $conversation->context_reference)->first();
+
             return ['label' => $group ? 'ZUMRA · '.$group->name : 'ZUMRA', 'url' => $group ? route('zumra.groups.show', $group) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_INVITATION) {
             $membership = ZumraGroupMembership::query()->find($conversation->context_reference);
             $group = $membership ? ZumraGroup::query()->find($membership->zumra_group_id) : null;
+
             return ['label' => $group ? 'Invitation · '.$group->name : 'Invitation ZUMRA', 'url' => $group ? route('zumra.groups.show', $group) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_PROJECT) {
             $project = Project::query()->where('public_reference', $conversation->context_reference)->first();
+
             return [
                 'label' => $project ? 'Projet · '.$project->name : 'Projet',
                 'url' => $project ? route('projects.show', $project) : null,
@@ -521,10 +527,12 @@ final class MessagingService
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_MISSION) {
             $mission = Mission::query()->where('public_reference', $conversation->context_reference)->first();
+
             return ['label' => $mission ? 'Mission · '.$mission->title : 'Mission', 'url' => $mission ? route('missions.show', $mission) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_TRANSMISSION) {
             $transmission = Transmission::query()->where('public_reference', $conversation->context_reference)->first();
+
             return ['label' => $transmission ? 'Transmission · '.$transmission->capability_label : 'Transmission', 'url' => $transmission ? route('transmissions.show', $transmission) : null, 'can_manage_participants' => false];
         }
         if ($conversation->context_type === MessageConversation::CONTEXT_DG_AFRIQUE) {
@@ -567,10 +575,12 @@ final class MessagingService
         foreach ($references as $reference) {
             if ($reference === $actor) {
                 $labels[$reference] = 'Vous';
+
                 continue;
             }
             if ($administrators->has($reference)) {
                 $labels[$reference] = 'Équipe DG Afrique';
+
                 continue;
             }
             $labels[$reference] = $profiles->get($reference)?->discovery_display_name ?: 'Membre DG Afrique';

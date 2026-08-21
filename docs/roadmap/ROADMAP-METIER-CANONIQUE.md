@@ -158,6 +158,12 @@ Cette priorité passe devant CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-04
 
 Préservées à l'identique (voir section dédiée plus bas), avec une précision : `MissionReviewFixesTest::test_invitation_never_fabricates_context_access` reste un vrai bug de robustesse (validation UUID manquante avant requête), petit correctif technique isolé, à traiter séparément par hygiène — il ne devient pas prioritaire, mais ne doit plus être oublié indéfiniment.
 
+### MODERATION-COMP-001 — livrée (Phase A + Phase B, 2026-09-22)
+
+**La priorité canonique #1 de ROADMAP-003 est désormais close.** Phase A (audit) validée puis Phase B (implémentation V1) livrée : architecture HYBRIDE C→B (discipline ZUMRA réutilisant `ZumraGroupMembership`/`ZumraGroupService`/`ZumraGroupEvent`, `ModerationReport` transversal, `ModerationDecision` vivante, masquage local `ContextComment`/`MessageEntry`). Détail complet, invariants rendus exécutables, frontières vérifiées et preuve runtime : voir `docs/roadmap/MODERATION-COMP-001.md`. **Aucun numéro CAP créé** — le référentiel reste figé à CAP-001–CAP-084 ; `CAPABILITY-INDEX.md`/`CAPABILITY-COVERAGE.md` ne sont pas modifiés par ce chantier.
+
+L'invariant doctrinal absolu de l'art. 23.1 (« droit au signalement, à l'explication et au recours ») qui motivait cette priorité est désormais réellement honoré et testé (`tests/Feature/ModerationTest.php`, 57 cas).
+
 ---
 
 ## Historique — AUDIT-CAP-002 / ROADMAP-001 / ROADMAP-002 (superseded by ROADMAP-003)
@@ -338,7 +344,7 @@ Preuve : `tests/Feature/ProjectFundingTest.php` (31 cas). Voir la spec pour le d
 
 ## Priorité canonique actuelle
 
-**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** sont closes ; le domaine Finance/Projects est entièrement couvert par son périmètre V1 respectif. Le réaudit ROADMAP-003 a déterminé la priorité canonique #1 : **audit Phase A de MODERATION-COMP-001 (Modération, discipline et recours, art. 19)** — un invariant doctrinal absolu (art. 23.1) actuellement non honoré, sans dépendance externe, dont l'infrastructure porteuse existe déjà. Cette priorité passe devant CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080.
+**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062**, **CAP-063** et **MODERATION-COMP-001** sont closes. La priorité canonique #1 déterminée par ROADMAP-003 (audit puis implémentation de MODERATION-COMP-001, art. 19) est livrée — voir `docs/roadmap/MODERATION-COMP-001.md`. **Aucune nouvelle priorité canonique n'est fixée par ce chantier** : conformément à la règle de gouvernance de cette roadmap (« ne jamais conserver artificiellement une priorité devenue fausse »), déterminer la prochaine priorité exige un nouveau réaudit explicite du graphe métier (prochain chantier ROADMAP), pas une décision silencieuse ici. CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080 restent dans l'état constaté par ROADMAP-003.
 
 ---
 
@@ -388,4 +394,4 @@ Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre n
 
 ## Prochaine action recommandée
 
-**ROADMAP-003 est le snapshot canonique actuel (voir section dédiée en haut de ce document).** Prochaine action : **audit Phase A de MODERATION-COMP-001 — Modération, discipline et recours (art. 19)**, avant toute implémentation — cohérent avec la discipline Phase A/Phase B déjà appliquée à ZUMRA-COMP-001, CAP-061, CAP-062 et CAP-063. Aucun numéro CAP officiel n'est créé pour ce chantier (voir « Pourquoi aucun numéro CAP n'est créé ici » dans la section ROADMAP-003).
+**ROADMAP-003 est le snapshot canonique actuel (voir section dédiée en haut de ce document).** Sa priorité #1 — MODERATION-COMP-001 (Modération, discipline et recours, art. 19), Phase A puis Phase B — est livrée (voir `docs/roadmap/MODERATION-COMP-001.md`). Aucun numéro CAP officiel n'a été créé pour ce chantier (voir « Pourquoi aucun numéro CAP n'est créé ici » dans la section ROADMAP-003). **Prochaine action : un nouveau réaudit explicite du graphe métier (ROADMAP-004)** pour déterminer la priorité canonique suivante — cette roadmap ne préjuge pas de son résultat.

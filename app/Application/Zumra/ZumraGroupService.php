@@ -347,6 +347,95 @@ final class ZumraGroupService
         return $group->roles()->where('core_identity_reference', $actor)->where('status', ZumraGroupRole::STATUS_ACCEPTED)->exists();
     }
 
+    public function isPrimaryLead(ZumraGroup $group, string $subject): bool
+    {
+        return $group->roles()->where('role', 'PRIMARY_LEAD')->where('core_identity_reference', $subject)->where('status', ZumraGroupRole::STATUS_ACCEPTED)->exists();
+    }
+
+    /**
+     * MODERATION-COMP-001 (art. 11.4/12/19) — lacune déjà préparée par le schéma (STATUS_EXCLUDED
+     * était un constant mort) : décision disciplinaire ACTIVE|SUSPENDED → EXCLUDED, jamais un
+     * départ volontaire (LEFT reste distinct). Un responsable ordinaire ne peut jamais décider de
+     * l'exclusion du PRIMARY_LEAD : seule l'autorité DG Afrique/GAMAD (niveau 3) le peut — un
+     * responsable ne peut pas juger son propre premier responsable.
+     */
+    public function exclude(ZumraGroup $group, string $actor, string $subject, string $reason, int $establishedThreshold): void
+    {
+        $this->assertDisciplinaryAuthority($group, $actor, $subject);
+        abort_if(trim($reason) === '', 422, 'Un motif est obligatoire pour une exclusion (art. 11.4).');
+
+        DB::transaction(function () use ($group, $actor, $subject, $reason, $establishedThreshold): void {
+            $membership = ZumraGroupMembership::query()
+                ->where('zumra_group_id', $group->id)->where('core_identity_reference', $subject)
+                ->whereIn('status', [ZumraGroupMembership::STATUS_ACTIVE, ZumraGroupMembership::STATUS_SUSPENDED])
+                ->lockForUpdate()->firstOrFail();
+            $membership->update(['status' => ZumraGroupMembership::STATUS_EXCLUDED, 'decision_reason' => $reason, 'left_at' => now()]);
+            $this->refreshCount($group, $establishedThreshold);
+            $this->event($group, 'MEMBER_EXCLUDED', $actor, ['subject' => $subject, 'reason' => $reason]);
+        });
+    }
+
+    /**
+     * Suspension INDIVIDUELLE (art. 19) — ne réutilise jamais ZumraGroup::STATE_SUSPENDED, qui
+     * suspend la ZUMRA entière. Cible exclusivement l'adhésion de la personne dans cette ZUMRA ;
+     * réversible via reinstate(), contrairement à l'exclusion.
+     */
+    public function suspendMember(ZumraGroup $group, string $actor, string $subject, string $reason, int $establishedThreshold): void
+    {
+        $this->assertDisciplinaryAuthority($group, $actor, $subject);
+        abort_if(trim($reason) === '', 422, 'Un motif est obligatoire pour une suspension individuelle.');
+
+        DB::transaction(function () use ($group, $actor, $subject, $reason, $establishedThreshold): void {
+            $membership = ZumraGroupMembership::query()
+                ->where('zumra_group_id', $group->id)->where('core_identity_reference', $subject)
+                ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+                ->lockForUpdate()->firstOrFail();
+            $membership->update(['status' => ZumraGroupMembership::STATUS_SUSPENDED, 'decision_reason' => $reason]);
+            $this->refreshCount($group, $establishedThreshold);
+            $this->event($group, 'MEMBER_SUSPENDED', $actor, ['subject' => $subject, 'reason' => $reason]);
+        });
+    }
+
+    /**
+     * Mécanisme interne réservé à ModerationDecisionService (recours confirmé/levé par l'autorité
+     * supérieure, ou expiration calculée à la lecture — art. 19/23.2) : l'autorité a déjà été
+     * validée au niveau de la décision disciplinaire elle-même, jamais revalidée ici.
+     */
+    public function reinstate(ZumraGroup $group, string $actor, string $subject, int $establishedThreshold): void
+    {
+        DB::transaction(function () use ($group, $actor, $subject, $establishedThreshold): void {
+            $membership = ZumraGroupMembership::query()
+                ->where('zumra_group_id', $group->id)->where('core_identity_reference', $subject)
+                ->where('status', ZumraGroupMembership::STATUS_SUSPENDED)
+                ->lockForUpdate()->firstOrFail();
+            $membership->update(['status' => ZumraGroupMembership::STATUS_ACTIVE]);
+            $this->refreshCount($group, $establishedThreshold);
+            $this->event($group, 'MEMBER_REINSTATED', $actor, ['subject' => $subject]);
+        });
+    }
+
+    /**
+     * Révocation de rôle (art. 8/19) — réutilise ZumraGroupRole, aucun second système de rôles.
+     * PRIMARY_LEAD reste toujours niveau 3 (aucun pair ZUMRA ne peut juger le premier responsable).
+     */
+    public function revokeRole(ZumraGroup $group, string $actor, string $role): void
+    {
+        abort_unless(array_key_exists($role, ZumraGroupRole::LABELS), 422, 'Responsabilité inconnue.');
+        if ($role === 'PRIMARY_LEAD') {
+            $this->assertAdministrator($actor);
+        } else {
+            $this->assertLeader($group, $actor);
+        }
+
+        DB::transaction(function () use ($group, $actor, $role): void {
+            $roleRow = ZumraGroupRole::query()->where('zumra_group_id', $group->id)->where('role', $role)->lockForUpdate()->firstOrFail();
+            abort_unless($roleRow->status === ZumraGroupRole::STATUS_ACCEPTED, 409, 'Cette responsabilité n’est pas occupée.');
+            $subject = $roleRow->core_identity_reference;
+            $roleRow->update(['core_identity_reference' => null, 'status' => ZumraGroupRole::STATUS_VACANT, 'proposed_by_core_reference' => null, 'proposed_at' => null, 'accepted_at' => null]);
+            $this->event($group, 'ROLE_REVOKED', $actor, ['role' => $role, 'subject' => $subject]);
+        });
+    }
+
     private function assertLeader(ZumraGroup $group, string $actor): void
     {
         abort_unless($this->isLeader($group, $actor), 403);
@@ -355,6 +444,22 @@ final class ZumraGroupService
     private function assertAdministrator(string $actor): void
     {
         abort_unless(PortalAdministrator::query()->whereKey($actor)->exists(), 403, 'Seule l’autorité DG Afrique/GAMAD peut décider de cette transition.');
+    }
+
+    /**
+     * PRIMARY_LEAD ne peut jamais être jugé par ses pairs (art. 8) : escalade obligatoire vers
+     * l'autorité DG Afrique/GAMAD dès que la cible d'une décision disciplinaire ZUMRA est le
+     * premier responsable.
+     */
+    private function assertDisciplinaryAuthority(ZumraGroup $group, string $actor, string $subject): void
+    {
+        if ($this->isPrimaryLead($group, $subject)) {
+            $this->assertAdministrator($actor);
+
+            return;
+        }
+
+        $this->assertLeader($group, $actor);
     }
 
     private function assertUnderFounderRoleLimit(string $actor, int $maxSimultaneousFounderRoles, bool $lockForUpdate = false): void
