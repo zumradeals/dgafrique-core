@@ -2,6 +2,8 @@
 
 > Carte d’avancement canonique. Le code de `main` reste la vérité technique ; ce fichier est la seule synthèse documentaire autorisée des statuts CAP.
 >
+> Ce fichier est le **registre de couverture** (statut de chaque CAP). Pour l'**ordre et les priorités** issus du dernier audit global, voir `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` — les deux documents ne se dupliquent pas.
+>
 > Régularisation DOC-001 / ARCH-006 : la notion de satellite désigne uniquement l’autonomie technique éventuelle d’un **outil spécialisé extractible**. Un projet reste un projet ; sa maturité peut conduire à une autonomie organisationnelle ou économique, jamais à une transformation automatique en satellite logiciel.
 >
 > Doctrine : **fonction interne → module spécialisé extractible → satellite autonome seulement lorsqu’un besoin réel d’autonomie le justifie**.

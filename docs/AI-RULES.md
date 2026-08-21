@@ -50,6 +50,12 @@ Ne pas conserver un fichier « au cas où ». Si son contenu utile existe déjà
 - pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
 - pour UI/navigation, lire `docs/design/DESIGN-INVARIANTS.md`.
 
+## Roadmap métier
+
+Avant toute nouvelle implémentation CAP ou proposition de prochaine CAP, consulter `docs/roadmap/ROADMAP-METIER-CANONIQUE.md`.
+
+Ne jamais sélectionner une CAP à partir du seul numéro ou du seul statut de `CAPABILITY-COVERAGE.md`. Le code réel reste la vérité exécutable. Si le code et la roadmap divergent, auditer avant d'implémenter.
+
 ## Après une modification qui change la couverture
 
 Mettre à jour `CAPABILITY-COVERAGE.md` dans la même PR. Ne jamais encoder un statut dans le titre d'une capacité de l'index.
