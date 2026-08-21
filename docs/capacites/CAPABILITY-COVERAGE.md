@@ -95,7 +95,7 @@
 | CAP-079 | Boucle d’écosystème | DEPENDENCY_BLOCKED |
 | CAP-080 | Ce que devrait mesurer DG Afrique | NOT_IMPLEMENTED |
 | CAP-081 | Différence avec un réseau social classique | DOC_ONLY |
-| CAP-082 | Différence avec LinkedIn | NOT_IMPLEMENTED |
+| CAP-082 | Différence avec LinkedIn | DOC_ONLY |
 | CAP-083 | Différence avec une plateforme d’incubation | DOC_ONLY |
 | CAP-084 | Invariant technique module-first / extractibilité | DOC_ONLY |
 
@@ -206,6 +206,14 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Evidence :** `ProjectFunding`, `ProjectFundingService`, `ProjectFundingController`, migration `2026_09_15_100000_create_project_fundings_table.php`, `tests/Feature/ProjectFundingTest.php` (31 cas).
 
 **Détail complet :** voir `docs/capacites/specs/CAP-063-financement-projet.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-063 — Financement de projet (livrée) »). Ce fichier ne duplique pas leur contenu.
+
+## CAP-082 — correction ROADMAP-003
+
+**Status : DOC_ONLY** *(était `NOT_IMPLEMENTED`, incohérence signalée dès AUDIT-CAP-002/ROADMAP-001, non corrigée jusqu'ici)*
+
+**Evidence :** contenu strictement positionnel/doctrinal (« La grande différence avec LinkedIn »), formulation identique à ses sœurs déjà `DOC_ONLY` (CAP-081, CAP-083) — rien de codable trouvé, confirmé par ROADMAP-003.
+
+**Détail complet :** voir `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « ROADMAP-003 — Snapshot canonique actuel »).
 
 ## Règles de maintenance
 
