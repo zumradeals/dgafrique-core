@@ -2,10 +2,13 @@
 
 Statut : ACTIVE
 
-Source : AUDIT-CAP-002
+**Snapshot canonique actuel : ROADMAP-003** (voir section dédiée ci-dessous). AUDIT-CAP-002/ROADMAP-001/ROADMAP-002 restent conservés plus bas comme historique explicitement daté — ils ne portent plus la priorité active.
 
-Baseline d'audit :
-main @ cd01a8e7b4da26cd7e63a1d5fda0fea2737ef682
+Baseline du snapshot canonique actuel :
+main @ 52301a3e8635de2be4adcec25825cacbfb6e5ae8
+
+Baseline d'origine (historique) :
+main @ cd01a8e7b4da26cd7e63a1d5fda0fea2737ef682 (AUDIT-CAP-002)
 
 ## Règle de gouvernance
 
@@ -48,7 +51,118 @@ Ne jamais conserver artificiellement une priorité devenue fausse.
 
 ---
 
-## AUDIT-CAP-002 — constats préservés
+## ROADMAP-003 — Snapshot canonique actuel
+
+**Statut : ACTIF — remplace ROADMAP-001/ROADMAP-002 comme référence de priorité.** Réaudit complet du graphe métier depuis le code réel, déclenché après la livraison de ZUMRA-COMP-001, CAP-061, CAP-062 et CAP-063. Baseline : `main @ 52301a3e8635de2be4adcec25825cacbfb6e5ae8`. Validé par le produit avant canonisation.
+
+### Chiffres canoniques
+
+Avant correction du statut CAP-082 (état constaté à l'ouverture de l'audit) :
+
+| Statut | Nombre |
+|---|---|
+| TOTAL CAP | 84 |
+| CLOSED | 57 |
+| PARTIAL | 5 |
+| NOT_IMPLEMENTED | 5 |
+| DEPENDENCY_BLOCKED | 3 |
+| DOC_ONLY | 14 |
+
+**Chiffres canoniques après correction CAP-082 (voir « Correction CAP-082 » ci-dessous) — état courant de `CAPABILITY-COVERAGE.md` :**
+
+| Statut | Nombre |
+|---|---|
+| TOTAL CAP | 84 |
+| CLOSED | 57 |
+| PARTIAL | 5 |
+| NOT_IMPLEMENTED | 4 |
+| DEPENDENCY_BLOCKED | 3 |
+| DOC_ONLY | 15 |
+
+PARTIAL : CAP-023, CAP-047, CAP-051, CAP-053, CAP-056.
+DEPENDENCY_BLOCKED : CAP-067, CAP-070, CAP-079.
+NOT_IMPLEMENTED (après correction CAP-082) : CAP-068, CAP-077, CAP-078, CAP-080.
+
+### Correction CAP-082
+
+`CAP-082` (« Différence avec LinkedIn ») était documentée `NOT_IMPLEMENTED` alors que ses sœurs doctrinales strictement identiques par formulation (`CAP-081` « Différence avec un réseau social classique », `CAP-083` « Différence avec une plateforme d'incubation ») sont `DOC_ONLY`. Incohérence déjà signalée par AUDIT-CAP-002/ROADMAP-001, jamais corrigée. ROADMAP-003 confirme après nouvelle inspection : contenu purement positionnel/doctrinal, rien de codable. **Corrigée dans `docs/capacites/CAPABILITY-COVERAGE.md` : `NOT_IMPLEMENTED` → `DOC_ONLY`.** Les chiffres canoniques ci-dessus intègrent cette correction.
+
+### Réaudit des CAP restantes non financières
+
+- **CAP-053 (Consentement)** — reste `PARTIAL`. Audit approfondi : les 4 champs (`orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent`) sont chacun lus de façon cohérente dans 8+ domaines, individuellement révocables et horodatés (`_consented_at` effacé à la révocation, vérifié dans `MemberProfileController`). **L'absence de modèle unifié n'est pas un bug constaté — les consentements existants sont des faits de granularités légitimement différentes** (profil, capacité, appartenance ZUMRA). Aucun `ConsentService` générique recommandé sans problème réel démontré.
+- **CAP-068 (Événement)** — reste `NOT_IMPLEMENTED`, marquée **DOCTRINE-À-CLARIFIER**. Les 10 modèles `*Event` du dépôt sont des journaux d'audit techniques, jamais l'événement humain planifiable (atelier/rencontre) que le nom suggère. Aucune occurrence de « événement » dans `ZUMRA-DOCTRINE-INVARIANTE.md` en dehors du seul titre d'index — aucun contrat doctrinal à auditer. Ne pas coder tant que ce contrat n'est pas défini.
+- **CAP-023 (Graphe des capacités)** — reste `PARTIAL` par design. 5 moteurs de correspondance (`PersonRecommendationEngine`, `OpportunityEngine`, `MissionMatchingEngine`, `ProjectMatchingEngine`, `TransmissionMatchingEngine`) fonctionnent et sont fermés sous leurs propres CAP. Aucune preuve qu'une structure de graphe généralisée résout un problème réel — ne pas créer de `GraphEngine` par principe architectural.
+- **CAP-056 (Publication)** — reste `PARTIAL`. `published_at` n'existe réellement que sur `Need`/`ZumraCharter` ; `Project`/`Proof`/`Transmission` gèrent leur propre cycle de révélation sous d'autres noms (statut, visibilité) avec un effet équivalent. Probablement couvert par les cycles propres de chaque domaine — aucune implémentation recommandée actuellement.
+- **CAP-047 (Satellite extractible)** — reste `PARTIAL` par design. GamaDrive demeure le seul satellite réel, déjà fédéré (CAP-048/049/050, `CLOSED`). Aucun nouveau candidat réel à l'extraction découvert — aucune abstraction supplémentaire recommandée.
+- **CAP-051 (Portabilité de l'identité)** — reste `PARTIAL`. `FederationServiceProvider` ne fournit que la continuité SSO (`FederatedProductGateway`) ; aucune capacité d'export de données découverte nulle part dans le dépôt. SSO ≠ export. Aucun contrat GAMAD Core nouveau ne comble ce manque — reste dépendant d'un contrat produit/Core absent, non contourné localement.
+- **CAP-077 → CAP-078 → CAP-079** — restent non prioritaires. Aucune infrastructure de consommateur externe (aucun système de clé API, aucune route API publique de capacités) découverte. Ne pas construire une API abstraite pour elle-même.
+- **CAP-080 (Ce que devrait mesurer DG Afrique)** — reste `NOT_IMPLEMENTED`, marquée **DOCTRINE-À-CLARIFIER**. Aucune infrastructure de métriques/analytics nulle part dans le dépôt ; aucune doctrine ne définit quoi mesurer. Coder des métriques maintenant fabriquerait exactement les vanity metrics que la doctrine « réseau d'action » proscrit (DG Afrique doit mesurer l'action réelle — résultats/capacités/coordination —, jamais likes/temps passé/vues).
+- **CAP-067 / CAP-070** — maintenues gelées. `GamadCoreClient` toujours limité à 8 méthodes d'identité/session personne, aucune émission d'identité non-personne (CAP-067). `config/federation.php` ne porte que le callback SSO GamaDrive, aucune API de stockage documentaire (CAP-070). Aucun contournement local dans les deux cas.
+
+### Fissure fondationnelle découverte — Modération, discipline et recours (art. 19)
+
+**Constat central de ROADMAP-003.** L'art. 19 de `ZUMRA-DOCTRINE-INVARIANTE.md` (« Modération, discipline et recours ») définit une capacité métier réelle et détaillée :
+
+- trois niveaux d'autorité : (1) l'auteur, pour son contenu ordinaire ; (2) les responsables, pour les espaces internes de la ZUMRA ; (3) DG Afrique ou GAMAD, pour la Charte générale et les risques transversaux ;
+- une réponse proportionnée : masquage préventif, explication, avertissement, limitation, suspension, révocation ;
+- une exigence de traçabilité de toute décision disciplinaire (motif, autorité, date, éléments concernés, durée éventuelle, voie de recours) ;
+- un droit qu'une ZUMRA ne peut jamais empêcher : signaler directement un abus à GAMAD.
+
+Elle constitue également un **invariant absolu** via l'art. 23.1 : « le droit au signalement, à l'explication et au recours ».
+
+**Vérifié depuis le code : cette capacité n'est aujourd'hui construite nulle part.** `ContextCommentService` ne porte aucune méthode de masquage/retrait ; aucun contrôleur d'administration ne permet à `PortalAdministrator` de modérer un commentaire ou un message ; aucune trace de signalement structuré. Un seul palliatif générique existe (`MessagingService::openSupport()`, une conversation support DG Afrique), qui satisfait partiellement et non-structurellement le seul droit au signalement — rien ne couvre le masquage préventif, la sanction individuelle distincte de la suspension du groupe entier (déjà réelle via ZUMRA-COMP-001), ni la traçabilité formelle exigée par l'art. 19.
+
+**Recherche exhaustive dans `docs/capacites/CAPABILITY-INDEX.md` : aucun numéro CAP ne porte ce sujet.** Ni CAP-052 (Séparation des contextes), ni CAP-053 (Consentement), ni CAP-060 (Réputation) ne couvrent la modération de contenu ou la discipline individuelle — c'est un trou dans le référentiel lui-même, distinct de toute divergence documentaire déjà connue.
+
+### Pourquoi aucun numéro CAP n'est créé ici
+
+`docs/AI-RULES.md:82` fixe explicitement la règle : « vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun » — et le garde-fou mécanique DOC-001 (`docs/AI-RULES.md:74-76`) fait échouer toute PR où `CAPABILITY-INDEX.md`/`CAPABILITY-COVERAGE.md` ne comptent pas exactement 84 entrées. **Aucune règle canonique n'autorise l'ajout d'un CAP-085.** `docs/capacites/OVERRIDES.md` permet des décisions explicites qui précisent le référentiel (OVR-001 à OVR-006), mais aucune de ces décisions n'a jamais étendu le compte de 84 CAP — le mécanisme sert à clarifier, pas à numéroter. En conséquence, cette capacité est documentée sous un identifiant de gap non-CAP, à l'identique du précédent `ZUMRA-COMP-001` :
+
+**MODERATION-COMP-001 — Modération, discipline et recours (art. 19)**
+
+Ce n'est pas une CAP officielle. Toute décision d'attribuer un jour un numéro CAP officiel (par exemple via un futur OVERRIDES.md ou une extension explicitement décidée du référentiel à plus de 84 entrées) reste hors du périmètre de ce chantier documentaire et devra être tranchée explicitement, séparément.
+
+### Graphe canonique (ROADMAP-003)
+
+```
+MODERATION-COMP-001 (art. 19, PAS DE CAP) ──HARD──▶ aucun blocage technique
+   (Messaging, ContextComment, ZumraGroupMembership, PortalAdministrator existent déjà —
+   seule l'implémentation manque ; orthogonale au reste du graphe, ne débloque aucune autre CAP,
+   mais ferme un invariant absolu actif)
+
+CAP-053 / CAP-023 / CAP-056 / CAP-047 / CAP-051 ──NONE/PRODUCT──▶ aucune dépendance,
+   aucun levier, confirmées non-problèmes fonctionnels ou bloquées par un manque de contrat externe
+
+CAP-077 → CAP-078 → CAP-079 ──PRODUCT──▶ bloquée par absence de consommateur externe, inchangé
+
+CAP-067 / CAP-070 ──EXTERNAL──▶ gelées, inchangé
+
+CAP-082 ──NONE──▶ correction documentaire appliquée (NOT_IMPLEMENTED → DOC_ONLY)
+```
+
+**Constat clé, confirmé : aucun goulot d'étranglement CAP majeur. Backlog essentiellement plat.** La fissure de modération est orthogonale — elle ne débloque aucune autre CAP — mais ferme un invariant doctrinal absolu resté silencieusement inerte depuis l'origine du référentiel, exactement le type de dette que ce chantier traite en priorité par principe de gouvernance plutôt que par dépendance technique (précédent direct : ZUMRA-COMP-001).
+
+### Priorité canonique #1 — ROADMAP-003
+
+**Audit Phase A de MODERATION-COMP-001 (Modération, discipline et recours, art. 19).** Pas encore son implémentation.
+
+Cette priorité passe devant CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-047, CAP-077/078/079 et CAP-080, parce que :
+
+- c'est un invariant doctrinal absolu (art. 23.1) actuellement non honoré ;
+- valeur utilisateur réelle et directe : sécurité, confiance, recours ;
+- aucune dépendance externe ni blocage produit non résolu ;
+- l'infrastructure porteuse existe déjà entièrement (`ContextComment`, `MessagingService`, `ZumraGroupService`, `PortalAdministrator`) ;
+- la doctrine (art. 19) est suffisamment précise pour être auditée immédiatement — contrairement à CAP-068/CAP-080, le produit n'a pas besoin d'être inventé.
+
+### Dettes non-CAP réauditées
+
+Préservées à l'identique (voir section dédiée plus bas), avec une précision : `MissionReviewFixesTest::test_invitation_never_fabricates_context_access` reste un vrai bug de robustesse (validation UUID manquante avant requête), petit correctif technique isolé, à traiter séparément par hygiène — il ne devient pas prioritaire, mais ne doit plus être oublié indéfiniment.
+
+---
+
+## Historique — AUDIT-CAP-002 / ROADMAP-001 / ROADMAP-002 (superseded by ROADMAP-003)
+
+**Ce qui suit est un historique conservé pour mémoire. Il ne porte plus la priorité active — voir « ROADMAP-003 — Snapshot canonique actuel » ci-dessus pour l'état courant.**
 
 Ce qui suit reproduit fidèlement le rapport AUDIT-CAP-002 validé (recalcul complet du backlog métier depuis le code réel, baseline `cd01a8e`). Aucune réinterprétation n'a été effectuée pendant ROADMAP-001 ; seule la mise en forme documentaire a été adaptée.
 
@@ -83,7 +197,7 @@ Cohérence registre ↔ code : globalement bonne. Trois écarts réels détecté
 | CAP-078 | Satellite fournisseur de capacité | NOT_IMPLEMENTED | Ecosystem | Registre CAP-048/049/050 | Contrat capacité↔outil autonome | **Interne** (CAP-077) | FAIBLE | 1 (CAP-079) | FAIBLE | L |
 | CAP-079 | Boucle d'écosystème | DEPENDENCY_BLOCKED | Ecosystem | Passerelle fédérée | Remontée canonique de capacités | **Interne** (CAP-078) | FAIBLE | 0 | FAIBLE | L |
 | CAP-080 | Ce que devrait mesurer DG Afrique | NOT_IMPLEMENTED | Ecosystem | Rien | Décision produit sur les métriques | Produit | FAIBLE | 0 | FAIBLE | S |
-| CAP-082 | Différence avec LinkedIn | NOT_IMPLEMENTED *(probable erreur de statut — devrait être DOC_ONLY comme 081/083, non corrigée pendant ROADMAP-001)* | Ecosystem | Contenu doctrinal seulement | Rien de codable | — | — | — | — | — |
+| CAP-082 | Différence avec LinkedIn | NOT_IMPLEMENTED *(probable erreur de statut — devrait être DOC_ONLY comme 081/083, non corrigée pendant ROADMAP-001 — **corrigée vers `DOC_ONLY` par ROADMAP-003**, voir section dédiée)* | Ecosystem | Contenu doctrinal seulement | Rien de codable | — | — | — | — | — |
 | CAP-067 | Identité organisationnelle | DEPENDENCY_BLOCKED | Organizations | `Organization` fonctionne via `founder_core_reference` + membres réels | Une Organisation ne peut ni s'authentifier ni détenir de `CapabilityStatement` propre | **Externe** (GAMAD Core n'émet que `type: "personne"`) | FAIBLE (ne bloque plus rien d'ouvert : CAP-065/066 déjà fermées en le contournant honnêtement) | 0 | FAIBLE | — |
 | CAP-070 | Document | DEPENDENCY_BLOCKED | Documents | Proof/Transmission/Mission couvrent déjà preuve/référence via texte libre ou URL | API de stockage GamaDrive | **Externe** (GamaDrive n'a que la continuité SSO, aucune API de stockage) | FAIBLE (besoin déjà substantiellement couvert par doctrine) | 0 | FAIBLE | — |
 
@@ -135,7 +249,7 @@ Constat clé : aucune CAP restante ne débloque plus de 1-2 autres CAP. Le backl
 
 1. **Statut documentaire faux — CAP-063.** Documentée `DEPENDENCY_BLOCKED`, aucune dépendance technique réelle trouvée dans tout le dépôt. C'est un choix produit assumé (CAP-014 interdit explicitement le paiement dans Projet), pas un blocage. Devrait être `NOT_IMPLEMENTED`. **Non corrigé dans `CAPABILITY-COVERAGE.md` pendant ROADMAP-001** — voir section dédiée ci-dessous.
 2. **CAP fermée mais fonctionnalité partielle — CAP-011 (ZUMRA/Groupe humain).** Le cycle de vie complet, la validation automatique et la modération n'existent pas en code, alors que CAP-011 est `CLOSED`. La fonction reste opérationnelle (les portes vérifient uniquement `!== SUSPENDED`) mais la doctrine promise n'est pas tenue. Voir « Fissure fondationnelle ZUMRA » ci-dessous.
-3. **Classification suspecte — CAP-082** (« Différence avec LinkedIn ») étiquetée `NOT_IMPLEMENTED` alors que ses sœurs doctrinales identiques (CAP-081, CAP-083) sont `DOC_ONLY`. Contenu purement positionnel, rien de codable trouvé. **Non corrigé pendant ROADMAP-001** — ce chantier est documentaire/gouvernance, pas DOC-002.
+3. **Classification suspecte — CAP-082** (« Différence avec LinkedIn ») étiquetée `NOT_IMPLEMENTED` alors que ses sœurs doctrinales identiques (CAP-081, CAP-083) sont `DOC_ONLY`. Contenu purement positionnel, rien de codable trouvé. **Non corrigé pendant ROADMAP-001** — ce chantier est documentaire/gouvernance, pas DOC-002. **Corrigé par ROADMAP-003** : `CAPABILITY-COVERAGE.md` porte désormais `DOC_ONLY`.
 4. **Documentation incomplète — CAP-070.** Contrairement à CAP-036/067 qui ont chacune une section justificative dédiée dans `CAPABILITY-COVERAGE.md`, CAP-070 n'en a aucune alors que son blocage (GamaDrive) mériterait la même transparence.
 5. **Test révélant une dette technique (pas une CAP incomplète) — `MissionReviewFixesTest::test_invitation_never_fabricates_context_access`.** Bug de robustesse (validation de format UUID manquante avant requête), pas un gap métier. CAP-069 reste réellement CLOSED.
 6. **Tests révélant un contenu de démonstration désynchronisé, pas une CAP incomplète — `DesignInvariantsTest`/`ProofHttpSmokeTest`/`TransmissionHttpSmokeTest`.** Dette de contenu/design (DEMO-FIRST), pas un manque métier. Le `DatabaseSeeder` reste intentionnellement vide.
@@ -224,7 +338,7 @@ Preuve : `tests/Feature/ProjectFundingTest.php` (31 cas). Voir la spec pour le d
 
 ## Priorité canonique actuelle
 
-**ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** (livrées, PR draft) sont closes. Le domaine Finance/Projects tel qu'audité par ROADMAP-002 est désormais entièrement couvert par son périmètre V1 respectif. Aucune CAP financière non traitée ne reste prioritaire à ce stade — la prochaine priorité doit être déterminée par un nouvel audit du graphe métier (ex. CAP-053 Consentement, CAP-068 Événement, ou toute divergence découverte depuis ROADMAP-002), pas supposée depuis cette section.
+**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** sont closes ; le domaine Finance/Projects est entièrement couvert par son périmètre V1 respectif. Le réaudit ROADMAP-003 a déterminé la priorité canonique #1 : **audit Phase A de MODERATION-COMP-001 (Modération, discipline et recours, art. 19)** — un invariant doctrinal absolu (art. 23.1) actuellement non honoré, sans dépendance externe, dont l'infrastructure porteuse existe déjà. Cette priorité passe devant CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080.
 
 ---
 
@@ -274,4 +388,4 @@ Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre n
 
 ## Prochaine action recommandée
 
-**ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** (livrées, PR draft) sont closes. Aucune priorité financière ouverte ne reste identifiée par ce document. Prochaine action recommandée : un nouvel audit du graphe métier (type ROADMAP-003) pour redéterminer la priorité canonique après ces quatre livraisons, plutôt que de supposer une suite depuis un ancien constat — cohérent avec la discipline Phase A/Phase B déjà appliquée.
+**ROADMAP-003 est le snapshot canonique actuel (voir section dédiée en haut de ce document).** Prochaine action : **audit Phase A de MODERATION-COMP-001 — Modération, discipline et recours (art. 19)**, avant toute implémentation — cohérent avec la discipline Phase A/Phase B déjà appliquée à ZUMRA-COMP-001, CAP-061, CAP-062 et CAP-063. Aucun numéro CAP officiel n'est créé pour ce chantier (voir « Pourquoi aucun numéro CAP n'est créé ici » dans la section ROADMAP-003).
