@@ -76,7 +76,7 @@
 | CAP-060 | Réputation : grande prudence | DOC_ONLY |
 | CAP-061 | Contributions financières | CLOSED |
 | CAP-062 | Ledger / traçabilité | CLOSED |
-| CAP-063 | Financement de projet | DEPENDENCY_BLOCKED |
+| CAP-063 | Financement de projet | CLOSED |
 | CAP-064 | Moteur d’opportunités | CLOSED |
 | CAP-065 | Partenaire comme fournisseur de capacité | CLOSED |
 | CAP-066 | Organisation | CLOSED |
@@ -198,6 +198,14 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Evidence :** `LedgerEntry`, `LedgerService`, commande `ledger:backfill`, `LedgerController`/`Administration\LedgerController`, migration `2026_09_08_100000_create_ledger_entries_table.php`, `tests/Feature/LedgerTest.php` (30 cas).
 
 **Détail complet :** voir `docs/capacites/specs/CAP-062-ledger-tracabilite.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-062 — Ledger / traçabilité (livrée) »). Ce fichier ne duplique pas leur contenu.
+
+## CAP-063 — Financement de projet
+
+**Status : CLOSED** *(V1 strictement déclarative — décision produit ; était `DEPENDENCY_BLOCKED` sans blocage technique réel, corrigé après audit)*
+
+**Evidence :** `ProjectFunding`, `ProjectFundingService`, `ProjectFundingController`, migration `2026_09_15_100000_create_project_fundings_table.php`, `tests/Feature/ProjectFundingTest.php` (31 cas).
+
+**Détail complet :** voir `docs/capacites/specs/CAP-063-financement-projet.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-063 — Financement de projet (livrée) »). Ce fichier ne duplique pas leur contenu.
 
 ## Règles de maintenance
 

@@ -75,6 +75,7 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('project-maturity', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
         RateLimiter::for('project-autonomy', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('project-team-write', static fn (Request $request): Limit => Limit::perMinute(12)->by($request->ip()));
+        RateLimiter::for('project-funding-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('organization-write', static fn (Request $request): Limit => Limit::perMinute(8)->by($request->ip()));
         RateLimiter::for('organization-membership', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
         RateLimiter::for('partnership-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
@@ -97,5 +98,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(base_path('routes/cap021.php'));
         $this->loadRoutesFrom(base_path('routes/cap022.php'));
         $this->loadRoutesFrom(base_path('routes/cap041.php'));
+        $this->loadRoutesFrom(base_path('routes/cap063.php'));
     }
 }
