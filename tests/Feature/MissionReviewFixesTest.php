@@ -27,9 +27,10 @@ use App\Models\Project;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
-use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -76,7 +77,7 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_invitation_never_fabricates_context_access(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission ZUMRA', 'ZUMRA');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission ZUMRA', 'ZUMRA');
         $assignments = app(MissionAssignmentService::class);
 
         // Une chaîne arbitraire ne résout jamais vers une identité réelle.
@@ -87,6 +88,74 @@ final class MissionReviewFixesTest extends TestCase
         // fabriquer un accès qu'il n'avait pas.
         $strangerDiscoveryReference = $this->discoverableProfile('IDN-STRANGER', 'Kwame Étranger');
         $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', $strangerDiscoveryReference, MissionAssignment::ROLE_LEARNER));
+    }
+
+    // ===== REF-MISSION-UUID-001 : robustesse UUID de resolveInvitableSubject() =====
+
+    public function test_invite_rejects_a_syntactically_invalid_discovery_reference_without_a_sql_error_or_side_effect(): void
+    {
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission ZUMRA UUID invalide', 'ZUMRA');
+        $assignments = app(MissionAssignmentService::class);
+
+        // Aucune SQLSTATE 22P02 ne doit remonter : la valeur n'atteint jamais la requête
+        // typée uuid de dg_person_profiles.discovery_reference.
+        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', 'not-a-real-discovery-reference', MissionAssignment::ROLE_LEARNER));
+
+        self::assertSame(0, MissionAssignment::query()->count());
+    }
+
+    public function test_invite_rejects_a_well_formed_but_unknown_discovery_reference(): void
+    {
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission ZUMRA UUID inconnu', 'ZUMRA');
+        $assignments = app(MissionAssignmentService::class);
+
+        // Format UUID valide, mais aucun PersonProfile réel ne le porte.
+        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', (string) Str::uuid(), MissionAssignment::ROLE_LEARNER));
+
+        self::assertSame(0, MissionAssignment::query()->count());
+    }
+
+    public function test_invite_rejects_a_discoverable_person_without_real_context_access_and_creates_nothing(): void
+    {
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission ZUMRA contexte fermé', 'ZUMRA');
+        $strangerDiscoveryReference = $this->discoverableProfile('IDN-STRANGER-2', 'Personne hors contexte');
+        $assignments = app(MissionAssignmentService::class);
+
+        $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', $strangerDiscoveryReference, MissionAssignment::ROLE_LEARNER));
+
+        self::assertSame(0, MissionAssignment::query()->count());
+        self::assertFalse(MissionAssignment::query()->where('core_identity_reference', 'IDN-STRANGER-2')->exists());
+    }
+
+    public function test_invite_succeeds_for_a_discoverable_person_with_real_context_access(): void
+    {
+        [$mission, $group] = $this->openMission('IDN-OWNER', 'Mission ZUMRA accès réel', 'ZUMRA');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-MEMBER-REAL',
+            'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-MEMBER-REAL', 'joined_at' => now(),
+        ]);
+        $memberDiscoveryReference = $this->discoverableProfile('IDN-MEMBER-REAL', 'Membre autorisé');
+        $assignments = app(MissionAssignmentService::class);
+
+        $assignment = $assignments->invite($mission, 'IDN-OWNER', $memberDiscoveryReference, MissionAssignment::ROLE_LEARNER);
+
+        self::assertSame(MissionAssignment::STATUS_INVITED, $assignment->status);
+        self::assertSame('IDN-MEMBER-REAL', $assignment->core_identity_reference);
+        self::assertSame(1, MissionAssignment::query()->count());
+    }
+
+    public function test_invite_http_rejects_an_invalid_discovery_reference_as_a_clean_validation_error(): void
+    {
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission ZUMRA HTTP', 'ZUMRA');
+        $this->signIn('IDN-OWNER');
+
+        $this->post(route('missions.assignments.invite', $mission), [
+            'discovery_reference' => 'not-a-real-discovery-reference',
+            'role' => MissionAssignment::ROLE_LEARNER,
+        ])->assertSessionHasErrors('discovery_reference');
+
+        self::assertSame(0, MissionAssignment::query()->count());
     }
 
     // ===== 2. Démarrage =====
@@ -117,7 +186,7 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_completion_is_blocked_by_an_active_sub_mission(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission avec sous-tâche');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission avec sous-tâche');
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
         $submissions = app(MissionSubmissionService::class);
@@ -305,12 +374,12 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_terminal_mission_rejects_ordinary_mutations(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission à annuler');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission à annuler');
         $workflow = app(MissionWorkflow::class);
         $missions = app(MissionService::class);
         $dependencies = app(MissionDependencyService::class);
 
-        [$other, ] = $this->openMission('IDN-OWNER', 'Autre Mission pour dépendance', contextReferenceReuse: $mission->context_reference);
+        [$other] = $this->openMission('IDN-OWNER', 'Autre Mission pour dépendance', contextReferenceReuse: $mission->context_reference);
 
         $mission = $workflow->cancel($mission, 'IDN-OWNER', 'Annulée pour tester la stabilité historique.');
         self::assertSame(Mission::STATUS_CANCELLED, $mission->status);
@@ -325,8 +394,8 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_dependency_target_must_be_visible_to_the_actor(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission A dépendante', visibility: Mission::VISIBILITY_PROGRAM);
-        [$privateTarget, ] = $this->openMission('IDN-OWNER', 'Mission B privée', contextReferenceReuse: $mission->context_reference, visibility: Mission::VISIBILITY_PRIVATE);
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission A dépendante', visibility: Mission::VISIBILITY_PROGRAM);
+        [$privateTarget] = $this->openMission('IDN-OWNER', 'Mission B privée', contextReferenceReuse: $mission->context_reference, visibility: Mission::VISIBILITY_PRIVATE);
 
         $dependencies = app(MissionDependencyService::class);
 
@@ -339,7 +408,7 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_recurrence_rejects_invalid_rrule_and_requires_officialized_source(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission récurrente');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission récurrente');
         $recurrences = app(MissionRecurrenceService::class);
 
         $this->assertAborts(422, fn () => $recurrences->create($mission, 'IDN-OWNER', 'FREQ=YEARLY', 'Africa/Abidjan'));
@@ -366,11 +435,11 @@ final class MissionReviewFixesTest extends TestCase
         // une copie éternelle du due_at de la Mission source (même horodatage absolu), les
         // deux échéances seraient encore égales malgré ce décalage temporel. Un décalage
         // réellement relatif à l'occurrence produit, lui, une échéance différente.
-        \Illuminate\Support\Carbon::setTestNow(now()->addDay());
+        Carbon::setTestNow(now()->addDay());
         try {
             $occurrence = $recurrences->generateOccurrence($recurrence, '2026-09-01');
         } finally {
-            \Illuminate\Support\Carbon::setTestNow();
+            Carbon::setTestNow();
         }
 
         self::assertNotNull($occurrence->due_at);
@@ -380,7 +449,7 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_recurrence_generation_via_scheduler_is_idempotent_and_advances_next_occurrence(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission planifiée');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission planifiée');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrence = $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY', 'UTC');
 
@@ -401,7 +470,7 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_recurrence_count_bound_stops_generation_automatically(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission bornée par COUNT');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission bornée par COUNT');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrence = $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY;COUNT=1', 'UTC');
 
@@ -415,8 +484,8 @@ final class MissionReviewFixesTest extends TestCase
 
     public function test_only_the_source_mission_authority_can_pause_a_recurrence_and_ids_must_match(): void
     {
-        [$missionA, ] = $this->openMission('IDN-OWNER-A', 'Mission A récurrente');
-        [$missionB, ] = $this->openMission('IDN-OWNER-B', 'Mission B récurrente');
+        [$missionA] = $this->openMission('IDN-OWNER-A', 'Mission A récurrente');
+        [$missionB] = $this->openMission('IDN-OWNER-B', 'Mission B récurrente');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrenceOfA = $recurrences->create($missionA, 'IDN-OWNER-A', 'FREQ=DAILY', 'UTC');
 
@@ -542,5 +611,16 @@ final class MissionReviewFixesTest extends TestCase
             'submitted_at' => now(),
             'activated_at' => now(),
         ]);
+    }
+
+    private function signIn(string $reference): void
+    {
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'bearer-'.$reference, 'entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-09-30T23:59:00+00:00'], 201),
+            'core.test/api/v1/identites/*' => Http::response(['reference' => $reference, 'type' => 'personne', 'libelle' => 'Membre DG Afrique', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => $reference, 'assurance' => 'AS1', 'expire_le' => '2026-09-30T23:59:00+00:00']),
+        ]);
+
+        $this->post('/connexion', ['identifier' => $reference, 'secret' => 'secret'])->assertRedirect('/espace');
     }
 }
