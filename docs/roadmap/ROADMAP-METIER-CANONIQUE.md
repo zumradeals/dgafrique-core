@@ -73,7 +73,7 @@ Cohérence registre ↔ code : globalement bonne. Trois écarts réels détecté
 | CAP-053 | Consentement | PARTIAL | Trust & Consent | `orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent` — 4 champs indépendants, par domaine | Aucun modèle unifié de consentement/retrait/audit cross-domaine | Interne | ÉLEVÉ | 3+ (matching, discovery, partenariats) | MOYEN | M |
 | CAP-061 | Contributions financières | **CLOSED — livrée par CAP-061 Phase B** *(était NOT_IMPLEMENTED lors de l'audit ROADMAP-001/002)* | Finance | `GeniusPayClient` prouvé en prod (CAP-007B, adhésion ZUMRA) — généralisé (`createContributionPayment()`) sans rien casser de CAP-007B | — | Aucun | MOYEN | 2 (CAP-062, CAP-063 — non déclenchés par ce chantier, périmètre volontairement non ouvert) | MOYEN | M |
 | CAP-062 | Ledger / traçabilité | **CLOSED — livrée par CAP-062 Phase B** *(était NOT_IMPLEMENTED lors de l'audit ROADMAP-001/002)* | Finance | `LedgerEntry`/`LedgerService`, journal simple immuable posté depuis CAP-061 et CAP-007B, backfill idempotent | — | Aucun | MOYEN | 1 (CAP-063 — non déclenché par ce chantier, lien resté « soft ») | FAIBLE | M |
-| CAP-063 | Financement de projet | NOT_IMPLEMENTED *(documenté `DEPENDENCY_BLOCKED` — voir section dédiée ci-dessous)* | Finance/Projects | Project, Organization, Partnership, Need — tout le socle relationnel existe | Modèle de financement lui-même ; CAP-014 impose explicitement « aucun paiement dans Projet » | **Produit** (choix doctrinal assumé, pas dépendance technique) | MOYEN | 0 | MOYEN | M |
+| CAP-063 | Financement de projet | **CLOSED — livrée par CAP-063 Phase B, V1 strictement déclarative** *(était documentée `DEPENDENCY_BLOCKED`, aucun blocage technique réel — voir section dédiée ci-dessous)* | Finance/Projects | `ProjectFunding`/`ProjectFundingService`, réutilise `ProjectAuthority` | — | Aucun | MOYEN | 0 | FAIBLE | S |
 | CAP-023 | Graphe des capacités | PARTIAL | Capabilities & Intelligence | 5 moteurs de correspondance séparés (`PersonRecommendationEngine`, `OpportunityEngine`, `MissionMatchingEngine`, `ProjectMatchingEngine`, `TransmissionMatchingEngine`) | Aucune structure de graphe unifiée/navigable | Aucun | FAIBLE | 0 | FAIBLE | M |
 | CAP-051 | Portabilité de l'identité | PARTIAL | Identity Federation | Continuité SSO fédérée vers satellites (`FederationServiceProvider`) | Export réel des données côté DG Afrique | Produit (contrat Core non défini) | FAIBLE | 0 | FAIBLE | S |
 | CAP-056 | Publication | PARTIAL | Social & Coordination | `published_at` sur `Need` et `ZumraCharter` uniquement ; Project/Proof gèrent leur propre statut sans notion de « publication » | Concept unifié — ou clarification que chaque domaine gère légitimement le sien | Aucun (possiblement un problème de nommage, pas de code manquant) | FAIBLE | 0 | FAIBLE | S |
@@ -206,21 +206,31 @@ Preuve : `tests/Feature/LedgerTest.php` (30 cas). Voir la spec pour le détail i
 
 ---
 
-## Priorité canonique actuelle
+## CAP-063 — Financement de projet (livrée)
 
-**ZUMRA-COMP-001**, **CAP-061** et **CAP-062** (livrées, PR draft) sont closes. Le graphe métier n'a pas été réévalué depuis CAP-062 (le lien CAP-062→CAP-063 restait déjà qualifié « soft » par ROADMAP-002 — CAP-063 n'est ni débloquée ni rouverte par ce chantier).
+**CLOSED — 2026-09-15.** Branche `feat/cap-063-project-funding-declaration-v1`, PR draft. Décision produit : **V1 strictement déclarative** — le contrat ainsi redéfini (`docs/capacites/specs/CAP-063-financement-projet.md`) est intégralement couvert :
 
-**PRIORITÉ #1**
+- **Aucun mouvement d'argent.** `ProjectFunding` décrit un besoin financier déclaré (montant cible, devise, justification, usage prévu) — jamais un paiement, une collecte, un décaissement, un wallet ou un escrow. Justifié par l'art. 15.3 : un paiement réel exige budget/gouvernance-financière/règles-de-décaissement, trois préconditions absentes du runtime (confirmé en Phase A — aucune capacité de décaissement n'existe nulle part dans le dépôt).
+- **`Need` non étendu, nouvel objet `ProjectFunding`** : `Need` n'a aucun champ numérique/devise et sa sémantique qualitative aurait été polluée ; `CAP-013-besoin.md` exclut déjà explicitement le financement de son périmètre.
+- **Cycle réduit** `OPEN → CLOSED`/`CANCELLED` (pas de `DRAFT`/`FUNDED`/`PAID`/`COLLECTED`/`DISBURSED`) : la création exige déjà `ProjectAuthority::canDecide`, aucun palier de proposition n'a de justification.
+- **Éligibilité** : seuls les Projets `ADOPTED`/`IN_PROGRESS` peuvent déclarer (précondition doctrinale « adoption ») ; `PROPOSED`/`ARCHIVED`/`COMPLETED` refusés.
+- **Autorité réutilisée intégralement** : `ProjectAuthority::canDecide`/`canView`, y compris `isLeader()` pour un Projet ZUMRA — **la double approbation `PRIMARY_LEAD`+`FINANCE_LEAD` de CAP-061 n'est pas copiée** (aucun mouvement d'argent ne la justifie ici).
+- **Frontières CAP-061/CAP-062/GeniusPay strictement respectées** : aucune modification de `Contribution`/`ContributionPayment`, aucune `LedgerEntry`, aucun appel `GeniusPayClient` (vérifié par test, `Http::assertNothingSent()`).
+- **Aucune mutation de propriété** : `Project.owner_*`, équipe, `Organization`, `Partnership`, rôles ZUMRA jamais modifiés par une déclaration financière.
 
-1. CAP-063 — Financement de projet
-
-Cette priorité reste celle établie par ROADMAP-002 (verdict A, CAP-063 confirmée « TOUJOURS EXACTE » comme suite logique, non affectée structurellement par CAP-061/CAP-062). Elle n'est **pas un ordre éternel** : tout chantier futur touchant Finance/Contribution/ZUMRA doit revalider ce graphe avant de s'appuyer aveuglément sur cet ordre.
+Preuve : `tests/Feature/ProjectFundingTest.php` (31 cas). Voir la spec pour le détail intégral.
 
 ---
 
-## CAP-063 — statut documentaire
+## Priorité canonique actuelle
 
-Constat AUDIT-CAP-002 préservé tel quel : **CAP-063 est actuellement documentée `DEPENDENCY_BLOCKED` dans `CAPABILITY-COVERAGE.md`, mais l'audit n'a trouvé aucun blocage technique réel.** Son absence relève actuellement d'une décision/doctrine produit (CAP-014 interdit explicitement tout paiement dans Projet), pas d'une dépendance technique manquante.
+**ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** (livrées, PR draft) sont closes. Le domaine Finance/Projects tel qu'audité par ROADMAP-002 est désormais entièrement couvert par son périmètre V1 respectif. Aucune CAP financière non traitée ne reste prioritaire à ce stade — la prochaine priorité doit être déterminée par un nouvel audit du graphe métier (ex. CAP-053 Consentement, CAP-068 Événement, ou toute divergence découverte depuis ROADMAP-002), pas supposée depuis cette section.
+
+---
+
+## CAP-063 — statut documentaire (historique, résolu)
+
+Constat AUDIT-CAP-002 préservé tel quel pour mémoire : **CAP-063 était documentée `DEPENDENCY_BLOCKED` alors que l'audit n'avait trouvé aucun blocage technique réel.** L'audit CAP-063 Phase A (2026-09-15) a confirmé et précisé ce constat : ce n'était ni un blocage externe (type CAP-067/070) ni une interdiction produit absolue, mais une porte conditionnelle nommée par la doctrine elle-même (art. 15.3), dont le périmètre V1 légitime est le déclaratif. **Statut corrigé vers `CLOSED` dans `CAPABILITY-COVERAGE.md` lors de la livraison CAP-063 Phase B.**
 
 **Le statut de CAP-063 dans `CAPABILITY-COVERAGE.md` n'a pas été modifié pendant ROADMAP-001.** Cette régularisation documentaire sera traitée dans un chantier explicitement décidé.
 
@@ -264,4 +274,4 @@ Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre n
 
 ## Prochaine action recommandée
 
-**ZUMRA-COMP-001**, **CAP-061** et **CAP-062** (livrées, PR draft) sont closes. Prochaine action : **CAP-063 — Financement de projet**, en Phase A (audit du contrat métier, y compris la régularisation de son statut documentaire `DEPENDENCY_BLOCKED` → réel) avant toute implémentation — cohérent avec la discipline Phase A/Phase B appliquée à ZUMRA-COMP-001, CAP-061 et CAP-062.
+**ZUMRA-COMP-001**, **CAP-061**, **CAP-062** et **CAP-063** (livrées, PR draft) sont closes. Aucune priorité financière ouverte ne reste identifiée par ce document. Prochaine action recommandée : un nouvel audit du graphe métier (type ROADMAP-003) pour redéterminer la priorité canonique après ces quatre livraisons, plutôt que de supposer une suite depuis un ancien constat — cohérent avec la discipline Phase A/Phase B déjà appliquée.
