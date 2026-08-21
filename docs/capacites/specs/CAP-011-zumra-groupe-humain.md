@@ -23,7 +23,18 @@ La création ouvre l’état `CONSTITUTING`. Elle ne vaut ni validation, ni fina
 
 Les cinq sièges invariants sont créés dès le dossier : premier responsable, deux adjoints distincts, responsable financier et responsable des relations, affaires sociales et religieuses.
 
-Un siège vacant reste visible comme vacant. Aucun profil fictif, matching ou automatisme ne peut accepter un rôle au nom d’une personne. La readiness et la validation complète seront raccordées avec les contrats de nomination et d’acceptation.
+Un siège vacant reste visible comme vacant. Aucun profil fictif, matching ou automatisme ne peut accepter un rôle au nom d’une personne : un responsable propose (`ZumraGroupService::proposeRole`), la personne concernée accepte explicitement (`acceptRole`) — jamais l’inverse. La limite globale de responsabilités fondatrices simultanées (art. 8, administrable, initialement 3) est vérifiée à la fois à la création (attribution automatique du premier siège) et à chaque acceptation de rôle.
+
+## Cycle de vie opérationnel (ZUMRA-COMP-001)
+
+`ZumraGroup.state` distingue trois transitions successives, toutes portées par `ZumraGroupService`, jamais par un moteur parallèle :
+
+- **CONSTITUTING → READY** : « le dossier est-il structurellement complet et prêt à être soumis à validation ? », jamais « les 7 critères doctrinaux sont-ils tous validés ? ». `evaluateStructuralReadiness()` vérifie les 6 critères de l’art. 10 réellement automatisables (identité Core, adhésion Programme active, domaine, objectif, charte, cinq responsabilités distinctes acceptées). Le 7e critère doctrinal — « contrôles de nom, de doublon, de risque et d’usurpation » — reste un **contrôle de conformité humain**, jamais automatisé : l’unicité technique du `slug` n’en est qu’une garantie partielle et n’est jamais présentée comme preuve qu’il est satisfait. Le critère « absence d’objet interdit/frauduleux » n’entre pas non plus dans l’évaluation, pour la même raison.
+  - Automatique : déclenchée après l’acceptation d’un rôle si `auto_validation_enabled` l’autorise.
+  - Manuelle : si `auto_validation_enabled=false`, l’autorité DG Afrique/GAMAD peut constater explicitement la readiness (`markReady()`) — le cycle ne devient jamais impossible faute d’automatisation. `CONSTITUTING → VALIDATED` directement reste toujours impossible : READY est une étape distincte, dans les deux cas.
+- **READY → VALIDATED → ACTIVE → WARNED → SUSPENDED → REHABILITATING → ACTIVE** : décisions explicites de l’autorité DG Afrique/GAMAD (`PortalAdministrator`, jamais `isLeader()`), chacune journalisée dans `ZumraGroupEvent`.
+
+`CONSTITUTING` reste un état opérationnel limité mais utilisable : Messagerie, Partage, Commentaire et proposition de Mission continuent de fonctionner dès la constitution, comme avant ce correctif — seul `SUSPENDED` bloque ces surfaces, décision produit ROADMAP-001 explicitement préservée.
 
 ## Appartenance
 
@@ -59,4 +70,10 @@ Une ZUMRA suspendue devient invisible de l’annuaire, sans suppression de son h
 - invitation sans adhésion automatique puis acceptation ;
 - départ libre et protection des responsabilités actives ;
 - configuration admin persistée ;
+- proposition de rôle réservée aux responsables, acceptation réservée à la personne concernée ;
+- limite de responsabilités fondatrices simultanées réellement appliquée (création et acceptation) ;
+- cinq rôles acceptés et critères structurels réunis → READY, journalisé une seule fois ;
+- VALIDATED/ACTIVE/WARNED/SUSPENDED/REHABILITATING/réactivation réservés à l’autorité DG Afrique/GAMAD ;
+- CONSTITUTING reste opérationnel pour Messagerie/Partage/Commentaire/Mission ; seul SUSPENDED bloque ;
+- aucune Organisation, aucun Projet, aucun Satellite créé automatiquement par le cycle de vie ;
 - migration, tests ciblés, non-régression et build verts sur VPS.
