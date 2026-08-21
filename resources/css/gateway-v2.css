@@ -179,6 +179,13 @@
     font-size: 13px;
 }
 
+.dgg-example-preview {
+    margin: 14px 0 0;
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(255,255,255,.5);
+}
+
 .dgg-discover {
     margin-top: 24px;
     display: inline-flex;

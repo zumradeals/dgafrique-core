@@ -19,6 +19,14 @@ final readonly class GatewayController
             return redirect()->route('activity.index');
         }
 
-        return view('gateway');
+        // Fixture d'exemple uniquement (voir resources/design-reference/README.md) : jamais
+        // seedée, jamais affichée comme une donnée métier réelle — même source que
+        // LandingController (le portail long à /decouvrir affiche déjà ces mêmes « moments »).
+        $portalDemo = json_decode(
+            file_get_contents(resource_path('design-reference/landing-portal-demo.json')),
+            true,
+        );
+
+        return view('gateway', ['exampleMoment' => $portalDemo['moments'][0]]);
     }
 }
