@@ -171,6 +171,18 @@
 
 Un satellite est une forme technique possible d’un outil spécialisé. Ce n’est ni une destination produit, ni un niveau de maturité d’un projet, ni une récompense accordée à un projet réussi.
 
+## ZUMRA-COMP-001 — Cycle de vie & validation
+
+### CAP-011 — ZUMRA / Groupe humain
+
+**Status : CLOSED** (inchangé — ceci est un correctif de complétude, pas une nouvelle CAP)
+
+**Evidence :** `ZumraGroupService::proposeRole/acceptRole/evaluateReadiness/validate/activate/warn/suspend/enterRehabilitation/reactivate`, migration `2026_08_31_100000_add_lifecycle_timestamps_to_zumra_groups_table`.
+
+**Lecture correcte :** AUDIT-CAP-002 avait détecté que `ZumraGroup.state` restait bloqué en `CONSTITUTING` faute de toute transition applicative. ZUMRA-COMP-001 (roadmap priorité #1) implémente le cycle `CONSTITUTING → READY → VALIDATED → ACTIVE ⇄ WARNED → SUSPENDED → REHABILITATING → ACTIVE` directement dans `ZumraGroupService`, sans nouveau moteur parallèle. `READY` reste une constatation structurelle automatisable (7 critères de l’art. 10, jamais 6 — voir `docs/roadmap/ROADMAP-METIER-CANONIQUE.md`) ; le critère « absence d’objet interdit/frauduleux » n’est jamais fabriqué. `VALIDATED` et les transitions suivantes restent des décisions explicites de `PortalAdministrator` (autorité DG Afrique/GAMAD réelle du dépôt), jamais de `isLeader()`. Le plafond `max_simultaneous_founder_roles` est désormais réellement appliqué, à la création et à l’acceptation d’un rôle.
+
+**Décision :** aucun des 12 lecteurs préexistants de `ZumraGroup.state` (Messagerie, Partage, Commentaire, Missions) n’a été modifié — `CONSTITUTING` reste un état opérationnel utilisable, seul `SUSPENDED` continue de bloquer, conformément à la décision produit ROADMAP-001.
+
 ## Règles de maintenance
 
 1. Le code de `main` est la vérité technique.

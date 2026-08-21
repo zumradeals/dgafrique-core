@@ -12,6 +12,7 @@ use App\Http\Controllers\Administration\ProjectMatchingConfigurationController;
 use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
+use App\Http\Controllers\Administration\ZumraGroupLifecycleController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
 use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\LandingController;
@@ -126,6 +127,10 @@ Route::post('/zumra/groupes/{group}/demandes/{membership}/approuver', [ZumraGrou
     ->whereUuid('group')->whereUuid('membership')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
 Route::post('/zumra/groupes/{group}/quitter', [ZumraGroupController::class, 'leave'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
+Route::post('/zumra/groupes/{group}/roles/{role}/proposer', [ZumraGroupController::class, 'proposeRole'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.roles.propose');
+Route::post('/zumra/groupes/{group}/roles/{role}/accepter', [ZumraGroupController::class, 'acceptRole'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.roles.accept');
 Route::put('/zumra/groupes/{group}/capacites-collectives/consentement', [ZumraCollectiveCapabilityController::class, 'consent'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:collective-capability-consent'])->name('zumra.groups.collective-capabilities.consent');
 
@@ -151,6 +156,18 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/groupes-zumra', [ZumraGroupConfigurationController::class, 'edit'])->name('administration.zumra.groups.edit');
     Route::put('/groupes-zumra', [ZumraGroupConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-group-configuration')->name('administration.zumra.groups.update');
+    Route::post('/groupes-zumra/{group}/validation', [ZumraGroupLifecycleController::class, 'validate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.validate');
+    Route::post('/groupes-zumra/{group}/activation', [ZumraGroupLifecycleController::class, 'activate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.activate');
+    Route::post('/groupes-zumra/{group}/avertissement', [ZumraGroupLifecycleController::class, 'warn'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.warn');
+    Route::post('/groupes-zumra/{group}/suspension', [ZumraGroupLifecycleController::class, 'suspend'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.suspend');
+    Route::post('/groupes-zumra/{group}/rehabilitation', [ZumraGroupLifecycleController::class, 'enterRehabilitation'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.rehabilitate');
+    Route::post('/groupes-zumra/{group}/reactivation', [ZumraGroupLifecycleController::class, 'reactivate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.reactivate');
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');

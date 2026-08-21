@@ -23,7 +23,16 @@ La création ouvre l’état `CONSTITUTING`. Elle ne vaut ni validation, ni fina
 
 Les cinq sièges invariants sont créés dès le dossier : premier responsable, deux adjoints distincts, responsable financier et responsable des relations, affaires sociales et religieuses.
 
-Un siège vacant reste visible comme vacant. Aucun profil fictif, matching ou automatisme ne peut accepter un rôle au nom d’une personne. La readiness et la validation complète seront raccordées avec les contrats de nomination et d’acceptation.
+Un siège vacant reste visible comme vacant. Aucun profil fictif, matching ou automatisme ne peut accepter un rôle au nom d’une personne : un responsable propose (`ZumraGroupService::proposeRole`), la personne concernée accepte explicitement (`acceptRole`) — jamais l’inverse. La limite globale de responsabilités fondatrices simultanées (art. 8, administrable, initialement 3) est vérifiée à la fois à la création (attribution automatique du premier siège) et à chaque acceptation de rôle.
+
+## Cycle de vie opérationnel (ZUMRA-COMP-001)
+
+`ZumraGroup.state` distingue trois transitions successives, toutes portées par `ZumraGroupService`, jamais par un moteur parallèle :
+
+- **CONSTITUTING → READY** : constatation structurelle automatisable (`evaluateReadiness()`), déclenchée après l’acceptation d’un rôle si `auto_validation_enabled` l’autorise. Sept critères de l’art. 10 (identité Core, adhésion Programme active, domaine, objectif, charte, cinq responsabilités distinctes acceptées, contrôles de doublon) — **jamais** le critère « absence d’objet interdit/frauduleux », qu’aucun système du dépôt ne sait vérifier : ZUMRA-COMP-001 refuse de le fabriquer.
+- **READY → VALIDATED → ACTIVE → WARNED → SUSPENDED → REHABILITATING → ACTIVE** : décisions explicites de l’autorité DG Afrique/GAMAD (`PortalAdministrator`, jamais `isLeader()`), chacune journalisée dans `ZumraGroupEvent`.
+
+`CONSTITUTING` reste un état opérationnel limité mais utilisable : Messagerie, Partage, Commentaire et proposition de Mission continuent de fonctionner dès la constitution, comme avant ce correctif — seul `SUSPENDED` bloque ces surfaces, décision produit ROADMAP-001 explicitement préservée.
 
 ## Appartenance
 
@@ -59,4 +68,10 @@ Une ZUMRA suspendue devient invisible de l’annuaire, sans suppression de son h
 - invitation sans adhésion automatique puis acceptation ;
 - départ libre et protection des responsabilités actives ;
 - configuration admin persistée ;
+- proposition de rôle réservée aux responsables, acceptation réservée à la personne concernée ;
+- limite de responsabilités fondatrices simultanées réellement appliquée (création et acceptation) ;
+- cinq rôles acceptés et critères structurels réunis → READY, journalisé une seule fois ;
+- VALIDATED/ACTIVE/WARNED/SUSPENDED/REHABILITATING/réactivation réservés à l’autorité DG Afrique/GAMAD ;
+- CONSTITUTING reste opérationnel pour Messagerie/Partage/Commentaire/Mission ; seul SUSPENDED bloque ;
+- aucune Organisation, aucun Projet, aucun Satellite créé automatiquement par le cycle de vie ;
 - migration, tests ciblés, non-régression et build verts sur VPS.

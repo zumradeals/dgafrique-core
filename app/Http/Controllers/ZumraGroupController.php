@@ -6,10 +6,10 @@ namespace App\Http\Controllers;
 
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
-use App\Application\Zumra\ZumraGroupConfiguration;
-use App\Application\Zumra\ZumraGroupService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
+use App\Application\Zumra\ZumraGroupConfiguration;
+use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Need;
 use App\Models\PersonProfile;
@@ -49,7 +49,7 @@ final class ZumraGroupController
         return view('zumra.groups.create', compact('identity', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
-    public function store(Request $request, ZumraGroupService $service): RedirectResponse
+    public function store(Request $request, ZumraGroupConfiguration $configuration, ZumraGroupService $service): RedirectResponse
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -63,7 +63,7 @@ final class ZumraGroupController
             'assume_primary_lead' => ['nullable', 'boolean'],
         ]);
         $data['assume_primary_lead'] = $request->boolean('assume_primary_lead');
-        $group = $service->create($identity->reference, $data);
+        $group = $service->create($identity->reference, $data, (int) $configuration->get()['max_simultaneous_founder_roles']);
 
         return redirect()->route('zumra.groups.show', $group)->with('status', 'Votre ZUMRA est créée en constitution. Aucun rôle vacant n’a été attribué automatiquement.');
     }
@@ -79,7 +79,7 @@ final class ZumraGroupController
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
-        abort_if($group->state === ZumraGroup::STATE_SUSPENDED && !$service->isLeader($group, $identity->reference), 404);
+        abort_if($group->state === ZumraGroup::STATE_SUSPENDED && ! $service->isLeader($group, $identity->reference), 404);
         $isLeader = $service->isLeader($group, $identity->reference);
         $membership = $group->memberships()->where('core_identity_reference', $identity->reference)->first();
         $roles = $group->roles()->orderByRaw("case role when 'PRIMARY_LEAD' then 1 when 'FIRST_DEPUTY' then 2 when 'SECOND_DEPUTY' then 3 when 'FINANCE_LEAD' then 4 else 5 end")->get();
@@ -122,9 +122,9 @@ final class ZumraGroupController
      * Aucun siège vacant ici : aucune action réelle n'existe encore pour en proposer un (§2 de
      * la fiche), une priorité doit toujours pointer vers une action réellement exécutable.
      *
-     * @param Collection<int, ZumraGroupMembership> $pendingRequests
-     * @param Collection<int, Need> $groupNeeds
-     * @param Collection<int, Project> $groupProjects
+     * @param  Collection<int, ZumraGroupMembership>  $pendingRequests
+     * @param  Collection<int, Need>  $groupNeeds
+     * @param  Collection<int, Project>  $groupProjects
      */
     private function collectivePriority(ZumraGroup $group, Collection $pendingRequests, Collection $groupNeeds, Collection $groupProjects): ?array
     {
@@ -205,6 +205,29 @@ final class ZumraGroupController
         $service->leave($group, $identity->reference, (int) $configuration->get()['established_member_threshold']);
 
         return redirect()->route('zumra.groups.index')->with('status', 'Vous avez quitté cette ZUMRA. Son historique reste conservé.');
+    }
+
+    public function proposeRole(Request $request, ZumraGroup $group, string $role, ZumraGroupService $service): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        abort_unless(array_key_exists($role, ZumraGroupRole::LABELS), 422, 'Responsabilité inconnue.');
+        $data = $request->validate(['person_reference' => ['required', 'uuid']]);
+        $profile = PersonProfile::query()->where('discovery_reference', $data['person_reference'])->where('discovery_consent', true)->firstOrFail();
+        $service->proposeRole($group, $identity->reference, $role, $profile->core_identity_reference);
+
+        return back()->with('status', 'Responsabilité proposée. Elle ne sera occupée qu’après acceptation explicite.');
+    }
+
+    public function acceptRole(Request $request, ZumraGroup $group, string $role, ZumraGroupConfiguration $configuration, ZumraGroupService $service): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        abort_unless(array_key_exists($role, ZumraGroupRole::LABELS), 422, 'Responsabilité inconnue.');
+        $settings = $configuration->get();
+        $service->acceptRole($group, $identity->reference, $role, (int) $settings['max_simultaneous_founder_roles'], (bool) $settings['auto_validation_enabled']);
+
+        return back()->with('status', 'Vous occupez désormais cette responsabilité.');
     }
 
     private function programMembership(string $identity): ?ZumraProgramMembership

@@ -69,7 +69,7 @@ Cohérence registre ↔ code : globalement bonne. Trois écarts réels détecté
 
 | CAP | Nom | Statut réel | Domaine | Ce qui existe | Ce qui manque | Blocage | Impact | Levier | Risque | Taille |
 |---|---|---|---|---|---|---|---|---|---|---|
-| — | **ZUMRA — cycle de vie & validation** *(gap sous CAP-011, CLOSED)* | **Incohérence** | ZUMRA | 7 états déclarés (`ZumraGroup::STATE_*`), création, membres, rôles, messagerie, partage | Aucun code ne fait jamais transitionner un groupe hors de `CONSTITUTING` ; validation auto (6 critères doctrinaux) jamais lue ; `max_simultaneous_founder_roles=3` jamais appliqué ; modération 3 niveaux absente | Interne (rien d'externe) | CRITIQUE | 0 (isolé mais central) | ÉLEVÉ | M |
+| — | **ZUMRA — cycle de vie & validation** *(gap sous CAP-011, CLOSED)* | **Incohérence à l'origine — ZUMRA-COMP-001 Phase B en revue** | ZUMRA | 7 états déclarés (`ZumraGroup::STATE_*`), création, membres, rôles, messagerie, partage | Constat initial (AUDIT-CAP-002) : aucun code ne faisait jamais transitionner un groupe hors de `CONSTITUTING` ; validation auto (7 critères doctrinaux — *correction post-audit : la roadmap indiquait par erreur « 6 critères », l'art. 10 en liste bien 7*) jamais lue ; `max_simultaneous_founder_roles=3` jamais appliqué ; modération 3 niveaux absente. **Corrigé par ZUMRA-COMP-001 Phase B** (branche `fix/zumra-comp-001-lifecycle-validation`, PR en revue) pour le cycle de vie, la readiness structurelle et la limite de rôles fondateurs — la modération à 3 niveaux reste hors périmètre, non traitée. | Interne (rien d'externe) | CRITIQUE | 0 (isolé mais central) | ÉLEVÉ | M |
 | CAP-053 | Consentement | PARTIAL | Trust & Consent | `orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent` — 4 champs indépendants, par domaine | Aucun modèle unifié de consentement/retrait/audit cross-domaine | Interne | ÉLEVÉ | 3+ (matching, discovery, partenariats) | MOYEN | M |
 | CAP-061 | Contributions financières | NOT_IMPLEMENTED | Finance | `GeniusPayClient` prouvé en prod (CAP-007B, adhésion ZUMRA) | Aucun modèle Contribution/Wallet pour un contexte hors adhésion | Aucun | MOYEN | 2 (CAP-062, CAP-063) | MOYEN | M |
 | CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED | Finance | Rien (aucun modèle Ledger) | Registre d'audit financier | Aucun | MOYEN | 1 (CAP-061/063 plus solides avec) | FAIBLE | M |
@@ -150,7 +150,7 @@ Le problème concerne notamment :
 
 - le cycle de vie ZUMRA (7 états déclarés dans `ZumraGroup::STATE_*`, doctrine en attend 9) ;
 - les transitions depuis `CONSTITUTING` — aucun code ne fait jamais progresser un groupe vers `READY`, `VALIDATED`, `ACTIVE`, `WARNED`, `SUSPENDED` ou `REHABILITATING` ;
-- la validation automatique et ses 6 critères doctrinaux (`ZUMRA-DOCTRINE-INVARIANTE.md` art. 10) — jamais lus, jamais appliqués ;
+- la validation automatique et ses 7 critères doctrinaux (`ZUMRA-DOCTRINE-INVARIANTE.md` art. 10 — *correctif ROADMAP-001 : l'audit initial en comptait 6 par erreur de lecture, l'article en liste bien 7*) — jamais lus, jamais appliqués ;
 - le plafond `max_simultaneous_founder_roles = 3` — configuré (`ZumraGroupConfiguration.php`) mais jamais lu ni appliqué nulle part ;
 - la modération à 3 niveaux (art. 19) et les états associés (`WARNED`/`SUSPENDED`/`REHABILITATING`) — absents en pratique.
 
@@ -160,13 +160,23 @@ Ceci devient :
 
 Important : **ce n'est pas une nouvelle CAP.** C'est un correctif de complétude de CAP-011, à traiter avec un audit dédié avant tout code (le state `ZumraGroup.state` est lu transversalement par Messagerie, Partage, Commentaire et Missions ZUMRA — toucher au state machine a un rayon d'impact large).
 
+### Trois dimensions distinctes, à ne jamais confondre
+
+- **Adhésion au Programme ZUMRA** (`ZumraProgramMembership.status`, CAP-007) — déjà réelle et fonctionnelle (paiement GeniusPay, PENDING_PAYMENT→ACTIVE→SUSPENDED→CLOSED).
+- **Maturité d'une ZUMRA** (`ZumraGroup.maturity`, EMERGING/ESTABLISHED, seuil de 50 membres, art. 9) — déjà réelle et fonctionnelle, recalculée à chaque mouvement de membre. N'a jamais été le problème.
+- **Statut opérationnel d'une ZUMRA** (`ZumraGroup.state`, cycle de vie de l'art. 10) — c'est cette seule dimension qui était inerte et que ZUMRA-COMP-001 corrige.
+
+### État d'implémentation
+
+Phase A (audit runtime) et Phase B (implémentation) sont terminées et en revue : branche `fix/zumra-comp-001-lifecycle-validation`, PR draft. Le cycle `CONSTITUTING → READY → VALIDATED → ACTIVE ⇄ WARNED → SUSPENDED → REHABILITATING → ACTIVE` est implémenté dans `ZumraGroupService`, avec gestion des sièges fondateurs vacants (proposition/acceptation) et application réelle de `max_simultaneous_founder_roles`. `READY` reste une constatation structurelle automatisable (7 critères, hors contrôle anti-fraude jamais fabriqué) ; `VALIDATED` et tout ce qui suit restent des décisions explicites de l'autorité DG Afrique/GAMAD (`PortalAdministrator`). Cette roadmap sera réévaluée après le merge, conformément à la règle « ne jamais conserver artificiellement une priorité devenue fausse ».
+
 ---
 
 ## Priorité canonique actuelle
 
 **PRIORITÉ #1**
 
-**ZUMRA-COMP-001 — Cycle de vie & validation**
+**ZUMRA-COMP-001 — Cycle de vie & validation** — Phase A et Phase B livrées, PR draft en revue (non mergée à ce jour). Le réaudit du graphe métier est à faire après le merge, pas avant.
 
 Puis, **sous réserve du réaudit après ce correctif** :
 
