@@ -81,7 +81,7 @@
 | CAP-065 | Partenaire comme fournisseur de capacité | CLOSED |
 | CAP-066 | Organisation | CLOSED |
 | CAP-067 | Identité organisationnelle | DEPENDENCY_BLOCKED |
-| CAP-068 | Événement | NOT_IMPLEMENTED |
+| CAP-068 | Événement | CLOSED |
 | CAP-069 | Tâche / Mission | CLOSED |
 | CAP-070 | Document | DEPENDENCY_BLOCKED |
 | CAP-071 | Architecture de navigation future | DOC_ONLY |
@@ -206,6 +206,16 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Evidence :** `ProjectFunding`, `ProjectFundingService`, `ProjectFundingController`, migration `2026_09_15_100000_create_project_fundings_table.php`, `tests/Feature/ProjectFundingTest.php` (31 cas).
 
 **Détail complet :** voir `docs/capacites/specs/CAP-063-financement-projet.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-063 — Financement de projet (livrée) »). Ce fichier ne duplique pas leur contenu.
+
+## CAP-068 — Événement
+
+**Status : CLOSED** *(clarification doctrinale validée puis implémentation V1 — était `NOT_IMPLEMENTED`, marquée `DOCTRINE-À-CLARIFIER` par ROADMAP-003)*
+
+**Décision produit validée :** Événement = rencontre/atelier/activité calendaire à laquelle on participe, distinct de Mission (action à accomplir avec responsabilité) et des journaux append-only `*Event` (traçabilité technique). Organisateur V1 : `ZUMRA_GROUP` ou `ORGANIZATION`. Participation = inscription/désinscription légère, jamais `MissionAssignment`. Aucune récurrence, aucun calendrier complexe, aucun matching, aucune finance, aucun score, aucune émargement de présence.
+
+**Evidence :** `CommunityEvent`, `CommunityEventParticipant`, `CommunityEventService`, `CommunityEventController`, migration `2026_09_29_100000_create_community_events_tables.php`, `tests/Feature/CommunityEventTest.php` (22 cas).
+
+**Détail complet :** voir `docs/capacites/specs/CAP-068-evenement.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md`. Ce fichier ne duplique pas leur contenu.
 
 ## CAP-082 — correction ROADMAP-003
 

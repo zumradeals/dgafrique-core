@@ -342,9 +342,19 @@ Preuve : `tests/Feature/ProjectFundingTest.php` (31 cas). Voir la spec pour le d
 
 ---
 
+## CAP-068 — Événement (livrée)
+
+**CLOSED — 2026-09-29.** Branche `feat/cap-068-community-event`, PR draft. Était `NOT_IMPLEMENTED`/`DOCTRINE-À-CLARIFIER` (ROADMAP-003) : le corpus ne définissait « Événement » qu'au titre d'index. Clarification doctrinale validée : `docs/capacites/specs/MISSIONS.md:37` cite « Événement » comme objet métier autonome pair de Besoin/Projet/Transmission/Preuve/Document, jamais synonyme des journaux techniques `*Event` — hypothèse inverse falsifiée par cette même citation.
+
+Définition canonique validée : Mission = action à accomplir avec responsabilité ; Événement = rencontre située dans le temps à laquelle on participe. Décision produit V1 : organisateur `ZUMRA_GROUP`/`ORGANIZATION` uniquement, participation = inscription légère (`CommunityEventParticipant`, jamais `MissionAssignment`), visibilité `INTERNAL`/`PUBLIC`, aucune récurrence, aucun calendrier complexe, aucun matching, aucune finance, aucun score, aucune émargement de présence. Nommé `CommunityEvent` (jamais `Event`) pour éviter toute collision avec les 10 journaux append-only `*Event` existants. Autorité intégralement réutilisée : `ZumraGroupService::isLeader()` / `OrganizationService::isManager()`/`canView()` — aucune matrice nouvelle.
+
+Preuve : `tests/Feature/CommunityEventTest.php` (22 cas). Détail complet : `docs/capacites/specs/CAP-068-evenement.md`.
+
+---
+
 ## Priorité canonique actuelle
 
-**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062**, **CAP-063** et **MODERATION-COMP-001** sont closes. La priorité canonique #1 déterminée par ROADMAP-003 (audit puis implémentation de MODERATION-COMP-001, art. 19) est livrée — voir `docs/roadmap/MODERATION-COMP-001.md`. **Aucune nouvelle priorité canonique n'est fixée par ce chantier** : conformément à la règle de gouvernance de cette roadmap (« ne jamais conserver artificiellement une priorité devenue fausse »), déterminer la prochaine priorité exige un nouveau réaudit explicite du graphe métier (prochain chantier ROADMAP), pas une décision silencieuse ici. CAP-053, CAP-068, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080 restent dans l'état constaté par ROADMAP-003.
+**Cette section est désormais portée par ROADMAP-003 (voir section dédiée en haut de ce document).** Résumé : **ZUMRA-COMP-001**, **CAP-061**, **CAP-062**, **CAP-063**, **MODERATION-COMP-001** et **CAP-068** sont closes. La priorité canonique #1 déterminée par ROADMAP-003 (audit puis implémentation de MODERATION-COMP-001, art. 19) est livrée — voir `docs/roadmap/MODERATION-COMP-001.md`. CAP-068, qui restait `DOCTRINE-À-CLARIFIER`, a été clarifiée puis close séparément (voir section dédiée ci-dessus). **Aucune nouvelle priorité canonique n'est fixée par ce chantier** : conformément à la règle de gouvernance de cette roadmap (« ne jamais conserver artificiellement une priorité devenue fausse »), déterminer la prochaine priorité exige un nouveau réaudit explicite du graphe métier (prochain chantier ROADMAP), pas une décision silencieuse ici. CAP-053, CAP-023, CAP-051, CAP-056, CAP-047 et CAP-077/078/079/080 restent dans l'état constaté par ROADMAP-003 (`PARTIAL` par conception ou bloquées par absence de dépendance/consommateur externe).
 
 ---
 
