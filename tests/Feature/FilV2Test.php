@@ -163,6 +163,18 @@ final class FilV2Test extends TestCase
             ->assertSee('Le fil s’arrête ici. Revenez quand une action réelle aura avancé.');
     }
 
+    public function test_fil_never_shows_an_internal_cap_identifier(): void
+    {
+        // UIUX-001 : « CAP-005 / CAP-006 » s'affichait littéralement dans le rail
+        // « Apprentissages et transmissions » (résidu de rédaction interne). Aucun identifiant
+        // CAP-xxx ne doit apparaître dans l'expérience normale, avec ou sans données réelles.
+        $this->makeVisibleNeed('IDN-FILV2-NOCAP-OWNER');
+        $this->signIn('IDN-FILV2-NOCAP-VIEWER');
+
+        $content = $this->get('/activite')->assertOk()->getContent();
+        self::assertDoesNotMatchRegularExpression('/CAP-\d/', $content);
+    }
+
     private function makeVisibleNeed(string $owner): void
     {
         $this->signIn($owner);

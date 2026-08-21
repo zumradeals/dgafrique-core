@@ -516,3 +516,49 @@ comme la prochaine priorité isolée. Toute future mission UIUX-001 doit respect
 nouvelle entrée de navigation de premier niveau imposée par un trou d'interface), §12-13 (aucune
 donnée de démonstration sans nécessité prouvée) et la procédure de gouvernance de
 `docs/design/DESIGN-INVARIANTS.md` §14.
+
+---
+
+## 21. Addendum daté — UIUX-001 Phase B, Première intention (21 août 2026)
+
+**Portée : le parcours nouvel utilisateur** (`gateway.blade.php`, `foundation.blade.php`,
+`AccountRegistrationController.php`, `member/space.blade.php`, `MemberSpaceController.php`,
+`activity/index.blade.php` — corrections de jargon uniquement). Suit la procédure de gouvernance
+du §20.
+
+**Décisions rendues durables par cette mission** (catégorie A pour ce qui suit, révisent la
+catégorie C — question ouverte — de la « première intention » posée au §19) :
+
+- **Routeur de « première intention »** : un membre sans relation réelle avec le réseau
+  (`MemberSpaceController::isNewMember()`, dérivé uniquement de données métier existantes —
+  jamais un champ `onboarding_completed`) voit sur `/espace` quatre intentions humaines — *Je peux
+  apporter quelque chose / J'ai un besoin / Je veux découvrir / Je veux participer* — au lieu des
+  actions rapides habituelles. C'est un **routeur UX vers des capacités déjà existantes**, jamais
+  un nouveau modèle métier : Besoin → `needs.create` (inchangé) ; Découvrir → `activity.index`
+  (inchangé) ; Participer → `zumra.groups.index`/`organizations.index` (inchangé, seulement
+  reformulé en langage humain avant le terme ZUMRA) ; Apporter → capacité légère (ci-dessous). Un
+  membre déjà actif garde les actions rapides habituelles, « Ouvrir ZUMRA » incluse — jamais forcé
+  de repasser par ce routeur.
+- **Capacité légère** (`QuickCapabilityController`) : une phrase suffit à déclarer une première
+  capacité. Réutilise exactement `CapabilityStatementSynchronizer` et le domaine
+  `CapabilityStatement` déjà établi — aucun modèle parallèle, aucune nouvelle table. Le profil
+  complet en 7 étapes reste la voie d'approfondissement, inchangée.
+- **Découverte publique limitée et réelle** (`LandingController::publicMoments()`) : un visiteur
+  anonyme voit désormais, dans « Dans le réseau en ce moment », de vrais Besoins/Projets dès qu'ils
+  existent en visibilité `PUBLIC` — même règle DEMO-FIRST, REAL-DATA-TAKES-OVER déjà établie pour
+  le Fil/Projets/Besoins (§12), étendue ici à la Landing. Aucune règle d'autorisation nouvelle :
+  réutilise exactement `NeedService::canView()`/`ProjectService::canView()`, dont la branche
+  `VISIBILITY_PUBLIC` était déjà, avant cette mission, indépendante de l'identité de l'acteur.
+- **Correction de fuite de jargon** : le mot « GAMAD » (institution invisible, §4) et les
+  identifiants techniques `CAP-xxx` ne doivent jamais apparaître dans l'expérience normale —
+  corrigé aux points où ils fuyaient réellement à l'écran (messages d'inscription/vérification,
+  rail du Fil), testé par des assertions sur la réponse HTTP réelle plutôt que sur le seul code
+  source Blade.
+- **Correction de priorité** : `MemberSpaceController::priority()` ne peut plus jamais promouvoir
+  l'activité d'un inconnu sans relation personnelle réelle (`relevance_reason`, CAP-055) au rang de
+  priorité dominante — cohérent avec le test « Pourquoi cela m'est montré ? » du §8 de
+  `DESIGN-INVARIANTS.md`, désormais également respecté par Mon espace, pas seulement par le Fil.
+
+**Question ouverte non tranchée par cette mission** : le comportement des liens de découverte de
+la Landing menant à un domaine complet (Fil/Besoins/Projets/ZUMRA) reste un mur de connexion —
+seule la section « Dans le réseau en ce moment » a été rendue réelle. Reste catégorie C.
