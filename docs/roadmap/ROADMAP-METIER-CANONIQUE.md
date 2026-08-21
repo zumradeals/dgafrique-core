@@ -71,7 +71,7 @@ Cohérence registre ↔ code : globalement bonne. Trois écarts réels détecté
 |---|---|---|---|---|---|---|---|---|---|---|
 | — | **ZUMRA — cycle de vie & validation** *(gap sous CAP-011, CLOSED)* | **Incohérence à l'origine — ZUMRA-COMP-001 Phase B en revue** | ZUMRA | 7 états déclarés (`ZumraGroup::STATE_*`), création, membres, rôles, messagerie, partage | Constat initial (AUDIT-CAP-002) : aucun code ne faisait jamais transitionner un groupe hors de `CONSTITUTING` ; validation auto (7 critères doctrinaux — *correction post-audit : la roadmap indiquait par erreur « 6 critères », l'art. 10 en liste bien 7*) jamais lue ; `max_simultaneous_founder_roles=3` jamais appliqué ; modération 3 niveaux absente. **Corrigé par ZUMRA-COMP-001 Phase B** (branche `fix/zumra-comp-001-lifecycle-validation`, PR en revue) pour le cycle de vie, la readiness structurelle et la limite de rôles fondateurs — la modération à 3 niveaux reste hors périmètre, non traitée. | Interne (rien d'externe) | CRITIQUE | 0 (isolé mais central) | ÉLEVÉ | M |
 | CAP-053 | Consentement | PARTIAL | Trust & Consent | `orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent` — 4 champs indépendants, par domaine | Aucun modèle unifié de consentement/retrait/audit cross-domaine | Interne | ÉLEVÉ | 3+ (matching, discovery, partenariats) | MOYEN | M |
-| CAP-061 | Contributions financières | NOT_IMPLEMENTED | Finance | `GeniusPayClient` prouvé en prod (CAP-007B, adhésion ZUMRA) | Aucun modèle Contribution/Wallet pour un contexte hors adhésion | Aucun | MOYEN | 2 (CAP-062, CAP-063) | MOYEN | M |
+| CAP-061 | Contributions financières | **CLOSED — livrée par CAP-061 Phase B** *(était NOT_IMPLEMENTED lors de l'audit ROADMAP-001/002)* | Finance | `GeniusPayClient` prouvé en prod (CAP-007B, adhésion ZUMRA) — généralisé (`createContributionPayment()`) sans rien casser de CAP-007B | — | Aucun | MOYEN | 2 (CAP-062, CAP-063 — non déclenchés par ce chantier, périmètre volontairement non ouvert) | MOYEN | M |
 | CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED | Finance | Rien (aucun modèle Ledger) | Registre d'audit financier | Aucun | MOYEN | 1 (CAP-061/063 plus solides avec) | FAIBLE | M |
 | CAP-063 | Financement de projet | NOT_IMPLEMENTED *(documenté `DEPENDENCY_BLOCKED` — voir section dédiée ci-dessous)* | Finance/Projects | Project, Organization, Partnership, Need — tout le socle relationnel existe | Modèle de financement lui-même ; CAP-014 impose explicitement « aucun paiement dans Projet » | **Produit** (choix doctrinal assumé, pas dépendance technique) | MOYEN | 0 | MOYEN | M |
 | CAP-023 | Graphe des capacités | PARTIAL | Capabilities & Intelligence | 5 moteurs de correspondance séparés (`PersonRecommendationEngine`, `OpportunityEngine`, `MissionMatchingEngine`, `ProjectMatchingEngine`, `TransmissionMatchingEngine`) | Aucune structure de graphe unifiée/navigable | Aucun | FAIBLE | 0 | FAIBLE | M |
@@ -168,23 +168,37 @@ Important : **ce n'est pas une nouvelle CAP.** C'est un correctif de complétude
 
 ### État d'implémentation
 
-Phase A (audit runtime) et Phase B (implémentation, corrigée en revue) sont terminées et en revue : branche `fix/zumra-comp-001-lifecycle-validation`, PR draft. Le cycle `CONSTITUTING → READY → VALIDATED → ACTIVE ⇄ WARNED → SUSPENDED → REHABILITATING → ACTIVE` est implémenté dans `ZumraGroupService`, avec gestion des sièges fondateurs vacants (proposition/acceptation) et application réelle de `max_simultaneous_founder_roles`. `READY` signifie « dossier structurel complet, prêt à être soumis à validation » — jamais « les 7 critères doctrinaux sont tous validés » : `evaluateStructuralReadiness()` ne vérifie que les 6 critères automatisables ; le 7e (contrôles de nom/doublon/risque/usurpation) reste un contrôle de conformité humain, jamais présenté comme satisfait par la seule unicité technique du `slug`, et le contrôle anti-fraude n'est jamais fabriqué. Automatique (`acceptRole` + `auto_validation_enabled=true`) ou manuelle (`markReady()`, autorité DG Afrique/GAMAD, lorsque l'automatisation est désactivée) — le cycle ne devient jamais impossible faute d'automatisation. `VALIDATED` et tout ce qui suit restent des décisions explicites de l'autorité DG Afrique/GAMAD (`PortalAdministrator`) ; `CONSTITUTING → VALIDATED` directement reste toujours impossible. Cette roadmap sera réévaluée après le merge, conformément à la règle « ne jamais conserver artificiellement une priorité devenue fausse ».
+Phase A (audit runtime) et Phase B (implémentation, corrigée en revue) sont terminées : branche `fix/zumra-comp-001-lifecycle-validation`, **mergée dans `main`**. Le cycle `CONSTITUTING → READY → VALIDATED → ACTIVE ⇄ WARNED → SUSPENDED → REHABILITATING → ACTIVE` est implémenté dans `ZumraGroupService`, avec gestion des sièges fondateurs vacants (proposition/acceptation) et application réelle de `max_simultaneous_founder_roles`. `READY` signifie « dossier structurel complet, prêt à être soumis à validation » — jamais « les 7 critères doctrinaux sont tous validés » : `evaluateStructuralReadiness()` ne vérifie que les 6 critères automatisables ; le 7e (contrôles de nom/doublon/risque/usurpation) reste un contrôle de conformité humain, jamais présenté comme satisfait par la seule unicité technique du `slug`, et le contrôle anti-fraude n'est jamais fabriqué. Automatique (`acceptRole` + `auto_validation_enabled=true`) ou manuelle (`markReady()`, autorité DG Afrique/GAMAD, lorsque l'automatisation est désactivée) — le cycle ne devient jamais impossible faute d'automatisation. `VALIDATED` et tout ce qui suit restent des décisions explicites de l'autorité DG Afrique/GAMAD (`PortalAdministrator`) ; `CONSTITUTING → VALIDATED` directement reste toujours impossible. Le réaudit post-merge (ROADMAP-002, audit seul, aucune modification de ce document à l'époque) a confirmé depuis le code que ZUMRA-COMP-001 débloque spécifiquement CAP-061 : avant ce correctif, aucune ZUMRA ne pouvait honnêtement atteindre `VALIDATED`, rendant impossible d'implémenter sans fabrication la condition doctrinale « ZUMRA validée » (art. 6.3) que la contribution collective exige.
+
+---
+
+## CAP-061 — Contributions financières (livrée)
+
+**CLOSED — 2026-09-01.** Branche `feat/cap-061-financial-contributions-v1`, PR draft. Le contrat V1 défini en Phase A (`docs/capacites/specs/CAP-061-contributions-financieres.md`) est intégralement couvert :
+
+- **Contribution individuelle** (art. 6.2) : engagement personnel, 500 XOF/mois par défaut, activation/pause/reprise/arrêt libres, jamais de dette, ni relance automatique.
+- **Contribution collective ZUMRA** (art. 6.3) : engagement porté par la ZUMRA (`subject_type=ZUMRA_GROUP`), 2500 XOF/mois par défaut, gouvernance à deux acteurs distincts (`PRIMARY_LEAD` propose, `FINANCE_LEAD` approuve, ou l'inverse — jamais la même identité Core), condition « ZUMRA validée » vérifiée sur les états VALIDATED/ACTIVE/WARNED/REHABILITATING (SUSPENDED bloque uniquement l'initiation d'un nouveau paiement), paiement mensuel initié par tout responsable habilité une fois l'engagement actif.
+- **`GeniusPayClient` généralisé** (`createContributionPayment()`) sans aucune régression sur `createMembershipPayment()` (CAP-007B) — les 13 tests `ZumraMembershipPaymentTest` restent verts après le correctif de couplage `payments.membership.enabled` (voir Débogage ci-dessous).
+- **Finalités** (art. 6.5) : table réelle versionnée/auditée `dg_contribution_purposes`, 8 codes canoniques seedés (`ECOSYSTEM_SUSTAINABILITY`, `TRAINING`, `NEW_ZUMRA`, `VALIDATED_PROJECTS`, `INFRASTRUCTURE`, `SOLIDARITY`, `EMERGENCY`, `AUTHORIZED_FEES`), retrait sans jamais altérer un paiement déjà réalisé.
+- **Réconciliation serveur-à-serveur** identique au motif CAP-007B (le retour navigateur n'est jamais une preuve), reçus immuables et idempotents.
+- **Aucun** score/rang/dette/wallet/solde/priorité issu du montant, de la fréquence ou de l'absence de contribution. `ZumraGroup.state`/`.maturity` ne sont jamais modifiés par ce domaine financier.
+- **Frontière CAP-062** (ledger) : chaque paiement confirmé porte déjà référence/montant/devise/finalité/période/statut/reçu/payeur/sujet — prêt pour un futur ledger additif, mais aucun ledger n'existe dans cette PR.
+- **Frontière CAP-063** (financement de projet) : `VALIDATED_PROJECTS` reste un simple code de destination doctrinal ; aucun Projet n'est jamais financé par ce domaine.
+
+Preuve : `tests/Feature/ContributionTest.php` (45 cas). Voir la spec pour le détail intégral.
 
 ---
 
 ## Priorité canonique actuelle
 
+**ZUMRA-COMP-001** (mergée) et **CAP-061** (livrée, PR draft) sont closes. Le graphe métier n'a pas été réévalué depuis (CAP-061 n'a pas rouvert CAP-062/063 — voir leur section dédiée, inchangée).
+
 **PRIORITÉ #1**
 
-**ZUMRA-COMP-001 — Cycle de vie & validation** — Phase A et Phase B livrées, PR draft en revue (non mergée à ce jour). Le réaudit du graphe métier est à faire après le merge, pas avant.
+1. CAP-062 — Ledger / traçabilité
+2. CAP-063 — Financement de projet
 
-Puis, **sous réserve du réaudit après ce correctif** :
-
-1. CAP-061 — Contributions financières
-2. CAP-062 — Ledger / traçabilité
-3. CAP-063 — Financement de projet
-
-Cette séquence n'est **pas un ordre éternel**. Après ZUMRA-COMP-001, le graphe métier doit être rapidement revalidé — un correctif touchant transversalement Messagerie/Partage/Commentaire/Missions ZUMRA peut faire apparaître de nouvelles dépendances ou refermer des écarts non anticipés ici.
+Cette séquence reste celle établie par ROADMAP-002 (verdict A, confirmé « TOUJOURS EXACTE » pour CAP-062/063, non affectés par CAP-061). Elle n'est **pas un ordre éternel** : tout chantier futur touchant Finance/Contribution/ZUMRA doit revalider ce graphe avant de s'appuyer aveuglément sur cet ordre.
 
 ---
 
@@ -234,4 +248,4 @@ Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre n
 
 ## Prochaine action recommandée
 
-**ZUMRA-COMP-001 — audit dédié avant code.** Ne pas commencer d'implémentation directement : le rayon d'impact transversal (Messagerie, Partage, Commentaire, Missions ZUMRA) exige un audit d'implémentation propre, séparé de ce document de canonisation.
+**ZUMRA-COMP-001** (mergée) et **CAP-061** (livrée, PR draft) sont closes. Prochaine action : **CAP-062 — Ledger / traçabilité**, en Phase A (audit du contrat métier) avant toute implémentation — cohérent avec la discipline Phase A/Phase B appliquée à ZUMRA-COMP-001 et CAP-061.

@@ -74,7 +74,7 @@
 | CAP-058 | Messagerie contextuelle | CLOSED |
 | CAP-059 | Conversation → action | CLOSED |
 | CAP-060 | Réputation : grande prudence | DOC_ONLY |
-| CAP-061 | Contributions financières | NOT_IMPLEMENTED |
+| CAP-061 | Contributions financières | CLOSED |
 | CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED |
 | CAP-063 | Financement de projet | DEPENDENCY_BLOCKED |
 | CAP-064 | Moteur d’opportunités | CLOSED |
@@ -182,6 +182,14 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Lecture correcte :** AUDIT-CAP-002 avait détecté que `ZumraGroup.state` restait bloqué en `CONSTITUTING` faute de toute transition applicative. ZUMRA-COMP-001 (roadmap priorité #1) implémente le cycle `CONSTITUTING → READY → VALIDATED → ACTIVE ⇄ WARNED → SUSPENDED → REHABILITATING → ACTIVE` directement dans `ZumraGroupService`, sans nouveau moteur parallèle. `READY` signifie « dossier structurel complet et prêt à être soumis à validation », jamais « les 7 critères doctrinaux sont validés » : `evaluateStructuralReadiness()` ne vérifie que les 6 critères de l’art. 10 réellement automatisables — le 7e (contrôles de nom/doublon/risque/usurpation) reste un contrôle de conformité humain, jamais présenté comme satisfait par la seule unicité technique du `slug` ; le critère « absence d’objet interdit/frauduleux » n’est jamais fabriqué non plus. Lorsque `auto_validation_enabled=false`, `markReady()` offre le chemin manuel équivalent, réservé à `PortalAdministrator` : le cycle ne devient jamais impossible faute d’automatisation, et `CONSTITUTING → VALIDATED` directement reste toujours impossible. `VALIDATED` et les transitions suivantes restent des décisions explicites de `PortalAdministrator` (autorité DG Afrique/GAMAD réelle du dépôt), jamais de `isLeader()`. Le plafond `max_simultaneous_founder_roles` est désormais réellement appliqué, à la création et à l’acceptation d’un rôle.
 
 **Décision :** aucun des 12 lecteurs préexistants de `ZumraGroup.state` (Messagerie, Partage, Commentaire, Missions) n’a été modifié — `CONSTITUTING` reste un état opérationnel utilisable, seul `SUSPENDED` continue de bloquer, conformément à la décision produit ROADMAP-001.
+
+## CAP-061 — Contributions financières
+
+**Status : CLOSED**
+
+**Evidence :** `ContributionService`, `Contribution`/`ContributionPayment`/`ContributionReceipt`/`ContributionPurpose`/`ContributionEvent`, `GeniusPayClient::createContributionPayment()`, migration `2026_09_01_100000_create_contribution_tables.php`, `tests/Feature/ContributionTest.php` (45 cas).
+
+**Détail complet :** voir `docs/capacites/specs/CAP-061-contributions-financieres.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-061 — Contributions financières (livrée) »). Ce fichier ne duplique pas leur contenu.
 
 ## Règles de maintenance
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\AccountRegistrationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
+use App\Http\Controllers\Administration\ContributionConfigurationController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
 use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
 use App\Http\Controllers\Administration\ProfileConfigurationController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Administration\ZumraCardController as AdministrationZum
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\ZumraGroupLifecycleController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
+use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\GatewayController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\MemberProfileController;
@@ -133,6 +135,27 @@ Route::post('/zumra/groupes/{group}/roles/{role}/accepter', [ZumraGroupControlle
     ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.roles.accept');
 Route::put('/zumra/groupes/{group}/capacites-collectives/consentement', [ZumraCollectiveCapabilityController::class, 'consent'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:collective-capability-consent'])->name('zumra.groups.collective-capabilities.consent');
+Route::post('/zumra/groupes/{group}/contribution', [ContributionController::class, 'proposeCollective'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.propose');
+Route::post('/zumra/groupes/{group}/contribution/approbation', [ContributionController::class, 'approveCollective'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.approve');
+
+Route::get('/contributions', [ContributionController::class, 'index'])
+    ->middleware('core.member')->name('contributions.index');
+Route::post('/contributions/individuelle', [ContributionController::class, 'startIndividual'])
+    ->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.individual.start');
+Route::post('/contributions/{contribution}/pause', [ContributionController::class, 'pause'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.pause');
+Route::post('/contributions/{contribution}/reprise', [ContributionController::class, 'resume'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.resume');
+Route::post('/contributions/{contribution}/arret', [ContributionController::class, 'stop'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.stop');
+Route::post('/contributions/{contribution}/paiement', [ContributionController::class, 'pay'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment'])->name('contributions.pay');
+Route::get('/contributions/{contribution}/paiements/retour', [ContributionController::class, 'returned'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment-status'])->name('contributions.payment.return');
+Route::get('/contributions/recus/{receipt}', [ContributionController::class, 'receipt'])
+    ->middleware('core.member')->name('contributions.receipt');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
@@ -170,6 +193,13 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.rehabilitate');
     Route::post('/groupes-zumra/{group}/reactivation', [ZumraGroupLifecycleController::class, 'reactivate'])
         ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.reactivate');
+    Route::get('/contributions', [ContributionConfigurationController::class, 'edit'])->name('administration.contributions.edit');
+    Route::put('/contributions', [ContributionConfigurationController::class, 'update'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.update');
+    Route::post('/contributions/finalites/{purpose}/retrait', [ContributionConfigurationController::class, 'retirePurpose'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.retire');
+    Route::post('/contributions/finalites/{purpose}/reactivation', [ContributionConfigurationController::class, 'reactivatePurpose'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.reactivate');
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
