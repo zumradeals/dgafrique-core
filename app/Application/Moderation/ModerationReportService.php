@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Moderation;
 
 use App\Application\Messaging\MessagingService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\ContextComment;
 use App\Models\MessageConversation;
 use App\Models\MessageEntry;
@@ -31,7 +32,10 @@ final class ModerationReportService
 {
     private const MAX_REPORTS_RETURNED = 100;
 
-    public function __construct(private readonly MessagingService $messaging) {}
+    public function __construct(
+        private readonly MessagingService $messaging,
+        private readonly ZumraGroupService $zumraGroups,
+    ) {}
 
     public function reportContextComment(ContextComment $comment, string $actor, string $reasonCode, ?string $reasonDetails): ModerationReport
     {
@@ -98,9 +102,17 @@ final class ModerationReportService
         return ModerationReport::query()->where('reporter_core_reference', $actor)->latest('reported_at')->limit(self::MAX_REPORTS_RETURNED)->get();
     }
 
-    /** Signalements décidables par ce niveau 2 : jamais ceux déjà escaladés (art. 19). */
-    public function forZumraLeader(ZumraGroup $group): Collection
+    /**
+     * Signalements décidables par ce niveau 2 : jamais ceux déjà escaladés (art. 19). L'autorité
+     * est vérifiée ici, dans la couche applicative — jamais seulement au niveau HTTP — pour que
+     * cette méthode ne puisse structurellement jamais être appelée par un acteur non autorisé,
+     * quel que soit le contrôleur qui l'invoque. Réutilise strictement ZumraGroupService::isLeader(),
+     * aucune matrice d'autorisation nouvelle.
+     */
+    public function forZumraLeader(ZumraGroup $group, string $actor): Collection
     {
+        abort_unless($this->zumraGroups->isLeader($group, $actor), 403);
+
         return ModerationReport::query()
             ->where('context_type', ModerationReport::CONTEXT_ZUMRA)
             ->where('context_reference', $group->id)

@@ -25,7 +25,7 @@ final class ZumraGroupModerationController
 {
     public function index(Request $request, ZumraGroup $group, ModerationReportService $reports): JsonResponse
     {
-        $presented = $reports->forZumraLeader($group)->map(fn (ModerationReport $report): array => $reports->presentForZumraLeader($report))->values();
+        $presented = $reports->forZumraLeader($group, $this->actor($request))->map(fn (ModerationReport $report): array => $reports->presentForZumraLeader($report))->values();
 
         return response()->json(['reports' => $presented]);
     }

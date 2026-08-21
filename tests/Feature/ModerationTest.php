@@ -194,7 +194,7 @@ final class ModerationTest extends TestCase
         $entry = app(MessagingService::class)->send($conversation, 'IDN-MEMBER', 'Message signalé par un pair.');
         app(ModerationReportService::class)->reportMessageEntry($entry, 'IDN-LEADER', ModerationReport::REASON_HARASSMENT, null);
 
-        $queue = app(ModerationReportService::class)->forZumraLeader($group);
+        $queue = app(ModerationReportService::class)->forZumraLeader($group, 'IDN-LEADER');
 
         self::assertCount(1, $queue);
     }
@@ -224,6 +224,67 @@ final class ModerationTest extends TestCase
         $this->get(route('zumra.groups.moderation.index', $group))
             ->assertJson(['reports' => []])
             ->assertJsonMissing(['body' => 'Un message jamais signalé.']);
+    }
+
+    // ===== Autorité niveau 2 — accès à la file de signalements =====
+
+    public function test_an_ordinary_member_cannot_read_the_zumra_moderation_queue(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $this->membership($group, 'IDN-MEMBER', ZumraGroupMembership::STATUS_ACTIVE);
+        $comment = $this->zumraComment($group, 'IDN-AUTHOR');
+        app(ModerationReportService::class)->reportContextComment($comment, 'IDN-REPORTER', ModerationReport::REASON_HARASSMENT, null);
+        $this->signIn('IDN-MEMBER');
+
+        $response = $this->get(route('zumra.groups.moderation.index', $group));
+
+        $response->assertForbidden();
+        self::assertStringNotContainsString('IDN-REPORTER', $response->getContent());
+        self::assertStringNotContainsString($comment->id, $response->getContent());
+
+        $this->assertAborts(403, fn () => app(ModerationReportService::class)->forZumraLeader($group, 'IDN-MEMBER'));
+    }
+
+    public function test_an_accepted_zumra_leader_can_read_their_groups_moderation_queue(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $comment = $this->zumraComment($group, 'IDN-AUTHOR');
+        app(ModerationReportService::class)->reportContextComment($comment, 'IDN-REPORTER', ModerationReport::REASON_HARASSMENT, null);
+        $this->signIn('IDN-LEADER');
+
+        $this->get(route('zumra.groups.moderation.index', $group))
+            ->assertOk()
+            ->assertJsonCount(1, 'reports');
+    }
+
+    public function test_a_leader_of_another_zumra_cannot_read_this_groups_moderation_queue(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $comment = $this->zumraComment($group, 'IDN-AUTHOR');
+        app(ModerationReportService::class)->reportContextComment($comment, 'IDN-REPORTER', ModerationReport::REASON_HARASSMENT, null);
+        $otherGroup = $this->group('IDN-OTHER-LEADER');
+        $this->signIn('IDN-OTHER-LEADER');
+
+        $response = $this->get(route('zumra.groups.moderation.index', $group));
+
+        $response->assertForbidden();
+        self::assertStringNotContainsString('IDN-REPORTER', $response->getContent());
+
+        $this->assertAborts(403, fn () => app(ModerationReportService::class)->forZumraLeader($group, 'IDN-OTHER-LEADER'));
+        self::assertNotNull($otherGroup);
+    }
+
+    public function test_the_moderation_queue_json_never_leaks_reporter_core_reference(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $comment = $this->zumraComment($group, 'IDN-AUTHOR');
+        app(ModerationReportService::class)->reportContextComment($comment, 'IDN-REPORTER', ModerationReport::REASON_HARASSMENT, null);
+        $this->signIn('IDN-LEADER');
+
+        $response = $this->get(route('zumra.groups.moderation.index', $group))->assertOk();
+
+        self::assertArrayNotHasKey('reporter_core_reference', $response->json('reports.0'));
+        self::assertStringNotContainsString('IDN-REPORTER', $response->getContent());
     }
 
     // ===== 3. Modération de contenu (6) =====
