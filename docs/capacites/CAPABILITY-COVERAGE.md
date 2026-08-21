@@ -75,7 +75,7 @@
 | CAP-059 | Conversation → action | CLOSED |
 | CAP-060 | Réputation : grande prudence | DOC_ONLY |
 | CAP-061 | Contributions financières | CLOSED |
-| CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED |
+| CAP-062 | Ledger / traçabilité | CLOSED |
 | CAP-063 | Financement de projet | DEPENDENCY_BLOCKED |
 | CAP-064 | Moteur d’opportunités | CLOSED |
 | CAP-065 | Partenaire comme fournisseur de capacité | CLOSED |
@@ -190,6 +190,14 @@ Un satellite est une forme technique possible d’un outil spécialisé. Ce n’
 **Evidence :** `ContributionService`, `Contribution`/`ContributionPayment`/`ContributionReceipt`/`ContributionPurpose`/`ContributionEvent`, `GeniusPayClient::createContributionPayment()`, migration `2026_09_01_100000_create_contribution_tables.php`, `tests/Feature/ContributionTest.php` (45 cas).
 
 **Détail complet :** voir `docs/capacites/specs/CAP-061-contributions-financieres.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-061 — Contributions financières (livrée) »). Ce fichier ne duplique pas leur contenu.
+
+## CAP-062 — Ledger / traçabilité
+
+**Status : CLOSED**
+
+**Evidence :** `LedgerEntry`, `LedgerService`, commande `ledger:backfill`, `LedgerController`/`Administration\LedgerController`, migration `2026_09_08_100000_create_ledger_entries_table.php`, `tests/Feature/LedgerTest.php` (30 cas).
+
+**Détail complet :** voir `docs/capacites/specs/CAP-062-ledger-tracabilite.md` et `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` (section « CAP-062 — Ledger / traçabilité (livrée) »). Ce fichier ne duplique pas leur contenu.
 
 ## Règles de maintenance
 

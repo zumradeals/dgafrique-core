@@ -72,7 +72,7 @@ Cohérence registre ↔ code : globalement bonne. Trois écarts réels détecté
 | — | **ZUMRA — cycle de vie & validation** *(gap sous CAP-011, CLOSED)* | **Incohérence à l'origine — ZUMRA-COMP-001 Phase B en revue** | ZUMRA | 7 états déclarés (`ZumraGroup::STATE_*`), création, membres, rôles, messagerie, partage | Constat initial (AUDIT-CAP-002) : aucun code ne faisait jamais transitionner un groupe hors de `CONSTITUTING` ; validation auto (7 critères doctrinaux — *correction post-audit : la roadmap indiquait par erreur « 6 critères », l'art. 10 en liste bien 7*) jamais lue ; `max_simultaneous_founder_roles=3` jamais appliqué ; modération 3 niveaux absente. **Corrigé par ZUMRA-COMP-001 Phase B** (branche `fix/zumra-comp-001-lifecycle-validation`, PR en revue) pour le cycle de vie, la readiness structurelle et la limite de rôles fondateurs — la modération à 3 niveaux reste hors périmètre, non traitée. | Interne (rien d'externe) | CRITIQUE | 0 (isolé mais central) | ÉLEVÉ | M |
 | CAP-053 | Consentement | PARTIAL | Trust & Consent | `orientation_consent`, `discovery_consent`, `matching_consent`, `collective_capability_consent` — 4 champs indépendants, par domaine | Aucun modèle unifié de consentement/retrait/audit cross-domaine | Interne | ÉLEVÉ | 3+ (matching, discovery, partenariats) | MOYEN | M |
 | CAP-061 | Contributions financières | **CLOSED — livrée par CAP-061 Phase B** *(était NOT_IMPLEMENTED lors de l'audit ROADMAP-001/002)* | Finance | `GeniusPayClient` prouvé en prod (CAP-007B, adhésion ZUMRA) — généralisé (`createContributionPayment()`) sans rien casser de CAP-007B | — | Aucun | MOYEN | 2 (CAP-062, CAP-063 — non déclenchés par ce chantier, périmètre volontairement non ouvert) | MOYEN | M |
-| CAP-062 | Ledger / traçabilité | NOT_IMPLEMENTED | Finance | Rien (aucun modèle Ledger) | Registre d'audit financier | Aucun | MOYEN | 1 (CAP-061/063 plus solides avec) | FAIBLE | M |
+| CAP-062 | Ledger / traçabilité | **CLOSED — livrée par CAP-062 Phase B** *(était NOT_IMPLEMENTED lors de l'audit ROADMAP-001/002)* | Finance | `LedgerEntry`/`LedgerService`, journal simple immuable posté depuis CAP-061 et CAP-007B, backfill idempotent | — | Aucun | MOYEN | 1 (CAP-063 — non déclenché par ce chantier, lien resté « soft ») | FAIBLE | M |
 | CAP-063 | Financement de projet | NOT_IMPLEMENTED *(documenté `DEPENDENCY_BLOCKED` — voir section dédiée ci-dessous)* | Finance/Projects | Project, Organization, Partnership, Need — tout le socle relationnel existe | Modèle de financement lui-même ; CAP-014 impose explicitement « aucun paiement dans Projet » | **Produit** (choix doctrinal assumé, pas dépendance technique) | MOYEN | 0 | MOYEN | M |
 | CAP-023 | Graphe des capacités | PARTIAL | Capabilities & Intelligence | 5 moteurs de correspondance séparés (`PersonRecommendationEngine`, `OpportunityEngine`, `MissionMatchingEngine`, `ProjectMatchingEngine`, `TransmissionMatchingEngine`) | Aucune structure de graphe unifiée/navigable | Aucun | FAIBLE | 0 | FAIBLE | M |
 | CAP-051 | Portabilité de l'identité | PARTIAL | Identity Federation | Continuité SSO fédérée vers satellites (`FederationServiceProvider`) | Export réel des données côté DG Afrique | Produit (contrat Core non défini) | FAIBLE | 0 | FAIBLE | S |
@@ -189,16 +189,32 @@ Preuve : `tests/Feature/ContributionTest.php` (45 cas). Voir la spec pour le dé
 
 ---
 
+## CAP-062 — Ledger / traçabilité (livrée)
+
+**CLOSED — 2026-09-08.** Branche `feat/cap-062-financial-ledger-v1`, PR draft. Le contrat V1 défini en Phase A (`docs/capacites/specs/CAP-062-ledger-tracabilite.md`) est intégralement couvert :
+
+- **Journal financier simple, immuable, additif** — une écriture (`LedgerEntry`) par paiement réellement CONFIRMÉ, jamais un wallet, un solde stocké ni un moteur double-entry (aucune sortie d'argent réelle n'existe dans le dépôt, confirmé en Phase A).
+- **Deux sources V1** : `CONTRIBUTION_PAYMENT` (CAP-061) et `MEMBERSHIP_PAYMENT` (CAP-007B, adhésion) — posté depuis `ContributionService::reconcile()` et `MembershipPaymentService::reconcile()`, uniquement dans la branche `COMPLETED`, jamais sur `PENDING`/`PROCESSING`/`FAILED`/`CANCELLED` ni sur le seul retour navigateur.
+- **`LedgerEntry` est une projection**, jamais une source de vérité : ne modifie jamais un paiement source, une `Contribution`, une `ZumraGroup` ni une `ZumraProgramMembership`.
+- **Idempotence absolue** : `UNIQUE(source_type, source_id)` en base, doublée d'une recherche applicative préalable et d'un filet de sécurité sur violation de contrainte — un paiement source ne produit jamais plus d'une écriture, y compris en cas de `reconcile()` concurrent ou de backfill rejoué.
+- **Backfill** : commande `ledger:backfill`, déterministe et idempotente, réutilisant exactement le même `LedgerService` que le runtime — rattrape l'historique CAP-061/CAP-007B antérieur au déploiement sans jamais dupliquer une écriture déjà postée par `reconcile()`.
+- **Autorisations réutilisées** : personne = ses propres écritures, responsable ZUMRA habilité (`isLeader()`, déjà l'autorité de CAP-061) = écritures de sa ZUMRA, `PortalAdministrator` = ledger global. Aucune nouvelle matrice de permissions.
+- **Frontière CAP-063** : aucun financement de Projet, aucun wallet/escrow/compte Projet — CAP-063 reste entièrement séparée, non implémentée.
+- **Frontière GAMAD Core** (CAP-067) : la doctrine (art. 3.2) évoque des écritures financières portées/attestées par GAMAD Core, mais aucun runtime correspondant n'existe (`GamadCoreClient` ne porte aucune méthode financière) — CAP-062 V1 reste entièrement locale à DG Afrique, documenté sans être comblé par un hack.
+
+Preuve : `tests/Feature/LedgerTest.php` (30 cas). Voir la spec pour le détail intégral.
+
+---
+
 ## Priorité canonique actuelle
 
-**ZUMRA-COMP-001** (mergée) et **CAP-061** (livrée, PR draft) sont closes. Le graphe métier n'a pas été réévalué depuis (CAP-061 n'a pas rouvert CAP-062/063 — voir leur section dédiée, inchangée).
+**ZUMRA-COMP-001**, **CAP-061** et **CAP-062** (livrées, PR draft) sont closes. Le graphe métier n'a pas été réévalué depuis CAP-062 (le lien CAP-062→CAP-063 restait déjà qualifié « soft » par ROADMAP-002 — CAP-063 n'est ni débloquée ni rouverte par ce chantier).
 
 **PRIORITÉ #1**
 
-1. CAP-062 — Ledger / traçabilité
-2. CAP-063 — Financement de projet
+1. CAP-063 — Financement de projet
 
-Cette séquence reste celle établie par ROADMAP-002 (verdict A, confirmé « TOUJOURS EXACTE » pour CAP-062/063, non affectés par CAP-061). Elle n'est **pas un ordre éternel** : tout chantier futur touchant Finance/Contribution/ZUMRA doit revalider ce graphe avant de s'appuyer aveuglément sur cet ordre.
+Cette priorité reste celle établie par ROADMAP-002 (verdict A, CAP-063 confirmée « TOUJOURS EXACTE » comme suite logique, non affectée structurellement par CAP-061/CAP-062). Elle n'est **pas un ordre éternel** : tout chantier futur touchant Finance/Contribution/ZUMRA doit revalider ce graphe avant de s'appuyer aveuglément sur cet ordre.
 
 ---
 
@@ -248,4 +264,4 @@ Ces dettes sont documentées ici pour mémoire ; elles ne modifient ni l'ordre n
 
 ## Prochaine action recommandée
 
-**ZUMRA-COMP-001** (mergée) et **CAP-061** (livrée, PR draft) sont closes. Prochaine action : **CAP-062 — Ledger / traçabilité**, en Phase A (audit du contrat métier) avant toute implémentation — cohérent avec la discipline Phase A/Phase B appliquée à ZUMRA-COMP-001 et CAP-061.
+**ZUMRA-COMP-001**, **CAP-061** et **CAP-062** (livrées, PR draft) sont closes. Prochaine action : **CAP-063 — Financement de projet**, en Phase A (audit du contrat métier, y compris la régularisation de son statut documentaire `DEPENDENCY_BLOCKED` → réel) avant toute implémentation — cohérent avec la discipline Phase A/Phase B appliquée à ZUMRA-COMP-001, CAP-061 et CAP-062.

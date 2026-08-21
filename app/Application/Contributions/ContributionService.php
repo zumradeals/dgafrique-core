@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Contributions;
 
+use App\Application\Ledger\LedgerService;
 use App\Application\Zumra\ZumraGroupService;
 use App\Infrastructure\Payments\GeniusPayClient;
 use App\Models\Contribution;
@@ -41,6 +42,7 @@ final class ContributionService
         private readonly ZumraGroupService $zumraGroups,
         private readonly GeniusPayClient $provider,
         private readonly ContributionConfiguration $configuration,
+        private readonly LedgerService $ledger,
     ) {}
 
     /** Contribution individuelle (art. 6.2) : sujet = payeur = la personne elle-même. */
@@ -285,6 +287,9 @@ final class ContributionService
             if (! $wasAlreadyFinal && $canFinalize) {
                 if ($remote['status'] === ContributionPayment::STATUS_COMPLETED) {
                     $this->issueReceipt($locked, $contribution);
+                    // CAP-062 : projection ledger uniquement après confirmation réelle — jamais
+                    // avant, jamais si la finalisation reste bloquée (sandbox non autorisé, etc.).
+                    $this->ledger->postContributionPayment($locked);
                     $this->event($contribution, 'PAYMENT_CONFIRMED', 'SYSTEM:PAYMENT_PROVIDER', ['reference' => $locked->reference, 'period' => $locked->period]);
                 } elseif (in_array($remote['status'], [ContributionPayment::STATUS_FAILED, ContributionPayment::STATUS_CANCELLED], true)) {
                     $this->event($contribution, 'PAYMENT_FAILED', 'SYSTEM:PAYMENT_PROVIDER', ['reference' => $locked->reference, 'period' => $locked->period, 'status' => $remote['status']]);
