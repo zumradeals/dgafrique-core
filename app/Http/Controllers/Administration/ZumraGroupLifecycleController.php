@@ -18,6 +18,17 @@ use Illuminate\Http\Request;
  */
 final class ZumraGroupLifecycleController
 {
+    /**
+     * Chemin manuel CONSTITUTING → READY, indispensable lorsque `auto_validation_enabled=false` :
+     * le cycle ne doit jamais devenir impossible faute d'automatisation.
+     */
+    public function markReady(Request $request, ZumraGroup $group, ZumraGroupService $service): RedirectResponse
+    {
+        $service->markReady($group, $this->actor($request));
+
+        return back()->with('status', 'ZUMRA constatée prête.');
+    }
+
     public function validate(Request $request, ZumraGroup $group, ZumraGroupService $service): RedirectResponse
     {
         $service->validate($group, $this->actor($request));

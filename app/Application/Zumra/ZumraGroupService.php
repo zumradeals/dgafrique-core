@@ -189,13 +189,19 @@ final class ZumraGroupService
     }
 
     /**
-     * Évaluation structurelle pure des 7 critères de l'art. 10 — ne contient jamais le critère
-     * « absence d'objet interdit/frauduleux/violent/discriminatoire » : aucun système de ce
-     * dépôt ne sait le vérifier, et ZUMRA-COMP-001 refuse de fabriquer un résultat.
+     * Évaluation PUREMENT STRUCTURELLE — répond à « le dossier est-il structurellement complet
+     * et prêt à être soumis à validation ? », jamais à « les 7 critères doctrinaux de l'art. 10
+     * sont-ils tous validés ? ». Sur les 7 critères doctrinaux, seuls 6 sont automatiquement
+     * vérifiables ici (identité Core, adhésion Programme active, domaine, objectif, charte, cinq
+     * responsabilités distinctes acceptées). Le 7e critère — « contrôles de nom, de doublon, de
+     * risque et d'usurpation » — est un CONTRÔLE DE CONFORMITÉ qui exige un jugement humain :
+     * l'unicité technique du `slug` en base n'en est qu'une garantie partielle et ne doit jamais
+     * être présentée comme preuve que ce critère est satisfait. Il n'entre donc jamais dans cette
+     * évaluation ; il reste à la charge de l'autorité DG Afrique/GAMAD au moment de VALIDATED.
      *
-     * @return array{ready: bool, criteria: array<string, bool>, missing: list<string>}
+     * @return array{structurally_ready: bool, criteria: array<string, bool>, missing: list<string>}
      */
-    public function evaluateReadiness(ZumraGroup $group): array
+    public function evaluateStructuralReadiness(ZumraGroup $group): array
     {
         $criteria = [
             'core_identity_recognized' => trim((string) $group->proposer_core_reference) !== '',
@@ -207,20 +213,42 @@ final class ZumraGroupService
             'objective_set' => trim((string) $group->founding_objective) !== '',
             'charter_accepted' => trim((string) $group->internal_charter) !== '',
             'five_distinct_roles_accepted' => $group->roles()->where('status', ZumraGroupRole::STATUS_ACCEPTED)->count() === 5,
-            'duplicate_controls_satisfied' => trim((string) $group->slug) !== '',
         ];
 
         return [
-            'ready' => ! in_array(false, $criteria, true),
+            'structurally_ready' => ! in_array(false, $criteria, true),
             'criteria' => $criteria,
             'missing' => array_keys(array_filter($criteria, static fn (bool $met): bool => ! $met)),
         ];
     }
 
     /**
+     * Constatation MANUELLE de READY par l'autorité DG Afrique/GAMAD — le chemin qui reste
+     * possible lorsque `auto_validation_enabled=false` : le cycle ne doit jamais devenir
+     * impossible faute d'automatisation. Vérifie exactement les mêmes préconditions
+     * structurelles que le chemin automatique (`acceptRole()`), jamais moins strictement.
+     */
+    public function markReady(ZumraGroup $group, string $actor): ZumraGroup
+    {
+        $this->assertAdministrator($actor);
+
+        return DB::transaction(function () use ($group, $actor): ZumraGroup {
+            $fresh = ZumraGroup::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
+            abort_unless($fresh->state === ZumraGroup::STATE_CONSTITUTING, 409, 'Seule une ZUMRA en constitution peut être constatée prête.');
+            abort_unless($this->evaluateStructuralReadiness($fresh)['structurally_ready'], 409, 'Les critères structurels ne sont pas tous réunis : impossible de constater READY.');
+
+            $fresh->update(['state' => ZumraGroup::STATE_READY, 'ready_at' => now()]);
+            $this->event($fresh, 'GROUP_READY', $actor);
+
+            return $fresh;
+        });
+    }
+
+    /**
      * READY → VALIDATED : décision explicite de l'autorité DG Afrique/GAMAD (PortalAdministrator
      * — aucune autorité applicative ZUMRA-interne, comme isLeader(), ne peut décider de ceci).
-     * Impossible si les critères structurels ne sont plus réunis (art. 10, dernier alinéa).
+     * Impossible si les critères structurels ne sont plus réunis (art. 10, dernier alinéa) —
+     * et impossible directement depuis CONSTITUTING : READY reste toujours une étape distincte.
      */
     public function validate(ZumraGroup $group, string $actor): ZumraGroup
     {
@@ -229,7 +257,7 @@ final class ZumraGroupService
         return DB::transaction(function () use ($group, $actor): ZumraGroup {
             $fresh = ZumraGroup::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
             abort_unless($fresh->state === ZumraGroup::STATE_READY, 409, 'Seule une ZUMRA prête peut être validée.');
-            abort_unless($this->evaluateReadiness($fresh)['ready'], 409, 'Les critères structurels ne sont plus réunis : la validation est impossible.');
+            abort_unless($this->evaluateStructuralReadiness($fresh)['structurally_ready'], 409, 'Les critères structurels ne sont plus réunis : la validation est impossible.');
 
             $fresh->update(['state' => ZumraGroup::STATE_VALIDATED, 'validated_at' => now()]);
             $this->event($fresh, 'GROUP_VALIDATED', $actor);
@@ -347,7 +375,7 @@ final class ZumraGroupService
         if ($fresh === null || $fresh->state !== ZumraGroup::STATE_CONSTITUTING) {
             return;
         }
-        if (! $this->evaluateReadiness($fresh)['ready']) {
+        if (! $this->evaluateStructuralReadiness($fresh)['structurally_ready']) {
             return;
         }
 

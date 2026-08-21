@@ -153,9 +153,22 @@ final class ZumraGroupLifecycleTest extends TestCase
         self::assertSame(1, $group->roles()->where('status', ZumraGroupRole::STATUS_VACANT)->count());
         self::assertSame(ZumraGroup::STATE_CONSTITUTING, $group->refresh()->state);
 
-        $criteria = $service->evaluateReadiness($group);
-        self::assertFalse($criteria['ready']);
+        $criteria = $service->evaluateStructuralReadiness($group);
+        self::assertFalse($criteria['structurally_ready']);
         self::assertContains('five_distinct_roles_accepted', $criteria['missing']);
+    }
+
+    public function test_the_naming_control_criterion_is_never_claimed_satisfied_by_a_non_empty_slug(): void
+    {
+        $group = $this->readyGroup();
+        self::assertNotSame('', trim((string) $group->slug));
+
+        $criteria = app(ZumraGroupService::class)->evaluateStructuralReadiness($group);
+        self::assertArrayNotHasKey('duplicate_controls_satisfied', $criteria['criteria']);
+        self::assertSame([
+            'core_identity_recognized', 'program_membership_active', 'domain_set',
+            'objective_set', 'charter_accepted', 'five_distinct_roles_accepted',
+        ], array_keys($criteria['criteria']), 'Le 7e critère doctrinal (noms/doublon/risque/usurpation) est un contrôle de conformité humain, jamais une case auto-cochée par le slug.');
     }
 
     public function test_automation_disabled_never_transitions_to_ready(): void
@@ -173,10 +186,53 @@ final class ZumraGroupLifecycleTest extends TestCase
 
         // Rejouer l'évaluation (ex. via une action non structurante) ne doit rien changer :
         // la garde d'état (state !== CONSTITUTING) rend la transition idempotente.
-        $criteria = app(ZumraGroupService::class)->evaluateReadiness($group->refresh());
-        self::assertTrue($criteria['ready']);
+        $criteria = app(ZumraGroupService::class)->evaluateStructuralReadiness($group->refresh());
+        self::assertTrue($criteria['structurally_ready']);
         self::assertSame(ZumraGroup::STATE_READY, $group->refresh()->state);
         self::assertSame(1, ZumraGroupEvent::query()->where('event', 'GROUP_READY')->count());
+    }
+
+    // ===== 3bis. Constatation manuelle de READY (auto_validation_enabled=false) =====
+
+    public function test_an_administrator_can_manually_mark_a_structurally_complete_group_ready(): void
+    {
+        $group = $this->groupWithFiveAcceptedRoles(autoValidationEnabled: false);
+        self::assertSame(ZumraGroup::STATE_CONSTITUTING, $group->refresh()->state);
+        $admin = $this->administrator();
+
+        $ready = app(ZumraGroupService::class)->markReady($group, $admin);
+
+        self::assertSame(ZumraGroup::STATE_READY, $ready->state);
+        self::assertNotNull($ready->ready_at);
+        self::assertSame(1, ZumraGroupEvent::query()->where('event', 'GROUP_READY')->count());
+    }
+
+    public function test_a_non_administrator_cannot_manually_mark_a_group_ready(): void
+    {
+        $group = $this->groupWithFiveAcceptedRoles(autoValidationEnabled: false);
+
+        $this->assertAborts(403, fn () => app(ZumraGroupService::class)->markReady($group, 'IDN-LEADER'));
+        self::assertSame(ZumraGroup::STATE_CONSTITUTING, $group->refresh()->state);
+    }
+
+    public function test_an_administrator_cannot_force_ready_when_structural_criteria_are_incomplete(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $admin = $this->administrator();
+
+        $this->assertAborts(409, fn () => app(ZumraGroupService::class)->markReady($group, $admin));
+        self::assertSame(ZumraGroup::STATE_CONSTITUTING, $group->refresh()->state);
+    }
+
+    public function test_manual_ready_never_skips_directly_to_validated(): void
+    {
+        $group = $this->groupWithFiveAcceptedRoles(autoValidationEnabled: false);
+        $admin = $this->administrator();
+
+        $ready = app(ZumraGroupService::class)->markReady($group, $admin);
+
+        self::assertSame(ZumraGroup::STATE_READY, $ready->state, 'CONSTITUTING → VALIDATED directement ne doit jamais se produire : READY reste une étape distincte.');
+        self::assertNull($ready->validated_at);
     }
 
     // ===== 4. VALIDATED =====

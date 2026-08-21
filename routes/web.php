@@ -156,6 +156,8 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/groupes-zumra', [ZumraGroupConfigurationController::class, 'edit'])->name('administration.zumra.groups.edit');
     Route::put('/groupes-zumra', [ZumraGroupConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-group-configuration')->name('administration.zumra.groups.update');
+    Route::post('/groupes-zumra/{group}/pret', [ZumraGroupLifecycleController::class, 'markReady'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.ready');
     Route::post('/groupes-zumra/{group}/validation', [ZumraGroupLifecycleController::class, 'validate'])
         ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.validate');
     Route::post('/groupes-zumra/{group}/activation', [ZumraGroupLifecycleController::class, 'activate'])
