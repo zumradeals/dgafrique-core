@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Organizations;
 
+use App\Infrastructure\GamadCore\GamadCoreClient;
 use App\Models\Organization;
 use App\Models\OrganizationEvent;
 use App\Models\OrganizationMembership;
@@ -11,14 +12,23 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * CAP-066 — Organisation. Une structure durable, distincte d'un Projet (une action organisée
- * autour d'une transformation) et d'une ZUMRA (une communauté d'action et de transmission).
- * Une ZUMRA ou un Projet peuvent conduire à une Organisation (ZUMRA-DOCTRINE-INVARIANTE.md §2,
- * ARCH-006), mais aucune mutation automatique n'existe : seule la création volontaire par une
- * personne réelle produit une Organisation.
+ * CAP-066/CAP-067 — Organisation. Une structure durable, distincte d'un Projet (une action
+ * organisée autour d'une transformation) et d'une ZUMRA (une communauté d'action et de
+ * transmission). Une ZUMRA ou un Projet peuvent conduire à une Organisation
+ * (ZUMRA-DOCTRINE-INVARIANTE.md §2, ARCH-006), mais aucune mutation automatique n'existe : seule
+ * la création volontaire par une personne réelle produit une Organisation.
+ *
+ * CAP-067 — toute nouvelle Organisation est raccordée à une identité (CAP-CORE-001) et une fiche
+ * (CAP-CORE-002) canoniques réelles, via la délégation CORE-ORG-DELEGATION-001. GAMAD Core reste
+ * souverain sur l'identité canonique ; DG Afrique reste souverain sur son métier local (§1). Le
+ * raccordement Core est demandé avant toute écriture locale : GAMAD Core et DG Afrique restent
+ * deux systèmes distincts, sans transaction distribuée — un échec Core interrompt la création
+ * avant qu'aucune ligne locale ne soit écrite (voir le rapport de session CAP-067, §4).
  */
 final class OrganizationService
 {
+    public function __construct(private readonly GamadCoreClient $core) {}
+
     public function create(string $actor, array $data): Organization
     {
         $type = (string) ($data['type'] ?? '');
@@ -31,19 +41,38 @@ final class OrganizationService
             $otherTypeLabel = '';
         }
 
-        return DB::transaction(function () use ($actor, $data, $type, $otherTypeLabel): Organization {
+        $name = (string) $data['name'];
+        $visibility = ($data['visibility'] ?? null) === Organization::VISIBILITY_PUBLIC
+            ? Organization::VISIBILITY_PUBLIC
+            : Organization::VISIBILITY_PRIVATE;
+
+        // Le raccordement Core est demandé avant toute écriture locale : aucune fausse
+        // Organisation locale n'est jamais finalisée si CAP-CORE-001/002 échoue. Les exceptions
+        // Core (CoreUnavailableException/CoreProtocolException/CoreSessionRejectedException)
+        // remontent volontairement à l'appelant, non capturées ici.
+        $identity = $this->core->provisionOrganizationIdentity($name);
+        $organizationCore = $this->core->createOrganization($identity['reference'], [
+            'type_organisation_reference' => Organization::CORE_TYPE_MAP[$type],
+            'proprietaire_reference' => $actor,
+            'denomination_officielle' => $name,
+            'description' => (string) $data['description'],
+            'classification_reference' => $visibility === Organization::VISIBILITY_PUBLIC ? 'PUBLIC_ECOSYSTEME' : 'INTERNE',
+        ]);
+
+        return DB::transaction(function () use ($actor, $name, $data, $type, $otherTypeLabel, $visibility, $identity, $organizationCore): Organization {
             $organization = Organization::query()->create([
                 'public_reference' => (string) Str::uuid(),
-                'name' => $data['name'],
+                'name' => $name,
                 'description' => $data['description'],
                 'type' => $type,
                 'other_type_label' => $otherTypeLabel !== '' ? $otherTypeLabel : null,
                 'status' => Organization::STATUS_ACTIVE,
-                'visibility' => ($data['visibility'] ?? null) === Organization::VISIBILITY_PUBLIC
-                    ? Organization::VISIBILITY_PUBLIC
-                    : Organization::VISIBILITY_PRIVATE,
+                'visibility' => $visibility,
                 'founder_core_reference' => $actor,
                 'active_member_count' => 1,
+                'core_identity_reference' => $identity['reference'],
+                'core_organization_reference' => $organizationCore['reference'],
+                'core_link_status' => Organization::CORE_LINK_LINKED,
             ]);
 
             OrganizationMembership::query()->create([
@@ -56,7 +85,10 @@ final class OrganizationService
                 'joined_at' => now(),
             ]);
 
-            $this->event($organization, 'ORGANIZATION_CREATED', $actor, ['type' => $type]);
+            $this->event($organization, 'ORGANIZATION_CREATED', $actor, [
+                'type' => $type,
+                'core_organization_reference' => $organizationCore['reference'],
+            ]);
 
             return $organization;
         });

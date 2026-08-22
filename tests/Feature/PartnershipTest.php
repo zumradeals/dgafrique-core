@@ -213,6 +213,7 @@ final class PartnershipTest extends TestCase
     public function test_organization_partnership_works_without_a_capability_statement_or_core_organizational_identity(): void
     {
         $project = $this->project('IDN-OWNER');
+        $this->fakeCoreOrganizationProvisioning();
         $organization = app(OrganizationService::class)->create('IDN-FOUNDER', [
             'name' => 'Coopérative numérique',
             'description' => 'Une structure qui met des ressources à disposition des projets locaux.',
@@ -235,6 +236,7 @@ final class PartnershipTest extends TestCase
     public function test_organization_provider_requires_a_real_manager(): void
     {
         $project = $this->project('IDN-OWNER');
+        $this->fakeCoreOrganizationProvisioning();
         $organization = app(OrganizationService::class)->create('IDN-FOUNDER', [
             'name' => 'Association locale',
             'description' => 'Une structure indépendante du projet testé.',
@@ -281,6 +283,7 @@ final class PartnershipTest extends TestCase
     public function test_isolation_between_organizations(): void
     {
         $projectA = $this->project('IDN-OWNER-A');
+        $this->fakeCoreOrganizationProvisioning();
         $orgA = app(OrganizationService::class)->create('IDN-FOUNDER-A', [
             'name' => 'Organisation A', 'description' => 'Une première structure indépendante.',
             'type' => 'ASSOCIATION', 'visibility' => Organization::VISIBILITY_PRIVATE,
@@ -291,6 +294,7 @@ final class PartnershipTest extends TestCase
         ]));
         $partnershipA = app(PartnershipService::class)->activate($partnershipA, 'IDN-OWNER-A');
 
+        $this->fakeCoreOrganizationProvisioning();
         $orgB = app(OrganizationService::class)->create('IDN-FOUNDER-B', [
             'name' => 'Organisation B', 'description' => 'Une seconde structure indépendante.',
             'type' => 'ASSOCIATION', 'visibility' => Organization::VISIBILITY_PRIVATE,
@@ -414,6 +418,39 @@ final class PartnershipTest extends TestCase
         } catch (HttpException $e) {
             self::assertSame($status, $e->getStatusCode());
         }
+    }
+
+    /**
+     * CAP-067 — voir OrganizationTest::fakeCoreOrganizationProvisioning() pour la justification
+     * complète : une fermeture globale, sensible au corps de la requête, qui ne répond qu'aux
+     * appels de session PRODUIT (PRD-GAMAD-005) sans jamais intercepter la session MEMBRE.
+     */
+    private function fakeCoreOrganizationProvisioning(): void
+    {
+        Http::fake(function ($request) {
+            $url = (string) $request->url();
+            if (str_ends_with($url, '/sessions') && ($request['entite'] ?? null) === 'PRD-GAMAD-005') {
+                return Http::response([
+                    'jeton' => 'product-bearer-'.Str::random(8), 'entite' => 'PRD-GAMAD-005',
+                    'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00',
+                ], 201);
+            }
+            if (str_ends_with($url, '/identites')) {
+                return Http::response([
+                    'identite' => ['reference' => 'IDN-CORE-ORG-'.Str::random(12), 'etat' => 'ACTIVE', 'assurance' => 'A1'],
+                ], 201);
+            }
+            if (str_ends_with($url, '/organisations')) {
+                return Http::response([
+                    'resultat' => [
+                        'reference' => 'ORG-GAMAD-'.Str::random(8), 'identite_reference' => 'IDN-CORE-ORG-'.Str::random(12),
+                        'etat' => 'PREPARATION', 'type_organisation_reference' => 'INDETERMINE',
+                    ],
+                ], 201);
+            }
+
+            return null;
+        });
     }
 
     private function partnership(Project|Need|ZumraGroup $context, string $provider, array $overrides = []): Partnership

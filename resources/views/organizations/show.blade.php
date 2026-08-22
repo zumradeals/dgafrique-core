@@ -47,6 +47,43 @@
                         </x-dg.card>
                     @endif
 
+                    @if($organizationCapabilities->isNotEmpty() || $isManager)
+                        {{-- CAP-067 — ce que l'Organisation sait apporter : un fait métier explicite,
+                             déclaré volontairement par un manager habilité, jamais déduit d'un
+                             Partnership, d'un Projet ou d'un événement. Aucun score ni classement. --}}
+                        <x-dg.card>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                <x-dg.label>Capacités</x-dg.label>
+                                @if($organizationCapabilities->isNotEmpty())
+                                    <span class="dg-meta">{{ $organizationCapabilities->count() }} capacité{{ $organizationCapabilities->count() > 1 ? 's' : '' }}</span>
+                                @endif
+                            </div>
+                            @forelse($organizationCapabilities as $capability)
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--dg-line-inner)">
+                                    <span class="dg-body">{{ $capability->label }}</span>
+                                    @if($isManager)
+                                        <x-dg.btn variant="quiet" :href="route('organizations.capabilities.destroy', [$organization, $capability])" method="DELETE">Retirer</x-dg.btn>
+                                    @endif
+                                </div>
+                            @empty
+                                <x-dg.empty><span>Aucune capacité déclarée pour le moment.</span></x-dg.empty>
+                            @endforelse
+
+                            @if($isManager)
+                                <form method="POST" action="{{ route('organizations.capabilities.store', $organization) }}" style="margin-top:14px">
+                                    @csrf
+                                    <label class="dg-field">
+                                        <span>Ce que l'organisation sait apporter</span>
+                                        <input type="text" name="label" maxlength="200" required placeholder="Ex. Formation en gestion comptable associative">
+                                    </label>
+                                    <x-dg.actions flush>
+                                        <x-dg.btn variant="primary" type="submit">Déclarer cette capacité</x-dg.btn>
+                                    </x-dg.actions>
+                                </form>
+                            @endif
+                        </x-dg.card>
+                    @endif
+
                     @if($organizationPartnerships !== [] || $isManager)
                         {{-- UIUX-005 — Collaborations réelles de cette Organisation comme fournisseur
                              (CommunityEventService::canView() → PartnershipService::canView(), même

@@ -80,7 +80,7 @@
 | CAP-064 | Moteur d’opportunités | CLOSED |
 | CAP-065 | Partenaire comme fournisseur de capacité | CLOSED |
 | CAP-066 | Organisation | CLOSED |
-| CAP-067 | Identité organisationnelle | DEPENDENCY_BLOCKED |
+| CAP-067 | Identité organisationnelle | CLOSED |
 | CAP-068 | Événement | CLOSED |
 | CAP-069 | Tâche / Mission | CLOSED |
 | CAP-070 | Document | DEPENDENCY_BLOCKED |

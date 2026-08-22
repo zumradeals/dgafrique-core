@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -338,11 +339,46 @@ final class CommunityEventTest extends TestCase
 
     private function organization(string $founder): Organization
     {
+        $this->fakeCoreOrganizationProvisioning();
+
         return app(OrganizationService::class)->create($founder, [
             'name' => 'Organisation Événement '.Str::random(6),
             'description' => 'Une structure durable qui organise des activités réelles.',
             'type' => 'COOPERATIVE', 'visibility' => Organization::VISIBILITY_PRIVATE,
         ]);
+    }
+
+    /**
+     * CAP-067 — voir OrganizationTest::fakeCoreOrganizationProvisioning() pour la justification
+     * complète : une fermeture globale, sensible au corps de la requête, qui ne répond qu'aux
+     * appels de session PRODUIT (PRD-GAMAD-005) sans jamais intercepter la session MEMBRE.
+     */
+    private function fakeCoreOrganizationProvisioning(): void
+    {
+        Http::fake(function ($request) {
+            $url = (string) $request->url();
+            if (str_ends_with($url, '/sessions') && ($request['entite'] ?? null) === 'PRD-GAMAD-005') {
+                return Http::response([
+                    'jeton' => 'product-bearer-'.Str::random(8), 'entite' => 'PRD-GAMAD-005',
+                    'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00',
+                ], 201);
+            }
+            if (str_ends_with($url, '/identites')) {
+                return Http::response([
+                    'identite' => ['reference' => 'IDN-CORE-ORG-'.Str::random(12), 'etat' => 'ACTIVE', 'assurance' => 'A1'],
+                ], 201);
+            }
+            if (str_ends_with($url, '/organisations')) {
+                return Http::response([
+                    'resultat' => [
+                        'reference' => 'ORG-GAMAD-'.Str::random(8), 'identite_reference' => 'IDN-CORE-ORG-'.Str::random(12),
+                        'etat' => 'PREPARATION', 'type_organisation_reference' => 'INDETERMINE',
+                    ],
+                ], 201);
+            }
+
+            return null;
+        });
     }
 
     private function orgMember(Organization $organization, string $identity, string $role): void

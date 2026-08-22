@@ -78,6 +78,7 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('project-funding-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('organization-write', static fn (Request $request): Limit => Limit::perMinute(8)->by($request->ip()));
         RateLimiter::for('organization-membership', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
+        RateLimiter::for('organization-capability', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
         RateLimiter::for('partnership-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('partnership-decisions', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('satellites-admin', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
