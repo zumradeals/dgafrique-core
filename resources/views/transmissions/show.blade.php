@@ -95,7 +95,7 @@
                                 <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
                                     <div>
                                         <strong style="color:var(--dg-ink)">{{ hash_equals($participant->core_identity_reference, $identity->reference) ? 'Vous' : 'Membre DG Afrique' }}</strong>
-                                        <span class="dg-meta"> · {{ $participant->role === 'TRANSMITTER' ? 'Transmetteur' : 'Apprenant' }} · {{ $participant->status }}@if($participant->declared_done_at) · part déclarée terminée @endif</span>
+                                        <span class="dg-meta"> · {{ $participant->role === 'TRANSMITTER' ? 'Transmetteur' : 'Apprenant' }} · {{ \App\Models\TransmissionParticipant::STATUS_LABELS[$participant->status] ?? $participant->status }}@if($participant->declared_done_at) · part déclarée terminée @endif</span>
                                     </div>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                                         @if($participant->status === 'OFFERED' && $canManageParticipation)
@@ -280,9 +280,9 @@
                     <x-dg.card tight>
                         <dl class="dg-dl">
                             <div><dt>Contexte</dt><dd>{{ $contextLabel ?? 'Aucun — privée' }}</dd></div>
-                            <div><dt>Visibilité</dt><dd>{{ $transmission->visibility }}</dd></div>
+                            <div><dt>Visibilité</dt><dd>{{ \App\Models\Transmission::VISIBILITY_LABELS[$transmission->visibility] ?? $transmission->visibility }}</dd></div>
                             @if($transmission->availability_note)<div><dt>Disponibilité</dt><dd>{{ $transmission->availability_note }}</dd></div>@endif
-                            <div><dt>Origine</dt><dd>{{ $transmission->origin_type }}</dd></div>
+                            <div><dt>Origine</dt><dd>{{ \App\Models\Transmission::ORIGIN_LABELS[$transmission->origin_type] ?? $transmission->origin_type }}</dd></div>
                         </dl>
                     </x-dg.card>
                 </aside>

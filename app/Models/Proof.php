@@ -13,11 +13,15 @@ final class Proof extends Model
     use HasUuids;
 
     public const OWNER_PERSON = 'PERSON';
+
     public const OWNER_GROUP = 'GROUP';
 
     public const STATUS_SUBMITTED = 'SUBMITTED';
+
     public const STATUS_WITNESSED = 'WITNESSED';
+
     public const STATUS_ACKNOWLEDGED = 'ACKNOWLEDGED';
+
     public const STATUS_DISPUTED = 'DISPUTED';
 
     public const STATUS_LABELS = [
@@ -35,11 +39,17 @@ final class Proof extends Model
     ];
 
     public const ORIGIN_NONE = 'NONE';
+
     public const ORIGIN_MISSION = 'MISSION';
+
     public const ORIGIN_TRANSMISSION = 'TRANSMISSION';
+
     public const ORIGIN_NEED = 'NEED';
+
     public const ORIGIN_PROJECT = 'PROJECT';
+
     public const ORIGIN_ZUMRA = 'ZUMRA';
+
     public const ORIGIN_INTERACTION = 'INTERACTION';
 
     public const ORIGIN_TYPES = [
@@ -53,10 +63,18 @@ final class Proof extends Model
     ];
 
     public const VISIBILITY_PRIVATE = 'PRIVATE';
+
     public const VISIBILITY_DISCOVERABLE = 'DISCOVERABLE';
 
+    public const VISIBILITY_LABELS = [
+        self::VISIBILITY_PRIVATE => 'Privée',
+        self::VISIBILITY_DISCOVERABLE => 'Visible dans ma mémoire d\'expérience',
+    ];
+
     protected $table = 'dg_proofs';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

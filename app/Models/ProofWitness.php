@@ -13,11 +13,21 @@ final class ProofWitness extends Model
     use HasUuids;
 
     public const STATUS_INVITED = 'INVITED';
+
     public const STATUS_CONFIRMED = 'CONFIRMED';
+
     public const STATUS_DECLINED = 'DECLINED';
 
+    public const STATUS_LABELS = [
+        self::STATUS_INVITED => 'Invité·e à témoigner',
+        self::STATUS_CONFIRMED => 'A confirmé',
+        self::STATUS_DECLINED => 'A décliné',
+    ];
+
     protected $table = 'dg_proof_witnesses';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = ['proof_id', 'core_identity_reference', 'status', 'invited_by_core_reference', 'responded_at'];

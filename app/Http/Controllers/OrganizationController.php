@@ -82,7 +82,7 @@ final class OrganizationController
             // CAP-067 — le raccordement canonique GAMAD Core est demandé avant toute écriture
             // locale : aucune fausse Organisation locale n'est jamais finalisée si Core échoue.
             return back()->withInput()->withErrors([
-                'name' => 'La création n’a pas pu être confirmée par GAMAD Core. Réessayez dans un instant.',
+                'name' => 'La création n’a pas pu être confirmée pour le moment. Réessayez dans un instant.',
             ]);
         }
 

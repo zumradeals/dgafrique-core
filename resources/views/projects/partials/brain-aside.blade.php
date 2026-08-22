@@ -32,7 +32,7 @@
     @forelse($projectNeeds->take(3) as $need)
         <a href="{{ route('needs.show', $need) }}" class="dg-brain-card">
             <strong>{{ $need->title }}</strong>
-            <small>{{ $needConfiguration['categories'][$need->category] ?? $need->category }} · {{ mb_strtolower($need->status) }}</small>
+            <small>{{ $needConfiguration['categories'][$need->category] ?? $need->category }} · {{ ['PROPOSED'=>'proposé','OPEN'=>'ouvert','IN_PROGRESS'=>'en cours','RESOLVED'=>'résolu'][$need->status] ?? mb_strtolower($need->status) }}</small>
         </a>
     @empty
         <p class="dg-meta" style="margin:0">Aucun besoin exprimé pour ce projet pour le moment.</p>

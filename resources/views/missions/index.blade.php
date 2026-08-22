@@ -8,7 +8,7 @@
         <div class="dg-page">
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-069 · Missions</x-dg.label>
+                    <x-dg.label tone="saffron">Missions</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Mes Missions</h1>
                     <p>Une Mission transforme une intention en engagement explicite. Proposer n’est pas décider, accepter n’est pas commencer, soumettre n’est pas valider.</p>
                 </div>

@@ -84,7 +84,7 @@
                             <li>· Demander à rejoindre une ZUMRA</li>
                             <li>· Recevoir des invitations</li>
                             <li>· Proposer une nouvelle ZUMRA</li>
-                            <li>· Accéder progressivement au matching</li>
+                            <li>· Accéder progressivement aux mises en relation</li>
                         </ul>
                         <form method="POST" action="{{ route('zumra.membership.store') }}" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
                             @csrf

@@ -7,7 +7,7 @@
         <div class="dg-page">
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-036 · Carnet de preuves</x-dg.label>
+                    <x-dg.label tone="saffron">Carnet de preuves</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Mon Carnet de preuves</h1>
                     <p>Une preuve enregistre qu’une chose réelle s’est produite. Elle ne certifie jamais une compétence, un niveau ou une vérité.</p>
                 </div>

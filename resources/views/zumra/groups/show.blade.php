@@ -128,13 +128,13 @@
                                     @foreach($groupProjects as $project)
                                         <a href="{{ route('projects.show', $project) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                             <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="project">Projet</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $project->name }}</strong></span>
-                                            <span class="dg-meta" style="flex:none">{{ $project->status }}</span>
+                                            <span class="dg-meta" style="flex:none">{{ ['PROPOSED'=>'Proposé','ADOPTED'=>'Adopté','IN_PROGRESS'=>'En action','COMPLETED'=>'Réalisé'][$project->status] ?? $project->status }}</span>
                                         </a>
                                     @endforeach
                                     @foreach($groupNeeds as $need)
                                         <a href="{{ route('needs.show', $need) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                             <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="need">Besoin</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $need->title }}</strong></span>
-                                            <span class="dg-meta" style="flex:none">{{ $need->status }}</span>
+                                            <span class="dg-meta" style="flex:none">{{ ['PROPOSED'=>'Proposé','OPEN'=>'Ouvert','IN_PROGRESS'=>'En cours','RESOLVED'=>'Résolu'][$need->status] ?? $need->status }}</span>
                                         </a>
                                     @endforeach
                                 </div>
@@ -175,7 +175,7 @@
                                     <a href="{{ route('missions.show', $mission) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                         <x-dg.badge tone="neutral">Mission</x-dg.badge>
                                         <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $mission->title }}</strong>
-                                        <span class="dg-meta" style="flex:none">{{ $mission->status }}</span>
+                                        <span class="dg-meta" style="flex:none">{{ \App\Models\Mission::STATUS_LABELS[$mission->status] ?? $mission->status }}</span>
                                     </a>
                                 @endforeach
                                 @foreach($groupEvents as $event)
@@ -211,7 +211,7 @@
                 <aside style="display:flex;flex-direction:column;gap:16px">
                     <x-dg.card tight>
                         <x-dg.label>Votre relation</x-dg.label>
-                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">{{ ! $membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Vous êtes invité', 'REQUESTED' => 'Votre demande est étudiée', 'LEFT' => 'Vous avez quitté cette ZUMRA', default => $membership->status } }}</h2>
+                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">{{ ! $membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Vous êtes invité', 'REQUESTED' => 'Votre demande est étudiée', 'LEFT' => 'Vous avez quitté cette ZUMRA', 'EXCLUDED' => 'Vous avez été retiré·e de cette ZUMRA', 'SUSPENDED' => 'Votre participation est suspendue', default => $membership->status } }}</h2>
 
                         @if(! $membership || in_array($membership->status, ['LEFT', 'EXCLUDED']))
                             <form method="POST" action="{{ route('zumra.groups.request', $group) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
