@@ -7,6 +7,7 @@ namespace App\Application\Opportunities;
 use App\Application\Missions\MissionVisibilityService;
 use App\Models\CapabilityStatement;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
 use App\Models\PersonProfile;
 
 /**
@@ -63,9 +64,20 @@ final class OpportunityEngine
             return [];
         }
 
+        // UIUX-008 — audit Phase A : une Mission à laquelle la personne a déjà une relation
+        // active (offerte, invitée ou acceptée) ne doit plus se présenter comme « ce que vous
+        // pourriez rejoindre ». Une relation résolue (déclinée, retirée, libérée, retirée par
+        // l'autorité) ne l'exclut jamais : la Mission redevient une possibilité réelle une fois
+        // la personne effectivement libre d'y répondre à nouveau.
+        $activeMissionIds = MissionAssignment::query()
+            ->where('core_identity_reference', $identityReference)
+            ->whereIn('status', MissionAssignment::CURRENT_STATUSES)
+            ->pluck('mission_id');
+
         $missions = Mission::query()
             ->where('status', Mission::STATUS_OPEN)
             ->whereIn('visibility', [Mission::VISIBILITY_PUBLIC, Mission::VISIBILITY_PROGRAM])
+            ->whereNotIn('id', $activeMissionIds)
             ->whereHas('capabilityRequirements', static fn ($query) => $query->whereIn('normalized_label', $labels))
             ->with(['capabilityRequirements' => static fn ($query) => $query->whereIn('normalized_label', $labels)])
             ->orderByRaw('due_at is null')

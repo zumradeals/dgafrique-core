@@ -24,7 +24,14 @@
                     <x-dg.label tone="night">Cerveau du Projet</x-dg.label>
                     <h2 class="dg-display dg-display--card" style="margin:8px 0 7px">Qu’est-ce que vous voulez réaliser ?</h2>
                     <p style="max-width:720px;margin:0 0 16px">Une idée encore floue suffit. Expliquez-la comme vous la raconteriez à quelqu’un. Nous avancerons une question utile à la fois.</p>
-                    <x-dg.btn variant="project" :href="route('projects.brain.start')">Commencer la conversation →</x-dg.btn>
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                        <x-dg.btn variant="project" :href="route('projects.brain.start')">Commencer la conversation →</x-dg.btn>
+                        {{-- UIUX-008 — invariant : le Cerveau augmente DG Afrique, il ne le
+                             conditionne pas (audit Phase A — /projets était le seul écran où les
+                             trois CTA visibles menaient tous au Cerveau). Voie directe toujours
+                             utilisable, sans dupliquer le formulaire ni dégrader le Cerveau. --}}
+                        <a href="{{ route('projects.create') }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">Créer directement un projet →</a>
+                    </div>
                 </div>
                 <span aria-hidden="true" style="display:grid;place-items:center;width:104px;height:104px;border-radius:28px;background:rgba(217,160,43,.12);color:var(--dg-saffron-ink)">
                     <x-dg.icon name="brain" size="52" />

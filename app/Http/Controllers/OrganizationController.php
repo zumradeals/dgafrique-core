@@ -108,6 +108,14 @@ final class OrganizationController
             ->values();
 
         $memberships = $organization->memberships()->where('status', OrganizationMembership::STATUS_ACTIVE)->orderBy('joined_at')->get();
+        $isManager = $service->isManager($organization, $identity->reference);
+
+        // UIUX-008 — audit Phase A : OrganizationService::approveRequest() existait déjà sans
+        // aucune route ni UI ; une demande d'adhésion REQUESTED ne pouvait jamais être approuvée.
+        // Réservé au manager, même présentation humaine que presentMembers().
+        $pendingRequests = $isManager
+            ? $this->presentMembers($organization->memberships()->where('status', OrganizationMembership::STATUS_REQUESTED)->oldest('requested_at')->get(), $identity->reference)
+            : [];
 
         return view('organizations.show', [
             'identity' => $identity,
@@ -117,8 +125,9 @@ final class OrganizationController
             // « Membre DG Afrique »), même convention que PresentsPartnerships::partnershipProvider()
             // — jamais une référence Core exposée, jamais uniquement un rôle répété sans identité.
             'members' => $this->presentMembers($memberships, $identity->reference),
+            'pendingRequests' => $pendingRequests,
             'isMember' => $service->isMember($organization, $identity->reference),
-            'isManager' => $service->isManager($organization, $identity->reference),
+            'isManager' => $isManager,
             // UIUX-003 — décision #4 : Événements réellement organisés par cette Organisation
             // (relation organizer_type=ORGANIZATION déjà réelle) — même autorité canView() que
             // la page elle-même, jamais recalculée. Aucune relation Projet/Besoin fabriquée.
@@ -140,13 +149,29 @@ final class OrganizationController
     }
 
     /**
+     * UIUX-008 — réutilise OrganizationService::approveRequest() tel quel : la même autorité
+     * (assertManager()) et la même transition métier (REQUESTED → ACTIVE) qu'il vérifie déjà
+     * lui-même, aucune ACL parallèle. Aucun refus n'est proposé : aucune transition métier de
+     * refus n'existe pour une demande REQUESTED (removeMember() exige STATUS_ACTIVE).
+     */
+    public function approveRequest(Request $request, Organization $organization, string $membership, OrganizationService $service): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+
+        $service->approveRequest($organization, $identity->reference, $membership);
+
+        return back()->with('status', 'La demande est approuvée et le membre a rejoint l’organisation.');
+    }
+
+    /**
      * UIUX-006 — un libellé humain lisible par membre au lieu du seul rôle répété : « Vous » pour
      * l'acteur courant, un nom de découverte s'il a été volontairement consenti (même règle que
      * `PresentsPartnerships::partnershipProvider()`), sinon « Membre DG Afrique ». Aucune référence
      * Core n'est jamais exposée.
      *
      * @param  Collection<int, OrganizationMembership>  $memberships
-     * @return array<int, array{label: string, role: string}>
+     * @return array<int, array{id: string, label: string, role: string, motivation: ?string}>
      */
     private function presentMembers(Collection $memberships, string $actor): array
     {
@@ -168,8 +193,10 @@ final class OrganizationController
             }
 
             return [
+                'id' => $membership->id,
                 'label' => $label,
                 'role' => OrganizationMembership::ROLES[$membership->role] ?? $membership->role,
+                'motivation' => $membership->motivation,
             ];
         })->values()->all();
     }

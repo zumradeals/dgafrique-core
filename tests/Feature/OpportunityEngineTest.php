@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Missions\MissionAssignmentService;
 use App\Application\Missions\MissionWorkflow;
 use App\Application\Opportunities\OpportunityEngine;
 use App\Application\Projects\ProjectConfiguration;
@@ -126,6 +127,46 @@ final class OpportunityEngineTest extends TestCase
         self::assertSame($mission->public_reference, $results[0]['reference']);
         self::assertSame('OPEN_MISSION_CONTEXT', $results[0]['action']['kind']);
         self::assertSame('PROJECT', $results[0]['action']['context_type']);
+    }
+
+    /**
+     * UIUX-008 — audit Phase A : une Mission à laquelle la personne a déjà une relation
+     * active (offerte, invitée ou acceptée — App\Models\MissionAssignment::CURRENT_STATUSES)
+     * ne doit plus jamais se présenter comme « ce que vous pourriez rejoindre ».
+     */
+    public function test_a_mission_the_actor_is_already_assigned_to_is_excluded(): void
+    {
+        $this->profile('IDN-ACTOR');
+        $this->capability('IDN-ACTOR', 'Comptabilité');
+        [$mission] = $this->openMission('IDN-OWNER');
+        $this->requirement($mission, 'Comptabilité');
+
+        $assignments = app(MissionAssignmentService::class);
+        $assignment = $assignments->offer($mission, 'IDN-ACTOR', MissionAssignment::ROLE_EXECUTOR);
+        $assignments->acceptOffer($mission, 'IDN-OWNER', $assignment);
+
+        self::assertSame([], app(OpportunityEngine::class)->forIdentity('IDN-ACTOR'));
+    }
+
+    /**
+     * UIUX-008 — un ancien engagement résolu (retiré par la personne elle-même) ne doit
+     * jamais continuer d'exclure la Mission : elle redevient une possibilité réelle.
+     */
+    public function test_a_mission_with_only_a_withdrawn_assignment_stays_a_real_opportunity(): void
+    {
+        $this->profile('IDN-ACTOR');
+        $this->capability('IDN-ACTOR', 'Comptabilité');
+        [$mission] = $this->openMission('IDN-OWNER');
+        $this->requirement($mission, 'Comptabilité');
+
+        $assignments = app(MissionAssignmentService::class);
+        $assignment = $assignments->offer($mission, 'IDN-ACTOR', MissionAssignment::ROLE_EXECUTOR);
+        $assignments->withdraw($mission, 'IDN-ACTOR', $assignment);
+
+        $results = app(OpportunityEngine::class)->forIdentity('IDN-ACTOR');
+
+        self::assertCount(1, $results);
+        self::assertSame($mission->public_reference, $results[0]['reference']);
     }
 
     public function test_explainable_reasons_are_present(): void
