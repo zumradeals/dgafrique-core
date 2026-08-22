@@ -266,6 +266,32 @@
                         </section>
                     @endif
 
+                    @if($myOrganizations->isNotEmpty())
+                        {{--
+                            UIUX-006 — « Mes Organisations » : accès persistant, jamais réservé au
+                            nouveau membre (ce bloc vit hors du routeur de première intention
+                            ci-dessus). Une seule Organisation = un accès direct ; plusieurs =
+                            liste compacte, chacune ouvrant sa propre fiche. Aucun état vide massif
+                            si l'acteur ne représente aucune structure — la carte ne s'affiche
+                            simplement pas.
+                        --}}
+                        <section class="dg-space-rail-card">
+                            <div class="dg-space-rail-card__head">
+                                <div class="dg-space-rail-card__kicker">Vos structures</div>
+                                <h3>Mes Organisations</h3>
+                            </div>
+                            @foreach($myOrganizations as $organization)
+                                <a class="dg-space-rail-row" href="{{ route('organizations.show', $organization) }}" style="text-decoration:none;color:inherit">
+                                    <span class="dg-space-rail-row__mark">{{ mb_strtoupper(mb_substr($organization->name, 0, 2)) }}</span>
+                                    <div>
+                                        <strong>{{ $organization->name }}</strong>
+                                        <span>{{ \App\Models\OrganizationMembership::ROLES[$organization->my_role] ?? 'Membre' }}</span>
+                                    </div>
+                                </a>
+                            @endforeach
+                        </section>
+                    @endif
+
                     @if(! empty($recommendedPeople))
                         <section class="dg-space-rail-card">
                             <div class="dg-space-rail-card__head">

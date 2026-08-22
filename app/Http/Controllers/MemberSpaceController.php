@@ -16,6 +16,8 @@ use App\Application\Zumra\ZumraAttentionSource;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CapabilityStatement;
 use App\Models\Need;
+use App\Models\Organization;
+use App\Models\OrganizationMembership;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
@@ -106,6 +108,8 @@ final class MemberSpaceController
 
         $receivedShares = array_slice($shares->personalInbox($identity->reference)['shares']->all(), 0, 2);
 
+        $myOrganizations = $this->myOrganizations($identity->reference);
+
         $isNewMember = $this->isNewMember(
             $identity->reference,
             $ownProject,
@@ -134,9 +138,40 @@ final class MemberSpaceController
             'nextItems' => $rest->where('kind', 'NEEDS')->where('event', '!=', 'NEED_RESOLVED')->take(2)->values(),
             'weekItems' => $rest->whereIn('kind', ['PROJECTS', 'ZUMRA'])->take(2)->values(),
             'myGroups' => $myGroups,
+            'myOrganizations' => $myOrganizations,
             'recommendedPeople' => $recommendedPeople,
             'receivedShares' => $receivedShares,
         ]);
+    }
+
+    /**
+     * UIUX-006 : « Je représente une ou plusieurs structures, où puis-je les retrouver ? » —
+     * réutilise strictement l'appartenance déjà réelle (OrganizationMembership actif), le même
+     * fait que consulte déjà PresentsPartnerships::manageableOrganizations() pour décider
+     * d'afficher le formulaire de proposition de Partnership. Aucun nouveau concept de propriété :
+     * un membre simple (pas seulement OWNER/ADMIN) retrouve ici toute structure dont il est membre
+     * actif, persistant que ce soit sa première visite ou non.
+     *
+     * @return Collection<int, Organization>
+     */
+    private function myOrganizations(string $actor): Collection
+    {
+        $memberships = OrganizationMembership::query()
+            ->where('core_identity_reference', $actor)
+            ->where('status', OrganizationMembership::STATUS_ACTIVE)
+            ->get(['organization_id', 'role'])
+            ->keyBy('organization_id');
+
+        return Organization::query()
+            ->where('status', Organization::STATUS_ACTIVE)
+            ->whereIn('id', $memberships->keys())
+            ->orderBy('name')
+            ->get()
+            ->map(function (Organization $organization) use ($memberships): Organization {
+                $organization->my_role = $memberships->get($organization->id)?->role;
+
+                return $organization;
+            });
     }
 
     /**

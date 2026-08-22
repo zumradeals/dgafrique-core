@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Organizations\OrganizationCapabilityService;
 use App\Application\Organizations\OrganizationService;
 use App\Models\Mission;
 use App\Models\Need;
 use App\Models\Organization;
 use App\Models\OrganizationEvent;
 use App\Models\OrganizationMembership;
+use App\Models\PersonProfile;
 use App\Models\Project;
 use App\Models\ZumraGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -259,6 +261,92 @@ final class OrganizationTest extends TestCase
 
         self::assertEquals($updatedAtBefore, $organization->refresh()->updated_at);
         self::assertSame(1, $organization->fresh()->active_member_count, 'Une lecture ne doit jamais faire varier le compteur de membres.');
+    }
+
+    // ===== UIUX-006 — fiche Organisation recomposée =====
+
+    public function test_a_regular_member_sees_no_manager_only_management_section(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER1', ['visibility' => Organization::VISIBILITY_PUBLIC]);
+        app(OrganizationService::class)->invite($organization, 'IDN-UI6-FOUNDER1', 'IDN-UI6-MEMBER1');
+        app(OrganizationService::class)->acceptInvitation($organization, 'IDN-UI6-MEMBER1');
+
+        $this->signIn('IDN-UI6-MEMBER1');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringNotContainsString('Déclarer cette capacité', $content);
+        self::assertStringNotContainsString('<legend><span class="dg-label">Gestion</span>', $content);
+    }
+
+    public function test_a_manager_sees_the_management_actions(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER2');
+
+        $this->signIn('IDN-UI6-FOUNDER2');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringContainsString('<legend><span class="dg-label">Gestion</span>', $content);
+        self::assertStringContainsString('Déclarer cette capacité', $content);
+    }
+
+    public function test_capabilities_are_presented_in_human_language(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER3');
+        app(OrganizationCapabilityService::class)->declare($organization, 'IDN-UI6-FOUNDER3', ['label' => 'Formation en maraîchage urbain']);
+
+        $this->signIn('IDN-UI6-FOUNDER3');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringContainsString('Ce que cette organisation peut apporter', $content);
+        self::assertStringContainsString('Formation en maraîchage urbain', $content);
+    }
+
+    public function test_members_are_displayed_with_a_readable_identity_and_role(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER4');
+        app(OrganizationService::class)->invite($organization, 'IDN-UI6-FOUNDER4', 'IDN-UI6-DISCOVERABLE');
+        app(OrganizationService::class)->acceptInvitation($organization, 'IDN-UI6-DISCOVERABLE');
+        app(OrganizationService::class)->invite($organization, 'IDN-UI6-FOUNDER4', 'IDN-UI6-HIDDEN');
+        app(OrganizationService::class)->acceptInvitation($organization, 'IDN-UI6-HIDDEN');
+        PersonProfile::query()->create([
+            'core_identity_reference' => 'IDN-UI6-DISCOVERABLE',
+            'discovery_consent' => true,
+            'discovery_display_name' => 'Aïcha Traoré',
+        ]);
+
+        $this->signIn('IDN-UI6-FOUNDER4');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringContainsString('Vous', $content);
+        self::assertStringContainsString('Fondateur / propriétaire', $content);
+        self::assertStringContainsString('Aïcha Traoré', $content);
+        self::assertStringContainsString('Membre DG Afrique', $content);
+        self::assertStringNotContainsString('IDN-UI6-HIDDEN', $content);
+    }
+
+    public function test_no_cap_067_or_core_jargon_leaks_on_the_organization_fiche(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER5');
+        app(OrganizationCapabilityService::class)->declare($organization, 'IDN-UI6-FOUNDER5', ['label' => 'Appui logistique']);
+
+        $this->signIn('IDN-UI6-FOUNDER5');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringNotContainsString('CAP-067', $content);
+        self::assertStringNotContainsString('CapabilityStatement', $content);
+        self::assertStringNotContainsString('holder_type', $content);
+        self::assertStringNotContainsString((string) $organization->core_identity_reference, $content);
+        self::assertStringNotContainsString((string) $organization->core_organization_reference, $content);
+    }
+
+    public function test_no_activity_is_fabricated_when_the_organization_has_no_collaboration_or_event(): void
+    {
+        $organization = $this->organization('IDN-UI6-FOUNDER6');
+
+        $this->signIn('IDN-UI6-FOUNDER6');
+        $content = $this->get('/organisations/'.$organization->public_reference)->assertOk()->getContent();
+
+        self::assertStringContainsString('Aucune activité dans le réseau pour le moment.', $content);
     }
 
     private function assertAborts(int $status, callable $fn): void

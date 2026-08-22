@@ -16,9 +16,11 @@ use App\Infrastructure\GamadCore\Exceptions\CoreUnavailableException;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\Partnership;
+use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -105,11 +107,16 @@ final class OrganizationController
             ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
             ->values();
 
+        $memberships = $organization->memberships()->where('status', OrganizationMembership::STATUS_ACTIVE)->orderBy('joined_at')->get();
+
         return view('organizations.show', [
             'identity' => $identity,
             'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'organization' => $organization,
-            'members' => $organization->memberships()->where('status', OrganizationMembership::STATUS_ACTIVE)->orderBy('joined_at')->get(),
+            // UIUX-006 — un libellé humain par membre (« Vous » / nom de découverte consenti /
+            // « Membre DG Afrique »), même convention que PresentsPartnerships::partnershipProvider()
+            // — jamais une référence Core exposée, jamais uniquement un rôle répété sans identité.
+            'members' => $this->presentMembers($memberships, $identity->reference),
             'isMember' => $service->isMember($organization, $identity->reference),
             'isManager' => $service->isManager($organization, $identity->reference),
             // UIUX-003 — décision #4 : Événements réellement organisés par cette Organisation
@@ -130,5 +137,40 @@ final class OrganizationController
         $service->requestToJoin($organization, $identity->reference, $data['motivation'] ?? null);
 
         return back()->with('status', 'Votre demande d’adhésion a été transmise.');
+    }
+
+    /**
+     * UIUX-006 — un libellé humain lisible par membre au lieu du seul rôle répété : « Vous » pour
+     * l'acteur courant, un nom de découverte s'il a été volontairement consenti (même règle que
+     * `PresentsPartnerships::partnershipProvider()`), sinon « Membre DG Afrique ». Aucune référence
+     * Core n'est jamais exposée.
+     *
+     * @param  Collection<int, OrganizationMembership>  $memberships
+     * @return array<int, array{label: string, role: string}>
+     */
+    private function presentMembers(Collection $memberships, string $actor): array
+    {
+        $profiles = PersonProfile::query()
+            ->whereIn('core_identity_reference', $memberships->pluck('core_identity_reference'))
+            ->get()
+            ->keyBy('core_identity_reference');
+
+        return $memberships->map(function (OrganizationMembership $membership) use ($profiles, $actor): array {
+            $label = 'Membre DG Afrique';
+
+            if (hash_equals($membership->core_identity_reference, $actor)) {
+                $label = 'Vous';
+            } else {
+                $profile = $profiles->get($membership->core_identity_reference);
+                if ($profile?->discovery_consent === true && $profile->discovery_display_name) {
+                    $label = $profile->discovery_display_name;
+                }
+            }
+
+            return [
+                'label' => $label,
+                'role' => OrganizationMembership::ROLES[$membership->role] ?? $membership->role,
+            ];
+        })->values()->all();
     }
 }

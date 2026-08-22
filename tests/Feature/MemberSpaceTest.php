@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Organizations\OrganizationService;
 use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\Need;
 use App\Models\NeedEvent;
+use App\Models\Organization;
 use App\Models\PersonProfile;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
@@ -231,6 +233,82 @@ final class MemberSpaceTest extends TestCase
         // Ni la priorité, ni les sections « Pour vous maintenant »/« Cette semaine » ne doivent
         // présenter le besoin d'un inconnu comme personnellement destiné à ce membre.
         self::assertStringNotContainsString('Besoin réel visible dans le Fil', $content);
+    }
+
+    // ===== UIUX-006 — « Mes Organisations » sur Mon espace =====
+
+    public function test_a_member_without_any_organization_sees_no_intrusive_empty_block(): void
+    {
+        $this->signIn('IDN-SPACE-NOORG');
+
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringNotContainsString('Mes Organisations', $content);
+    }
+
+    public function test_a_member_representing_one_organization_gets_direct_access_from_my_space(): void
+    {
+        $organization = $this->organization('IDN-SPACE-ORG1');
+
+        $this->signIn('IDN-SPACE-ORG1');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringContainsString('Mes Organisations', $content);
+        self::assertStringContainsString($organization->name, $content);
+        self::assertStringContainsString(route('organizations.show', $organization), $content);
+    }
+
+    public function test_a_member_representing_several_organizations_sees_them_all_distinctly_and_openable(): void
+    {
+        $first = $this->organization('IDN-SPACE-ORG2');
+        $second = $this->organization('IDN-SPACE-OTHER-FOUNDER');
+        app(OrganizationService::class)->invite($second, 'IDN-SPACE-OTHER-FOUNDER', 'IDN-SPACE-ORG2');
+        app(OrganizationService::class)->acceptInvitation($second, 'IDN-SPACE-ORG2');
+        $unrelated = $this->organization('IDN-SPACE-STRANGER-FOUNDER');
+
+        $this->signIn('IDN-SPACE-ORG2');
+        $content = $this->get('/espace')->assertOk()->getContent();
+
+        self::assertStringContainsString($first->name, $content);
+        self::assertStringContainsString(route('organizations.show', $first), $content);
+        self::assertStringContainsString($second->name, $content);
+        self::assertStringContainsString(route('organizations.show', $second), $content);
+        self::assertStringNotContainsString($unrelated->name, $content);
+    }
+
+    private function organization(string $founder, array $overrides = []): Organization
+    {
+        Http::fake(function ($request) {
+            $url = (string) $request->url();
+            if (str_ends_with($url, '/sessions') && ($request['entite'] ?? null) === 'PRD-GAMAD-005') {
+                return Http::response([
+                    'jeton' => 'product-bearer-'.Str::random(8), 'entite' => 'PRD-GAMAD-005',
+                    'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00',
+                ], 201);
+            }
+            if (str_ends_with($url, '/identites')) {
+                return Http::response([
+                    'identite' => ['reference' => 'IDN-CORE-ORG-'.Str::random(12), 'etat' => 'ACTIVE', 'assurance' => 'A1'],
+                ], 201);
+            }
+            if (str_ends_with($url, '/organisations')) {
+                return Http::response([
+                    'resultat' => [
+                        'reference' => 'ORG-GAMAD-'.Str::random(8), 'identite_reference' => 'IDN-CORE-ORG-'.Str::random(12),
+                        'etat' => 'PREPARATION', 'type_organisation_reference' => 'INDETERMINE',
+                    ],
+                ], 201);
+            }
+
+            return null;
+        });
+
+        return app(OrganizationService::class)->create($founder, array_replace([
+            'name' => 'Structure Mon Espace '.Str::random(6),
+            'description' => 'Une structure durable réutilisée pour vérifier « Mes Organisations » sur Mon espace.',
+            'type' => 'COOPERATIVE',
+            'visibility' => Organization::VISIBILITY_PRIVATE,
+        ], $overrides));
     }
 
     private function zumraGroup(string $leader): ZumraGroup
