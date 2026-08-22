@@ -40,7 +40,7 @@
                                     <a href="{{ route('community-events.show', $event) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                         <x-dg.badge tone="saffron">Événement</x-dg.badge>
                                         <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $event->title }}</strong>
-                                        <span class="dg-meta" style="flex:none">{{ $event->scheduled_at->translatedFormat('d M') }}</span>
+                                        <span class="dg-meta" style="flex:none">{{ match($event->status) { 'CANCELLED' => 'Annulé', 'COMPLETED' => 'Tenu', default => 'À venir' } }} · {{ $event->scheduled_at->translatedFormat('d M') }}</span>
                                     </a>
                                 @endforeach
                             </div>

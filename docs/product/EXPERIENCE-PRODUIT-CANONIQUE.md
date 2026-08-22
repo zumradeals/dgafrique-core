@@ -655,3 +655,42 @@ distincte, non traitée ici) ; tout moteur de priorité ou de recommandation nou
 **Proposition de portée pour UIUX-004** : achever la boucle de gouvernance de l'Événement
 (gestion — modifier/annuler/marquer tenu, aujourd'hui exposée en JSON seulement) et instruire
 Partnership, seul lien réel restant entre Organisation et le reste du réseau.
+
+---
+
+## 24. Addendum daté — UIUX-004, parcours organisateur complet de l'Événement (22 août 2026)
+
+**Portée : fiche CommunityEvent uniquement** (`CommunityEventController.php`,
+`community-events/show.blade.php`, plus l'affichage d'état des cartes Événement déjà introduites
+par UIUX-003 sur `zumra/groups/show.blade.php`/`organizations/show.blade.php`). Suit la procédure
+de gouvernance du §20. Ferme la boucle ouverte par UIUX-003 : découvrir → consulter → participer
+→ organiser → constater l'état final.
+
+**Décisions rendues durables** :
+
+- **La fiche Événement devient le centre complet du parcours**, pas seulement sa consultation.
+  Pour l'organisateur réel (`ZumraGroupService::isLeader()`/`OrganizationService::isManager()`,
+  jamais une autorité recalculée), elle expose désormais les trois transitions déjà existantes
+  du service — modifier, annuler, marquer tenu — au même endroit que la consultation, sans
+  jamais créer de workflow ou d'écran de gestion séparé.
+- **Vocabulaire produit stabilisé pour le cycle de vie de l'Événement** : `SCHEDULED` → « À
+  venir », `COMPLETED` → « Tenu », `CANCELLED` → « Annulé ». Ce vocabulaire s'applique
+  uniformément à la fiche et aux cartes Événement affichées depuis une ZUMRA ou une Organisation
+  — celles-ci doivent toujours refléter l'état réel de l'Événement, jamais seulement sa date.
+- **Une information agrégée peut être montrée à l'organisateur quand le service l'autorise déjà
+  et que rien n'est inventé pour l'occasion.** Le nombre d'inscrits (`participants()->count()`,
+  déjà réservé à l'organisateur par le service) est affiché comme fait informatif — jamais la
+  liste des identités, qui reste strictement interne au service.
+- **Protection contre le clic accidentel proportionnée à l'impact réel** : l'action positive et
+  attendue (marquer tenu) reste un geste simple ; l'action qui affecte les personnes déjà
+  inscrites (annuler) est reléguée derrière une révélation explicite et une confirmation, suivant
+  le patron déjà établi ailleurs dans le portail (retrait d'équipe/d'assignation) plutôt qu'un
+  mécanisme nouveau.
+- **Une seule action toujours visible, le reste en retrait.** Sur la fiche, l'organisateur voit
+  un bouton principal (marquer tenu) et deux révélations secondaires (modifier, annuler) — jamais
+  une barre de plusieurs boutons d'action équivalents, y compris à 390px.
+
+**Hors périmètre, restant catégorie C** : Partnership, Ledger, ImpactMetrics, Modération, Finance,
+Opportunités, l'architecture de Mon espace, la navigation globale desktop/mobile, l'anomalie
+`overview-v2`/`pv-seed` — aucun n'a été touché. La liste nominative des inscrits reste strictement
+réservée au service (`CommunityEventService::participants()`), jamais exposée dans cette fiche.

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Community\CommunityEventService;
+use App\Application\Organizations\OrganizationService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CommunityEvent;
 use App\Models\CommunityEventParticipant;
@@ -19,7 +21,8 @@ use Illuminate\View\View;
 /**
  * CAP-068 — listes en JSON, redirection `back()` pour l'écriture (même patron que
  * ProjectFundingController/ModerationReportController) ; `show()` seul est une vraie fiche HTML
- * (UIUX-003 — première interface humaine de l'Événement).
+ * (UIUX-003 — première interface humaine de l'Événement ; UIUX-004 — parcours organisateur
+ * complet : modifier/annuler/marquer tenu exposés depuis la même fiche, sans nouvelle autorité).
  */
 final class CommunityEventController
 {
@@ -48,11 +51,14 @@ final class CommunityEventController
     }
 
     /**
-     * CAP-068/UIUX-003 — première fiche humaine de l'Événement : organisateur réel (avec retour
-     * vers lui), date, état, visibilité et action de participation lorsque le service l'autorise.
-     * Aucune autorité nouvelle : canView()/register()/unregister() restent la seule décision réelle.
+     * CAP-068/UIUX-003/UIUX-004 — fiche humaine complète de l'Événement : organisateur réel (avec
+     * retour vers lui), date, état, visibilité, action de participation, et pour l'organisateur
+     * réel les transitions déjà existantes (modifier/annuler/marquer tenu). Aucune autorité
+     * nouvelle : canView()/register()/unregister()/update()/cancel()/markCompleted() et
+     * ZumraGroupService::isLeader()/OrganizationService::isManager() restent la seule décision
+     * réelle — cette méthode ne fait que décider quoi afficher à partir de ces réponses.
      */
-    public function show(Request $request, CommunityEvent $event, CommunityEventService $events): View
+    public function show(Request $request, CommunityEvent $event, CommunityEventService $events, ZumraGroupService $zumraGroups, OrganizationService $organizations): View
     {
         $actor = $this->actor($request);
         abort_unless($events->canView($event, $actor), 404);
@@ -78,6 +84,12 @@ final class CommunityEventController
             ->where('status', CommunityEventParticipant::STATUS_REGISTERED)
             ->exists();
 
+        $isOrganizerAuthority = match (true) {
+            $event->organizer_type === CommunityEvent::ORGANIZER_ZUMRA_GROUP && $organizer instanceof ZumraGroup => $zumraGroups->isLeader($organizer, $actor),
+            $event->organizer_type === CommunityEvent::ORGANIZER_ORGANIZATION && $organizer instanceof Organization => $organizations->isManager($organizer, $actor),
+            default => false,
+        };
+
         return view('community-events.show', [
             'identity' => $identity,
             'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
@@ -87,6 +99,8 @@ final class CommunityEventController
             'organizerUrl' => $organizerUrl,
             'isRegistered' => $isRegistered,
             'canParticipate' => $event->status === CommunityEvent::STATUS_SCHEDULED,
+            'isOrganizerAuthority' => $isOrganizerAuthority,
+            'participantsCount' => $isOrganizerAuthority ? $events->participants($event, $actor)->count() : null,
         ]);
     }
 
