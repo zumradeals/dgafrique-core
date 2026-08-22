@@ -38,7 +38,13 @@
                     <x-dg.btn variant="project" :href="route('projects.brain.show', $project)">Ouvrir le Cerveau →</x-dg.btn>
                 </div>
             </div>
-            <p class="dg-body" style="margin-top:4px">{{ $project->owner_type === 'GROUP' ? ($group?->name ?? 'ZUMRA') : 'Projet personnel accompagné' }}</p>
+            {{-- UIUX-003 : retour réel vers la ZUMRA porteuse, même patron que
+                 missions.show/proofs.show (contextUrl/contextLabel) — jamais un lien fabriqué. --}}
+            @if($project->owner_type === 'GROUP' && $group)
+                <p class="dg-body" style="margin-top:4px"><a href="{{ route('zumra.groups.show', $group) }}" style="color:var(--dg-copper);font-weight:600">{{ $group->name }}</a></p>
+            @else
+                <p class="dg-body" style="margin-top:4px">{{ $project->owner_type === 'GROUP' ? 'ZUMRA' : 'Projet personnel accompagné' }}</p>
+            @endif
 
             <nav class="dg-project-tabs" aria-label="Sections du dossier">
                 <a href="#dg-project-top" aria-current="page">Vue d’ensemble</a>

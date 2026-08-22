@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Community\CommunityEventService;
 use App\Application\Organizations\OrganizationService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Organization;
@@ -69,7 +70,7 @@ final class OrganizationController
         return redirect()->route('organizations.show', $organization)->with('status', 'Votre organisation a été créée.');
     }
 
-    public function show(Request $request, Organization $organization, OrganizationService $service): View
+    public function show(Request $request, Organization $organization, OrganizationService $service, CommunityEventService $events): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -82,6 +83,10 @@ final class OrganizationController
             'members' => $organization->memberships()->where('status', OrganizationMembership::STATUS_ACTIVE)->orderBy('joined_at')->get(),
             'isMember' => $service->isMember($organization, $identity->reference),
             'isManager' => $service->isManager($organization, $identity->reference),
+            // UIUX-003 — décision #4 : Événements réellement organisés par cette Organisation
+            // (relation organizer_type=ORGANIZATION déjà réelle) — même autorité canView() que
+            // la page elle-même, jamais recalculée. Aucune relation Projet/Besoin fabriquée.
+            'organizationEvents' => $events->forOrganization($organization, $identity->reference)->take(6),
         ]);
     }
 
