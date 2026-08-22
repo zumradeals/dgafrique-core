@@ -397,6 +397,26 @@
                             </div>
                         </div>
 
+                        {{-- UIUX-008 — audit Phase A : transmissions.index/proofs.index n'avaient
+                             aucun point d'entrée persistant nulle part dans le produit (accessibles
+                             uniquement par un lien de retour depuis une page de détail). Même
+                             emplacement et même patron que Missions/Opportunités ci-dessus. --}}
+                        <div class="dg-space-rail-row">
+                            <span class="dg-space-rail-row__mark">T</span>
+                            <div>
+                                <strong><a href="{{ route('transmissions.index') }}">Mes transmissions</a></strong>
+                                <span>Propositions, apprentissages et transmissions en cours.</span>
+                            </div>
+                        </div>
+
+                        <div class="dg-space-rail-row">
+                            <span class="dg-space-rail-row__mark">P</span>
+                            <div>
+                                <strong><a href="{{ route('proofs.index') }}">Mon carnet de preuves</a></strong>
+                                <span>Traces d’expérience que vous avez enregistrées.</span>
+                            </div>
+                        </div>
+
                         @foreach(($satellites ?? collect()) as $satellite)
                             <form method="POST" action="{{ route('federation.continue', $satellite->slug) }}" class="dg-space-rail-row">
                                 @csrf

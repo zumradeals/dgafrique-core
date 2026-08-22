@@ -107,13 +107,36 @@
                              le manager, séparés de la présentation publique ci-dessus : « voici
                              notre présence → ce que nous apportons → notre activité → ce que je
                              peux gérer ». N'expose que des parcours déjà cadrés et sûrs (CAP-067) —
-                             invitation/approbation/retrait de membre et modification de l'identité
-                             restent hors de cette PR, aucune interface non cadrée n'est fabriquée. --}}
+                             invitation et modification de l'identité restent hors de cette PR,
+                             aucune interface non cadrée n'est fabriquée. --}}
                         {{-- `min-width:0` neutralise le calcul de largeur intrinsèque propre à
                              `<fieldset>` (le navigateur ignore sinon `min-width:0` de ses enfants
                              flex et peut forcer un débordement horizontal sur mobile). --}}
                         <x-dg.fieldset style="min-width:0">
                             <legend><x-dg.label>Gestion</x-dg.label></legend>
+
+                            @if(! empty($pendingRequests))
+                                {{-- UIUX-008 — audit Phase A : OrganizationService::approveRequest()
+                                     existait déjà sans route ni UI, une demande d'adhésion ne
+                                     pouvait jamais être approuvée. Réservé au manager ; aucun
+                                     refus n'est proposé (aucune transition métier de refus
+                                     n'existe pour une demande REQUESTED). --}}
+                                <div style="margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--dg-line-inner)">
+                                    <span class="dg-meta" style="font-weight:600">Demandes d’adhésion en attente</span>
+                                    @foreach($pendingRequests as $pending)
+                                        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;flex-wrap:wrap">
+                                            <div style="flex:1;min-width:0">
+                                                <span class="dg-body" style="display:block">{{ $pending['label'] }}</span>
+                                                @if($pending['motivation'])
+                                                    <span class="dg-meta">{{ $pending['motivation'] }}</span>
+                                                @endif
+                                            </div>
+                                            <x-dg.btn variant="primary" :href="route('organizations.requests.approve', [$organization, $pending['id']])" method="POST">Approuver</x-dg.btn>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
                             <form method="POST" action="{{ route('organizations.capabilities.store', $organization) }}">
                                 @csrf
                                 <label class="dg-field">

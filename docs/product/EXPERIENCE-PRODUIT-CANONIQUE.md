@@ -989,3 +989,52 @@ Preuve).
 cinq responsabilités), GAMAD Core, Wasplex, G-POS, refonte du Fil, tout modèle de progression
 humaine (`HumanProgress`, `GamadLevel`, `StabilityScore`, `RecruitmentScore`, `SpiritualScore`) —
 aucun n'a été touché ni introduit.
+
+## 29. Addendum daté — UIUX-008 Phase B, fermeture des portes existantes (22 août 2026)
+
+**Portée : correction de ruptures concrètes déjà identifiées (audit Phase A), aucune refonte de
+Mon espace, aucun nouveau modèle métier, aucune extension générale du Fil/Notifications.** Fichiers
+touchés : `components/dg/agir-sheet.blade.php` (lien corrigé), `member/space.blade.php` (rail « Mes
+outils »), `projects/index.blade.php` (voie directe), `OrganizationController.php` +
+`organizations/show.blade.php` + `routes/web.php` (approbation d'adhésion), `activity/index.blade.php`
+(copie obsolète retirée), `OpportunityEngine.php` (exclusion des Missions déjà rejointes).
+
+**Décisions rendues durables** :
+
+- **Invariant d'indépendance au Cerveau, désormais explicite :** *« Toute action métier essentielle
+  exposée par DG Afrique doit conserver une voie utilisable sans Cerveau lorsque le domaine possède
+  déjà une interface déterministe correspondante. »* Cet invariant ne constitue pas une doctrine
+  générale sur l'économie de l'IA (Crédit IA, coût, fournisseurs) — ce sujet reste un chantier séparé,
+  volontairement non abordé ici. Il documente uniquement ce que `/projets` respecte désormais : le
+  Cerveau du Projet reste mis en avant (bouton d'en-tête, carte héro, accompagnement), mais une voie
+  directe (« Créer directement un projet → ») reste toujours visible sur la même carte, sans dupliquer
+  le formulaire ni dégrader le Cerveau.
+- **La sheet Agir ne propose plus qu'un lien de Transmission réellement fonctionnel.** Le lien
+  pointait vers `member.profile.edit` (bogue identifié par l'audit Phase A) ; c'était la seule porte
+  globale vers la création de Transmission, et elle était inopérante.
+- **Mes transmissions et Mon carnet de preuves rejoignent Missions et Opportunités dans le rail
+  « Mes outils » de Mon espace.** Ces deux pages existaient et fonctionnaient déjà ; elles n'étaient
+  simplement reliées depuis aucune navigation avant. Aucun tableau de bord n'a été créé, aucune
+  donnée agrégée nouvelle.
+- **Une demande d'adhésion à une Organisation peut désormais être approuvée.**
+  `OrganizationService::approveRequest()` existait déjà sans route ni interface ; seule une surface
+  manager minimale a été ajoutée sur la fiche Organisation, réservée à `isManager()`, réutilisant
+  strictement le service existant. Aucun refus n'a été introduit : aucune transition métier de refus
+  n'existe pour une demande `REQUESTED` (`removeMember()` exige `STATUS_ACTIVE`), et aucune n'a été
+  inventée.
+- **Une Mission à laquelle la personne a déjà une relation active (offerte, invitée ou acceptée —
+  `MissionAssignment::CURRENT_STATUSES`) ne se présente plus comme une Opportunité.** Une relation
+  résolue (déclinée, retirée par la personne, libérée, retirée par l'autorité) ne l'exclut jamais :
+  la Mission redevient une possibilité réelle une fois la personne effectivement libre d'y répondre
+  à nouveau. Aucun score introduit, aucune extension à d'autres types d'Opportunités.
+- **Le rail du Fil ne prétend plus que la Transmission « rejoindra » le Fil plus tard** — elle y est
+  déjà projetée depuis que `ActivityFeedService` la couvre ; le texte obsolète a été retiré, aucun
+  moteur du Fil n'a été modifié pour ce point.
+
+**Limites documentées (non résolues ici, catégorie C)** : CommunityEvent et Partnership restent
+absents du Fil et des Notifications ; aucune vue consolidée multi-domaines des engagements en cours
+n'existe ; `priority()` n'a pas été retouché. Ces sujets nécessitent des missions séparées.
+
+**Hors périmètre, restant catégorie C** : CommunityEvent/Partnership dans Fil/Notifications, activité
+Organisation dans le Fil, vue consolidée « mes engagements », refonte de `priority()`, nouvelle
+timeline personnelle, Cerveau/Crédit IA, GAMAD Core, cycle de vie ZUMRA — aucun n'a été touché.
