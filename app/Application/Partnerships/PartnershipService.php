@@ -162,7 +162,8 @@ final class PartnershipService
         return $partnership->status === Partnership::STATUS_ACTIVE && $partnership->visibility === Partnership::VISIBILITY_PUBLIC;
     }
 
-    private function isProviderActor(Partnership $partnership, string $actor): bool
+    /** UIUX-005 — décision du fournisseur réel (pause/reprise/retrait) : jamais recalculée en dehors du service. */
+    public function isProviderActor(Partnership $partnership, string $actor): bool
     {
         if ($partnership->provider_type === Partnership::PROVIDER_PERSON) {
             return hash_equals($partnership->provider_reference, $actor);
@@ -182,6 +183,29 @@ final class PartnershipService
     {
         [$context] = $this->resolveContext($partnership->context_type, $partnership->context_reference);
         abort_unless($this->canDecideContext($partnership->context_type, $context, $actor), 403);
+    }
+
+    /**
+     * UIUX-005 — décision de l'autorité de contexte (activer/mettre fin) exposée pour décider
+     * quoi afficher côté fiche : réutilise exactement `canDecideContext()`, jamais recalculée.
+     */
+    public function canManageAsContextAuthority(Partnership $partnership, string $actor): bool
+    {
+        [$context] = $this->resolveContext($partnership->context_type, $partnership->context_reference, silently: true);
+
+        return $this->canDecideContext($partnership->context_type, $context, $actor);
+    }
+
+    /**
+     * UIUX-005 — résolution de l'objet de contexte réel (Besoin/Projet/ZUMRA) pour la présentation
+     * humaine d'un partenariat (libellé, lien de retour) — jamais une nouvelle relation, seulement
+     * la lecture de celle déjà portée par `context_type`/`context_reference`.
+     */
+    public function resolvedContext(Partnership $partnership): Need|Project|ZumraGroup|null
+    {
+        [$context] = $this->resolveContext($partnership->context_type, $partnership->context_reference, silently: true);
+
+        return $context;
     }
 
     private function assertProvider(string $providerType, string $actor, array $data): string

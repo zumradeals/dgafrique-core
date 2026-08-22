@@ -7,13 +7,16 @@ namespace App\Http\Controllers;
 use App\Application\Community\CommunityEventService;
 use App\Application\Missions\MissionService;
 use App\Application\Needs\NeedService;
+use App\Application\Partnerships\PartnershipService;
 use App\Application\Projects\ProjectService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
 use App\Application\Zumra\ZumraGroupConfiguration;
 use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
+use App\Http\Controllers\Concerns\PresentsPartnerships;
 use App\Models\Need;
+use App\Models\Partnership;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
@@ -29,6 +32,8 @@ use Illuminate\View\View;
 
 final class ZumraGroupController
 {
+    use PresentsPartnerships;
+
     public function index(Request $request, ZumraGroupConfiguration $configuration): View
     {
         /** @var CoreIdentity $identity */
@@ -80,6 +85,7 @@ final class ZumraGroupController
         ProjectService $projects,
         MissionService $missions,
         CommunityEventService $events,
+        PartnershipService $partnerships,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -136,11 +142,27 @@ final class ZumraGroupController
             ? $events->forZumraGroup($group, $identity->reference)->take(6)
             : collect();
 
+        // UIUX-005 — Partenariats réellement associés à cette ZUMRA (CAP-065), visibles seulement
+        // pour un membre actif ou responsable — même autorité que Missions/Événements ci-dessus,
+        // jamais assouplie pour peupler la page.
+        $groupPartnerships = $isActiveMember || $isLeader
+            ? Partnership::query()
+                ->where('context_type', Partnership::CONTEXT_ZUMRA)
+                ->where('context_reference', $group->public_reference)
+                ->latest('created_at')
+                ->limit(20)
+                ->get()
+                ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
+                ->values()
+            : collect();
+        $presentedPartnerships = $this->presentPartnerships($groupPartnerships, $identity->reference, $partnerships);
+        $manageableOrganizations = $this->manageableOrganizations($identity->reference);
+
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
             'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
             'collectivePriority', 'myPendingRoleProposal', 'groupMissions', 'groupEvents',
-        ) + ['isLeader' => $isLeader]);
+        ) + ['isLeader' => $isLeader, 'groupPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations]);
     }
 
     /**

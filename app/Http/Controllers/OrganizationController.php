@@ -6,9 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Application\Community\CommunityEventService;
 use App\Application\Organizations\OrganizationService;
+use App\Application\Partnerships\PartnershipService;
 use App\Domain\Identity\CoreIdentity;
+use App\Http\Controllers\Concerns\PresentsPartnerships;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
+use App\Models\Partnership;
 use App\Models\PortalAdministrator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +25,8 @@ use Illuminate\View\View;
  */
 final class OrganizationController
 {
+    use PresentsPartnerships;
+
     public function index(Request $request, OrganizationService $service): View
     {
         /** @var CoreIdentity $identity */
@@ -70,11 +75,23 @@ final class OrganizationController
         return redirect()->route('organizations.show', $organization)->with('status', 'Votre organisation a été créée.');
     }
 
-    public function show(Request $request, Organization $organization, OrganizationService $service, CommunityEventService $events): View
+    public function show(Request $request, Organization $organization, OrganizationService $service, CommunityEventService $events, PartnershipService $partnerships): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         abort_unless($service->canView($organization, $identity->reference), 404);
+
+        // UIUX-005 — décision produit : ne jamais déduire les capacités intrinsèques d'une
+        // Organisation de ses Partnerships. Cette section montre les collaborations réelles
+        // (« avec qui, sur quoi »), jamais un catalogue de capacités reconstitué depuis elles.
+        $organizationPartnerships = Partnership::query()
+            ->where('provider_type', Partnership::PROVIDER_ORGANIZATION)
+            ->where('provider_reference', $organization->id)
+            ->latest('created_at')
+            ->limit(20)
+            ->get()
+            ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
+            ->values();
 
         return view('organizations.show', [
             'identity' => $identity,
@@ -87,6 +104,7 @@ final class OrganizationController
             // (relation organizer_type=ORGANIZATION déjà réelle) — même autorité canView() que
             // la page elle-même, jamais recalculée. Aucune relation Projet/Besoin fabriquée.
             'organizationEvents' => $events->forOrganization($organization, $identity->reference)->take(6),
+            'organizationPartnerships' => $this->presentPartnerships($organizationPartnerships, $identity->reference, $partnerships),
         ]);
     }
 

@@ -180,6 +180,24 @@
                             </div>
                         </x-dg.card>
                     @endif
+
+                    @if($isLeader || $membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE)
+                        {{-- UIUX-005 — Partenariats réellement associés à cette ZUMRA (CAP-065),
+                             même autorité que Missions/Événements ci-dessus. --}}
+                        @if($groupPartnerships !== [])
+                            <div>
+                                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                    <x-dg.label>Partenariats</x-dg.label>
+                                    <span class="dg-meta">{{ count($groupPartnerships) }} partenariat{{ count($groupPartnerships) > 1 ? 's' : '' }}</span>
+                                </div>
+                                @foreach($groupPartnerships as $row)
+                                    <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="ZUMRA" :context-reference="$group->public_reference" />
+                    @endif
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">

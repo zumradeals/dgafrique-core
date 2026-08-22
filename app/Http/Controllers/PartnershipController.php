@@ -52,7 +52,20 @@ final class PartnershipController
 
         $partnership = $service->propose($identity->reference, $data);
 
-        return redirect()->route('partnerships.show', $partnership)->with('status', 'Votre proposition de partenariat a été transmise.');
+        // UIUX-005 — la proposition ne se fait jamais « dans le vide » : elle part toujours d'un
+        // contexte consultable (Besoin/Projet/ZUMRA), la réponse doit y ramener, jamais vers une
+        // fiche Partnership autonome (JSON, sans destination humaine).
+        return redirect()->to($this->contextUrl($partnership))->with('status', 'Votre proposition de partenariat a été transmise.');
+    }
+
+    private function contextUrl(Partnership $partnership): string
+    {
+        return match ($partnership->context_type) {
+            Partnership::CONTEXT_NEED => route('needs.show', ['need' => $partnership->context_reference]),
+            Partnership::CONTEXT_PROJECT => route('projects.show', ['project' => $partnership->context_reference]),
+            Partnership::CONTEXT_ZUMRA => route('zumra.groups.show', ['group' => $partnership->context_reference]),
+            default => route('member.space'),
+        };
     }
 
     public function show(Request $request, Partnership $partnership, PartnershipService $service): JsonResponse
