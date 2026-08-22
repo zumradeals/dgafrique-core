@@ -9,14 +9,17 @@ use App\Domain\Identity\CoreIdentity;
 use App\Models\CommunityEvent;
 use App\Models\CommunityEventParticipant;
 use App\Models\Organization;
+use App\Models\PortalAdministrator;
 use App\Models\ZumraGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
- * CAP-068 — surface minimale, JSON pour la lecture / redirection `back()` pour l'écriture (même
- * patron que ProjectFundingController/ModerationReportController, précédents les plus récents).
+ * CAP-068 — listes en JSON, redirection `back()` pour l'écriture (même patron que
+ * ProjectFundingController/ModerationReportController) ; `show()` seul est une vraie fiche HTML
+ * (UIUX-003 — première interface humaine de l'Événement).
  */
 final class CommunityEventController
 {
@@ -44,11 +47,47 @@ final class CommunityEventController
         return response()->json(['events' => $events->forOrganization($organization, $this->actor($request))->map(fn (CommunityEvent $e): array => $this->present($e))->values()]);
     }
 
-    public function show(Request $request, CommunityEvent $event, CommunityEventService $events): JsonResponse
+    /**
+     * CAP-068/UIUX-003 — première fiche humaine de l'Événement : organisateur réel (avec retour
+     * vers lui), date, état, visibilité et action de participation lorsque le service l'autorise.
+     * Aucune autorité nouvelle : canView()/register()/unregister() restent la seule décision réelle.
+     */
+    public function show(Request $request, CommunityEvent $event, CommunityEventService $events): View
     {
-        abort_unless($events->canView($event, $this->actor($request)), 404);
+        $actor = $this->actor($request);
+        abort_unless($events->canView($event, $actor), 404);
 
-        return response()->json(['event' => $this->present($event)]);
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+
+        $organizer = match ($event->organizer_type) {
+            CommunityEvent::ORGANIZER_ZUMRA_GROUP => ZumraGroup::query()->find($event->organizer_reference),
+            CommunityEvent::ORGANIZER_ORGANIZATION => Organization::query()->find($event->organizer_reference),
+            default => null,
+        };
+
+        $organizerUrl = match (true) {
+            $event->organizer_type === CommunityEvent::ORGANIZER_ZUMRA_GROUP && $organizer !== null => route('zumra.groups.show', $organizer),
+            $event->organizer_type === CommunityEvent::ORGANIZER_ORGANIZATION && $organizer !== null => route('organizations.show', $organizer),
+            default => null,
+        };
+
+        $isRegistered = CommunityEventParticipant::query()
+            ->where('community_event_id', $event->id)
+            ->where('core_identity_reference', $actor)
+            ->where('status', CommunityEventParticipant::STATUS_REGISTERED)
+            ->exists();
+
+        return view('community-events.show', [
+            'identity' => $identity,
+            'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
+            'event' => $event,
+            'organizer' => $organizer,
+            'organizerLabel' => $organizer->name ?? null,
+            'organizerUrl' => $organizerUrl,
+            'isRegistered' => $isRegistered,
+            'canParticipate' => $event->status === CommunityEvent::STATUS_SCHEDULED,
+        ]);
     }
 
     public function update(Request $request, CommunityEvent $event, CommunityEventService $events): RedirectResponse

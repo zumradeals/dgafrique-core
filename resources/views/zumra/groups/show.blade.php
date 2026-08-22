@@ -152,6 +152,34 @@
                             @endif
                         </x-dg.card>
                     </div>
+
+                    @if(($isLeader || $membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE) && ($groupMissions->isNotEmpty() || $groupEvents->isNotEmpty()))
+                        {{-- UIUX-003 — décision #2 : Missions/Événements réels de cette ZUMRA, visibles
+                             seulement pour un membre actif ou responsable (même autorité que les
+                             services eux-mêmes exigent), jamais un catalogue global. --}}
+                        <x-dg.card style="padding:0;overflow:hidden">
+                            <div style="padding:22px 24px 14px;display:flex;align-items:baseline;justify-content:space-between">
+                                <x-dg.label>Ce qui se passe dans cette ZUMRA</x-dg.label>
+                                <span class="dg-meta">{{ $groupMissions->count() }} mission{{ $groupMissions->count() > 1 ? 's' : '' }} · {{ $groupEvents->count() }} événement{{ $groupEvents->count() > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div style="padding:0 24px 8px;border-top:1px solid var(--dg-line-inner)">
+                                @foreach($groupMissions as $mission)
+                                    <a href="{{ route('missions.show', $mission) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                        <x-dg.badge tone="neutral">Mission</x-dg.badge>
+                                        <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $mission->title }}</strong>
+                                        <span class="dg-meta" style="flex:none">{{ $mission->status }}</span>
+                                    </a>
+                                @endforeach
+                                @foreach($groupEvents as $event)
+                                    <a href="{{ route('community-events.show', $event) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                        <x-dg.badge tone="saffron">Événement</x-dg.badge>
+                                        <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $event->title }}</strong>
+                                        <span class="dg-meta" style="flex:none">{{ $event->scheduled_at->translatedFormat('d M') }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </x-dg.card>
+                    @endif
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">

@@ -18,7 +18,16 @@
                 <div>
                     <x-dg.badge tone="need">{{ $configuration['categories'][$need->category] ?? $need->category }}</x-dg.badge>
                     <h1 class="dg-display dg-display--screen" style="margin-top:10px">{{ $need->title }}</h1>
-                    <p>{{ match($need->owner_type) { 'GROUP' => $group?->name ?? 'ZUMRA', 'PROJECT' => $project?->name ?? 'Projet', default => 'Besoin personnel' } }}</p>
+                    {{-- UIUX-003 : retour réel vers le contexte porteur, même patron que
+                         missions.show/proofs.show (contextUrl/contextLabel) — jamais un lien
+                         fabriqué : seul un propriétaire réellement visible devient un lien. --}}
+                    @if($need->owner_type === 'GROUP' && $group)
+                        <p><a href="{{ route('zumra.groups.show', $group) }}" style="color:var(--dg-copper);font-weight:600">{{ $group->name }}</a></p>
+                    @elseif($need->owner_type === 'PROJECT' && $project)
+                        <p><a href="{{ route('projects.show', $project) }}" style="color:var(--dg-copper);font-weight:600">{{ $project->name }}</a></p>
+                    @else
+                        <p>{{ match($need->owner_type) { 'GROUP' => 'ZUMRA', 'PROJECT' => 'Projet', default => 'Besoin personnel' } }}</p>
+                    @endif
                 </div>
                 <x-dg.label>{{ ['PROPOSED' => 'Proposé', 'OPEN' => 'Ouvert', 'IN_PROGRESS' => 'En cours', 'RESOLVED' => 'Résolu', 'ARCHIVED' => 'Archivé'][$need->status] ?? $need->status }}</x-dg.label>
             </div>

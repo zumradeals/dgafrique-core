@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Community\CommunityEventService;
+use App\Application\Missions\MissionService;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
@@ -76,6 +78,8 @@ final class ZumraGroupController
         CollectiveCapabilityProfile $capabilityProfile,
         NeedService $needs,
         ProjectService $projects,
+        MissionService $missions,
+        CommunityEventService $events,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -119,10 +123,23 @@ final class ZumraGroupController
 
         $collectivePriority = $isLeader ? $this->collectivePriority($group, $pendingRequests, $groupNeeds, $groupProjects) : null;
 
+        // UIUX-003 — décision #2 : Missions et Événements réellement rattachés à cette ZUMRA
+        // (relations backend déjà prouvées : Mission.context_type=ZUMRA, CommunityEvent
+        // organizer_type=ZUMRA_GROUP), affichés seulement pour un membre actif ou responsable —
+        // exactement la même autorité que ces deux services exigent déjà eux-mêmes (jamais
+        // recalculée ici, jamais assouplie pour peupler la page).
+        $isActiveMember = $membership?->status === ZumraGroupMembership::STATUS_ACTIVE;
+        $groupMissions = $isActiveMember || $isLeader
+            ? $missions->forContext('ZUMRA', $group->public_reference, $identity->reference)->take(6)
+            : collect();
+        $groupEvents = $isActiveMember || $isLeader
+            ? $events->forZumraGroup($group, $identity->reference)->take(6)
+            : collect();
+
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
             'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
-            'collectivePriority', 'myPendingRoleProposal',
+            'collectivePriority', 'myPendingRoleProposal', 'groupMissions', 'groupEvents',
         ) + ['isLeader' => $isLeader]);
     }
 

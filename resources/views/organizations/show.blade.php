@@ -21,11 +21,31 @@
             </div>
 
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
-                <div style="display:flex;flex-direction:column;gap:16px">
+                <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
                     <x-dg.card>
                         <x-dg.label>Description</x-dg.label>
                         <p class="dg-body" style="margin-top:12px;white-space:pre-line">{{ $organization->description }}</p>
                     </x-dg.card>
+
+                    @if($organizationEvents->isNotEmpty())
+                        {{-- UIUX-003 — décision #4 : Événements réellement organisés par cette
+                             Organisation, jamais un catalogue global. --}}
+                        <x-dg.card style="padding:0;overflow:hidden">
+                            <div style="padding:22px 24px 14px;display:flex;align-items:baseline;justify-content:space-between">
+                                <x-dg.label>Événements organisés</x-dg.label>
+                                <span class="dg-meta">{{ $organizationEvents->count() }} événement{{ $organizationEvents->count() > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div style="padding:0 24px 8px;border-top:1px solid var(--dg-line-inner)">
+                                @foreach($organizationEvents as $event)
+                                    <a href="{{ route('community-events.show', $event) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                        <x-dg.badge tone="saffron">Événement</x-dg.badge>
+                                        <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $event->title }}</strong>
+                                        <span class="dg-meta" style="flex:none">{{ $event->scheduled_at->translatedFormat('d M') }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </x-dg.card>
+                    @endif
 
                     @if(! $isMember)
                         <x-dg.fieldset>

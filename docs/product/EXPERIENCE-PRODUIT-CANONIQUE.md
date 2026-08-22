@@ -606,3 +606,52 @@ procédure de gouvernance du §20.
 (gaps backend réels, cf. rapport UIUX-002 Phase A §18) ; toute transformation de « À faire » en
 liste sur Mon espace (tension explicitement non résolue avec l'invariant d'une seule priorité
 dominante, cf. rapport Phase A §9).
+
+---
+
+## 23. Addendum daté — UIUX-003 Phase B, navigation contextuelle et premier espace Événement (22 août 2026)
+
+**Portée : Besoin/Projet (retour de contexte), ZUMRA (espace contextuel), Organisation (fiche),
+CommunityEvent/CAP-068 (première fiche)** (`NeedController.php`/`needs/show.blade.php`,
+`ProjectController.php`/`projects/show.blade.php`, `ZumraGroupController.php`/
+`zumra/groups/show.blade.php`, `OrganizationController.php`/`organizations/show.blade.php`,
+`CommunityEventController.php`/`community-events/show.blade.php`). Suit la procédure de
+gouvernance du §20. Fait suite au constat d'architecture de l'audit UIUX-003 Phase A : ZumraGroup
+est un vrai carrefour relationnel (Besoin/Projet/Mission/Événement/Preuve s'y rattachent tous),
+Organization reste une structure de bord (seule relation réelle : organisatrice d'Événement).
+
+**Décisions rendues durables** :
+
+- **Retour de contexte généralisé.** Le patron déjà établi sur Mission/Proof (`contextUrl`/
+  `contextLabel`) s'étend maintenant à la fiche Besoin et à la fiche Projet : quand le propriétaire
+  (ZUMRA ou Projet) est réellement résolu côté serveur, son nom devient un lien réel vers sa fiche ;
+  sinon le texte neutre déjà existant reste inchangé. Aucune relation n'est jamais fabriquée pour
+  l'occasion.
+- **La ZUMRA devient un espace contextuel réel, pas un nouveau menu.** Sa fiche montre désormais
+  ses Missions et Événements réels (via `MissionService::forContext()`/
+  `CommunityEventService::forZumraGroup()`, déjà existants, jamais recalculés), visibles seulement
+  pour un membre actif ou un responsable — exactement l'audience déjà autorisée par ces services.
+  Le contenu déjà présent (gouvernance, Besoins, Projets) n'a pas été redesigné.
+- **L'Organisation reste une structure de bord.** Sa fiche gagne uniquement ses Événements
+  réellement organisés (relation `organizer_type=ORGANIZATION` déjà réelle) — aucune relation
+  Organisation→Projet/Besoin/Mission n'existe dans le métier et aucune n'a été inventée ici. Ce
+  choix n'est pas une simplification temporaire : c'est le reflet exact de ce que confirme
+  l'audit Phase A (absence de `OWNER_ORGANIZATION`, d'`OrganizationMissionContext`, de route
+  `/organisations/{o}/besoins`).
+- **CommunityEvent (CAP-068) reçoit sa première interface humaine.** Une fiche dédiée répond
+  clairement à où suis-je / qui organise / quand / puis-je participer : organisateur réel avec
+  retour vers lui, date, état, visibilité, et une action d'inscription/désinscription strictement
+  gouvernée par `CommunityEventService::canView()`/`register()`/`unregister()` — jamais une
+  autorité nouvelle. Aucun catalogue global « Événements » n'existe dans la navigation ; un
+  Événement se découvre uniquement depuis son organisateur réel.
+- **Topbar et tabbar restent inchangés** (Fil · Personnes · Agir · ZUMRA · Moi) — la découverte
+  contextuelle ne devient jamais un nouveau niveau de navigation globale.
+
+**Hors périmètre, restant catégorie C** : Partnership (chantier séparé) ; Ledger, ImpactMetrics,
+Modération, Finance (non touchés) ; l'anomalie `projects/overview-v2`/`pv-seed` (dette UI
+distincte, non traitée ici) ; tout moteur de priorité ou de recommandation nouveau pour les
+Événements — la fiche n'affiche que ce que le service métier autorise déjà, sans classement.
+
+**Proposition de portée pour UIUX-004** : achever la boucle de gouvernance de l'Événement
+(gestion — modifier/annuler/marquer tenu, aujourd'hui exposée en JSON seulement) et instruire
+Partnership, seul lien réel restant entre Organisation et le reste du réseau.
