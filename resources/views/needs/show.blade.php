@@ -106,7 +106,7 @@
                         </div>
                     @endif
 
-                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="NEED" :context-reference="$need->public_reference" />
+                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" :capabilities="$manageableOrganizationCapabilities" context-type="NEED" :context-reference="$need->public_reference" />
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">

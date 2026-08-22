@@ -324,7 +324,7 @@
                         </div>
                     @endif
 
-                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="PROJECT" :context-reference="$project->public_reference" />
+                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" :capabilities="$manageableOrganizationCapabilities" context-type="PROJECT" :context-reference="$project->public_reference" />
 
                     {{-- Activité récente --}}
                     <x-dg.card id="dg-project-activite">

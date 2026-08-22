@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Concerns;
 
 use App\Application\Partnerships\PartnershipService;
+use App\Models\CapabilityStatement;
 use App\Models\Need;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
@@ -114,6 +115,26 @@ trait PresentsPartnerships
                 ->whereIn('role', [OrganizationMembership::ROLE_OWNER, OrganizationMembership::ROLE_ADMIN])
                 ->pluck('organization_id'))
             ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * CAP-065/CAP-067 — capacités réellement déclarées et actives des Organisations que l'acteur
+     * gère, pour peupler la sélection du formulaire « Notre organisation peut apporter… » (jamais
+     * un champ libre). `PartnershipService::propose()` revérifie lui-même l'appartenance de la
+     * capacité choisie à l'Organisation soumise ; cette liste ne fait qu'aider à choisir, elle ne
+     * décide rien.
+     *
+     * @return Collection<int, CapabilityStatement>
+     */
+    private function manageableOrganizationCapabilities(string $actor): Collection
+    {
+        return CapabilityStatement::query()
+            ->where('holder_type', CapabilityStatement::HOLDER_ORGANIZATION)
+            ->whereIn('organization_id', $this->manageableOrganizations($actor)->pluck('id'))
+            ->whereNull('archived_at')
+            ->with('organization')
+            ->orderBy('label')
             ->get();
     }
 }

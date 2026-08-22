@@ -133,6 +133,7 @@ final class NeedController
             'canDecide' => $service->canDecide($need, $identity->reference),
             'needPartnerships' => $this->presentPartnerships($needPartnerships, $identity->reference, $partnerships),
             'manageableOrganizations' => $this->manageableOrganizations($identity->reference),
+            'manageableOrganizationCapabilities' => $this->manageableOrganizationCapabilities($identity->reference),
         ]);
     }
 
