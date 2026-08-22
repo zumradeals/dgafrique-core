@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Organizations\OrganizationCapabilityService;
 use App\Application\Organizations\OrganizationService;
 use App\Application\Partnerships\PartnershipService;
 use App\Application\Projects\ProjectConfiguration;
@@ -210,27 +211,105 @@ final class PartnershipTest extends TestCase
         $this->assertAborts(409, fn () => $service->end($partnership, 'IDN-OWNER'));
     }
 
-    public function test_organization_partnership_works_without_a_capability_statement_or_core_organizational_identity(): void
+    public function test_organization_with_an_active_capability_can_be_proposed_as_provider(): void
     {
         $project = $this->project('IDN-OWNER');
-        $this->fakeCoreOrganizationProvisioning();
-        $organization = app(OrganizationService::class)->create('IDN-FOUNDER', [
-            'name' => 'Coopérative numérique',
-            'description' => 'Une structure qui met des ressources à disposition des projets locaux.',
-            'type' => 'COOPERATIVE',
-            'visibility' => Organization::VISIBILITY_PRIVATE,
-        ]);
+        $organization = $this->organization('IDN-FOUNDER');
+        $capability = $this->organizationCapability($organization, 'IDN-FOUNDER', 'Salle de formation et matériel informatique');
 
         $partnership = app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
             'provider_type' => Partnership::PROVIDER_ORGANIZATION,
             'organization_reference' => $organization->public_reference,
-            'capability_label' => 'Salle de formation et matériel informatique',
+            'capability_statement_id' => $capability->id,
         ]));
 
         self::assertSame(Partnership::PROVIDER_ORGANIZATION, $partnership->provider_type);
         self::assertSame($organization->id, $partnership->provider_reference);
-        self::assertNull($partnership->capability_statement_id, 'Aucune identité organisationnelle Core (CAP-067) : jamais de fausse CapabilityStatement.');
-        self::assertSame('Salle de formation et matériel informatique', $partnership->capability_label);
+        self::assertSame($capability->id, $partnership->capability_statement_id, 'CAP-067 : la capacité fournie référence une CapabilityStatement Organisation réellement déclarée.');
+        self::assertSame('Salle de formation et matériel informatique', $partnership->capability_label, 'capability_label reste un snapshot dérivé de la capacité liée, jamais un texte libre.');
+    }
+
+    public function test_organization_without_any_capability_cannot_fabricate_one_from_a_free_label(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $organization = $this->organization('IDN-FOUNDER');
+
+        $this->assertAborts(422, fn () => app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
+            'provider_type' => Partnership::PROVIDER_ORGANIZATION,
+            'organization_reference' => $organization->public_reference,
+            'capability_label' => 'Une capacité fabriquée depuis le formulaire',
+        ])));
+    }
+
+    public function test_a_capability_belonging_to_another_organization_is_refused(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $organization = $this->organization('IDN-FOUNDER');
+        $otherOrganization = $this->organization('IDN-OTHER-FOUNDER');
+        $foreignCapability = $this->organizationCapability($otherOrganization, 'IDN-OTHER-FOUNDER', 'Capacité de l’autre organisation');
+
+        $this->assertAborts(403, fn () => app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
+            'provider_type' => Partnership::PROVIDER_ORGANIZATION,
+            'organization_reference' => $organization->public_reference,
+            'capability_statement_id' => $foreignCapability->id,
+        ])));
+    }
+
+    public function test_a_manager_personal_capability_never_counts_as_an_organization_capability(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $organization = $this->organization('IDN-FOUNDER');
+        $personalCapability = $this->capability('IDN-FOUNDER', 'Comptabilité personnelle du fondateur');
+
+        $this->assertAborts(403, fn () => app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
+            'provider_type' => Partnership::PROVIDER_ORGANIZATION,
+            'organization_reference' => $organization->public_reference,
+            'capability_statement_id' => $personalCapability->id,
+        ])));
+    }
+
+    public function test_an_archived_organization_capability_cannot_be_proposed_for_a_new_partnership(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $organization = $this->organization('IDN-FOUNDER');
+        $capability = $this->organizationCapability($organization, 'IDN-FOUNDER', 'Formation ponctuelle');
+        app(OrganizationCapabilityService::class)->archive($organization, 'IDN-FOUNDER', $capability);
+
+        $this->assertAborts(422, fn () => app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
+            'provider_type' => Partnership::PROVIDER_ORGANIZATION,
+            'organization_reference' => $organization->public_reference,
+            'capability_statement_id' => $capability->id,
+        ])));
+    }
+
+    public function test_archiving_the_linked_capability_after_the_fact_never_retroactively_breaks_the_partnership(): void
+    {
+        $project = $this->project('IDN-OWNER');
+        $organization = $this->organization('IDN-FOUNDER');
+        $capability = $this->organizationCapability($organization, 'IDN-FOUNDER', 'Formation en gestion associative');
+
+        $partnership = app(PartnershipService::class)->propose('IDN-FOUNDER', $this->payload($project, [
+            'provider_type' => Partnership::PROVIDER_ORGANIZATION,
+            'organization_reference' => $organization->public_reference,
+            'capability_statement_id' => $capability->id,
+        ]));
+        $partnership = app(PartnershipService::class)->activate($partnership, 'IDN-OWNER');
+
+        app(OrganizationCapabilityService::class)->archive($organization, 'IDN-FOUNDER', $capability);
+
+        // Le Partenariat déjà conclu représente un fait historique réel : il reste intelligible et
+        // pleinement gouvernable (pause/reprise/retrait), même si la capacité qui l'a justifié a
+        // depuis été archivée par l'organisation. capability_label reste le snapshot pris au
+        // moment de la proposition, distinct de la capacité actuelle du fournisseur.
+        self::assertSame('Formation en gestion associative', $partnership->fresh()->capability_label);
+        self::assertSame($capability->id, $partnership->fresh()->capability_statement_id);
+
+        $paused = app(PartnershipService::class)->pause($partnership, 'IDN-FOUNDER');
+        self::assertSame(Partnership::STATUS_PAUSED, $paused->status);
+        $resumed = app(PartnershipService::class)->resume($paused, 'IDN-FOUNDER');
+        self::assertSame(Partnership::STATUS_ACTIVE, $resumed->status);
+        $ended = app(PartnershipService::class)->end($resumed, 'IDN-OWNER');
+        self::assertSame(Partnership::STATUS_ENDED, $ended->status);
     }
 
     public function test_organization_provider_requires_a_real_manager(): void
@@ -283,22 +362,16 @@ final class PartnershipTest extends TestCase
     public function test_isolation_between_organizations(): void
     {
         $projectA = $this->project('IDN-OWNER-A');
-        $this->fakeCoreOrganizationProvisioning();
-        $orgA = app(OrganizationService::class)->create('IDN-FOUNDER-A', [
-            'name' => 'Organisation A', 'description' => 'Une première structure indépendante.',
-            'type' => 'ASSOCIATION', 'visibility' => Organization::VISIBILITY_PRIVATE,
-        ]);
+        $orgA = $this->organization('IDN-FOUNDER-A');
+        $capabilityA = $this->organizationCapability($orgA, 'IDN-FOUNDER-A', 'Capacité de l’organisation A');
         $partnershipA = app(PartnershipService::class)->propose('IDN-FOUNDER-A', $this->payload($projectA, [
             'provider_type' => Partnership::PROVIDER_ORGANIZATION,
             'organization_reference' => $orgA->public_reference,
+            'capability_statement_id' => $capabilityA->id,
         ]));
         $partnershipA = app(PartnershipService::class)->activate($partnershipA, 'IDN-OWNER-A');
 
-        $this->fakeCoreOrganizationProvisioning();
-        $orgB = app(OrganizationService::class)->create('IDN-FOUNDER-B', [
-            'name' => 'Organisation B', 'description' => 'Une seconde structure indépendante.',
-            'type' => 'ASSOCIATION', 'visibility' => Organization::VISIBILITY_PRIVATE,
-        ]);
+        $orgB = $this->organization('IDN-FOUNDER-B');
 
         self::assertFalse(app(PartnershipService::class)->canView($partnershipA, 'IDN-FOUNDER-B'));
         $this->assertAborts(403, fn () => app(PartnershipService::class)->pause($partnershipA, 'IDN-FOUNDER-B'));
@@ -515,6 +588,25 @@ final class PartnershipTest extends TestCase
             'matching_consent' => true,
             'visibility' => CapabilityStatement::VISIBILITY_DISCOVERABLE,
         ], $overrides));
+    }
+
+    /** CAP-067 — une Organisation, raccordée à GAMAD Core (identités simulées). */
+    private function organization(string $founder, array $overrides = []): Organization
+    {
+        $this->fakeCoreOrganizationProvisioning();
+
+        return app(OrganizationService::class)->create($founder, array_replace([
+            'name' => 'Organisation '.Str::random(6),
+            'description' => 'Une structure durable indépendante, utilisée pour ce parcours de test.',
+            'type' => 'ASSOCIATION',
+            'visibility' => Organization::VISIBILITY_PRIVATE,
+        ], $overrides));
+    }
+
+    /** CAP-065/CAP-067 — une capacité réellement déclarée par un manager habilité de l'Organisation. */
+    private function organizationCapability(Organization $organization, string $manager, string $label): CapabilityStatement
+    {
+        return app(OrganizationCapabilityService::class)->declare($organization, $manager, ['label' => $label]);
     }
 
     private function project(string $owner, array $overrides = []): Project

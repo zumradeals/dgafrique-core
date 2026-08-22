@@ -196,7 +196,7 @@
                             </div>
                         @endif
 
-                        <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="ZUMRA" :context-reference="$group->public_reference" />
+                        <x-dg.partnership-propose-form :organizations="$manageableOrganizations" :capabilities="$manageableOrganizationCapabilities" context-type="ZUMRA" :context-reference="$group->public_reference" />
                     @endif
                 </div>
 

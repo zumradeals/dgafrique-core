@@ -45,7 +45,7 @@ Réutilise strictement le moteur de capacités existant (CAP-016, `CapabilitySta
 
 `OrganizationCapabilityService::declare()/archive()/list()` — `KIND_POSSESSED` seulement (« ce que la structure sait apporter », pas le triptyque possédé/apprentissage/transmission propre au parcours pédagogique d'une personne). Autorisé aux seuls managers habilités (`OrganizationService::isManager()`). Une capacité Organisation est un fait métier explicite, **jamais déduit** :
 
-- ni d'un Partnership (`PartnershipService` reste inchangé dans ce chantier — un fournisseur Organisation continue de déclarer un `capability_label` libre, voir « Hors périmètre ») ;
+- ni d'un Partnership (depuis la convergence CAP-065/CAP-067, c'est l'inverse : un `Partnership` référence une `CapabilityStatement` Organisation réellement déclarée ici, jamais le contraire — voir `CAP-065-partenaire-fournisseur-capacite.md`) ;
 - ni d'un Projet, d'un événement ;
 - ni du texte `provider_label` d'un `ProjectAccompanimentAction` ;
 - ni des capacités personnelles de son manager (une `CapabilityStatement` `PERSON` du fondateur n'apparaît jamais dans `OrganizationCapabilityService::list()`).
@@ -74,7 +74,6 @@ Aucun code G-POS dans ce chantier. L'architecture est préservée pour qu'une Or
 
 ## Hors périmètre (délibérément)
 
-- **Partnership Organisation ↔ capacité réelle.** `PartnershipService::assertCapability()` (CAP-065) continue de traiter un fournisseur Organisation par déclaration libre (`capability_label`), pas encore par un lien vers une `CapabilityStatement` Organisation réelle — recommandation pour un futur petit chantier CAP-065, non traité ici pour rester strictement dans le périmètre demandé (voir « Prochaine étape recommandée » du rapport de session).
 - **ATTACH d'une Organisation Core existante** — gap documenté ci-dessus, pas construit.
 - **Raccordement au moteur de matching** — modèle prêt, non câblé (voir ci-dessus).
 - **Gouvernance Organisation Core** (activer/suspendre/dissoudre/retirer côté Core) — CAP-067 délègue uniquement la création ; toute autre action reste réservée à `AUT-GAMAD-001` (voir CORE-ORG-DELEGATION-001).

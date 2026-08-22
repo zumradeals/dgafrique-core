@@ -12,9 +12,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * CAP-065 — un Partenariat est une RELATION, jamais un nouvel acteur : un fournisseur déjà réel
  * (une Personne via son core_identity_reference, ou une Organisation CAP-066) met une capacité
- * réelle à disposition dans un contexte explicite (Projet, ZUMRA ou Besoin). Aucune identité
- * organisationnelle Core n'est requise (CAP-067 reste hors périmètre) : une Organisation agit
- * toujours via un membre réel habilité (OrganizationService::isManager).
+ * réelle à disposition dans un contexte explicite (Projet, ZUMRA ou Besoin). Une Organisation agit
+ * toujours via un membre réel habilité (OrganizationService::isManager) ; l'identité canonique
+ * GAMAD Core éventuelle de l'Organisation (CAP-067) n'intervient jamais ici. Depuis la convergence
+ * CAP-065/CAP-067, `capability_statement_id` référence toujours une CapabilityStatement réelle du
+ * bon porteur (PERSON ou ORGANIZATION) — `capability_label` n'en est plus que le snapshot de
+ * présentation au moment de la proposition, jamais la preuve métier.
  */
 final class Partnership extends Model
 {

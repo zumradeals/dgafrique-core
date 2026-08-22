@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Organizations\OrganizationCapabilityService;
 use App\Application\Organizations\OrganizationService;
 use App\Application\Partnerships\PartnershipService;
 use App\Application\Projects\ProjectConfiguration;
@@ -42,6 +43,7 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-OWNER');
         $organization = $this->organization('IDN-PH-ORG-OWNER1');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER1', 'Formation en gestion associative');
 
         $this->signIn('IDN-PH-ORG-OWNER1');
         $this->get(route('needs.show', $need))->assertOk()->assertSee('Notre organisation peut apporter');
@@ -51,7 +53,7 @@ final class PartnershipHttpTest extends TestCase
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Formation en gestion associative',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ])->assertRedirect(route('needs.show', $need));
 
@@ -64,6 +66,7 @@ final class PartnershipHttpTest extends TestCase
     {
         $project = $this->project('IDN-PH-PROJ-OWNER');
         $organization = $this->organization('IDN-PH-ORG-OWNER2');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER2', 'Mentorat technique');
 
         $this->signIn('IDN-PH-ORG-OWNER2');
         $this->get(route('projects.show', $project))->assertOk()->assertSee('Notre organisation peut apporter');
@@ -73,7 +76,7 @@ final class PartnershipHttpTest extends TestCase
             'organization_reference' => $organization->public_reference,
             'context_type' => 'PROJECT',
             'context_reference' => $project->public_reference,
-            'capability_label' => 'Mentorat technique',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ])->assertRedirect(route('projects.show', $project));
 
@@ -84,6 +87,7 @@ final class PartnershipHttpTest extends TestCase
     {
         $group = $this->group('IDN-PH-ZUMRA-LEADER');
         $organization = $this->organization('IDN-PH-ORG-OWNER3');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER3', 'Appui logistique');
         $this->membership($group, 'IDN-PH-ORG-OWNER3', ZumraGroupMembership::STATUS_ACTIVE);
 
         $this->signIn('IDN-PH-ORG-OWNER3');
@@ -94,7 +98,7 @@ final class PartnershipHttpTest extends TestCase
             'organization_reference' => $organization->public_reference,
             'context_type' => 'ZUMRA',
             'context_reference' => $group->public_reference,
-            'capability_label' => 'Appui logistique',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PRIVATE',
         ])->assertRedirect(route('zumra.groups.show', $group));
 
@@ -155,12 +159,13 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-AUTH');
         $organization = $this->organization('IDN-PH-ORG-OWNER4');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER4', 'Suivi budgétaire');
         $partnership = app(PartnershipService::class)->propose('IDN-PH-ORG-OWNER4', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Suivi budgétaire',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ]);
 
@@ -180,12 +185,13 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-AUTH2');
         $organization = $this->organization('IDN-PH-ORG-OWNER5');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER5', 'Suivi budgétaire');
         $partnership = app(PartnershipService::class)->propose('IDN-PH-ORG-OWNER5', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Suivi budgétaire',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ]);
 
@@ -200,13 +206,14 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-PROV');
         $organization = $this->organization('IDN-PH-ORG-OWNER6');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER6', 'Appui numérique');
         $service = app(PartnershipService::class);
         $partnership = $service->propose('IDN-PH-ORG-OWNER6', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Appui numérique',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ]);
         $service->activate($partnership, 'IDN-PH-NEED-PROV');
@@ -228,13 +235,14 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-PROV2');
         $organization = $this->organization('IDN-PH-ORG-OWNER7');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER7', 'Appui numérique');
         $service = app(PartnershipService::class);
         $partnership = $service->propose('IDN-PH-ORG-OWNER7', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Appui numérique',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ]);
         $service->activate($partnership, 'IDN-PH-NEED-PROV2');
@@ -251,12 +259,13 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-PRIV');
         $organization = $this->organization('IDN-PH-ORG-OWNER8');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER8', 'Capacité confidentielle');
         app(PartnershipService::class)->propose('IDN-PH-ORG-OWNER8', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Capacité confidentielle',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PRIVATE',
         ]);
 
@@ -270,12 +279,13 @@ final class PartnershipHttpTest extends TestCase
     {
         $need = $this->need('IDN-PH-NEED-NOFAB');
         $organization = $this->organization('IDN-PH-ORG-OWNER9');
+        $capability = $this->organizationCapability($organization, 'IDN-PH-ORG-OWNER9', 'Une capacité quelconque');
         app(PartnershipService::class)->propose('IDN-PH-ORG-OWNER9', [
             'provider_type' => 'ORGANIZATION',
             'organization_reference' => $organization->public_reference,
             'context_type' => 'NEED',
             'context_reference' => $need->public_reference,
-            'capability_label' => 'Une capacité quelconque',
+            'capability_statement_id' => $capability->id,
             'visibility' => 'PUBLIC',
         ]);
 
@@ -314,6 +324,12 @@ final class PartnershipHttpTest extends TestCase
     }
 
     // ===== Helpers =====
+
+    /** CAP-065/CAP-067 — une capacité réellement déclarée par un manager habilité de l'Organisation. */
+    private function organizationCapability(Organization $organization, string $manager, string $label): CapabilityStatement
+    {
+        return app(OrganizationCapabilityService::class)->declare($organization, $manager, ['label' => $label]);
+    }
 
     private function organization(string $founder): Organization
     {

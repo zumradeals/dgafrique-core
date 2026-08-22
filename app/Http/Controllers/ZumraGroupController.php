@@ -157,12 +157,13 @@ final class ZumraGroupController
             : collect();
         $presentedPartnerships = $this->presentPartnerships($groupPartnerships, $identity->reference, $partnerships);
         $manageableOrganizations = $this->manageableOrganizations($identity->reference);
+        $manageableOrganizationCapabilities = $this->manageableOrganizationCapabilities($identity->reference);
 
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
             'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
             'collectivePriority', 'myPendingRoleProposal', 'groupMissions', 'groupEvents',
-        ) + ['isLeader' => $isLeader, 'groupPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations]);
+        ) + ['isLeader' => $isLeader, 'groupPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations, 'manageableOrganizationCapabilities' => $manageableOrganizationCapabilities]);
     }
 
     /**

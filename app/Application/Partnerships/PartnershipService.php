@@ -47,17 +47,15 @@ final class PartnershipService
         abort_unless($this->canViewContext($contextType, $context, $actor), 404);
 
         $statement = $this->assertCapability($providerType, $providerReference, $data);
-        $capabilityStatementId = $statement?->id;
+        $capabilityStatementId = $statement->id;
 
-        // Une Personne fournit toujours une capacité réelle du domaine Capacité : le libellé est
-        // dérivé de la CapabilityStatement liée, jamais déclaré librement par le client, pour
-        // qu'aucune capacité textuelle contradictoire ne puisse être affichée (CAP-065, correctif
-        // post-revue). Une Organisation, tant que CAP-067 la prive d'identité Core, reste sur une
-        // déclaration libre.
-        $label = $providerType === Partnership::PROVIDER_PERSON
-            ? (string) $statement?->label
-            : trim((string) ($data['capability_label'] ?? ''));
-        abort_if($label === '', 422, 'La capacité proposée doit être décrite.');
+        // Le libellé est toujours dérivé de la CapabilityStatement liée — Personne ou
+        // Organisation (CAP-067) — jamais déclaré librement par le client, pour qu'aucune capacité
+        // textuelle contradictoire ne puisse être affichée (CAP-065, correctif post-revue ;
+        // convergence CAP-065/CAP-067). Conservé ici comme snapshot de présentation historique :
+        // capability_statement_id reste la preuve métier, capability_label son libellé au moment
+        // de la proposition — il ne varie jamais si la capacité change ou est archivée plus tard.
+        $label = $statement->label;
 
         return DB::transaction(function () use ($providerType, $providerReference, $contextType, $contextReference, $capabilityStatementId, $label, $data, $actor): Partnership {
             $partnership = Partnership::query()->create([
@@ -222,24 +220,42 @@ final class PartnershipService
         return $organization->id;
     }
 
-    private function assertCapability(string $providerType, string $providerReference, array $data): ?CapabilityStatement
+    private function assertCapability(string $providerType, string $providerReference, array $data): CapabilityStatement
     {
-        if ($providerType === Partnership::PROVIDER_ORGANIZATION) {
-            // CAP-067 (identité organisationnelle Core) n'existe pas encore : une Organisation ne
-            // peut pas posséder de CapabilityStatement réel. La capacité reste une déclaration
-            // libre (capability_label), jamais une fausse CapabilityStatement fabriquée.
-            return null;
-        }
-
-        // CAP-065 est « Partenaire comme fournisseur de CAPACITÉ » : une Personne doit toujours
+        // CAP-065 est « Partenaire comme fournisseur de CAPACITÉ » : un fournisseur doit toujours
         // lier une CapabilityStatement réelle du domaine Capacité, jamais une simple déclaration
-        // textuelle libre (correctif post-revue).
+        // textuelle libre — vrai pour une Personne depuis le correctif post-revue initial, et pour
+        // une Organisation depuis la convergence CAP-065/CAP-067 (celle-ci ne possédait jusque-là
+        // aucune identité de capacité propre).
         $statementReference = $data['capability_statement_id'] ?? null;
-        abort_if(! is_string($statementReference) || $statementReference === '', 422, 'Une capacité réelle du domaine Capacité doit être liée (capability_statement_id).');
+        abort_if(! is_string($statementReference) || $statementReference === '', 422, 'Une capacité réellement déclarée doit être liée (capability_statement_id).');
 
         $statement = CapabilityStatement::query()->find($statementReference);
         abort_if($statement === null, 422, 'Capacité introuvable.');
-        abort_unless(hash_equals($statement->core_identity_reference, $providerReference), 403, 'Cette capacité ne vous appartient pas.');
+
+        if ($providerType === Partnership::PROVIDER_ORGANIZATION) {
+            // Une capacité personnelle du manager (holder_type PERSON) ne vaut jamais capacité de
+            // son Organisation : l'appartenance est vérifiée sur le porteur réel de la capacité,
+            // jamais sur l'acteur qui soumet la proposition. matching_consent ne s'applique jamais
+            // ici : CAP-067 ne raccorde délibérément aucune capacité Organisation au moteur de
+            // matching, ce champ reste toujours false côté OrganizationCapabilityService.
+            abort_unless(
+                $statement->holder_type === CapabilityStatement::HOLDER_ORGANIZATION
+                    && hash_equals((string) $statement->organization_id, $providerReference),
+                403,
+                'Cette capacité n’appartient pas à cette organisation.',
+            );
+            abort_if($statement->archived_at !== null, 422, 'Cette capacité est archivée.');
+
+            return $statement;
+        }
+
+        abort_unless(
+            $statement->holder_type === CapabilityStatement::HOLDER_PERSON
+                && hash_equals((string) $statement->core_identity_reference, $providerReference),
+            403,
+            'Cette capacité ne vous appartient pas.',
+        );
         abort_unless($statement->matching_consent, 422, 'Cette capacité n’a pas été consentie au rapprochement.');
         abort_if($statement->archived_at !== null, 422, 'Cette capacité est archivée.');
 
