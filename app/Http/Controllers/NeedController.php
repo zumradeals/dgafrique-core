@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Missions\MissionContextRegistry;
 use App\Application\Needs\NeedConfiguration;
 use App\Application\Needs\NeedDirectoryDemoContent;
 use App\Application\Needs\NeedService;
@@ -77,9 +78,13 @@ final class NeedController
                 ->orWhereIn('id', $projectIds);
         })->whereNotIn('status', [Project::STATUS_ARCHIVED])->orderBy('name')->get();
         $preselectedProject = $projects->firstWhere('public_reference', $request->query('project'));
+        // UIUX-007 — CTA contextuel « Créer un Besoin pour cette ZUMRA » depuis la fiche ZUMRA :
+        // même patron que $preselectedProject, jamais une préautorisation nouvelle — le groupe
+        // doit déjà figurer dans $groups (adhésion active déjà vérifiée par la requête ci-dessus).
+        $preselectedGroup = $groups->firstWhere('public_reference', $request->query('group'));
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.create', compact('identity', 'groups', 'projects', 'preselectedProject', 'isAdministrator') + ['configuration' => $configuration->get()]);
+        return view('needs.create', compact('identity', 'groups', 'projects', 'preselectedProject', 'preselectedGroup', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request, NeedConfiguration $configuration, NeedService $service): RedirectResponse
@@ -108,7 +113,7 @@ final class NeedController
         return redirect()->route('needs.show', $need)->with('status', $need->status === Need::STATUS_PROPOSED ? 'Le besoin est proposé aux responsables de la ZUMRA. Il n’est pas encore publié officiellement.' : 'Votre besoin est publié selon la visibilité choisie.');
     }
 
-    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service, PartnershipService $partnerships): View
+    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service, PartnershipService $partnerships, MissionContextRegistry $missionContexts): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -116,6 +121,12 @@ final class NeedController
         $group = $need->owner_type === Need::OWNER_GROUP ? ZumraGroup::query()->find($need->owner_reference) : null;
         $project = $need->owner_type === Need::OWNER_PROJECT ? Project::query()->find($need->owner_reference) : null;
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+
+        // UIUX-007 — « Je peux aider » : la seule transition métier qui représente réellement la
+        // réponse d'une personne à un Besoin est déjà `NeedMissionContext::canPropose()` (adhésion
+        // Programme ZUMRA active + visibilité + Besoin non archivé) — jamais Partnership, qui reste
+        // une relation métier distincte et n'est jamais choisie par défaut ici.
+        $canProposeMission = $missionContexts->for('NEED')->canPropose($need, $identity->reference);
 
         // UIUX-005 — Partenariats réellement associés à ce Besoin, filtrés par la même autorité
         // que le service lui-même (PartnershipService::canView()), jamais recalculée en Blade.
@@ -131,6 +142,7 @@ final class NeedController
         return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + [
             'configuration' => $configuration->get(),
             'canDecide' => $service->canDecide($need, $identity->reference),
+            'canProposeMission' => $canProposeMission,
             'needPartnerships' => $this->presentPartnerships($needPartnerships, $identity->reference, $partnerships),
             'manageableOrganizations' => $this->manageableOrganizations($identity->reference),
             'manageableOrganizationCapabilities' => $this->manageableOrganizationCapabilities($identity->reference),

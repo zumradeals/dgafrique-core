@@ -20,6 +20,13 @@
                 <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
+            @if($prefillTransmission)
+                {{-- UIUX-007 — contexte conservé depuis une Transmission réellement terminée à
+                     laquelle vous avez réellement participé. Citer ce contexte ne certifie rien :
+                     un témoin ou une autorité de contexte peuvent seulement le corroborer. --}}
+                <div class="dg-band" style="margin-bottom:20px">Vous enregistrez cette preuve depuis la Transmission « {{ $prefillTransmission->capability_label }} », terminée.</div>
+            @endif
+
             <form method="POST" action="{{ route('proofs.store') }}" style="display:flex;flex-direction:column;gap:20px">
                 @csrf
 
@@ -35,7 +42,7 @@
                     </div>
                     <div class="dg-field">
                         <label for="capability_label">Capacité concernée (facultatif)</label>
-                        <input type="text" name="capability_label" id="capability_label" class="dg-input" value="{{ old('capability_label') }}" maxlength="200">
+                        <input type="text" name="capability_label" id="capability_label" class="dg-input" value="{{ old('capability_label', $prefillTransmission?->capability_label) }}" maxlength="200">
                     </div>
                     <div class="dg-field">
                         <label for="occurred_at">Date de l’événement</label>
@@ -63,21 +70,22 @@
                 <x-dg.fieldset>
                     <legend><x-dg.label>Origine et contexte (facultatif)</x-dg.label></legend>
                     <div class="dg-field-grid">
+                        @php($originType = old('origin_type', $prefillTransmission ? 'TRANSMISSION' : 'INTERACTION'))
                         <div class="dg-field">
                             <label for="origin_type">Origine</label>
                             <select name="origin_type" id="origin_type" class="dg-select" required>
-                                <option value="INTERACTION" selected>Une interaction ponctuelle</option>
-                                <option value="NONE">Aucune — enregistrement autonome</option>
-                                <option value="MISSION">Une Mission</option>
-                                <option value="TRANSMISSION">Une Transmission</option>
-                                <option value="NEED">Un Besoin</option>
-                                <option value="PROJECT">Un Projet</option>
-                                <option value="ZUMRA">Une ZUMRA</option>
+                                <option value="INTERACTION" {{ $originType === 'INTERACTION' ? 'selected' : '' }}>Une interaction ponctuelle</option>
+                                <option value="NONE" {{ $originType === 'NONE' ? 'selected' : '' }}>Aucune — enregistrement autonome</option>
+                                <option value="MISSION" {{ $originType === 'MISSION' ? 'selected' : '' }}>Une Mission</option>
+                                <option value="TRANSMISSION" {{ $originType === 'TRANSMISSION' ? 'selected' : '' }}>Une Transmission</option>
+                                <option value="NEED" {{ $originType === 'NEED' ? 'selected' : '' }}>Un Besoin</option>
+                                <option value="PROJECT" {{ $originType === 'PROJECT' ? 'selected' : '' }}>Un Projet</option>
+                                <option value="ZUMRA" {{ $originType === 'ZUMRA' ? 'selected' : '' }}>Une ZUMRA</option>
                             </select>
                         </div>
                         <div class="dg-field">
                             <label for="origin_reference">Référence publique de l’origine</label>
-                            <input type="text" name="origin_reference" id="origin_reference" class="dg-input" value="{{ old('origin_reference') }}" placeholder="Requise si une origine avec contexte est choisie">
+                            <input type="text" name="origin_reference" id="origin_reference" class="dg-input" value="{{ old('origin_reference', $prefillTransmission?->public_reference) }}" placeholder="Requise si une origine avec contexte est choisie">
                             <span class="dg-hint">Citer un contexte ne fabrique jamais d’accès à celui-ci ; il permet seulement une future reconnaissance par son autorité.</span>
                         </div>
                     </div>

@@ -11,11 +11,7 @@ return new class extends Migration
     {
         if (DB::getDriverName() === 'pgsql') {
             DB::statement('ALTER TABLE dg_project_brain_drafts ALTER COLUMN actor_core_reference TYPE VARCHAR(255) USING actor_core_reference::text');
-
-            return;
         }
-
-        DB::statement('ALTER TABLE dg_project_brain_drafts ALTER COLUMN actor_core_reference TYPE VARCHAR(255)');
     }
 
     public function down(): void

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Transmission\TransmissionContextService;
+use App\Application\Transmission\TransmissionParticipationService;
 use App\Application\Transmission\TransmissionService;
 use App\Application\Transmission\TransmissionWorkflow;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\Need;
+use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\Transmission;
@@ -92,14 +94,26 @@ final class TransmissionController
         $identity = $request->attributes->get('dg_identity');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
+        // UIUX-007 — CTA « Proposer une transmission » depuis un profil découvert. Le contexte
+        // n'est retenu que si le profil existe réellement et reste volontairement découvrable au
+        // moment de l'affichage — jamais une confiance accordée au seul paramètre d'URL.
+        $prefillInvite = null;
+        if ($request->query('invite')) {
+            $prefillInvite = PersonProfile::query()
+                ->where('discovery_reference', $request->query('invite'))
+                ->where('discovery_consent', true)
+                ->first();
+        }
+
         return view('transmissions.create', [
             'identity' => $identity,
             'isAdministrator' => $isAdministrator,
             'contextOptions' => $this->contextOptions($identity->reference),
+            'prefillInvite' => $prefillInvite,
         ]);
     }
 
-    public function store(Request $request, TransmissionWorkflow $workflow): RedirectResponse
+    public function store(Request $request, TransmissionWorkflow $workflow, TransmissionParticipationService $participation): RedirectResponse
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -112,6 +126,7 @@ final class TransmissionController
             'context_choice' => ['nullable', 'string', 'max:220'],
             'visibility' => ['required', Rule::in([Transmission::VISIBILITY_PRIVATE, Transmission::VISIBILITY_CONTEXT, Transmission::VISIBILITY_PROGRAM])],
             'availability_note' => ['nullable', 'string', 'max:300'],
+            'invite_discovery_reference' => ['nullable', 'string'],
         ]);
 
         [$contextType, $contextReference] = $this->splitContextChoice($data['context_choice'] ?? null);
@@ -126,6 +141,20 @@ final class TransmissionController
             'visibility' => $data['visibility'],
             'availability_note' => $data['availability_note'] ?? null,
         ]);
+
+        // UIUX-007 — Personne → Transmission : conserve le contexte de la personne ciblée en
+        // l'invitant explicitement, sans jamais fabriquer une participation acceptée — l'invitation
+        // reste soumise à `TransmissionParticipationService::invite()` telle quelle (rôle opposé à
+        // celui de l'initiateur, acceptation de la personne toujours requise).
+        if (! empty($data['invite_discovery_reference'])) {
+            $oppositeRole = $data['initiator_role'] === TransmissionParticipant::ROLE_TRANSMITTER
+                ? TransmissionParticipant::ROLE_LEARNER
+                : TransmissionParticipant::ROLE_TRANSMITTER;
+            $participation->invite($transmission, $identity->reference, $data['invite_discovery_reference'], $oppositeRole);
+
+            return redirect()->route('transmissions.show', $transmission)
+                ->with('status', 'La Transmission est proposée et l’invitation envoyée. Elle attend l’acceptation explicite des participants.');
+        }
 
         return redirect()->route('transmissions.show', $transmission)
             ->with('status', 'La Transmission est proposée. Elle attend l’acceptation explicite des autres participants.');

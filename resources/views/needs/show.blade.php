@@ -131,6 +131,15 @@
                                 <x-dg.btn variant="need" :href="route('messages.need', $need)" method="POST">Coordonner autour de ce besoin</x-dg.btn>
                             </div>
                         @endif
+
+                        @if($canProposeMission)
+                            {{-- UIUX-007 — « Je peux aider » : réutilise strictement la Mission déjà
+                                 existante depuis un Besoin (CAP-069). Ne devient jamais une décision :
+                                 la Mission reste soumise à l'officialisation de l'autorité du Besoin. --}}
+                            <div style="margin-top:10px">
+                                <x-dg.btn variant="quiet" :href="route('needs.missions.create', $need)">Je peux apporter cette capacité →</x-dg.btn>
+                            </div>
+                        @endif
                         <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
                             <x-dg.btn variant="quiet" :href="route('comments.need', $need)">Contributions contextuelles →</x-dg.btn>
                             @if($need->status !== 'ARCHIVED')

@@ -269,6 +269,47 @@ final class CommunityEventHttpTest extends TestCase
         self::assertStringNotContainsString('/evenements', $content);
     }
 
+    // ===== UIUX-007 — gabarit de création d'Événement (GET manquant, POST déjà réel) =====
+
+    public function test_the_zumra_leader_can_open_and_submit_the_event_creation_form(): void
+    {
+        $group = $this->group('IDN-EVT-CREATE-LEADER');
+
+        $this->signIn('IDN-EVT-CREATE-LEADER');
+        $this->get(route('community-events.zumra.create', $group))->assertOk()->assertSee($group->name);
+
+        $this->post(route('community-events.zumra.store', $group), $this->eventPayload())->assertRedirect();
+        self::assertDatabaseHas('dg_community_events', ['organizer_type' => CommunityEvent::ORGANIZER_ZUMRA_GROUP, 'organizer_reference' => $group->id]);
+    }
+
+    public function test_a_zumra_member_without_leadership_cannot_open_the_event_creation_form(): void
+    {
+        $group = $this->group('IDN-EVT-CREATE-LEADER2');
+        $this->membership($group, 'IDN-EVT-CREATE-MEMBER2', ZumraGroupMembership::STATUS_ACTIVE);
+
+        $this->signIn('IDN-EVT-CREATE-MEMBER2');
+        $this->get(route('community-events.zumra.create', $group))->assertForbidden();
+    }
+
+    public function test_the_organization_manager_can_open_and_submit_the_event_creation_form(): void
+    {
+        $organization = $this->organization('IDN-EVT-CREATE-OWNER');
+
+        $this->signIn('IDN-EVT-CREATE-OWNER');
+        $this->get(route('community-events.organization.create', $organization))->assertOk()->assertSee($organization->name);
+
+        $this->post(route('community-events.organization.store', $organization), $this->eventPayload())->assertRedirect();
+        self::assertDatabaseHas('dg_community_events', ['organizer_type' => CommunityEvent::ORGANIZER_ORGANIZATION, 'organizer_reference' => $organization->id]);
+    }
+
+    public function test_a_non_manager_cannot_open_the_organization_event_creation_form(): void
+    {
+        $organization = $this->organization('IDN-EVT-CREATE-OWNER2');
+
+        $this->signIn('IDN-EVT-CREATE-OUTSIDER2');
+        $this->get(route('community-events.organization.create', $organization))->assertForbidden();
+    }
+
     // ===== Aucun impact Ledger/Finance =====
 
     public function test_viewing_and_registering_for_an_event_has_no_finance_side_effect(): void

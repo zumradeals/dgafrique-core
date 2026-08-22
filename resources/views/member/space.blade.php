@@ -55,6 +55,10 @@
                                        placeholder="Ex. : Je sais réparer des vélos.">
                                 <button type="submit" class="dg-btn dg-btn--primary">Déclarer</button>
                             </form>
+                            {{-- UIUX-007 — référence légère vers le profil complet, sans dupliquer
+                                 cette déclaration rapide : les deux écrivent déjà le même champ
+                                 (existing_skills / CapabilityStatement), une seule voie d'approfondissement. --}}
+                            <p class="dg-hint" style="margin-top:8px">Pour préciser transmission, apprentissage ou preuves d’expérience, complétez <a href="{{ route('member.profile.edit') }}">votre profil complet</a>.</p>
                         </div>
                     </details>
 
@@ -85,6 +89,18 @@
                         <div class="dg-space-intent-reveal dg-space-intent-links">
                             <a href="{{ route('zumra.groups.index') }}">Rejoindre un collectif actif →</a>
                             <a href="{{ route('organizations.index') }}">Rejoindre une organisation →</a>
+                            {{-- UIUX-007 — doctrine humaine §6 : une personne seule peut déjà créer
+                                 une ZUMRA réelle et opérationnelle, jamais après avoir dû réunir
+                                 cinq responsables — la seule condition réelle et préexistante
+                                 (art. 5 ZUMRA-DOCTRINE-INVARIANTE.md) reste l'adhésion active au
+                                 Programme ZUMRA, jamais touchée par cette mission. Ce routeur n'est
+                                 visible que pour un nouveau membre ($isNewMember), qui par
+                                 construction n'a encore aucune adhésion ($zumraMembership === null,
+                                 cf. isNewMember()) : le lien mène donc toujours à l'adhésion
+                                 d'abord. Le lien de création directe équivalent existe déjà, pour
+                                 un membre du Programme actif sans groupe, dans le rail « Mes
+                                 structures » ci-dessous. --}}
+                            <a href="{{ route('zumra.membership.show') }}">Adhérer au Programme ZUMRA pour créer ma ZUMRA →</a>
                         </div>
                     </details>
                 </nav>
@@ -230,10 +246,13 @@
                 </main>
 
                 <aside class="dg-space-rail" aria-label="Votre contexte">
+                    {{-- UIUX-007 — regroupement visuel léger de « Mes ZUMRA » et « Mes
+                         Organisations » sous une même notion (« Mes structures »), jamais une
+                         fusion de modèle : ZUMRA ≠ Organisation reste deux cartes distinctes. --}}
                     @if($myGroups->isNotEmpty())
                         <section class="dg-space-rail-card">
                             <div class="dg-space-rail-card__head">
-                                <div class="dg-space-rail-card__kicker">Votre réseau d’action</div>
+                                <div class="dg-space-rail-card__kicker">Mes structures</div>
                                 <h3>Mes ZUMRA</h3>
                             </div>
                             @foreach($myGroups as $group)
@@ -248,6 +267,27 @@
                             <div class="dg-space-rail-row">
                                 <div><strong><a href="{{ route('zumra.index') }}">Voir mon espace ZUMRA →</a></strong></div>
                             </div>
+                        </section>
+                    @elseif($zumraMembership?->status === \App\Models\ZumraProgramMembership::STATUS_ACTIVE)
+                        {{-- UIUX-007 — doctrine humaine §6.6 : un membre du Programme ZUMRA actif
+                             sans groupe n'a, avant cette mission, aucune porte réelle vers la
+                             création depuis Mon espace (le routeur de première intention ne le
+                             concerne plus une fois cette adhésion active). Jamais présenté comme
+                             devant réunir un collectif au préalable : la personne seule peut déjà
+                             créer une ZUMRA réelle et opérationnelle. --}}
+                        <section class="dg-space-rail-card">
+                            <div class="dg-space-rail-card__head">
+                                <div class="dg-space-rail-card__kicker">Mes structures</div>
+                                <h3>ZUMRA</h3>
+                            </div>
+                            <div class="dg-space-rail-row">
+                                <span class="dg-space-rail-row__mark">Z</span>
+                                <div>
+                                    <strong>Vous pouvez créer votre ZUMRA dès maintenant</strong>
+                                    <span>Seul·e, sans attendre de réunir un collectif au préalable.</span>
+                                </div>
+                            </div>
+                            <div class="dg-space-rail-row"><div><strong><a href="{{ route('zumra.groups.create') }}">Créer ma ZUMRA →</a></strong></div></div>
                         </section>
                     @elseif(! $zumraMembership)
                         <section class="dg-space-rail-card">
@@ -277,7 +317,7 @@
                         --}}
                         <section class="dg-space-rail-card">
                             <div class="dg-space-rail-card__head">
-                                <div class="dg-space-rail-card__kicker">Vos structures</div>
+                                <div class="dg-space-rail-card__kicker">Mes structures</div>
                                 <h3>Mes Organisations</h3>
                             </div>
                             @foreach($myOrganizations as $organization)
@@ -347,7 +387,13 @@
                             <span class="dg-space-rail-row__mark">O</span>
                             <div>
                                 <strong><a href="{{ route('opportunities.index') }}">Opportunités</a></strong>
-                                <span>Des Missions rapprochées de vos capacités déclarées.</span>
+                                <span>
+                                    @if($opportunitiesCount > 0)
+                                        {{ $opportunitiesCount }} Mission{{ $opportunitiesCount > 1 ? 's' : '' }} rapprochée{{ $opportunitiesCount > 1 ? 's' : '' }} de vos capacités déclarées.
+                                    @else
+                                        Des Missions rapprochées de vos capacités déclarées.
+                                    @endif
+                                </span>
                             </div>
                         </div>
 

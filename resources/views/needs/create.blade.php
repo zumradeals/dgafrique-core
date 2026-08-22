@@ -31,7 +31,7 @@
                         </label>
                         @if($groups->isNotEmpty())
                             <label class="dg-radio">
-                                <input type="radio" name="owner_type" value="GROUP" @checked(old('owner_type') === 'GROUP')>
+                                <input type="radio" name="owner_type" value="GROUP" @checked(old('owner_type', $preselectedGroup ? 'GROUP' : null) === 'GROUP')>
                                 Une ZUMRA dont je suis membre
                             </label>
                         @endif
@@ -48,7 +48,7 @@
                             <select name="group_reference" id="group_reference" class="dg-select">
                                 <option value="">Choisir</option>
                                 @foreach($groups as $group)
-                                    <option value="{{ $group->public_reference }}" @selected(old('group_reference') === $group->public_reference)>{{ $group->name }}</option>
+                                    <option value="{{ $group->public_reference }}" @selected(old('group_reference', $preselectedGroup?->public_reference) === $group->public_reference)>{{ $group->name }}</option>
                                 @endforeach
                             </select>
                         </div>

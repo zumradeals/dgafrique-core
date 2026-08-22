@@ -221,6 +221,21 @@
                         </x-dg.card>
                     @endif
 
+                    @if($myParticipant?->status === \App\Models\TransmissionParticipant::STATUS_ACCEPTED && in_array($transmission->status, [\App\Models\Transmission::STATUS_COMPLETED_CONFIRMED, \App\Models\Transmission::STATUS_COMPLETED_BY_CONTEXT], true))
+                        {{-- UIUX-007 — Transmission → Preuve : une Transmission réellement
+                             terminée ouvre une porte facultative vers le Carnet de preuves.
+                             Jamais de preuve créée automatiquement ; jamais une certification de
+                             compétence — les règles de témoin/reconnaissance/contestation restent
+                             entièrement celles du Carnet de preuves. --}}
+                        <x-dg.card>
+                            <x-dg.label>Garder une trace</x-dg.label>
+                            <p class="dg-hint" style="margin-top:6px">Cette Transmission est terminée. Vous pouvez, si vous le souhaitez, en garder une trace dans votre Carnet de preuves — cela ne certifie rien automatiquement.</p>
+                            <x-dg.actions flush>
+                                <x-dg.btn variant="quiet" :href="route('proofs.create', ['origin_type' => 'TRANSMISSION', 'origin_reference' => $transmission->public_reference])">Enregistrer une preuve →</x-dg.btn>
+                            </x-dg.actions>
+                        </x-dg.card>
+                    @endif
+
                     {{-- ===== Coordination (CAP-020/021/022) ===== --}}
                     <x-dg.card>
                         <x-dg.label>Coordination et circulation</x-dg.label>
