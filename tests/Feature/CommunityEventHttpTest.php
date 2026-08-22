@@ -71,7 +71,7 @@ final class CommunityEventHttpTest extends TestCase
             ->assertOk()
             ->assertSee($event->title)
             ->assertSee($group->name)
-            ->assertSee('Programmé')
+            ->assertSee('À venir')
             ->assertSee($event->scheduled_at->translatedFormat('d F Y'));
     }
 
