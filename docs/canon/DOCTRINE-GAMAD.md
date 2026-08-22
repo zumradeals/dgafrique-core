@@ -3,9 +3,9 @@
 ## Statut du document
 
 - Statut : **CANONIQUE — ADOPTÉ**
-- Version : **1.0**
+- Version : **1.1**
 - Date d'adoption : **22 août 2026**
-- Mission d'origine : **DOCTRINE-GAMAD-001**
+- Mission d'origine : **DOCTRINE-GAMAD-001**, arbitrage ZUMRA rendu par **DOCTRINE-GAMAD-001D**
 - Portée : GAMAD dans son ensemble — antérieure et supérieure à DG Afrique, GAMAD Core, ZUMRA,
   Organisation et tout outil spécialisé, qui en sont des expressions ou des traductions
   numériques, jamais la source.
@@ -18,11 +18,14 @@ propre périmètre (produit DG Afrique pour le premier, Programme ZUMRA pour le 
 document ne les remplace pas et ne modifie aucune de leurs règles opérationnelles. Il fixe la
 raison d'être humaine que ces deux documents traduisent chacun à leur niveau.
 
-**Une contradiction entre ce document et une règle opérationnelle déjà adoptée ailleurs (par
-exemple le cycle de vie de `ZumraGroup` dans `ZUMRA-DOCTRINE-INVARIANTE.md` §10) n'est jamais
-résolue silencieusement par ce texte.** Elle est signalée explicitement (voir §6.4) et attend une
-décision de l'autorité GAMAD compétente suivant la procédure de gouvernance propre au document
-concerné.
+**Une contradiction entre ce document et une règle opérationnelle déjà adoptée ailleurs n'est
+jamais résolue silencieusement par ce texte.** L'arbitrage ZUMRA rendu au §6.4 clarifie que la
+transmission sur la naissance d'une ZUMRA à une seule personne ne contredisait pas le cycle de vie
+opérationnel de `ZumraGroup` (`ZUMRA-DOCTRINE-INVARIANTE.md` §10) : les deux textes décrivent des
+axes distincts (existence/activité générale vs. gouvernance collective, voir §6.4). Le seul point
+encore ouvert — la présentation/le nommage futur des états du runtime — est signalé explicitement
+au §6.5 et attend une décision de l'autorité GAMAD compétente suivant la procédure de gouvernance
+propre au document concerné.
 
 ## Méthode de lecture — quatre provenances distinctes
 
@@ -230,39 +233,82 @@ Vérifié par lecture directe du code, des tests et de `docs/capacites/specs/CAP
   `ZUMRA-DOCTRINE-INVARIANTE.md` §9 et `CAP-011` §Cycle et maturité : il produit uniquement la
   maturité `ESTABLISHED`, jamais un plafond ni une condition de validité. **Aucune contradiction
   sur ce point précis.**
-- **Le véritable point de tension est ailleurs : les cinq responsabilités fondatrices distinctes
-  restent une condition de la seule transition `READY → VALIDATED → ACTIVE`**, posée par
-  `ZUMRA-DOCTRINE-INVARIANTE.md` §8 (« Les cinq responsabilités doivent être occupées par cinq
-  personnes différentes pour permettre la validation ») et §10 (cycle de vie canonique). Ce texte
-  porte le statut **CANONIQUE — ADOPTÉ (v1.1, 14 août 2026)** et sa propre procédure de
-  gouvernance (§26) exige une proposition explicite, une justification et l'approbation de
-  l'autorité GAMAD compétente pour toute évolution.
+- **Le seul gate métier substantiel réellement trouvé au-delà de `SUSPENDED`** concerne
+  l'engagement de contribution financière collective d'une ZUMRA (CAP-061) :
+  `ContributionService::ZUMRA_ELIGIBLE_STATES` exige `VALIDATED` ou au-delà. Ce gate implémente
+  littéralement `ZUMRA-DOCTRINE-INVARIANTE.md` §6.3 (« Condition : ZUMRA validée ») et §8 (cinq
+  responsabilités distinctes comme garde-fou contre une décision financière collective
+  unilatérale) — un texte au statut **CANONIQUE — ADOPTÉ (v1.1, 14 août 2026)**, sa propre
+  procédure de gouvernance (§26) restant seule habilitée à en faire évoluer le sens. Aucun autre
+  domaine métier (Besoin, Projet, Mission, Transmission, Événement, Partnership, Fil,
+  Notifications) ne dépend de `READY`/`VALIDATED`/`ACTIVE`.
 
-### 6.4 Signalement explicite de la tension — non résolue ici
+### 6.4 Arbitrage rendu — quatre axes distincts, jamais confondus
 
-Ce document **ne tranche pas** cette tension et ne modifie aucune règle opérationnelle existante,
-conformément au mandat. Deux lectures coexistent et doivent être distinguées :
+**Arbitrage doctrinal (DOCTRINE-GAMAD-001D, 22 août 2026)**, rendu après l'audit runtime
+complet ci-dessus : **une ZUMRA est une ZUMRA réelle, vivante et opérationnelle dès sa création
+avec son premier responsable.** Elle peut commencer avec une seule personne. La pluralité humaine
+est une vocation de développement et de gouvernance, jamais une condition préalable à son
+existence ou à son activité générale.
 
-1. **Lecture doctrinale/humaine (§6.1 ci-dessus)** : une ZUMRA composée d'une seule personne est
-   déjà une réalité humaine réelle et vivante — « active » au sens où elle existe, agit et peut
-   déjà faire circuler formation, besoin, projet, mission et transmission (confirmé opérationnel
-   par le constat §6.3).
-2. **Lecture opérationnelle du logiciel** : l'état `ZumraGroup::STATE_ACTIVE` reste un label de
-   gouvernance distinct, réservé à une ZUMRA ayant réuni ses cinq responsabilités et reçu une
-   décision explicite de l'autorité DG Afrique/GAMAD — une garantie de conformité, pas un jugement
-   sur la réalité ou la légitimité humaine de la ZUMRA.
+Cet arbitrage **ne supprime pas** la règle des cinq responsabilités distinctes, qui reste
+validée — mais cesse d'être lue comme la condition permettant à une ZUMRA de commencer à vivre ou
+à agir. Quatre axes conceptuels distincts sont canonisés :
 
-**Ces deux lectures ne se contredisent pas nécessairement** si le mot « active » de la
-transmission du dépositaire est entendu au sens humain/doctrinal, distinct du label technique
-`ACTIVE` du cycle de vie — exactement la distinction que ce document impose déjà partout ailleurs
-entre doctrine et statut logiciel (§4, §5, §15). **Si en revanche l'intention du dépositaire est
-que le statut opérationnel `ACTIVE` lui-même change de définition** (par exemple : plus aucune
-exigence de cinq responsabilités avant l'affichage « Active »), il s'agirait d'un changement de
-règle métier réelle, à faire trancher explicitement par l'autorité GAMAD compétente selon la
-procédure de gouvernance de `ZUMRA-DOCTRINE-INVARIANTE.md` §26 — **hors du périmètre strictement
-documentaire de cette mission**, et non résolu ici par supposition.
+- **A — Existence / activité générale.** Commence dès la création par le premier responsable.
+  Une ZUMRA solo est une vraie ZUMRA : elle peut vivre, agir, chercher des collaborateurs et
+  développer son activité. Confirmé par le constat §6.3 : c'est déjà, dans les faits, le
+  comportement du runtime pour tous les domaines sauf un.
+- **B — Structuration / gouvernance collective.** Progressive. Les cinq responsabilités doivent
+  être occupées par cinq personnes distinctes pour atteindre le jalon de gouvernance prévu par la
+  doctrine (§8/§10 `ZUMRA-DOCTRINE-INVARIANTE.md`). Cette exigence ne remet jamais en cause
+  l'existence de la ZUMRA ; elle conditionne légitimement les actes qui nécessitent plusieurs
+  regards et responsabilités — aujourd'hui, dans le code, exclusivement l'engagement de
+  contribution financière collective (§6.3 ci-dessus, CAP-061).
+- **C — Maturité.** `ESTABLISHED` à 50 membres (§9 `ZUMRA-DOCTRINE-INVARIANTE.md`). Aucune
+  modification, aucune remise en cause : ce seuil ne signifie jamais « la ZUMRA existe enfin ».
+- **D — Discipline.** `WARNED`/`SUSPENDED`/`REHABILITATING` — un axe distinct de modération,
+  jamais confondu avec l'existence, la structuration ou la maturité.
 
-### 6.5 La ZUMRA comme mouvement, pas comme tunnel
+**EXISTENCE ≠ GOUVERNANCE VALIDÉE ≠ MATURITÉ ≠ DISCIPLINE.**
+
+### 6.5 Dette documentée — arbitrage futur du runtime, non tranché ici
+
+Le problème résiduel identifié par l'archéologie est **principalement sémantique** : le runtime
+permet déjà à une ZUMRA `CONSTITUTING` d'agir dans pratiquement tous les domaines (axe A), mais le
+mot affiché — « En constitution » — et le nom technique du cycle de vie
+(`CONSTITUTING → READY → VALIDATED → ACTIVE`) peuvent laisser entendre qu'il ne s'agit pas encore
+d'une ZUMRA pleinement réelle ou active humainement, alors qu'elle l'est déjà. Le seul gate métier
+substantiel (contribution financière collective) reste justifié par l'exigence de gouvernance
+validée (axe B) et n'est pas remis en cause.
+
+**Cette mission ne modifie pas le runtime.** Une future mission dédiée devra déterminer,
+explicitement et sans supposition, laquelle de ces pistes retenir :
+
+- **A.** Conserver les états internes actuels mais humaniser leur présentation (vocabulaire
+  affiché, jamais le nom technique).
+- **B.** Renommer certains états pour refléter directement les quatre axes ci-dessus.
+- **C.** Séparer explicitement, dans le modèle, le cycle de vie opérationnel (axe A/D) de la
+  gouvernance collective (axe B).
+- **D.** Conserver `VALIDATED` comme jalon suffisant et exclusif pour les actes financiers, sans
+  jamais donner à `ACTIVE` le sens de « commence enfin à vivre ».
+
+Aucune de ces quatre pistes n'est décidée par ce document.
+
+### 6.6 Invariant UX — à observer dès maintenant, sans écran imposé
+
+**Une ZUMRA composée d'un seul responsable ne doit jamais être présentée comme vide, inexistante,
+invalide ou inutile.** L'expérience doit plutôt exprimer, dans son esprit sinon sa formulation
+exacte (décision UI future, non tranchée ici) :
+
+> « Votre ZUMRA est créée et peut agir. Construisez maintenant son collectif. »
+
+Le produit peut faciliter trouver des collaborateurs, inviter, accueillir, attribuer
+progressivement les responsabilités, lancer des actions, transmettre, créer Besoins/Projets/
+Missions/Événements, collaborer avec des Organisations — **sans jamais gamifier le recrutement**
+(cohérent avec §6.2 et §14).
+
+### 6.7 La ZUMRA comme mouvement, pas comme tunnel
 
 ```
 PERSONNE VOLONTAIRE
@@ -457,4 +503,4 @@ faveur de la source historique une fois celle-ci vérifiable ; en son absence do
 texte reste la meilleure transcription canonique disponible de la transmission reçue par cette
 mission.
 
-**FIN — Doctrine humaine de GAMAD v1.0**
+**FIN — Doctrine humaine de GAMAD v1.1**
