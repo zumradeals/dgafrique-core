@@ -13,6 +13,8 @@ Ce document fixe la définition, les principes et les règles invariantes du Pro
 
 Il résulte de la vision du fondateur, des Statuts et du Règlement intérieur du Mouvement GAMAD, puis des décisions produit explicitement adoptées pour leur transposition numérique. Il ne remplace pas les textes juridiques de GAMAD. Une contradiction juridique doit être soumise à l'autorité GAMAD compétente ; elle ne peut pas être résolue silencieusement dans le code.
 
+La provenance doctrinale déclarée de GAMAD, le sens de la devise Formation — Travail — Adoration et le principe fondateur « la Personne précède la structure » sont canonisés dans `docs/canon/DOCTRINE-GAMAD.md`, couche 00, antérieure à ce document. `docs/canon/DOCTRINE-GAMAD.md` §6.4 y canonise qu'une ZUMRA est réelle, vivante et opérationnelle dès sa création avec son premier responsable — la pluralité et les cinq responsabilités distinctes (§8/§10 ci-dessous) restent un jalon de gouvernance collective, jamais une condition d'existence. Cet arbitrage ne modifie aucune règle opérationnelle du présent document : le cycle de vie `CONSTITUTING → READY → VALIDATED → ACTIVE` fixé aux §7-10 ci-dessous reste inchangé dans le runtime. `docs/canon/DOCTRINE-GAMAD.md` §6.5 documente une dette de renommage/présentation à trancher par une future mission dédiée, suivant strictement la procédure de gouvernance propre à ce document (§26) avant tout code.
+
 En cas de contradiction avec une ancienne note produit, une maquette, un prototype ou un comportement historique, le présent document prévaut pour ZUMRA.
 
 ### Invariant de confidentialité institutionnelle

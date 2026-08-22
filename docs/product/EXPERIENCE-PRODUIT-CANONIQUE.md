@@ -7,7 +7,8 @@
 `docs/foundation/DG-AFRIQUE-DOCTRINE.md` §30 — une couche que ce document est le premier à
 occuper explicitement dans son ensemble (voir §1).
 
-Autorité : subordonné à `docs/foundation/DG-AFRIQUE-DOCTRINE.md` (couches 00-01),
+Autorité : subordonné à `docs/canon/DOCTRINE-GAMAD.md` (couche 00, raison d'être humaine de
+GAMAD), `docs/foundation/DG-AFRIQUE-DOCTRINE.md` (couches 00-01),
 `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` et `docs/capacites/OVERRIDES.md` (couche 02),
 `docs/AI-RULES.md` (invariant d'identité produit supérieur) et le référentiel des 84 CAP
 (couche 03) — jamais l'inverse. Ce document ne redéfinit aucune de ces sources ; il les
@@ -65,7 +66,11 @@ combler le vide par une préférence de rédaction.
 
 ## 3. Modèle mental — qu'est-ce que DG Afrique
 
-**Source première : `docs/AI-RULES.md` (invariant d'identité produit supérieur).**
+**Source première : `docs/AI-RULES.md` (invariant d'identité produit supérieur), lui-même
+traduction produit du principe fondateur « la Personne précède la structure » canonisé dans
+`docs/canon/DOCTRINE-GAMAD.md` §3 — GAMAD ne commence ni par une ZUMRA, ni par une Organisation,
+ni par DG Afrique lui-même, mais par la personne volontaire que ces structures existent pour
+servir.**
 
 > DG Afrique est un réseau social d'action. Il accompagne le développement humain et l'action
 > collective, notamment à travers ZUMRA, les capacités, besoins, projets, missions,

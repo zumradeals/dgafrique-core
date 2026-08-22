@@ -12,6 +12,8 @@ ZUMRA est le moteur humain et collectif de cet écosystème. Les outils spécial
 
 La synthèse produit/UX de couche 04 (modèle mental, parcours utilisateur, architecture UX conceptuelle) est canonisée dans `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` — à lire avant toute mission d'interface.
 
+La raison d'être humaine dont cet invariant est la traduction produit — identité de GAMAD, provenance doctrinale, principe « la Personne précède la structure », sens de Formation — Travail — Adoration — est canonisée dans `docs/canon/DOCTRINE-GAMAD.md`, couche 00, antérieure à ce document : à lire avant toute mission doctrinale ou touchant à la finalité humaine de ZUMRA.
+
 ### Modules spécialisés et satellites
 
 Un outil spécialisé naît par défaut comme **module extractible** dans l'architecture DG Afrique lorsqu'il peut raisonnablement vivre dans le monolithe modulaire. Exemples de direction : G-POS, GamaDrive et futurs outils spécialisés du réseau.
