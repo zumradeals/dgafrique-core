@@ -607,6 +607,12 @@ procédure de gouvernance du §20.
 liste sur Mon espace (tension explicitement non résolue avec l'invariant d'une seule priorité
 dominante, cf. rapport Phase A §9).
 
+**Mise à jour (§22) — « Mes Organisations » n'est plus un gap backend, voir §27 :** l'audit
+Phase A d'UIUX-006 (22 août 2026) a réaudité ce constat après CAP-067 : la donnée nécessaire
+(appartenance active à une Organisation) était déjà triviale à requêter — `manageableOrganizations()`
+existait même déjà comme fonction privée réutilisée trois fois pour un autre usage. Le gap était
+UI, jamais backend. UIUX-006 Phase B a livré la surface manquante dans Mon espace.
+
 ---
 
 ## 23. Addendum daté — UIUX-003 Phase B, navigation contextuelle et premier espace Événement (22 août 2026)
@@ -825,3 +831,51 @@ par déclaration libre `capability_label` — un futur petit chantier CAP-065 po
 converger avec le chemin déjà réel de la Personne, non traité ici pour rester dans le périmètre
 demandé), raccordement au moteur de matching, gouvernance Organisation Core (activer/suspendre/
 dissoudre/retirer — réservée à `AUT-GAMAD-001`), tout code G-POS.
+
+## 27. Addendum daté — UIUX-006, Organisation comme acteur du réseau (22 août 2026)
+
+**Portée : évolution UI uniquement, aucun nouveau moteur métier** — `MemberSpaceController.php`/
+`member/space.blade.php` (« Mes Organisations »), `OrganizationController.php`/
+`organizations/show.blade.php` (fiche recomposée, membres humanisés). Suit la procédure de
+gouvernance du §20. Fait suite à l'audit Phase A qui a réétabli, après CAP-065/CAP-067 (§26,
+PR #111), l'état réel de la fiche Organisation, ses chemins de découverte et le statut de
+« Mes Organisations ».
+
+**Décisions rendues durables** :
+
+- **« Mes Organisations » vit dans Mon espace, jamais dans la navigation globale.** Un bloc
+  compact et persistant (jamais réservé au routeur de première intention UIUX-001) apparaît dès
+  qu'un membre appartient activement à au moins une Organisation — réutilisant strictement
+  `OrganizationMembership` actif, aucun nouveau concept de propriété. Une seule Organisation ouvre
+  directement sa fiche ; plusieurs restent distinguables et individuellement ouvrables. Un membre
+  sans Organisation ne voit aucun bloc, ni petit ni grand — le routeur de première intention
+  (§21) reste la seule porte de découverte initiale, cohérent avec §9 (aucune nouvelle entrée de
+  navigation imposée par un trou d'interface).
+- **La fiche Organisation raconte une histoire en quatre temps**, sans fusionner aucun modèle
+  métier : identité → « Ce que cette organisation peut apporter » (capacités CAP-067, lecture
+  seule pour tous) → « Dans le réseau » (Collaborations et Événements regroupés visuellement,
+  jamais un pseudo-fil fabriqué) → « Gestion » (manager seul, gestes déjà réels — déclarer/retirer
+  une capacité — jamais une interface non cadrée fabriquée pour remplir la section : invitation,
+  approbation, retrait de membre et modification de l'identité restent hors de cette PR, comme
+  déjà noté au §25). Une absence de Collaboration et d'Événement produit un état discret, jamais
+  une carte massive.
+- **Capacités en vocabulaire humain.** Le libellé « Ce que cette organisation peut apporter »
+  remplace le terme technique « Capacités » sur la fiche — aucune fuite de `CAP-067`,
+  `CapabilityStatement`, `holder_type` ni de référence Core, vérifié par test sur la réponse HTTP
+  réelle (même discipline que §21).
+- **Membres avec une identité lisible.** La carte Membres résout désormais un libellé humain par
+  membre (`Vous` pour l'acteur courant, un nom de découverte volontairement consenti, sinon
+  `Membre DG Afrique`) au lieu de ne répéter que le rôle — même convention que
+  `PresentsPartnerships::partnershipProvider()` (§25), jamais une référence Core exposée.
+- **Correction d'un bogue de largeur intrinsèque `<fieldset>`.** La vérification mobile obligatoire
+  à 390px a révélé qu'un `<fieldset>` contenant un long libellé de capacité et un bouton force un
+  débordement horizontal indépendamment de tout `min-width:0` posé sur ses enfants flex (le
+  navigateur calcule la largeur intrinsèque du `<fieldset>` lui-même) — corrigé en posant
+  `min-width:0` sur le `<fieldset>` de la section Gestion. Un correctif local à cette section, pas
+  une revue globale de tous les `<x-dg.fieldset>` du portail.
+
+**Hors périmètre, restant catégorie C** : `ActivityFeedService`/CAP-055 (l'absence
+d'Organisation/Partnership/CommunityEvent dans le Fil reste un chantier distinct, documenté par
+l'audit Phase A — non corrigée ici), `ImpactMetrics` sur la fiche, matching Organisation, G-POS,
+ORG-ATTACH, sponsorisation, catalogue commercial, gouvernance de membre (invitation/approbation/
+retrait), modification de l'identité, redesign général.

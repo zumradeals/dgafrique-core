@@ -293,8 +293,12 @@ final class PartnershipHttpTest extends TestCase
         $content = $this->get(route('organizations.show', $organization))->assertOk()->getContent();
 
         self::assertStringContainsString('Collaborations', $content);
-        self::assertStringNotContainsString('Ce que cette organisation peut apporter', $content);
-        self::assertStringNotContainsString('Ce que cette Organisation peut apporter', $content);
+        // UIUX-006 — la section « Ce que cette organisation peut apporter » présente désormais ce
+        // vocabulaire humain, mais le Partnership ne doit jamais y avoir fait fabriquer une
+        // capacité supplémentaire : une seule capacité réellement déclarée doit apparaître, pas un
+        // catalogue reconstitué depuis la collaboration.
+        self::assertSame(1, CapabilityStatement::query()->where('organization_id', $organization->id)->count());
+        self::assertStringContainsString('1 capacité', $content);
     }
 
     public function test_no_gpos_or_commercial_catalog_content_is_fabricated(): void
