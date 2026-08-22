@@ -25,6 +25,7 @@ use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
 use App\Http\Controllers\NeedController;
 use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\OrganizationCapabilityController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PeopleDiscoveryController;
@@ -92,6 +93,8 @@ Route::get('/organisations/creer', [OrganizationController::class, 'create'])->m
 Route::post('/organisations', [OrganizationController::class, 'store'])->middleware(['core.member', 'throttle:organization-write'])->name('organizations.store');
 Route::get('/organisations/{organization}', [OrganizationController::class, 'show'])->whereUuid('organization')->middleware('core.member')->name('organizations.show');
 Route::post('/organisations/{organization}/rejoindre', [OrganizationController::class, 'requestToJoin'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-membership'])->name('organizations.join');
+Route::post('/organisations/{organization}/capacites', [OrganizationCapabilityController::class, 'store'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-capability'])->name('organizations.capabilities.store');
+Route::delete('/organisations/{organization}/capacites/{capability}', [OrganizationCapabilityController::class, 'destroy'])->whereUuid('organization')->whereUuid('capability')->middleware(['core.member', 'throttle:organization-capability'])->name('organizations.capabilities.destroy');
 Route::get('/partenariats', [PartnershipController::class, 'index'])->middleware('core.member')->name('partnerships.index');
 Route::post('/partenariats', [PartnershipController::class, 'store'])->middleware(['core.member', 'throttle:partnership-write'])->name('partnerships.store');
 Route::get('/partenariats/{partnership}', [PartnershipController::class, 'show'])->whereUuid('partnership')->middleware('core.member')->name('partnerships.show');

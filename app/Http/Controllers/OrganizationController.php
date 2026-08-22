@@ -5,10 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Community\CommunityEventService;
+use App\Application\Organizations\OrganizationCapabilityService;
 use App\Application\Organizations\OrganizationService;
 use App\Application\Partnerships\PartnershipService;
 use App\Domain\Identity\CoreIdentity;
 use App\Http\Controllers\Concerns\PresentsPartnerships;
+use App\Infrastructure\GamadCore\Exceptions\CoreProtocolException;
+use App\Infrastructure\GamadCore\Exceptions\CoreSessionRejectedException;
+use App\Infrastructure\GamadCore\Exceptions\CoreUnavailableException;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
 use App\Models\Partnership;
@@ -70,12 +74,20 @@ final class OrganizationController
             'visibility' => ['required', Rule::in([Organization::VISIBILITY_PRIVATE, Organization::VISIBILITY_PUBLIC])],
         ]);
 
-        $organization = $service->create($identity->reference, $data);
+        try {
+            $organization = $service->create($identity->reference, $data);
+        } catch (CoreUnavailableException|CoreProtocolException|CoreSessionRejectedException) {
+            // CAP-067 — le raccordement canonique GAMAD Core est demandé avant toute écriture
+            // locale : aucune fausse Organisation locale n'est jamais finalisée si Core échoue.
+            return back()->withInput()->withErrors([
+                'name' => 'La création n’a pas pu être confirmée par GAMAD Core. Réessayez dans un instant.',
+            ]);
+        }
 
         return redirect()->route('organizations.show', $organization)->with('status', 'Votre organisation a été créée.');
     }
 
-    public function show(Request $request, Organization $organization, OrganizationService $service, CommunityEventService $events, PartnershipService $partnerships): View
+    public function show(Request $request, Organization $organization, OrganizationService $service, CommunityEventService $events, PartnershipService $partnerships, OrganizationCapabilityService $capabilities): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -105,6 +117,7 @@ final class OrganizationController
             // la page elle-même, jamais recalculée. Aucune relation Projet/Besoin fabriquée.
             'organizationEvents' => $events->forOrganization($organization, $identity->reference)->take(6),
             'organizationPartnerships' => $this->presentPartnerships($organizationPartnerships, $identity->reference, $partnerships),
+            'organizationCapabilities' => $capabilities->list($organization),
         ]);
     }
 

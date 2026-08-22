@@ -79,6 +79,102 @@ final readonly class GamadCoreClient
         });
     }
 
+    /**
+     * CAP-067 — inscrit une identité canonique de type `organisation`
+     * (CAP-CORE-001, canal `PRODUIT_RECONNU`) via la délégation
+     * CORE-ORG-DELEGATION-001. Assurance A1, jamais davantage : ce canal ne
+     * produit jamais un niveau supérieur au sien.
+     *
+     * @return array{reference: string, etat: string, assurance: string}
+     */
+    public function provisionOrganizationIdentity(string $label): array
+    {
+        return $this->withProductSession(function (string $bearer) use ($label): array {
+            $response = $this->post('/identites', [
+                'canal' => 'PRODUIT_RECONNU',
+                'type' => 'organisation',
+                'libelle' => $label,
+            ], $bearer);
+            $this->assertUsable($response);
+            $payload = $this->jsonObject($response);
+            $identite = $payload['identite'] ?? null;
+            if (!is_array($identite) || !is_string($identite['reference'] ?? null) || trim($identite['reference']) === '') {
+                throw new CoreProtocolException('Core n’a pas remis de référence d’identité organisationnelle.');
+            }
+
+            return [
+                'reference' => $identite['reference'],
+                'etat' => is_string($identite['etat'] ?? null) ? $identite['etat'] : '',
+                'assurance' => is_string($identite['assurance'] ?? null) ? $identite['assurance'] : '',
+            ];
+        });
+    }
+
+    /**
+     * CAP-067 — inscrit la fiche organisationnelle canonique (CAP-CORE-002)
+     * pour une identité déjà provisionnée par
+     * {@see self::provisionOrganizationIdentity()}. N'attache jamais
+     * d'autorité Core (activation, représentant, dirigeant) : seule la
+     * création (CREATE) est déléguée à ce produit.
+     *
+     * @param  array{type_organisation_reference: string, proprietaire_reference: string, denomination_officielle: string, classification_reference: string, description?: string}  $payload
+     * @return array{reference: string, identite_reference: string, etat: string, type_organisation_reference: string}
+     */
+    public function createOrganization(string $identityReference, array $payload): array
+    {
+        return $this->withProductSession(function (string $bearer) use ($identityReference, $payload): array {
+            $response = $this->post('/organisations', array_merge(
+                ['identite_reference' => $identityReference],
+                $payload,
+            ), $bearer);
+            $this->assertUsable($response);
+            $body = $this->jsonObject($response);
+            $resultat = $body['resultat'] ?? null;
+            if (!is_array($resultat) || !is_string($resultat['reference'] ?? null) || trim($resultat['reference']) === '') {
+                throw new CoreProtocolException('Core n’a pas remis de référence d’organisation canonique.');
+            }
+
+            return [
+                'reference' => $resultat['reference'],
+                'identite_reference' => $identityReference,
+                'etat' => is_string($resultat['etat'] ?? null) ? $resultat['etat'] : '',
+                'type_organisation_reference' => is_string($resultat['type_organisation_reference'] ?? null) ? $resultat['type_organisation_reference'] : '',
+            ];
+        });
+    }
+
+    /**
+     * CAP-067 — ATTACH V1 : résout, en lecture seule, la fiche
+     * organisationnelle déjà canonisée pour une identité précise
+     * (`GET /organisations/resolution/{identite}`). Ne mute jamais la
+     * propriété, un représentant, un dirigeant ni aucune affiliation — une
+     * pure lecture. Retourne `null` si aucune fiche n'existe encore pour
+     * cette identité (`404 ORGANISATION_INTROUVABLE`).
+     *
+     * @return array{reference: string, identite_reference: string, etat: string}|null
+     */
+    public function resolveOrganizationByIdentity(string $identityReference): ?array
+    {
+        return $this->withProductSession(function (string $bearer) use ($identityReference): ?array {
+            $response = $this->get('/organisations/resolution/'.rawurlencode($identityReference), $bearer);
+            if ($response->status() === 404) {
+                return null;
+            }
+            $this->assertUsable($response);
+            $body = $this->jsonObject($response);
+            $organisation = $body['organisation'] ?? null;
+            if (!is_array($organisation) || !is_string($organisation['reference'] ?? null) || trim($organisation['reference']) === '') {
+                throw new CoreProtocolException('Core n’a pas remis de fiche organisationnelle exploitable.');
+            }
+
+            return [
+                'reference' => $organisation['reference'],
+                'identite_reference' => $identityReference,
+                'etat' => is_string($organisation['etat'] ?? null) ? $organisation['etat'] : '',
+            ];
+        });
+    }
+
     public function currentSession(string $bearerToken): CoreSession
     {
         $response = $this->get('/sessions/current', $bearerToken);

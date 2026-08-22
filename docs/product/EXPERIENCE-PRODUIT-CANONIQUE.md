@@ -775,3 +775,53 @@ compatible avec cette évolution future.
 code, aucun faux catalogue/prix/stock), sponsorisation Fil (doctrine seule), gouvernance
 Organisation (inviter/approuver/retirer un membre, modifier l'identité — service déjà prêt,
 aucune route/vue construite ici), CAP-CORE-021 Matching (audité, non consommé — `CORE_NOT_READY`).
+
+**Mise à jour (§25) — CAP-067 fermée depuis, voir §26 :** l'affirmation ci-dessus (« aucune
+décoration de capacité Organisation indépendante d'un Partnership ») ne vaut plus depuis la
+fermeture de CAP-067 (22 août 2026). La décision produit centrale du §25 — ne jamais déduire une
+capacité Organisation d'un Partnership — reste, elle, intégralement en vigueur et a précisément
+guidé la conception de CAP-067 : la nouvelle section « Capacités » est un fait déclaré
+explicitement, jamais une lecture des Partnerships.
+
+## 26. Addendum daté — CAP-067, capacités des Organisations & raccordement canonique GAMAD Core (22 août 2026)
+
+**Portée : identité canonique + capacités de l'Organisation** — `OrganizationService.php`,
+`GamadCoreClient.php` (nouvelles méthodes `provisionOrganizationIdentity()`/`createOrganization()`/
+`resolveOrganizationByIdentity()`), `OrganizationCapabilityService.php` (nouveau),
+`OrganizationCapabilityController.php` (nouveau), fiche Organisation. Consomme la délégation
+livrée par CORE-ORG-DELEGATION-001 (`gamad-core`, PR #85) — aucun code `gamad-core` modifié ici.
+Spec complète : `docs/capacites/specs/CAP-067-identite-organisationnelle.md`.
+
+**Ce qui change, en une phrase par décision** :
+
+- **Identité canonique réelle.** Toute nouvelle Organisation est raccordée à une identité
+  (CAP-CORE-001) et une fiche (CAP-CORE-002) canoniques GAMAD Core avant toute écriture locale —
+  `core_identity_reference`/`core_organization_reference`/`core_link_status` sur `Organization`.
+  Un échec Core interrompt la création ; aucune fausse Organisation locale n'est jamais finalisée.
+- **Capacités Organisation, réutilisant le moteur existant.** `CapabilityStatement` porte
+  désormais un `holder_type` (`PERSON`/`ORGANIZATION`) ; un porteur Organisation ne touche jamais
+  `core_identity_reference` (réservée aux personnes). Une capacité Organisation reste un fait
+  métier explicite, déclaré par un manager habilité — **jamais** déduit d'un Partnership, d'un
+  Projet, d'un événement ni des capacités personnelles du manager (§25 confirmé, pas contredit).
+  `KIND_POSSESSED` seulement, aucun score, aucun raccordement au moteur de matching.
+- **ATTACH délibérément arrêté, pas construit.** La résolution d'une Organisation Core existante
+  par son identité (`GET /organisations/resolution/{identite}`) est une lecture pure, déjà câblée
+  côté client Core, mais **aucun parcours produit ne l'expose** : DG Afrique ne dispose d'aucune
+  preuve d'autorité permettant de garantir qu'un acteur qui « retrouve » une Organisation Core
+  existante en est un représentant légitime. Inventer cette règle aurait ouvert un risque
+  d'appropriation arbitraire — gap documenté (§ dédiée de la spec CAP-067), pas comblé par un
+  raccourci.
+- **Organisations déjà existantes : `UNLINKED`, jamais un rapprochement par nom.** Aucune
+  migration automatique. CAP-066 datant de deux jours seulement, aucune Organisation de production
+  réelle n'existe à régulariser à ce stade.
+- **G-POS et Matching : architecture préservée, rien construit.** Le modèle permettra un jour
+  qu'une Organisation G-POS soit retrouvée depuis DG Afrique via sa référence canonique (une fois
+  ATTACH construit), et qu'un besoin se corresponde à une capacité `ORGANIZATION` (une fois les
+  moteurs de matching explicitement étendus) — aucun code de l'un ou l'autre ici.
+
+**Hors périmètre, restant catégorie C** : ATTACH (gap documenté ci-dessus), lien Partnership ↔
+`CapabilityStatement` Organisation réelle (CAP-065 continue de traiter un fournisseur Organisation
+par déclaration libre `capability_label` — un futur petit chantier CAP-065 pourrait le faire
+converger avec le chemin déjà réel de la Personne, non traité ici pour rester dans le périmètre
+demandé), raccordement au moteur de matching, gouvernance Organisation Core (activer/suspendre/
+dissoudre/retirer — réservée à `AUT-GAMAD-001`), tout code G-POS.

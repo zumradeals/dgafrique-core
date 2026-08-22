@@ -68,19 +68,19 @@ Avant correction du statut CAP-082 (état constaté à l'ouverture de l'audit) :
 | DEPENDENCY_BLOCKED | 3 |
 | DOC_ONLY | 14 |
 
-**Chiffres canoniques après correction CAP-082 (voir « Correction CAP-082 » ci-dessous) — état courant de `CAPABILITY-COVERAGE.md` :**
+**Chiffres canoniques après correction CAP-082 et fermeture CAP-067 (voir « CAP gelées » ci-dessous) — état courant de `CAPABILITY-COVERAGE.md` :**
 
 | Statut | Nombre |
 |---|---|
 | TOTAL CAP | 84 |
-| CLOSED | 57 |
+| CLOSED | 58 |
 | PARTIAL | 5 |
 | NOT_IMPLEMENTED | 4 |
-| DEPENDENCY_BLOCKED | 3 |
+| DEPENDENCY_BLOCKED | 2 |
 | DOC_ONLY | 15 |
 
 PARTIAL : CAP-023, CAP-047, CAP-051, CAP-053, CAP-056.
-DEPENDENCY_BLOCKED : CAP-067, CAP-070, CAP-079.
+DEPENDENCY_BLOCKED : CAP-070, CAP-079.
 NOT_IMPLEMENTED (après correction CAP-082) : CAP-068, CAP-077, CAP-078, CAP-080.
 
 ### Correction CAP-082
@@ -97,7 +97,8 @@ NOT_IMPLEMENTED (après correction CAP-082) : CAP-068, CAP-077, CAP-078, CAP-080
 - **CAP-051 (Portabilité de l'identité)** — reste `PARTIAL`. `FederationServiceProvider` ne fournit que la continuité SSO (`FederatedProductGateway`) ; aucune capacité d'export de données découverte nulle part dans le dépôt. SSO ≠ export. Aucun contrat GAMAD Core nouveau ne comble ce manque — reste dépendant d'un contrat produit/Core absent, non contourné localement.
 - **CAP-077 → CAP-078 → CAP-079** — restent non prioritaires. Aucune infrastructure de consommateur externe (aucun système de clé API, aucune route API publique de capacités) découverte. Ne pas construire une API abstraite pour elle-même.
 - **CAP-080 (Ce que devrait mesurer DG Afrique)** — reste `NOT_IMPLEMENTED`, marquée **DOCTRINE-À-CLARIFIER**. Aucune infrastructure de métriques/analytics nulle part dans le dépôt ; aucune doctrine ne définit quoi mesurer. Coder des métriques maintenant fabriquerait exactement les vanity metrics que la doctrine « réseau d'action » proscrit (DG Afrique doit mesurer l'action réelle — résultats/capacités/coordination —, jamais likes/temps passé/vues).
-- **CAP-067 / CAP-070** — maintenues gelées. `GamadCoreClient` toujours limité à 8 méthodes d'identité/session personne, aucune émission d'identité non-personne (CAP-067). `config/federation.php` ne porte que le callback SSO GamaDrive, aucune API de stockage documentaire (CAP-070). Aucun contournement local dans les deux cas.
+- **CAP-067 — dégelée et fermée (22 août 2026).** `GamadCoreClient` porte désormais `provisionOrganizationIdentity()`/`createOrganization()`/`resolveOrganizationByIdentity()`, consommant la délégation CORE-ORG-DELEGATION-001 (`gamad-core`). Voir `docs/capacites/specs/CAP-067-identite-organisationnelle.md`.
+- **CAP-070** — reste gelée. `config/federation.php` ne porte que le callback SSO GamaDrive, aucune API de stockage documentaire. Aucun contournement local.
 
 ### Fissure fondationnelle découverte — Modération, discipline et recours (art. 19)
 
@@ -378,10 +379,7 @@ Constat AUDIT-CAP-002 préservé tel quel pour mémoire : **CAP-063 était docum
 
 ## CAP gelées — dépendances externes
 
-**CAP-067 — Identité organisationnelle**
-Blocage : GAMAD Core
-
-L'Organization locale fonctionne, mais Core ne fournit pas encore une identité organisationnelle permettant à une Organisation de s'authentifier et de porter proprement une `CapabilityStatement`.
+**CAP-067 — Identité organisationnelle — DÉGELÉE ET FERMÉE (22 août 2026).** Le blocage externe (GAMAD Core n'émettait aucune identité organisationnelle) a été levé par CORE-ORG-DELEGATION-001 (`gamad-core`, PR #85), puis consommé côté DG Afrique par le chantier CAP-067. Toute nouvelle Organisation est désormais raccordée à une identité et une fiche organisationnelles canoniques réelles ; elle peut aussi déclarer explicitement ses propres capacités (`CapabilityStatement`, porteur `ORGANIZATION`). Voir `docs/capacites/specs/CAP-067-identite-organisationnelle.md`. **Statut corrigé vers `CLOSED` dans `CAPABILITY-COVERAGE.md`** — reste marquée `DEPENDENCY_BLOCKED` dans le tableau ROADMAP-002 ci-dessous par fidélité historique à l'audit qui l'a produit, comme pour CAP-063.
 
 **CAP-070 — Document**
 Blocage : GamaDrive

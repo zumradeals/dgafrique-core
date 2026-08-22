@@ -14,6 +14,7 @@ use App\Models\Project;
 use App\Models\ZumraGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
@@ -30,10 +31,36 @@ final class OrganizationTest extends TestCase
     public function test_creation_is_authorized_for_a_signed_in_member(): void
     {
         $this->signIn('IDN-FOUNDER');
+        $this->fakeCoreOrganizationProvisioning();
 
         $this->post('/organisations', $this->payload())->assertRedirect();
 
         self::assertSame(1, Organization::query()->count());
+    }
+
+    public function test_core_references_are_persisted_on_creation(): void
+    {
+        $organization = $this->organization('IDN-FOUNDER');
+
+        self::assertNotNull($organization->core_identity_reference);
+        self::assertNotNull($organization->core_organization_reference);
+        self::assertSame(Organization::CORE_LINK_LINKED, $organization->core_link_status);
+    }
+
+    public function test_core_failure_finalizes_no_local_organization(): void
+    {
+        $this->signIn('IDN-FOUNDER');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response([
+                'jeton' => 'product-bearer', 'entite' => 'PRD-GAMAD-005',
+                'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00',
+            ], 201),
+            'core.test/api/v1/identites' => Http::response([], 503),
+        ]);
+
+        $this->post('/organisations', $this->payload())->assertRedirect();
+
+        self::assertSame(0, Organization::query()->count());
     }
 
     public function test_creation_without_identity_is_refused(): void
@@ -246,7 +273,45 @@ final class OrganizationTest extends TestCase
 
     private function organization(string $founder, array $overrides = []): Organization
     {
+        $this->fakeCoreOrganizationProvisioning();
+
         return app(OrganizationService::class)->create($founder, array_replace($this->payload(), $overrides));
+    }
+
+    /**
+     * CAP-067 — la création d'une Organisation demande désormais une identité (CAP-CORE-001) et
+     * une fiche (CAP-CORE-002) canoniques réelles à GAMAD Core avant toute écriture locale. Une
+     * fermeture globale, jamais un tableau d'URL statiques : elle inspecte le corps de la requête
+     * pour ne répondre qu'aux appels de session PRODUIT (`PRD-GAMAD-005`), sans jamais intercepter
+     * la session MEMBRE ouverte par signIn() — quel que soit l'ordre d'appel des deux — et génère
+     * des références Core fraîches à chaque appel, jamais un doublon.
+     */
+    private function fakeCoreOrganizationProvisioning(): void
+    {
+        Http::fake(function ($request) {
+            $url = (string) $request->url();
+            if (str_ends_with($url, '/sessions') && ($request['entite'] ?? null) === 'PRD-GAMAD-005') {
+                return Http::response([
+                    'jeton' => 'product-bearer-'.Str::random(8), 'entite' => 'PRD-GAMAD-005',
+                    'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00',
+                ], 201);
+            }
+            if (str_ends_with($url, '/identites')) {
+                return Http::response([
+                    'identite' => ['reference' => 'IDN-CORE-ORG-'.Str::random(12), 'etat' => 'ACTIVE', 'assurance' => 'A1'],
+                ], 201);
+            }
+            if (str_ends_with($url, '/organisations')) {
+                return Http::response([
+                    'resultat' => [
+                        'reference' => 'ORG-GAMAD-'.Str::random(8), 'identite_reference' => 'IDN-CORE-ORG-'.Str::random(12),
+                        'etat' => 'PREPARATION', 'type_organisation_reference' => 'INDETERMINE',
+                    ],
+                ], 201);
+            }
+
+            return null;
+        });
     }
 
     private function payload(array $overrides = []): array

@@ -12,7 +12,7 @@ Une **structure durable** qui porte des responsabilités, des membres, des rôle
 
 - **Organisation ≠ Projet.** Un Projet est une action organisée autour d'un problème ou d'une transformation à réaliser, avec un cycle de vie propre (`PROPOSED → ADOPTED → IN_PROGRESS → COMPLETED`). Une Organisation n'a pas ce cycle : elle est une structure de gouvernance qui peut survivre à ses actions.
 - **Organisation ≠ ZUMRA.** Une ZUMRA est une communauté d'action, de solidarité, de formation et de transmission avec sa propre doctrine invariante (`ZUMRA-DOCTRINE-INVARIANTE.md`). ZUMRA-DOCTRINE-INVARIANTE.md §2 énonce explicitement qu'« une ZUMRA peut conduire à une startup, une entreprise, une organisation, une coopérative, une association... » — un débouché possible, jamais une identité. Les deux concepts restent orthogonaux : aucune fusion, aucune ZUMRA n'est renommée en Organisation.
-- **Organisation ≠ Compte/Identité organisationnelle (CAP-067).** CAP-066 répond à « qu'est-ce que l'Organisation ? » (structure, membres, rôles) ; CAP-067 répondrait à « comment cette Organisation existe-t-elle comme acteur/identité dans l'écosystème (GAMAD Core) ? ». Aucune identité Core organisationnelle n'existe aujourd'hui — chaque fixture de test authentifiée dans tout le dépôt ne retourne que `"type": "personne"`. CAP-067 dépend d'une capacité externe (GAMAD Core émettant un type d'identité organisationnel) que ce dépôt ne peut pas décider seul ; elle reste `DEPENDENCY_BLOCKED`.
+- **Organisation ≠ Compte/Identité organisationnelle (CAP-067).** CAP-066 répond à « qu'est-ce que l'Organisation ? » (structure, membres, rôles) ; CAP-067 répond à « comment cette Organisation existe-t-elle comme acteur/identité dans l'écosystème (GAMAD Core) ? ». **Mise à jour (CAP-067, fermée) :** depuis CORE-ORG-DELEGATION-001 (GAMAD Core) et CAP-067 (ce dépôt), toute nouvelle Organisation est raccordée à une identité (CAP-CORE-001) et une fiche (CAP-CORE-002) canoniques réelles — voir `docs/capacites/specs/CAP-067-identite-organisationnelle.md`. Les Organisations créées avant ce chantier restent `core_link_status = UNLINKED`, honnêtement, sans rapprochement par nom inventé.
 - **Organisation ≠ Satellite / structure juridique.** Aucun appel Core de création d'organisation, aucune extraction logicielle. Une Organisation DG Afrique est un objet métier local (comme une ZUMRA), pas une entité juridique enregistrée.
 
 ## Relation avec l'autonomie de Projet (ARCH-006)
@@ -45,7 +45,7 @@ Cycle de vie de l'adhésion (`OrganizationMembership.status`) : `REQUESTED → A
 ## Hors périmètre v1 (délibérément)
 
 - **aucun lien Projet/Need/Proof → Organisation.** `Project.owner_type`/`Need.owner_type`/`Proof.owner_type` ne comportent que `PERSON`/`GROUP`(/`PROJECT` pour Need) ; ajouter une quatrième valeur `ORGANIZATION` toucherait l'autorité de visibilité de trois agrégats stables et n'est démontré par aucun modèle canonique aujourd'hui. Dépendance documentée pour un futur CAP, jamais fabriquée ;
-- **aucune identité Core organisationnelle (CAP-067)** — dépendance externe, hors de portée de ce dépôt ;
+- ~~aucune identité Core organisationnelle (CAP-067)~~ — **fermée**, voir `docs/capacites/specs/CAP-067-identite-organisationnelle.md` ;
 - **aucune intégration au Fil (CAP-055) ni aux Opportunités (CAP-064)** — pas de scope creep, CAP-066 doit d'abord être stable seule ;
 - **aucun back-office** — pas de CRM, pas de facturation, pas de gestion documentaire.
 
