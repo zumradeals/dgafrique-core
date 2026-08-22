@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Activity\ActivityFeedService;
 use App\Application\Missions\MissionService;
 use App\Application\Notifications\NotificationService;
+use App\Application\Opportunities\OpportunityEngine;
 use App\Application\Proof\ProofService;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
@@ -42,6 +43,7 @@ final class MemberSpaceController
         ProofService $proofs,
         ZumraAttentionSource $zumraAttention,
         NotificationService $notifications,
+        OpportunityEngine $opportunities,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -110,6 +112,11 @@ final class MemberSpaceController
 
         $myOrganizations = $this->myOrganizations($identity->reference);
 
+        // UIUX-007 — améliore la découvrabilité d'Opportunités déjà présent dans « Mes outils »,
+        // sans étendre le moteur ni l'injecter dans le Fil : même lecture que OpportunityController,
+        // jamais recalculée ici.
+        $opportunitiesCount = count($opportunities->forIdentity($identity->reference));
+
         $isNewMember = $this->isNewMember(
             $identity->reference,
             $ownProject,
@@ -139,6 +146,7 @@ final class MemberSpaceController
             'weekItems' => $rest->whereIn('kind', ['PROJECTS', 'ZUMRA'])->take(2)->values(),
             'myGroups' => $myGroups,
             'myOrganizations' => $myOrganizations,
+            'opportunitiesCount' => $opportunitiesCount,
             'recommendedPeople' => $recommendedPeople,
             'receivedShares' => $receivedShares,
         ]);

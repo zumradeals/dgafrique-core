@@ -136,6 +136,11 @@
                                     @endforeach
                                 </div>
                             @endif
+
+                            {{-- UIUX-007 — gabarit de création d'Événement désormais réel (le
+                                 POST existait déjà, seule la vue GET manquait). Ne transforme pas
+                                 la fiche en dashboard : un seul lien, pas un back-office. --}}
+                            <a href="{{ route('community-events.organization.create', $organization) }}" class="dg-meta" style="display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--dg-line-inner);color:var(--dg-copper);font-weight:600">Organiser un événement →</a>
                         </x-dg.fieldset>
                     @endif
 

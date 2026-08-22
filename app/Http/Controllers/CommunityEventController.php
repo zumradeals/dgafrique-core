@@ -38,6 +38,24 @@ final class CommunityEventController
         return response()->json(['events' => $events->forZumraGroup($group, $this->actor($request))->map(fn (CommunityEvent $e): array => $this->present($e))->values()]);
     }
 
+    /**
+     * UIUX-007 — gabarit minimal manquant identifié par l'audit Phase A : `storeForZumraGroup()`
+     * existait déjà, aucune vue GET ne l'exposait. Même autorité que le service
+     * (`ZumraGroupService::isLeader()`), jamais recalculée.
+     */
+    public function createForZumraGroup(Request $request, ZumraGroup $group, ZumraGroupService $zumraGroups): View
+    {
+        abort_unless($zumraGroups->isLeader($group, $this->actor($request)), 403);
+
+        return view('community-events.create', [
+            'identity' => $request->attributes->get('dg_identity'),
+            'isAdministrator' => PortalAdministrator::query()->whereKey($this->actor($request))->exists(),
+            'organizerLabel' => $group->name,
+            'storeUrl' => route('community-events.zumra.store', $group),
+            'backUrl' => route('zumra.groups.show', $group),
+        ]);
+    }
+
     public function storeForOrganization(Request $request, Organization $organization, CommunityEventService $events): RedirectResponse
     {
         $event = $events->createForOrganization($organization, $this->actor($request), $this->validated($request));
@@ -48,6 +66,23 @@ final class CommunityEventController
     public function indexForOrganization(Request $request, Organization $organization, CommunityEventService $events): JsonResponse
     {
         return response()->json(['events' => $events->forOrganization($organization, $this->actor($request))->map(fn (CommunityEvent $e): array => $this->present($e))->values()]);
+    }
+
+    /**
+     * UIUX-007 — même gabarit partagé que `createForZumraGroup()`, même autorité que le service
+     * (`OrganizationService::isManager()`).
+     */
+    public function createForOrganization(Request $request, Organization $organization, OrganizationService $organizations): View
+    {
+        abort_unless($organizations->isManager($organization, $this->actor($request)), 403);
+
+        return view('community-events.create', [
+            'identity' => $request->attributes->get('dg_identity'),
+            'isAdministrator' => PortalAdministrator::query()->whereKey($this->actor($request))->exists(),
+            'organizerLabel' => $organization->name,
+            'storeUrl' => route('community-events.organization.store', $organization),
+            'backUrl' => route('organizations.show', $organization),
+        ]);
     }
 
     /**

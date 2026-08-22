@@ -475,6 +475,12 @@
                         <x-dg.label>Actions rapides</x-dg.label>
                         <div class="dg-project-quick-actions" style="margin-top:12px">
                             <x-dg.btn variant="project" :href="route('projects.brain.show', $project)">Ouvrir le Cerveau →</x-dg.btn>
+                            @if($canProposeMission)
+                                {{-- UIUX-007 — porte humaine visible vers la création de Mission déjà
+                                     existante (CAP-069), jamais dupliquée ici : le Cerveau reste le
+                                     lieu de gestion, ceci n'est qu'un accès direct au même moteur. --}}
+                                <x-dg.btn variant="quiet" :href="route('projects.missions.create', $project)">Proposer une Mission →</x-dg.btn>
+                            @endif
                             @if($canDecide)
                                 <x-dg.btn variant="quiet" :href="route('projects.matching', $project)">Trouver des capacités →</x-dg.btn>
                             @endif

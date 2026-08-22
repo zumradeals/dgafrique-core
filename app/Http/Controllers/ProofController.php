@@ -13,6 +13,8 @@ use App\Models\PortalAdministrator;
 use App\Models\Proof;
 use App\Models\ProofReference;
 use App\Models\ProofWitness;
+use App\Models\Transmission;
+use App\Models\TransmissionParticipant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -123,7 +125,29 @@ final class ProofController
         $identity = $request->attributes->get('dg_identity');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('proofs.create', ['identity' => $identity, 'isAdministrator' => $isAdministrator]);
+        // UIUX-007 — Transmission → Preuve : le contexte n'est prérempli que si la Transmission
+        // est réellement terminée et que l'acteur y a réellement participé — jamais une confiance
+        // accordée au seul paramètre d'URL, jamais de preuve fabriquée automatiquement.
+        $prefillTransmission = null;
+        if ($request->query('origin_type') === Proof::ORIGIN_TRANSMISSION && $request->query('origin_reference')) {
+            $transmission = Transmission::query()
+                ->where('public_reference', $request->query('origin_reference'))
+                ->whereIn('status', [Transmission::STATUS_COMPLETED_CONFIRMED, Transmission::STATUS_COMPLETED_BY_CONTEXT])
+                ->first();
+
+            $wasParticipant = $transmission !== null && $transmission->participants()
+                ->where('core_identity_reference', $identity->reference)
+                ->where('status', TransmissionParticipant::STATUS_ACCEPTED)
+                ->exists();
+
+            $prefillTransmission = $wasParticipant ? $transmission : null;
+        }
+
+        return view('proofs.create', [
+            'identity' => $identity,
+            'isAdministrator' => $isAdministrator,
+            'prefillTransmission' => $prefillTransmission,
+        ]);
     }
 
     public function store(Request $request, ProofWorkflow $workflow): RedirectResponse

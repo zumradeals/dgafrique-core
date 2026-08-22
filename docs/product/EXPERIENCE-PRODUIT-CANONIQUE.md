@@ -884,3 +884,108 @@ d'Organisation/Partnership/CommunityEvent dans le Fil reste un chantier distinct
 l'audit Phase A — non corrigée ici), `ImpactMetrics` sur la fiche, matching Organisation, G-POS,
 ORG-ATTACH, sponsorisation, catalogue commercial, gouvernance de membre (invitation/approbation/
 retrait), modification de l'identité, redesign général.
+
+## 28. Addendum daté — UIUX-007 Phase B, ponts UX de la Personne (22 août 2026)
+
+**Portée : fermeture de ponts UX entre capacités déjà réelles, aucun nouveau modèle métier.**
+Fait suite à l'audit Phase A (PERSONNE → POSSIBILITÉS → MOUVEMENT) et à la doctrine humaine
+canonisée dans `docs/canon/DOCTRINE-GAMAD.md` §6 (une ZUMRA est réelle et opérationnelle dès sa
+création par son premier responsable). Cette section ne duplique pas cette doctrine — elle
+n'enregistre que les décisions UX qu'elle rend concrètes. Fichiers touchés : `member/space.blade.php`
+et `MemberSpaceController.php` (routeur, rail « Mes structures », Opportunités), `zumra/groups/
+show.blade.php` (collaborateurs, Besoin/Projet, Événement), `needs/create.blade.php`,
+`projects/create.blade.php` et leurs contrôleurs (préremplissage contextuel), `NeedController.php`/
+`needs/show.blade.php` et `ProjectController.php`/`projects/show.blade.php` (pont vers Mission),
+`organizations/show.blade.php` + `CommunityEventController.php` + nouvelle vue
+`community-events/create.blade.php` (gabarit d'Événement manquant), `discovery/show.blade.php` +
+`TransmissionController.php`/`transmissions/create.blade.php` (Personne → Transmission),
+`transmissions/show.blade.php` + `ProofController.php`/`proofs/create.blade.php` (Transmission →
+Preuve).
+
+**Décisions rendues durables** :
+
+- **Créer sa ZUMRA n'est jamais présenté comme nécessitant un collectif préalable.** Le routeur de
+  première intention (§21) n'affiche cette porte que pour un tout nouveau membre — qui, par
+  construction (`isNewMember()`), n'a encore aucune adhésion active au Programme ZUMRA — et mène
+  donc honnêtement à l'adhésion d'abord, jamais à un lien qui échouerait. Le lien de création
+  directe réel vit dans le rail « Mes structures » de Mon espace, pour un membre du Programme actif
+  sans groupe : « Vous pouvez créer votre ZUMRA dès maintenant — Seul·e, sans attendre de réunir un
+  collectif au préalable. » Ceci corrige une lacune découverte pendant cette mission : une première
+  version plaçait ce lien réel à l'intérieur du routeur de première intention lui-même, où il
+  n'était en pratique jamais atteignable (le routeur n'apparaît que quand l'adhésion est encore
+  absente).
+- **Développer son collectif reste un geste du responsable, jamais un moteur de recrutement.** La
+  fiche ZUMRA ajoute « Trouver des collaborateurs → » (réutilise `people.index` tel quel) réservé au
+  responsable, et « + Créer un besoin » / « + Proposer un projet pour cette ZUMRA » réservés à tout
+  membre actif — aucun compteur, objectif ou récompense de recrutement.
+- **Le contexte d'origine se conserve sans fabriquer d'autorité.** Depuis la fiche ZUMRA, créer un
+  Besoin ou un Projet préremplit le porteur collectif uniquement si l'acteur y est déjà membre actif
+  (même liste que le formulaire vérifie déjà lui-même) — jamais une confiance accordée au seul
+  paramètre d'URL.
+- **Le gabarit de création d'Événement manquant a été construit** pour ZUMRA et Organisation : la
+  logique métier (`CommunityEventService::createForZumraGroup/createForOrganization`) existait déjà
+  depuis CAP-068, seule la vue GET manquait. Un seul formulaire partagé, même autorité que le
+  service (`ZumraGroupService::isLeader()` / `OrganizationService::isManager()`), jamais dupliquée.
+  La fiche Organisation garde son format en quatre temps (§27) — un seul lien de plus dans
+  « Gestion », jamais un tableau de bord.
+- **Une personne découverte peut recevoir une proposition de Transmission, jamais une relation
+  automatique.** « Proposer une transmission » depuis une fiche Personne réutilise le moteur
+  Transmission existant tel quel : la personne visée est invitée (`TransmissionParticipationService
+  ::invite()`), avec le statut `INVITED`, jamais `ACCEPTED` — son acceptation explicite reste
+  entièrement requise. Le préremplissage du formulaire ne fait confiance qu'à un profil réellement
+  découvrable et consentant au moment de l'affichage, jamais au seul paramètre d'URL.
+- **Une Transmission réellement terminée ouvre une porte facultative vers le Carnet de preuves,
+  jamais une preuve fabriquée automatiquement.** Le pont n'apparaît que pour un participant accepté
+  d'une Transmission au statut `COMPLETED_CONFIRMED`/`COMPLETED_BY_CONTEXT`. Le préremplissage du
+  Carnet de preuves vérifie côté serveur que l'acteur a réellement participé à la Transmission citée
+  avant de préremplir quoi que ce soit — un visiteur non participant n'obtient aucun préremplissage,
+  même avec le bon paramètre d'URL.
+- **« Je peux apporter cette capacité » sur un Besoin réutilise la seule transition métier qui
+  représente déjà réellement une réponse humaine à un Besoin.** Le mini-audit préalable (mandaté
+  avant tout code) a confirmé que `NeedMissionContext::canPropose()` — adhésion Programme ZUMRA
+  active + visibilité + Besoin non archivé — est déjà ouvert à tout membre concerné, pas seulement à
+  l'autorité de décision du Besoin ; c'est ce mécanisme, déjà réel, qui est rendu visible
+  (`needs.missions.create`). Partnership n'a délibérément pas été choisi : c'est une relation métier
+  distincte, jamais une réponse générique « aider ».
+- **« Proposer une Mission » depuis un Projet rend visible une porte déjà réelle mais jusqu'ici
+  cachée dans le Cerveau.** Même autorité que le Cerveau (`ProjectMissionContext::canPropose()`),
+  aucune logique dupliquée, le Cerveau reste le lieu de gestion complet.
+- **Mon espace regroupe visuellement « Mes ZUMRA » et « Mes Organisations » sous « Mes structures »**
+  — un simple partage de libellé de survol entre deux cartes qui restent distinctes : aucune fusion
+  de modèle, ZUMRA ≠ Organisation.
+- **Opportunités reste la même projection de Missions compatibles (§18) — le moteur n'a pas été
+  étendu.** Sa découvrabilité depuis Mon espace est améliorée par un compte réel (« 3 Missions
+  rapprochées… » au lieu d'un texte générique) quand des opportunités existent, réutilisant
+  `OpportunityEngine::forIdentity()` tel quel — jamais injecté dans le Fil.
+- **Correction d'un bogue de migration pré-existant, hors du périmètre UX de cette mission mais
+  bloquant toute régression complète en local.** Trois migrations (`fix_project_brain_*_actor_core
+  _reference_type`, datées du 19-20 août 2026) exécutaient une syntaxe `ALTER COLUMN … TYPE …`
+  propre à PostgreSQL sans le garde `DB::connection()->getDriverName() === 'pgsql'` déjà en usage
+  ailleurs dans le projet (`harden_mission_tables.php` et consorts) — elles faisaient donc échouer
+  toute la suite de tests sous SQLite en local. Corrigées pour suivre exactement la convention
+  déjà établie (guard + no-op sous SQLite, colonne déjà assez souple pour ne pas nécessiter de
+  conversion de type). Aucun changement de logique métier.
+
+**Dette documentée, non résolue ici (catégorie C)** :
+
+- **`experience_proofs_text` (profil complet) et le Carnet de preuves (`Proof`) restent deux
+  systèmes distincts et non reliés.** Le premier est une liste libre auto-déclarée (portfolio,
+  certificat, référence) sans aucune vérification tierce ; le second porte témoin, reconnaissance de
+  contexte et contestation. Cette mission documente la divergence sans y toucher : aucune migration,
+  aucune suppression, aucun rapprochement de données. Un futur chantier pourrait clarifier si le
+  champ texte libre doit rester un complément narratif du profil ou converger vers le Carnet de
+  preuves — décision volontairement laissée ouverte.
+- **La fiche Projet présente un débordement horizontal mobile pré-existant** (bandeau d'actions
+  d'en-tête et onglets d'ancrage « Besoins/Ressources/Documents/Conversations »), confirmé identique
+  sur `main` et donc non causé par cette mission. Le nouveau lien « Proposer une Mission → » de
+  cette mission n'y contribue pas (vérifié élément par élément à 390px). Non corrigé ici — hors
+  périmètre des ponts UX demandés.
+- **Formation** : aucun nouvel écran créé, les trois dimensions déclaratives existantes restent
+  inchangées. Un lien léger a été ajouté depuis la déclaration rapide de capacité (Mon espace) vers
+  le profil complet — les deux écrivent déjà le même champ (`existing_skills`/`CapabilityStatement`),
+  aucune duplication introduite.
+
+**Hors périmètre, restant catégorie C** : cycle de vie ZUMRA (`CONSTITUTING`→`ACTIVE`, seuil de 50,
+cinq responsabilités), GAMAD Core, Wasplex, G-POS, refonte du Fil, tout modèle de progression
+humaine (`HumanProgress`, `GamadLevel`, `StabilityScore`, `RecruitmentScore`, `SpiritualScore`) —
+aucun n'a été touché ni introduit.

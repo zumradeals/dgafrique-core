@@ -139,6 +139,14 @@
                                     @endforeach
                                 </div>
                             @endif
+                            @if($membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE)
+                                {{-- UIUX-007 — CTA contextuel : même autorité que NeedService/ProjectService
+                                     (tout membre actif peut proposer, jamais une autorité nouvelle). --}}
+                                <div style="padding:12px 24px;border-top:1px solid var(--dg-line-inner);display:flex;gap:16px;flex-wrap:wrap">
+                                    <a href="{{ route('needs.create', ['group' => $group->public_reference]) }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">+ Créer un besoin pour cette ZUMRA</a>
+                                    <a href="{{ route('projects.create', ['group' => $group->public_reference]) }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">+ Proposer un projet pour cette ZUMRA</a>
+                                </div>
+                            @endif
                         </x-dg.card>
 
                         <x-dg.card>
@@ -273,6 +281,10 @@
                             <x-dg.label>Espace responsable</x-dg.label>
                             <h2 class="dg-display" style="font-size:16px;margin-top:6px">Inviter un adhérent</h2>
                             <p class="dg-hint" style="margin-top:8px">Utilisez la référence publique visible sur son profil. L’invitation devra être acceptée.</p>
+                            {{-- UIUX-007 — doctrine humaine §6/§7 : développer le collectif reste
+                                 la mission du premier responsable, jamais un moteur de recrutement.
+                                 Réutilise strictement la découverte de Personnes déjà existante. --}}
+                            <a href="{{ route('people.index') }}" class="dg-meta" style="display:block;margin-top:8px;color:var(--dg-copper);font-weight:600">Trouver des collaborateurs →</a>
                             <form method="POST" action="{{ route('zumra.groups.invite', $group) }}" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
                                 @csrf
                                 <div class="dg-field">
@@ -281,6 +293,7 @@
                                 </div>
                                 <button type="submit" class="dg-btn dg-btn--primary">Envoyer l’invitation</button>
                             </form>
+                            <a href="{{ route('community-events.zumra.create', $group) }}" class="dg-meta" style="display:block;margin-top:12px;color:var(--dg-copper);font-weight:600">Organiser un événement →</a>
                         </x-dg.card>
 
                         @if($pendingRequests->isNotEmpty())
