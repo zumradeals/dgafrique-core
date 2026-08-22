@@ -694,3 +694,84 @@ de gouvernance du §20. Ferme la boucle ouverte par UIUX-003 : découvrir → co
 Opportunités, l'architecture de Mon espace, la navigation globale desktop/mobile, l'anomalie
 `overview-v2`/`pv-seed` — aucun n'a été touché. La liste nominative des inscrits reste strictement
 réservée au service (`CommunityEventService::participants()`), jamais exposée dans cette fiche.
+
+---
+
+## 25. Addendum daté — UIUX-005 Phase B, Organisation comme acteur établi & Partnership (22 août 2026)
+
+**Portée : couche Partnership (CAP-065) humanisée sur ses contextes réels** —
+`PartnershipService.php`, `PartnershipController.php`, `PresentsPartnerships` (nouveau trait
+partagé), `x-dg.partnership-row`/`x-dg.partnership-propose-form` (nouveaux composants), fiches
+Organisation/Besoin/Projet/ZUMRA. Suit la procédure de gouvernance du §20. Fait suite à l'audit
+CORE-DG-001 (alignement GAMAD Core), qui a confirmé que rien de cette portée ne dépend du Core :
+tout reste consommable depuis le runtime DG Afrique existant.
+
+**Décision produit centrale, à préserver strictement** : les capacités intrinsèques d'une
+Organisation (« ce qu'elle sait apporter ») ne sont **jamais** déduites de ses Partnerships. Un
+Partnership est une collaboration concrète dans un contexte réel, pas une déclaration de
+capacité générale — les confondre transformerait silencieusement chaque proposition ponctuelle en
+entrée de catalogue permanent. Le runtime ne possède aujourd'hui aucune décoration de capacité
+Organisation indépendante d'un Partnership (CAP-067 en dépendrait, hors périmètre) ; tant que ce
+manque n'est pas comblé, aucune section « Ce que cette Organisation peut apporter » n'est
+fabriquée à partir des `capability_label` existants.
+
+**Décisions rendues durables** :
+
+- **Collaborations, pas capacités.** La fiche Organisation gagne une section « Collaborations »
+  (les Partnerships où elle est fournisseur, filtrés par `PartnershipService::canView()`), jamais
+  un catalogue de capacités. Besoin/Projet/ZUMRA gagnent symétriquement une section
+  « Partenariats » pour les collaborations liées à leur propre contexte.
+- **Aucune fiche Partnership autonome.** Chaque carte (`x-dg.partnership-row`) porte toute
+  l'information utile — fournisseur, ce qui est apporté, contexte réel, état — et les actions du
+  cycle directement en ligne. Un Partnership n'est jamais un centre produit séparé, cohérent avec
+  la strate 3 (§16) : accessible en contexte, jamais promu à un niveau de navigation autonome.
+- **La proposition ne part jamais du vide.** Le formulaire « Notre organisation peut apporter… »
+  n'apparaît que depuis un Besoin/Projet/ZUMRA déjà consultable, réservé aux organisations que
+  l'acteur gère réellement (`OrganizationService::isManager()`) — jamais depuis la fiche
+  Organisation elle-même, et jamais un bouton global « Créer un partenariat ». Après soumission,
+  l'acteur reste dans le contexte d'origine (jamais redirigé vers une réponse JSON).
+- **Vocabulaire humain stabilisé pour le cycle Partnership** : `PROPOSED` → « Proposé », `ACTIVE`
+  → « Actif », `PAUSED` → « En pause », `ENDED` → « Terminé ». Aucune transition « Refuser »
+  n'existe dans le service ; aucune n'a été inventée dans l'interface.
+- **Autorité jamais recalculée.** `PartnershipService::isProviderActor()`/
+  `canManageAsContextAuthority()` (promue/ajoutée publique dans ce chantier, sans changement de
+  comportement) restent la seule décision réelle ; les gabarits n'affichent un bouton que si le
+  service confirmerait l'action.
+- **Le fournisseur `PERSON` reste intact.** Aucune nouvelle interface n'a été construite pour ce
+  parcours (resté JSON, comme avant), mais les Partnerships déjà proposés par une Personne
+  s'affichent correctement partout où un Partnership est montré — « Vous » pour le fournisseur
+  lui-même, son nom de découverte s'il l'a consenti, « Membre DG Afrique » sinon (même doctrine
+  que §9).
+
+**Architecture identité Organisation — doctrine confirmée par l'audit CORE-DG-001** :
+
+```
+Identité/Organisation GAMAD Core (CAP-CORE-001/002)
+   → projection Organisation DG Afrique (LOCAL_PROJECTION)
+   → projection commerciale G-POS (LOCAL_PROJECTION distincte)
+```
+
+Une seule vérité canonique côté Core, deux projections produit indépendantes qui ne se
+connaissent pas entre elles mais pourront un jour partager la même racine d'identité. **Une
+Organisation DG Afrique peut exister durablement sans jamais avoir de présence G-POS** — G-POS
+est un outil spécialisé/extractible (catalogue, produits/services, relations commerciales), pas
+une extension automatique de toute Organisation. Une future intégration pourra permettre à un
+acteur G-POS déjà existant de rejoindre DG Afrique comme Organisation en partageant la même
+racine Core, sans jamais fusionner les deux domaines : DG Afrique reste le réseau social d'action,
+G-POS reste l'outil commercial. Le lien Core lui-même (CAP-067) n'est pas construit dans ce
+chantier — l'audit CORE-DG-001 a confirmé que le Core possède déjà l'identité et le registre
+d'organisations (CAP-CORE-001/002, `GO`), mais qu'aucune délégation ne permet encore à un satellite
+autorisé (dont DG Afrique, `PRD-GAMAD-005`) de créer ou rattacher une Organisation Core — un
+chantier Core séparé, pas une omission de celui-ci.
+
+**Sponsorisation et Fil — doctrine préservée, rien construit ici** : une Organisation pourra un
+jour promouvoir un contenu commercial dans le Fil, notamment issu de son catalogue G-POS, selon le
+mécanisme déjà posé par `ARCHITECTURE-PRODUIT-V2.md` §10 (pertinence ≠ sponsorisation, signalée
+explicitement, jamais confondue avec une recommandation organique). Aucun code de sponsorisation
+n'existe ni n'est introduit ici — ce paragraphe documente seulement que la doctrine reste
+compatible avec cette évolution future.
+
+**Hors périmètre, restant catégorie C** : CAP-067 (identité Organisation Core), G-POS (aucun
+code, aucun faux catalogue/prix/stock), sponsorisation Fil (doctrine seule), gouvernance
+Organisation (inviter/approuver/retirer un membre, modifier l'identité — service déjà prêt,
+aucune route/vue construite ici), CAP-CORE-021 Matching (audité, non consommé — `CORE_NOT_READY`).

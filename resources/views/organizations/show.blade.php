@@ -47,6 +47,28 @@
                         </x-dg.card>
                     @endif
 
+                    @if($organizationPartnerships !== [] || $isManager)
+                        {{-- UIUX-005 — Collaborations réelles de cette Organisation comme fournisseur
+                             (CommunityEventService::canView() → PartnershipService::canView(), même
+                             discipline). Jamais une déduction de « capacités » à partir de ces
+                             partenariats : ceci montre des collaborations concrètes, pas un catalogue. --}}
+                        <div>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                <x-dg.label>Collaborations</x-dg.label>
+                                @if($organizationPartnerships !== [])
+                                    <span class="dg-meta">{{ count($organizationPartnerships) }} partenariat{{ count($organizationPartnerships) > 1 ? 's' : '' }}</span>
+                                @endif
+                            </div>
+                            @forelse($organizationPartnerships as $row)
+                                <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                            @empty
+                                <x-dg.card>
+                                    <x-dg.empty><span>Aucune collaboration pour le moment. Elles apparaissent lorsque cette organisation propose d'apporter une capacité à un Besoin, un Projet ou une ZUMRA.</span></x-dg.empty>
+                                </x-dg.card>
+                            @endforelse
+                        </div>
+                    @endif
+
                     @if(! $isMember)
                         <x-dg.fieldset>
                             <legend><x-dg.label>Rejoindre cette organisation</x-dg.label></legend>

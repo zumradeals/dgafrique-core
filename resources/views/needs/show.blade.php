@@ -91,6 +91,22 @@
                             </x-dg.actions>
                         </x-dg.fieldset>
                     @endif
+
+                    {{-- UIUX-005 — Partenariats réellement associés à ce Besoin (CAP-065), filtrés
+                         par PartnershipService::canView(), jamais recalculée en Blade. --}}
+                    @if($needPartnerships !== [])
+                        <div>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                <x-dg.label>Partenariats</x-dg.label>
+                                <span class="dg-meta">{{ count($needPartnerships) }} partenariat{{ count($needPartnerships) > 1 ? 's' : '' }}</span>
+                            </div>
+                            @foreach($needPartnerships as $row)
+                                <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="NEED" :context-reference="$need->public_reference" />
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">

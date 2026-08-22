@@ -7,8 +7,11 @@ namespace App\Http\Controllers;
 use App\Application\Needs\NeedConfiguration;
 use App\Application\Needs\NeedDirectoryDemoContent;
 use App\Application\Needs\NeedService;
+use App\Application\Partnerships\PartnershipService;
 use App\Domain\Identity\CoreIdentity;
+use App\Http\Controllers\Concerns\PresentsPartnerships;
 use App\Models\Need;
+use App\Models\Partnership;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ProjectTeamMember;
@@ -23,6 +26,8 @@ use Illuminate\View\View;
 
 final class NeedController
 {
+    use PresentsPartnerships;
+
     public function index(Request $request, NeedConfiguration $configuration, NeedService $service, NeedDirectoryDemoContent $demoContent): View
     {
         /** @var CoreIdentity $identity */
@@ -103,7 +108,7 @@ final class NeedController
         return redirect()->route('needs.show', $need)->with('status', $need->status === Need::STATUS_PROPOSED ? 'Le besoin est proposé aux responsables de la ZUMRA. Il n’est pas encore publié officiellement.' : 'Votre besoin est publié selon la visibilité choisie.');
     }
 
-    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service): View
+    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service, PartnershipService $partnerships): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -112,7 +117,23 @@ final class NeedController
         $project = $need->owner_type === Need::OWNER_PROJECT ? Project::query()->find($need->owner_reference) : null;
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
+        // UIUX-005 — Partenariats réellement associés à ce Besoin, filtrés par la même autorité
+        // que le service lui-même (PartnershipService::canView()), jamais recalculée en Blade.
+        $needPartnerships = Partnership::query()
+            ->where('context_type', Partnership::CONTEXT_NEED)
+            ->where('context_reference', $need->public_reference)
+            ->latest('created_at')
+            ->limit(20)
+            ->get()
+            ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
+            ->values();
+
+        return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + [
+            'configuration' => $configuration->get(),
+            'canDecide' => $service->canDecide($need, $identity->reference),
+            'needPartnerships' => $this->presentPartnerships($needPartnerships, $identity->reference, $partnerships),
+            'manageableOrganizations' => $this->manageableOrganizations($identity->reference),
+        ]);
     }
 
     public function transition(Request $request, Need $need, NeedService $service): RedirectResponse

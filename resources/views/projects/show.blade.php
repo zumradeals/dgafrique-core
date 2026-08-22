@@ -309,6 +309,23 @@
                         </x-dg.actions>
                     </x-dg.card>
 
+                    {{-- Partenariats — UIUX-005 : collaborations réellement associées à ce Projet
+                         (CAP-065), filtrées par PartnershipService::canView(), jamais recalculée
+                         en Blade. --}}
+                    @if($projectPartnerships !== [])
+                        <div>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                <x-dg.label>Partenariats</x-dg.label>
+                                <span class="dg-meta">{{ count($projectPartnerships) }} partenariat{{ count($projectPartnerships) > 1 ? 's' : '' }}</span>
+                            </div>
+                            @foreach($projectPartnerships as $row)
+                                <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" context-type="PROJECT" :context-reference="$project->public_reference" />
+
                     {{-- Activité récente --}}
                     <x-dg.card id="dg-project-activite">
                         <x-dg.label>Activité récente</x-dg.label>
