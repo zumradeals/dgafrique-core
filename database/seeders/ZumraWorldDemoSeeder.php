@@ -8,6 +8,8 @@ use App\Application\Zumra\ZumraGroupService;
 use App\Models\CommunityEvent;
 use App\Models\PersonProfile;
 use App\Models\Project;
+use App\Models\ProjectMilestone;
+use App\Models\ProjectTeamMember;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
@@ -262,32 +264,53 @@ final class ZumraWorldDemoSeeder extends Seeder
             return;
         }
 
-        Project::query()->firstOrCreate(
+        $project = Project::query()->firstOrCreate(
             ['owner_type' => Project::OWNER_GROUP, 'owner_reference' => $rahman->id, 'name' => 'Plateforme de services numériques solidaires'],
             [
                 'public_reference' => (string) Str::uuid(),
                 'initiator_core_reference' => $rahman->proposer_core_reference,
                 'zumra_group_id' => $rahman->id,
                 'source_need_id' => null,
-                'summary' => 'Connecter les talents locaux aux besoins numériques réels des particuliers et des professionnels.',
+                'summary' => 'Créer une plateforme qui connecte les artisans d’Abobo aux clients, facilite la visibilité de leurs services et stimule leur croissance.',
                 'problem' => 'Les besoins numériques locaux trouvent difficilement les bonnes compétences de proximité.',
                 'proposed_solution' => 'Une plateforme sobre de mise en relation et de transmission portée collectivement.',
-                'beneficiaries' => 'Communautés et professionnels locaux',
+                'beneficiaries' => 'Plus de 500 artisans connectés',
                 'domain' => 'DIGITAL',
                 'participation_mode' => 'HYBRID',
-                'location' => 'Abidjan',
-                'objectives' => ['Relier les besoins et les compétences'],
+                'location' => 'Abidjan, Abobo',
+                'objectives' => ['Relier les artisans aux clients', 'Rendre les savoir-faire locaux visibles'],
                 'required_capabilities' => ['Développement web', 'Design'],
-                'required_resources' => ['Temps de contribution'],
+                'required_resources' => ['Document de cadrage', 'Charte graphique', 'Plan de développement'],
                 'risks' => ['Disponibilité des membres'],
                 'property_regime' => 'ZUMRA_COLLECTIVE',
                 'visibility' => Project::VISIBILITY_GROUP,
                 'status' => Project::STATUS_ADOPTED,
-                'maturity' => 'IDEA',
+                'maturity' => 'ACTIVITY',
                 'decided_by_core_reference' => $rahman->proposer_core_reference,
                 'adopted_at' => now()->subDays(2),
+                'started_at' => now()->subMonths(3),
             ],
         );
+
+        foreach ([
+            ['title' => 'Analyse & conception', 'status' => 'COMPLETED'],
+            ['title' => 'Développement MVP', 'status' => 'PLANNED'],
+            ['title' => 'Tests & ajustements', 'status' => 'PLANNED'],
+            ['title' => 'Lancement officiel', 'status' => 'PLANNED'],
+        ] as $position => $milestone) {
+            ProjectMilestone::query()->firstOrCreate(
+                ['project_id' => $project->id, 'position' => $position + 1],
+                $milestone + ['completed_at' => $milestone['status'] === 'COMPLETED' ? now()->subMonth() : null],
+            );
+        }
+
+        // Membres de démonstration réellement actifs : aucune responsabilité n’est attribuée.
+        foreach (['DEMO-IDN-F001', 'DEMO-IDN-VIEWER'] as $memberReference) {
+            ProjectTeamMember::query()->firstOrCreate(
+                ['project_id' => $project->id, 'core_identity_reference' => $memberReference],
+                ['role' => null, 'status' => ProjectTeamMember::STATUS_ACTIVE, 'entry_mode' => ProjectTeamMember::ENTRY_MODE_INVITATION, 'initiated_by_core_reference' => $rahman->proposer_core_reference, 'invited_at' => now()->subDays(2), 'joined_at' => now()->subDay()],
+            );
+        }
 
         CommunityEvent::query()->firstOrCreate(
             [
