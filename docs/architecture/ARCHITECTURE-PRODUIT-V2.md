@@ -468,3 +468,38 @@ Le ledger conserve l'origine, la destination, l'autorité et la finalité de cha
 Toute future CAP, fonctionnalité ou refonte touchant Projet, ZUMRA, Fil, recommandation, appels, financement, Wallet, ZAHAB, sponsorisation ou outils spécialisés doit être confrontée à ce document.
 
 Si une proposition contredit un invariant V2, la contradiction doit être explicitement arbitrée et documentée avant implémentation ; elle ne doit pas entrer silencieusement dans le produit.
+
+---
+
+## 15. Addendum daté — ZAHAB-001, arbitrage de parité et socle Wallet (23 août 2026)
+
+**Contexte.** L'audit CORE-COMPLETION-001 (`docs/audits/CORE-COMPLETION-001-ZAHAB.md`) a constaté
+que §8.2 ci-dessus traitait la parité ZAHAB/FCFA comme conditionnelle (« *pourrait* servir d'unité
+comptable... *uniquement si*... ») alors qu'un mandat produit ultérieur (ZAHAB-001) l'affirme comme
+acquise. Conformément à la règle d'évolution ci-dessus, cette contradiction est arbitrée ici
+explicitement plutôt que résolue en silence — §8.2 n'est pas réécrit : cet addendum en est la mise
+à jour datée, et les deux versions restent lisibles pour l'historique.
+
+**Arbitrage retenu (23 août 2026)** :
+
+1. **Parité** — décision produit désormais actée : **1 ZAHAB = 1 FCFA**. Ce n'est plus conditionnel.
+2. Cette parité **ne constitue pas** une promesse de convertibilité, de retrait, de cash-out, de
+   stablecoin ou d'adossement — §8.2 reste vrai sur ce point précis, non révisé par cet arbitrage :
+   « aucune promesse de convertibilité... tant que le mécanisme financier, les réserves, la
+   gouvernance et le cadre réglementaire correspondants ne sont pas réellement établis » continue
+   de s'appliquer intégralement à ZAHAB-001 et à toute version ultérieure tant qu'un arbitrage daté
+   ultérieur ne le lève pas explicitement.
+3. ZAHAB-001 (chantier technique correspondant) construit **uniquement** le socle Wallet + Ledger :
+   aucun cash-out, aucun retrait, aucune conversion externe, aucun intérêt, aucune création
+   monétaire libre, aucune qualification bancaire. Un Wallet ZAHAB existe désormais pour les sujets
+   Personne, ZUMRA et Organisation (`App\Models\ZahabWallet`), mais son solde reste 100% dérivé des
+   écritures `dg_ledger_entries` (CAP-062) — jamais une colonne stockée, jamais une seconde vérité
+   financière. Voir `docs/audits/CORE-COMPLETION-001-ZAHAB.md` §C pour le modèle détaillé.
+4. **GAMAD Finance** (§8.2, « couche économique future/expérimentale... de GAMAD Finance ») reste un
+   nom canonique sans aucun code correspondant dans ce dépôt (confirmé par CORE-COMPLETION-001).
+   ZAHAB-001 ne crée aucun module « GAMAD Finance » : le Wallet ZAHAB vit dans `dgafrique-core`
+   comme une extension du Ledger existant. Toute extraction future vers un service financier dédié
+   reste une décision séparée, non prise par cet addendum.
+5. Le statut juridique/réglementaire de ZAHAB (§13, « à formaliser avant implémentation ») reste
+   entièrement ouvert — cet arbitrage porte uniquement sur la parité d'affichage interne et
+   l'architecture technique du socle, jamais sur une reconnaissance légale ou financière externe.

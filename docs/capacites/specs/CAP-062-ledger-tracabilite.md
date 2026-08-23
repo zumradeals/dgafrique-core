@@ -4,6 +4,16 @@
 
 **Audit (Phase A) et implémentation V1 (Phase B) — 2026-09-08.** Le domaine n'existait auparavant que comme une ligne `NOT_IMPLEMENTED` dans `CAPABILITY-COVERAGE.md`, sans aucune spec ni aucun code (`docs/capacites/CAPABILITY-INDEX.md:70` : « CAP-062 — LEDGER / TRAÇABILITÉ »).
 
+**Extension ZAHAB-001 — 2026-08-23.** `dg_ledger_entries` gagne deux colonnes (`direction`
+CREDIT/DEBIT, `wallet_id` nullable vers `dg_zahab_wallets`) pour porter aussi les mouvements de
+Wallet ZAHAB, en plus des deux sources ci-dessous — voir `docs/architecture/ARCHITECTURE-PRODUIT-V2.md`
+§15 et `docs/audits/CORE-COMPLETION-001-ZAHAB.md`. Aucune des garanties ci-dessus n'est affectée :
+toujours une projection, toujours immuable, toujours sans solde stocké — `direction`/`wallet_id`
+identifient seulement le sens et, le cas échéant, quel Wallet un mouvement concerne. `entry_type
+= REVERSAL` est désormais réellement produit (par `LedgerService::reverseWalletMovement()`),
+uniquement pour les mouvements de Wallet — les sources CAP-061/CAP-007B ci-dessous n'en produisent
+toujours aucun.
+
 Ancrage doctrinal : `ZUMRA-DOCTRINE-INVARIANTE.md` art. 6.5 (« Chaque paiement produit une référence, un montant, une devise, une finalité, une période, un statut, un reçu et une écriture traçable. Un remboursement produit une écriture inverse ; il ne supprime pas l'écriture initiale. ») et art. 23.1 (« la traçabilité des décisions et fonds » — invariant absolu).
 
 ## Qu'est-ce que CAP-062 ?

@@ -13,6 +13,7 @@ use App\Http\Controllers\Administration\ProjectConfigurationController;
 use App\Http\Controllers\Administration\ProjectMatchingConfigurationController;
 use App\Http\Controllers\Administration\RecommendationConfigurationController;
 use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
+use App\Http\Controllers\Administration\WalletController as AdministrationWalletController;
 use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\ZumraGroupLifecycleController;
 use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\ProjectDraftController;
 use App\Http\Controllers\ProjectMatchingController;
 use App\Http\Controllers\QuickCapabilityController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\ZumraGroupController;
@@ -189,6 +191,14 @@ Route::get('/finances/ledger', [LedgerController::class, 'index'])
 Route::get('/finances/ledger/{entry}', [LedgerController::class, 'show'])
     ->whereUuid('entry')->middleware(['core.member', 'throttle:ledger-read'])->name('ledger.show');
 
+// ZAHAB-001 — lecture uniquement (art. 28 du mandat) : aucune route n'expose credit()/debit().
+Route::get('/finances/zahab', [WalletController::class, 'person'])
+    ->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.person');
+Route::get('/zumra/groupes/{group}/zahab', [WalletController::class, 'zumraGroup'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.zumra-group');
+Route::get('/organisations/{organization}/zahab', [WalletController::class, 'organization'])
+    ->whereUuid('organization')->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.organization');
+
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
     Route::put('/profil-capacites', [ProfileConfigurationController::class, 'update'])
@@ -234,6 +244,8 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
         ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.reactivate');
     Route::get('/ledger', [AdministrationLedgerController::class, 'index'])
         ->middleware('throttle:ledger-read')->name('administration.ledger.index');
+    Route::get('/zahab-wallets', [AdministrationWalletController::class, 'index'])
+        ->middleware('throttle:zahab-read')->name('administration.zahab.wallets.index');
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
