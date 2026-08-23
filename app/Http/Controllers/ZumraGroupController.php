@@ -35,44 +35,13 @@ final class ZumraGroupController
 {
     use PresentsPartnerships;
 
-    public function index(Request $request, ZumraGroupConfiguration $configuration): View
+    public function index(Request $request): RedirectResponse
     {
-        /** @var CoreIdentity $identity */
-        $identity = $request->attributes->get('dg_identity');
-        $membership = $this->programMembership($identity->reference);
-        $query = trim((string) $request->query('q', ''));
-        $mode = $request->query('mode');
-        $location = trim((string) $request->query('location', ''));
-        // « mine »/« invited »/« requested » reprennent honnêtement les liens de navigation du
-        // carrefour ZUMRA (Mes ZUMRA, Invitations, Mes demandes) : trois vues filtrées du même
-        // répertoire réel, jamais une page fabriquée séparément.
-        $personalFilter = $request->query('view');
+        $query = collect($request->only(['q', 'mode', 'location', 'view']))
+            ->filter(fn (mixed $value): bool => is_string($value) && trim($value) !== '')
+            ->all();
 
-        $groups = ZumraGroup::query()
-            ->whereNotIn('state', [ZumraGroup::STATE_SUSPENDED])
-            ->when($query !== '', fn ($builder) => $builder->where(function ($builder) use ($query): void {
-                $like = '%'.$query.'%';
-                $builder->whereRaw('LOWER(domain) LIKE LOWER(?)', [$like])
-                    ->orWhereRaw('LOWER(name) LIKE LOWER(?)', [$like])
-                    ->orWhereRaw('LOWER(founding_objective) LIKE LOWER(?)', [$like]);
-            }))
-            ->when(in_array($mode, ['PHYSICAL', 'DIGITAL', 'HYBRID'], true), fn ($builder) => $builder->where('participation_mode', $mode))
-            ->when($location !== '', fn ($builder) => $builder->whereRaw('LOWER(location) LIKE LOWER(?)', ['%'.$location.'%']))
-            ->when(in_array($personalFilter, ['mine', 'invited', 'requested'], true), function ($builder) use ($personalFilter, $identity): void {
-                $status = match ($personalFilter) {
-                    'invited' => ZumraGroupMembership::STATUS_INVITED,
-                    'requested' => ZumraGroupMembership::STATUS_REQUESTED,
-                    default => ZumraGroupMembership::STATUS_ACTIVE,
-                };
-                $builder->whereHas('memberships', fn ($m) => $m
-                    ->where('core_identity_reference', $identity->reference)
-                    ->where('status', $status));
-            })
-            ->latest()->paginate(12)->withQueryString();
-        $myMemberships = ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->whereIn('status', [ZumraGroupMembership::STATUS_ACTIVE, ZumraGroupMembership::STATUS_INVITED, ZumraGroupMembership::STATUS_REQUESTED])->pluck('status', 'zumra_group_id');
-        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
-
-        return view('zumra.groups.index', compact('identity', 'membership', 'groups', 'myMemberships', 'isAdministrator', 'query', 'mode', 'location', 'personalFilter') + ['configuration' => $configuration->get()]);
+        return redirect()->route('zumra.index', $query);
     }
 
     public function create(Request $request, ZumraGroupConfiguration $configuration): View
@@ -347,7 +316,7 @@ final class ZumraGroupController
         $identity = $request->attributes->get('dg_identity');
         $service->leave($group, $identity->reference, (int) $configuration->get()['established_member_threshold']);
 
-        return redirect()->route('zumra.groups.index')->with('status', 'Vous avez quitté cette ZUMRA. Son historique reste conservé.');
+        return redirect()->route('zumra.index')->with('status', 'Vous avez quitté cette ZUMRA. Son historique reste conservé.');
     }
 
     public function proposeRole(Request $request, ZumraGroup $group, string $role, ZumraGroupService $service): RedirectResponse

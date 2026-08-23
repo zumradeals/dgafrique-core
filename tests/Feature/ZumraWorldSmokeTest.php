@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\ZumraCharter;
+use App\Models\ZumraGroup;
 use App\Models\ZumraProgramMembership;
 use Database\Seeders\ZumraWorldDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,18 +28,23 @@ final class ZumraWorldSmokeTest extends TestCase
         (new ZumraWorldDemoSeeder)->run();
         $this->programMember('IDN-SMOKE-FULL');
         $this->signIn('IDN-SMOKE-FULL');
+        $group = ZumraGroup::query()->where('name', 'RAHMAN Technology')->firstOrFail();
+
         $this->get('/zumra')->assertOk()
             ->assertSee('Le monde ZUMRA')
-            ->assertSee('RAHMAN Technology');
+            ->assertSee('RAHMAN Technology')
+            ->assertSee(route('zumra.groups.show', $group), false);
     }
 
-    public function test_the_directory_view_filters_work(): void
+    public function test_the_world_filters_work_and_the_legacy_directory_redirects(): void
     {
         (new ZumraWorldDemoSeeder)->run();
         $this->programMember('IDN-SMOKE-DIR');
         $this->signIn('IDN-SMOKE-DIR');
-        $this->get('/zumra/groupes?mode=PHYSICAL&location=Yamoussoukro')->assertOk()->assertSee('Atelier Bois');
-        $this->get('/zumra/groupes?view=mine')->assertOk();
+        $this->get('/zumra?mode=PHYSICAL&location=Yamoussoukro')->assertOk()->assertSee('Atelier Bois');
+        $this->get('/zumra?view=mine')->assertOk();
+        $this->get('/zumra/groupes?mode=PHYSICAL&location=Yamoussoukro')
+            ->assertRedirect(route('zumra.index', ['mode' => 'PHYSICAL', 'location' => 'Yamoussoukro']));
     }
 
     private function programMember(string $identity): void

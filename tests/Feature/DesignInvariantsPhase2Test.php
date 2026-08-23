@@ -89,7 +89,7 @@ final class DesignInvariantsPhase2Test extends TestCase
     {
         $this->signIn('IDN-P2-NOSCORE');
 
-        foreach (['/besoins', '/projets', '/personnes', '/zumra', '/zumra/groupes', '/activite'] as $uri) {
+        foreach (['/besoins', '/projets', '/personnes', '/zumra', '/activite'] as $uri) {
             $content = $this->get($uri)->assertOk()->getContent();
             self::assertStringNotContainsStringIgnoringCase('J’aime', $content);
             self::assertStringNotContainsStringIgnoringCase('abonnés', $content);
@@ -124,13 +124,14 @@ final class DesignInvariantsPhase2Test extends TestCase
             ->assertSee('Aucun projet visible');
     }
 
-    public function test_zumra_groups_directory_shows_an_honest_empty_state(): void
+    public function test_zumra_world_shows_an_honest_empty_state_and_legacy_directory_redirects(): void
     {
         $this->signIn('IDN-P2-ZUMRA-EMPTY');
 
-        $this->get('/zumra/groupes')
+        $this->get('/zumra')
             ->assertOk()
             ->assertSee('La première ZUMRA peut commencer ici.');
+        $this->get('/zumra/groupes')->assertRedirect(route('zumra.index'));
     }
 
     public function test_learning_intention_stays_disabled_with_its_documented_reason_on_besoins_screens(): void

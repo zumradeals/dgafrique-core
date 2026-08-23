@@ -23,8 +23,6 @@ final class ZumraGroupConfigurationController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $data = $request->validate([
-            'directory_title' => ['required', 'string', 'max:200'],
-            'directory_intro' => ['required', 'string', 'max:600'],
             'creation_title' => ['required', 'string', 'max:160'],
             'established_member_threshold' => ['required', 'integer', 'min:5', 'max:10000'],
             'max_simultaneous_founder_roles' => ['required', 'integer', 'min:1', 'max:20'],

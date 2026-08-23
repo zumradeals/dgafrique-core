@@ -37,6 +37,10 @@ final class ZumraSpaceController
         $profile = PersonProfile::query()->find($identity->reference);
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+        $query = is_string($request->query('q')) ? trim($request->query('q')) : '';
+        $mode = in_array($request->query('mode'), ['PHYSICAL', 'DIGITAL', 'HYBRID'], true) ? $request->query('mode') : null;
+        $location = is_string($request->query('location')) ? trim($request->query('location')) : '';
+        $personalFilter = in_array($request->query('view'), ['mine', 'invited', 'requested'], true) ? $request->query('view') : null;
 
         $myMemberships = ZumraGroupMembership::query()
             ->where('core_identity_reference', $identity->reference)
@@ -113,7 +117,7 @@ final class ZumraSpaceController
             ->get()
             ->pluck('label');
 
-        $discoverGroups = $this->diverseDiscoverGroups(8)
+        $discoverGroups = $this->diverseDiscoverGroups(8, $identity->reference, $query, $mode, $location, $personalFilter)
             ->map(fn (ZumraGroup $group): array => [
                 'group' => $group,
                 'cover' => ZumraDomainPresentation::cover($group->domain),
@@ -131,7 +135,7 @@ final class ZumraSpaceController
         return view('zumra.index', compact(
             'identity', 'profile', 'membership', 'isAdministrator', 'myGroups', 'navCounts',
             'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities',
-            'discoverGroups', 'fil', 'stats', 'nearby',
+            'discoverGroups', 'fil', 'stats', 'nearby', 'query', 'mode', 'location', 'personalFilter',
         ));
     }
 
@@ -213,10 +217,28 @@ final class ZumraSpaceController
      * taille, pour que la découverte reste un vrai aperçu du réseau plutôt qu'un domaine unique
      * qui écraserait les autres.
      */
-    private function diverseDiscoverGroups(int $limit): Collection
+    private function diverseDiscoverGroups(int $limit, string $identityReference, string $query, ?string $mode, string $location, ?string $personalFilter): Collection
     {
         $candidates = ZumraGroup::query()
             ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->when($query !== '', fn ($builder) => $builder->where(function ($builder) use ($query): void {
+                $like = '%'.$query.'%';
+                $builder->whereRaw('LOWER(domain) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(name) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(founding_objective) LIKE LOWER(?)', [$like]);
+            }))
+            ->when($mode !== null, fn ($builder) => $builder->where('participation_mode', $mode))
+            ->when($location !== '', fn ($builder) => $builder->whereRaw('LOWER(location) LIKE LOWER(?)', ['%'.$location.'%']))
+            ->when($personalFilter !== null, function ($builder) use ($personalFilter, $identityReference): void {
+                $status = match ($personalFilter) {
+                    'invited' => ZumraGroupMembership::STATUS_INVITED,
+                    'requested' => ZumraGroupMembership::STATUS_REQUESTED,
+                    default => ZumraGroupMembership::STATUS_ACTIVE,
+                };
+                $builder->whereHas('memberships', fn ($memberships) => $memberships
+                    ->where('core_identity_reference', $identityReference)
+                    ->where('status', $status));
+            })
             ->oldest()
             ->limit($limit * 4)
             ->get();
