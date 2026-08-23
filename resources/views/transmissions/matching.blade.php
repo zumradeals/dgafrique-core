@@ -28,7 +28,7 @@
 
             @if($recommendations === [])
                 <x-dg.empty title="Aucune correspondance consentie">
-                    <span>Attendez que des membres déclarent cette capacité dans leur profil avec un consentement de matching, ou invitez directement une personne connue.</span>
+                    <span>Attendez que des membres déclarent cette capacité dans leur profil avec un consentement à être mis en relation, ou invitez directement une personne connue.</span>
                 </x-dg.empty>
             @else
                 <div class="dg-grid">

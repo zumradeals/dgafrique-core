@@ -115,7 +115,7 @@
                                         <label for="type">Type</label>
                                         <select name="type" id="type" class="dg-select">
                                             @foreach(\App\Models\MissionBlocker::TYPES as $type)
-                                                <option value="{{ $type }}">{{ $type }}</option>
+                                                <option value="{{ $type }}">{{ \App\Models\MissionBlocker::TYPE_LABELS[$type] ?? $type }}</option>
                                             @endforeach
                                         </select>
                                     </div>
@@ -144,7 +144,7 @@
                             <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
                                 @forelse($mission->blockers->whereNull('resolved_at') as $blocker)
                                     <div class="dg-note">
-                                        <strong style="color:var(--dg-ink)">{{ $blocker->type }}</strong>
+                                        <strong style="color:var(--dg-ink)">{{ \App\Models\MissionBlocker::TYPE_LABELS[$blocker->type] ?? $blocker->type }}</strong>
                                         <p style="margin:6px 0">{{ $blocker->description }}</p>
                                         @if($canReportBlocker)
                                             <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -205,7 +205,7 @@
                                 <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
                                     <div>
                                         <strong style="color:var(--dg-ink)">{{ $participantLabels[$assignment->id] ?? 'Membre DG Afrique' }}</strong>
-                                        <span class="dg-meta"> · {{ $assignment->role }} · {{ $assignment->status }}</span>
+                                        <span class="dg-meta"> · {{ \App\Models\MissionAssignment::ROLE_LABELS[$assignment->role] ?? $assignment->role }} · {{ \App\Models\MissionAssignment::STATUS_LABELS[$assignment->status] ?? $assignment->status }}</span>
                                     </div>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                                         @if($assignment->status === 'OFFERED' && $canManageAssignments)
@@ -436,7 +436,7 @@
                     <x-dg.card tight>
                         <dl class="dg-dl">
                             <div><dt>Contexte</dt><dd>{{ $contextLabel }}</dd></div>
-                            <div><dt>Visibilité</dt><dd>{{ $mission->visibility }}</dd></div>
+                            <div><dt>Visibilité</dt><dd>{{ \App\Models\Mission::VISIBILITY_LABELS[$mission->visibility] ?? $mission->visibility }}</dd></div>
                             @if($mission->location)<div><dt>Lieu</dt><dd>{{ $mission->location }}</dd></div>@endif
                             @if($mission->due_at)<div><dt>Échéance</dt><dd>{{ $mission->due_at->format('d/m/Y') }}</dd></div>@endif
                             <div><dt>Exécutants</dt><dd>{{ $mission->min_executors }}{{ $mission->max_executors ? ' – '.$mission->max_executors : ' minimum' }}</dd></div>
@@ -450,7 +450,7 @@
                                 @forelse($mission->dependencies as $dependency)
                                     @php($dependsOn = \App\Models\Mission::find($dependency->depends_on_mission_id))
                                     <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                                        <span style="font-size:13px">{{ $dependency->type }} · {{ $dependsOn?->title }}</span>
+                                        <span style="font-size:13px">{{ \App\Models\MissionDependency::TYPE_LABELS[$dependency->type] ?? $dependency->type }} · {{ $dependsOn?->title }}</span>
                                         @if($canManageAssignments)
                                             <form method="POST" action="{{ route('missions.dependencies.destroy', [$mission, $dependency]) }}">
                                                 @csrf @method('DELETE')

@@ -298,7 +298,7 @@
                     <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Contact</a>
                 </div>
             </div>
-            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
+            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(217,214,203,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
         </div>
     </footer>
 

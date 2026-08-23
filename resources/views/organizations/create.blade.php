@@ -12,7 +12,7 @@
                 <div>
                     <x-dg.label tone="forest">Une structure durable, pas un projet ponctuel</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Créer une organisation</h1>
-                    <p>Vous en devenez la fondatrice ou le fondateur. Aucune identité Core, aucun statut juridique n’est créé automatiquement.</p>
+                    <p>Vous en devenez la fondatrice ou le fondateur. Aucun statut juridique n’est créé automatiquement.</p>
                 </div>
             </div>
 

@@ -1038,3 +1038,55 @@ n'existe ; `priority()` n'a pas été retouché. Ces sujets nécessitent des mis
 **Hors périmètre, restant catégorie C** : CommunityEvent/Partnership dans Fil/Notifications, activité
 Organisation dans le Fil, vue consolidée « mes engagements », refonte de `priority()`, nouvelle
 timeline personnelle, Cerveau/Crédit IA, GAMAD Core, cycle de vie ZUMRA — aucun n'a été touché.
+
+## 30. Addendum daté — UIUX-009A, fondation humaine et identité GAMAD (22 août 2026)
+
+**Portée : fondation visuelle transversale et traductions mécaniques de jargon, aucune refonte de
+parcours métier.** Détail complet des tokens/composants/traductions dans
+`docs/design/DESIGN-INVARIANTS.md` §22 (l'autorité de référence pour cette mission) ; ce qui suit
+ne stabilise que les décisions produit qui dépassent le seul design visuel.
+
+**Décisions rendues durables** :
+
+- **La divergence entre le fond canonique documenté et le fond réellement rendu était un bug
+  d'architecture CSS, pas une décision produit contestée entre deux choix légitimes.**
+  `identity-v2.css` définissait, hors de toute couche `@layer`, une règle de fond concurrente de
+  celle de `dg.css` — elle l'emportait systématiquement par accident de cascade. L'autorité produit
+  n'a donc jamais vu la couleur que `DESIGN-INVARIANTS.md` v1.0 déclarait canonique. Cette
+  découverte a rouvert la décision de fond (voir DESIGN-INVARIANTS.md §22) plutôt que de simplement
+  restaurer l'ancienne valeur.
+- **Une parenté chromatique réelle existe désormais entre DG Afrique et la console institutionnelle
+  de l'écosystème GAMAD**, construite sur les valeurs de marque déjà normalisées par cette dernière
+  (jaune/bleu/vert), jamais estimées à l'œil sur le logo. Cette parenté n'efface pas la distinction
+  déjà établie par `DOCTRINE-GAMAD.md` §12 entre GAMAD (doctrine/mouvement), GAMAD Core
+  (infrastructure institutionnelle) et DG Afrique (portail humain) : DG Afrique reste une expression
+  humaine et sociale, pas un clone de la console institutionnelle — voir la section « CONSERVER /
+  NE PAS REPRENDRE » de l'audit UIUX-009 Phase A.
+- **Le jargon technique transversal (CAP-0XX affiché, enums bruts, mentions du backend d'identité)
+  est traité comme une dette mécanique, pas comme une question de tonalité.** Les tableaux de
+  traduction ajoutés (`TransmissionParticipant::STATUS_LABELS`, `ProofWitness::STATUS_LABELS`,
+  `ProofReference::TYPE_LABELS`, `MissionAssignment::ROLE_LABELS`/`STATUS_LABELS`,
+  `MissionBlocker::TYPE_LABELS`, `MissionDependency::TYPE_LABELS`, et les
+  `VISIBILITY_LABELS`/`ORIGIN_LABELS` correspondants) suivent exactement le patron déjà établi par
+  `Transmission::STATUS_LABELS`/`Proof::STATUS_LABELS` — complétés, jamais réinventés. Le statut
+  ZUMRA `EXCLUDED`/`SUSPENDED`, qui s'affichait en anglais brut au moment le plus vulnérable pour un
+  membre, est désormais traduit.
+- **Cette fondation ne referme aucun des chantiers C/D identifiés par l'audit UIUX-009 Phase A.** Le
+  formulaire de création manuelle de Projet, le champ de récurrence Mission (texte libre RRULE),
+  l'écran de financement de Projet et la découverte de Mission restent des reconstructions
+  explicitement réservées à de futures Phases B — cette mission leur transmet automatiquement la
+  nouvelle fondation visuelle (tokens, composants, focus, erreurs de formulaire) sans masquer leur
+  dette structurelle.
+
+**Limites documentées (non résolues ici)** : cinq feuilles de style de parcours spécifiques
+(`member-space-v2.css`, `fil-v2.css`, `project-brain.css`, `projects-directory.css`,
+`project-workspace-v2.css`) consomment encore les anciens noms de tokens « V2 » via un alias de
+compatibilité plutôt que les noms canoniques — migration individuelle réservée à de futures Phases
+B « parcours ». `Mon espace` continue de violer concrètement l'invariant §7 (une seule priorité
+dominante), documenté par l'audit Phase A et non corrigé par cette fondation — réservé à une Phase
+B dédiée à la hiérarchie d'action.
+
+**Hors périmètre** : formulaire de création manuelle de Projet, champ de récurrence Mission, écran
+de financement de Projet, découverte de Mission, hiérarchie d'action de Mon espace, portail public
+vs. application membre (Landing), Cerveau/Crédit IA, toute règle ou transition métier — aucun n'a
+été touché.

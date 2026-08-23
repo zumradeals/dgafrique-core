@@ -57,7 +57,7 @@
                                 <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
                                     <div>
                                         <strong style="color:var(--dg-ink)">{{ hash_equals($witness->core_identity_reference, $identity->reference) ? 'Vous' : 'Membre DG Afrique' }}</strong>
-                                        <span class="dg-meta"> · {{ $witness->status }}</span>
+                                        <span class="dg-meta"> · {{ \App\Models\ProofWitness::STATUS_LABELS[$witness->status] ?? $witness->status }}</span>
                                     </div>
                                     @if($witness->status === 'INVITED' && hash_equals($witness->core_identity_reference, $identity->reference))
                                         <div style="display:flex;gap:8px">
@@ -85,7 +85,7 @@
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
                             @forelse($proof->references as $reference)
                                 <div class="dg-note">
-                                    <span class="dg-meta">{{ $reference->type }}</span>
+                                    <span class="dg-meta">{{ \App\Models\ProofReference::TYPE_LABELS[$reference->type] ?? $reference->type }}</span>
                                     <p style="margin:4px 0 0">{{ $reference->label ?: $reference->value }}</p>
                                 </div>
                             @empty
@@ -136,7 +136,7 @@
                     <x-dg.card tight>
                         <dl class="dg-dl">
                             <div><dt>Contexte</dt><dd>{{ $contextLabel ?? 'Aucun — autonome' }}</dd></div>
-                            <div><dt>Visibilité</dt><dd>{{ $proof->visibility }}</dd></div>
+                            <div><dt>Visibilité</dt><dd>{{ \App\Models\Proof::VISIBILITY_LABELS[$proof->visibility] ?? $proof->visibility }}</dd></div>
                             @if($proof->capability_label)<div><dt>Capacité</dt><dd>{{ $proof->capability_label }}</dd></div>@endif
                             <div><dt>Survenue le</dt><dd>{{ $proof->occurred_at->format('d/m/Y') }}</dd></div>
                         </dl>

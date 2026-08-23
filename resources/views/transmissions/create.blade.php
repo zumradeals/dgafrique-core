@@ -9,7 +9,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-006 · Transmission</x-dg.label>
+                    <x-dg.label tone="saffron">Transmission</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Proposer une Transmission</h1>
                     <p>Une Transmission reste une proposition tant que les autres participants ne l’ont pas explicitement acceptée.</p>
                 </div>

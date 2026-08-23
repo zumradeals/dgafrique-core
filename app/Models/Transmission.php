@@ -13,11 +13,17 @@ final class Transmission extends Model
     use HasUuids;
 
     public const STATUS_PROPOSED = 'PROPOSED';
+
     public const STATUS_ACCEPTED = 'ACCEPTED';
+
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+
     public const STATUS_COMPLETED_CONFIRMED = 'COMPLETED_CONFIRMED';
+
     public const STATUS_COMPLETED_BY_CONTEXT = 'COMPLETED_BY_CONTEXT';
+
     public const STATUS_ENDED = 'ENDED';
+
     public const STATUS_CANCELLED = 'CANCELLED';
 
     public const TERMINAL_STATUSES = [
@@ -46,12 +52,19 @@ final class Transmission extends Model
     ];
 
     public const ORIGIN_NONE = 'NONE';
+
     public const ORIGIN_NEED = 'NEED';
+
     public const ORIGIN_MISSION = 'MISSION';
+
     public const ORIGIN_PROJECT = 'PROJECT';
+
     public const ORIGIN_ZUMRA = 'ZUMRA';
+
     public const ORIGIN_RECOMMENDATION = 'RECOMMENDATION';
+
     public const ORIGIN_PROFILE = 'PROFILE';
+
     public const ORIGIN_INTERACTION = 'INTERACTION';
 
     public const ORIGIN_TYPES = [
@@ -59,9 +72,23 @@ final class Transmission extends Model
         self::ORIGIN_ZUMRA, self::ORIGIN_RECOMMENDATION, self::ORIGIN_PROFILE, self::ORIGIN_INTERACTION,
     ];
 
+    public const ORIGIN_LABELS = [
+        self::ORIGIN_NONE => 'Proposée directement',
+        self::ORIGIN_NEED => 'Issue d\'un besoin',
+        self::ORIGIN_MISSION => 'Issue d\'une mission',
+        self::ORIGIN_PROJECT => 'Issue d\'un projet',
+        self::ORIGIN_ZUMRA => 'Issue d\'une ZUMRA',
+        self::ORIGIN_RECOMMENDATION => 'Issue d\'une recommandation',
+        self::ORIGIN_PROFILE => 'Issue d\'un profil',
+        self::ORIGIN_INTERACTION => 'Issue d\'un échange',
+    ];
+
     public const CONTEXT_NEED = 'NEED';
+
     public const CONTEXT_MISSION = 'MISSION';
+
     public const CONTEXT_PROJECT = 'PROJECT';
+
     public const CONTEXT_ZUMRA = 'ZUMRA';
 
     public const CONTEXT_TYPES = [self::CONTEXT_NEED, self::CONTEXT_MISSION, self::CONTEXT_PROJECT, self::CONTEXT_ZUMRA];
@@ -70,7 +97,9 @@ final class Transmission extends Model
     public const OFFICIALIZABLE_CONTEXTS = [self::CONTEXT_MISSION, self::CONTEXT_PROJECT, self::CONTEXT_ZUMRA];
 
     public const VISIBILITY_PRIVATE = 'PRIVATE';
+
     public const VISIBILITY_CONTEXT = 'CONTEXT';
+
     public const VISIBILITY_PROGRAM = 'PROGRAM';
 
     public const VISIBILITY_ORDER = [
@@ -79,8 +108,16 @@ final class Transmission extends Model
         self::VISIBILITY_PROGRAM => 2,
     ];
 
+    public const VISIBILITY_LABELS = [
+        self::VISIBILITY_PRIVATE => 'Privée',
+        self::VISIBILITY_CONTEXT => 'Visible dans son contexte',
+        self::VISIBILITY_PROGRAM => 'Visible du Programme',
+    ];
+
     protected $table = 'dg_transmissions';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

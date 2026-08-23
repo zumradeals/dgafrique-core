@@ -1,9 +1,11 @@
 # DG Afrique — Invariants de design
 
 **Statut : CANONIQUE DESIGN — ADOPTÉ**  
-**Version : 1.0** (voir addendum daté §16 pour la Landing)  
+**Version : 1.0**, avec §5 (matières/couleurs/typographie) **supersédé par l’addendum daté §22
+(UIUX-009A, 22 août 2026)** — voir aussi l’addendum daté §16 pour la Landing.  
 **Date d’adoption : 16 août 2026**  
-**Référence visuelle :** `docs/design/reference/claude-2026-08-16/`
+**Référence visuelle :** `docs/design/reference/claude-2026-08-16/` (v1.0, conservée comme
+archive historique — voir §22 pour la palette réellement en vigueur depuis le 22 août 2026)
 
 ## 1. Autorité et portée
 
@@ -534,3 +536,116 @@ exactement `NeedService::canView` existant sur chaque besoin).
 **Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
 conversation, non archivée dans `docs/design/reference/`, reproduite dans
 `resources/views/needs/index.blade.php` et `resources/css/needs-directory.css`).
+
+## 22. Addendum daté — Fondation humaine et identité GAMAD, UIUX-009A (22 août 2026)
+
+**Portée : la fondation visuelle transversale du produit** — tokens de couleur/surface/texte,
+composants fondamentaux (`resources/css/dg.css`, `resources/css/identity-v2.css`,
+`resources/css/app.css`, `resources/css/gateway-v2.css`, `resources/css/auth-v2.css`), la landing
+(`resources/views/gateway.blade.php`, `resources/views/foundation.blade.php`) et un ensemble
+mécanique de traductions d'énumérations brutes vers un langage humain. Ce changement suit la
+procédure de gouvernance du §14. Il ne reconstruit aucun parcours métier classé C/D par l'audit
+UIUX-009 Phase A (formulaire de création manuelle de Projet, champ de récurrence Mission, écran de
+financement de Projet, découverte de Mission) — ces reconstructions restent réservées à de futures
+Phases B distinctes.
+
+**Invariant concerné** : §5 (matières, couleurs, typographie) est **supersédé** par le présent
+addendum — la palette ivoire/forêt/cuivre/safran qu'il fixait n'a jamais été celle réellement
+rendue à l'utilisateur (voir ci-dessous) et est remplacée par la palette décrite ici. §2 (« Une
+identité. Des personnes. Des capacités. Des actions. Des outils spécialisés. ») et §6 (« couleur =
+sens, jamais décoration arbitraire ») restent pleinement en vigueur et sont même renforcés : la
+discipline « une famille de couleur par domaine » est conservée à l'identique, seules les valeurs
+sous-jacentes changent.
+
+**Problème utilisateur justifiant le changement** : l'autorité produit a indiqué explicitement,
+comme point de départ de la mission UIUX-009, ne pas aimer la couleur de fond de DG Afrique
+depuis le début. L'audit UIUX-009 Phase A a établi un fait technique qui change le sens de cette
+plainte : le fond `#F8F3EA` que le présent document fixait comme canonique en v1.0 **n'a jamais
+été le fond réellement rendu**. `resources/css/identity-v2.css` définissait, hors de tout
+`@layer`, une seconde règle `.dg, .portal-body { background: ... }` qui l'emportait
+systématiquement sur la règle canonique de `dg.css` (calquée dans `@layer components`) — un
+accident de cascade CSS, jamais une décision. Le fond réellement vu par l'autorité produit était
+`#FFF7EF` (application connectée) ou `#F7F4EE` (page d'accueil publique, `gateway-v2.css`, encore
+un troisième fond codé en dur) — jamais celui documenté. Un deuxième problème, indépendant du
+premier mais soulevé par le même audit : la palette de DG Afrique ne partageait aucune valeur avec
+celle de la console institutionnelle de l'écosystème GAMAD, alors que les deux portent la même
+famille de marque.
+
+**Ce qui change** :
+- **Une seule vérité CSS.** `dg.css` (`@layer components`, correctement calqué) devient la seule
+  source déclarant le fond de page (`.dg, .portal-body`). `identity-v2.css` ne redéfinit plus
+  aucune règle de fond ni aucun composant : il ne contient plus qu'un alias de compatibilité
+  (`--dg-petrol`, `--dg-orange`, `--dg-ivory-v2`, etc. → les tokens canoniques ci-dessous) pour les
+  feuilles de style de parcours spécifiques qui les consomment encore
+  (`member-space-v2.css`, `fil-v2.css`, `project-brain.css`, `projects-directory.css`,
+  `project-workspace-v2.css` — migrer ces cinq fichiers vers les noms canoniques reste un travail
+  de parcours individuel, hors périmètre de cette fondation). `gateway-v2.css` et le jeu de tokens
+  legacy de `app.css` (`--navy`, `--ocean`, `--cyan`, `--mint`, `--amber`, `--cloud`, utilisés par
+  les écrans d'Administration non encore propagés) pointent désormais tous vers les mêmes valeurs
+  canoniques plutôt que vers des palettes indépendantes.
+- **Nouvelle palette mère GAMAD**, extraite des valeurs déjà normalisées et publiées par la
+  console institutionnelle de l'écosystème (jamais estimées à l'œil sur le logo) :
+  `--gamad-yellow: #F8D40A`, `--gamad-blue: #0875A2`, `--gamad-green: #007A43`,
+  `--gamad-red: #B83232` (fonctionnel — signal de danger uniquement, jamais un signal de marque).
+- **Nouvelle palette DG Afrique**, construite sur cette base mère : fond de page clair et neutre
+  `--dg-ivory: #F5F4EF` ; surfaces blanches `--dg-card: #FFFFFF` (contraste net entre page et
+  cartes, blanc jamais dominant sur toute la structure — §5 v1.0 déjà correct sur ce point) ;
+  ancrage sombre neutre `--dg-forest: #1C1B17` (anthracite, remplace l'ancien vert forêt —
+  utilisé pour la hiérarchie de texte, les boutons primaires et les bandeaux sombres) ; safran
+  `--dg-saffron: var(--gamad-yellow)` conservé exactement dans son rôle déjà décrit au §6 (rare,
+  signal de décision humaine attendue — jamais la couleur de fond ni celle de chaque bouton) ;
+  bleu `--dg-night: var(--gamad-blue)` conservé dans son rôle déjà décrit au §6 (outils
+  spécialisés/domaine projet) ; vert `var(--gamad-green)` nouvellement affecté au domaine
+  action/transmission ; cuivre `--dg-copper: #A9552B` inchangé (domaine besoin). Tokens
+  sémantiques génériques ajoutés pour les usages transversaux futurs : `--dg-bg`, `--dg-surface`,
+  `--dg-border`, `--dg-primary`, `--dg-success`, `--dg-warning`, `--dg-danger`, `--dg-info`.
+- **Composants fondamentaux** recolorés sans changement de structure : topbar (fusion des
+  raffinements déjà présents dans `identity-v2.css` — flou d'arrière-plan, soulignement de
+  l'onglet actif — désormais dans `dg.css`), barre mobile, barre d'onglets, feuille Agir, cartes,
+  boutons (primaire/secondaire/discret), champs de formulaire (ajout d'un état d'erreur
+  `[aria-invalid]` et d'un état désactivé, absents jusqu'ici), badges, liens, `:focus-visible`
+  générique (absent jusqu'ici — ajouté pour l'accessibilité).
+- **Traduction humaine mécanique** de valeurs d'énumération jusqu'ici affichées brutes : statut/
+  rôle de participant Transmission, type de référence et statut de témoin Preuve, rôle/statut
+  d'assignation Mission, type de bloqueur Mission (y compris le menu déroulant qui affichait
+  littéralement `MISSING_FINANCING`), type de dépendance Mission, visibilité et origine
+  Transmission/Preuve/Mission, statuts de membership ZUMRA `EXCLUDED`/`SUSPENDED` (jusqu'ici
+  affichés en anglais brut au moment le plus vulnérable pour la personne concernée). Douze badges
+  d'éveil de page « CAP-0XX · … » retirés des écrans généraux (Transmission, Preuve, Mission,
+  Notifications, ZUMRA, Messages, Partage, Contribution contextuelle) au profit du seul intitulé
+  humain. Deux mentions du nom du backend d'identité (« Core » / « GAMAD Core ») retirées d'un
+  texte d'accompagnement et d'un message d'erreur réel côté Organisation. Le champ de récurrence
+  Mission (texte libre RRULE) n'a **pas** été touché — sa reconstruction est un changement
+  structurel réservé à une Phase B « parcours », non à cette fondation.
+- **Landing** (`gateway.blade.php`, page d'accueil publique, et `foundation.blade.php`,
+  `/decouvrir`) rattachée à la même fondation : plus de fond codé en dur indépendant, mêmes
+  tokens, même traitement de la marque (`.dg-brand`/`.dg-brandmark`). Aucune reconstruction de
+  structure — la question « portail de découverte public ou application membre ? » identifiée par
+  l'audit reste un chantier produit distinct, non traité ici.
+
+**Ce qui ne change pas** : §2, §3, §6 (couleur = sens), §7 (une priorité dominante à la fois —
+non corrigé ici : l'audit UIUX-009 Phase A a documenté une violation réelle de cet invariant sur
+Mon espace, réservée à une Phase B dédiée à la hiérarchie d'action), §8 (pas de mécanique de
+popularité), §9 (présence humaine digne), §10 (état vide honnête), §11 (données de démonstration
+marquées Exemple — non modifié ; la carte d'exemple « GAMAD Technology » déjà adoptée par
+l'addendum §18 reste visible telle quelle, hors périmètre de cette fondation), §12 (outils
+spécialisés), §13 (hiérarchie avec le métier). Aucune règle métier, aucune transition, aucune
+capacité n'a été modifiée par cette mission — seuls des tokens visuels, des composants
+transversaux et des traductions d'affichage ont changé.
+
+**Compatibilité vérifiée** : doctrine (le nom de l'institution mère reste absent de toute
+interface — `IdentityAuthorityGuardTest` toujours vert ; les traductions ajoutées sont des
+formulations humaines nouvelles, jamais une exposition supplémentaire de vocabulaire interne),
+accessibilité (`:focus-visible` générique ajouté, états d'erreur/désactivé de formulaire ajoutés,
+contrastes du signal safran/jaune vérifiés en texte anthracite sur fond clair), mobile et desktop
+(390×844 et 1440×900, huit écrans représentatifs — Accueil, Mon espace, Fil, Projets,
+Projets/création, fiche ZUMRA, fiche Organisation, Notifications — aucun débordement horizontal
+constaté), sécurité (aucune nouvelle surface serveur, aucune règle d'autorisation modifiée — voir
+`tests/Feature/UIUX009AHumanLanguageTest.php`).
+
+**Référence visuelle** : aucune maquette externe fournie pour cette mission — direction construite
+directement à partir de l'audit UIUX-009 Phase A (rapport livré en conversation le 22 août 2026)
+et des valeurs de marque déjà normalisées dans la console institutionnelle de l'écosystème GAMAD.
+Toute Phase B ultérieure qui adopterait des valeurs hexadécimales différentes devra documenter sa
+propre source (colorimétrie réelle sur l'asset de marque officiel, jamais une estimation à l'œil)
+avant adoption, conformément au mandat UIUX-009.

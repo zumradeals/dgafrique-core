@@ -6,7 +6,7 @@
             </nav>
 
             <header class="rounded-3xl bg-slate-950 px-6 py-8 text-white shadow-xl shadow-slate-200 sm:px-9">
-                <p class="text-xs font-black uppercase tracking-[.18em] text-cyan-300">CAP-021 · Contribution contextuelle</p>
+                <p class="text-xs font-black uppercase tracking-[.18em] text-cyan-300">Contribution contextuelle</p>
                 <div class="mt-3 flex flex-wrap items-center gap-2">
                     <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-black">{{ $context['label'] }}</span>
                     <span class="text-xs font-semibold text-slate-400">Le commentaire reste attaché à ce contexte</span>

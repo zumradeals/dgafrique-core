@@ -13,14 +13,23 @@ final class Mission extends Model
     use HasUuids;
 
     public const STATUS_DRAFT = 'DRAFT';
+
     public const STATUS_PROPOSED = 'PROPOSED';
+
     public const STATUS_CHANGES_REQUESTED = 'CHANGES_REQUESTED';
+
     public const STATUS_REJECTED = 'REJECTED';
+
     public const STATUS_OPEN = 'OPEN';
+
     public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+
     public const STATUS_BLOCKED = 'BLOCKED';
+
     public const STATUS_SUBMITTED = 'SUBMITTED';
+
     public const STATUS_COMPLETED = 'COMPLETED';
+
     public const STATUS_CANCELLED = 'CANCELLED';
 
     public const TERMINAL_STATUSES = [self::STATUS_REJECTED, self::STATUS_COMPLETED, self::STATUS_CANCELLED];
@@ -52,9 +61,19 @@ final class Mission extends Model
     ];
 
     public const VISIBILITY_PRIVATE = 'PRIVATE';
+
     public const VISIBILITY_CONTEXT = 'CONTEXT';
+
     public const VISIBILITY_PROGRAM = 'PROGRAM';
+
     public const VISIBILITY_PUBLIC = 'PUBLIC';
+
+    public const VISIBILITY_LABELS = [
+        self::VISIBILITY_PRIVATE => 'Privée',
+        self::VISIBILITY_CONTEXT => 'Visible dans son contexte',
+        self::VISIBILITY_PROGRAM => 'Visible du Programme',
+        self::VISIBILITY_PUBLIC => 'Publique',
+    ];
 
     public const VISIBILITY_ORDER = [
         self::VISIBILITY_PRIVATE => 0,
@@ -64,7 +83,9 @@ final class Mission extends Model
     ];
 
     protected $table = 'dg_missions';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

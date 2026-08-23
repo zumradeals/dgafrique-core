@@ -9,7 +9,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-011 · Groupe humain</x-dg.label>
+                    <x-dg.label tone="saffron">Groupe humain</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['creation_title'] }}</h1>
                     <p>Donnez une identité claire à l’équipe. La création ouvre une constitution : elle ne produit ni validation, ni financement, ni nomination automatique.</p>
                 </div>

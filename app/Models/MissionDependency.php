@@ -12,8 +12,11 @@ final class MissionDependency extends Model
     use HasUuids;
 
     public const TYPE_FINISH_BEFORE_START = 'FINISH_BEFORE_START';
+
     public const TYPE_RESULT_REQUIRED = 'RESULT_REQUIRED';
+
     public const TYPE_RESOURCE_DEPENDENCY = 'RESOURCE_DEPENDENCY';
+
     public const TYPE_DECISION_DEPENDENCY = 'DECISION_DEPENDENCY';
 
     public const TYPES = [
@@ -21,8 +24,17 @@ final class MissionDependency extends Model
         self::TYPE_RESOURCE_DEPENDENCY, self::TYPE_DECISION_DEPENDENCY,
     ];
 
+    public const TYPE_LABELS = [
+        self::TYPE_FINISH_BEFORE_START => 'Doit être terminée avant de commencer',
+        self::TYPE_RESULT_REQUIRED => 'A besoin d\'un résultat de l\'autre mission',
+        self::TYPE_RESOURCE_DEPENDENCY => 'Dépend d\'une ressource partagée',
+        self::TYPE_DECISION_DEPENDENCY => 'Dépend d\'une décision liée',
+    ];
+
     protected $table = 'dg_mission_dependencies';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

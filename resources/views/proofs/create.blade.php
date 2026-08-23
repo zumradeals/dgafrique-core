@@ -10,7 +10,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-036 · Carnet de preuves</x-dg.label>
+                    <x-dg.label tone="saffron">Carnet de preuves</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Enregistrer une preuve</h1>
                     <p>Décrivez une chose réelle qui s’est produite. Enregistrer une preuve ne certifie rien : un témoin ou une autorité de contexte peuvent la corroborer, jamais la garantir.</p>
                 </div>

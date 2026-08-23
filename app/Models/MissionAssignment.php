@@ -13,25 +13,55 @@ final class MissionAssignment extends Model
     use HasUuids;
 
     public const STATUS_OFFERED = 'OFFERED';
+
     public const STATUS_INVITED = 'INVITED';
+
     public const STATUS_ACCEPTED = 'ACCEPTED';
+
     public const STATUS_DECLINED = 'DECLINED';
+
     public const STATUS_WITHDRAWN = 'WITHDRAWN';
+
     public const STATUS_RELEASED = 'RELEASED';
+
     public const STATUS_REMOVED = 'REMOVED';
 
     public const CURRENT_STATUSES = [self::STATUS_OFFERED, self::STATUS_INVITED, self::STATUS_ACCEPTED];
 
     public const ROLE_EXECUTOR = 'EXECUTOR';
+
     public const ROLE_CO_EXECUTOR = 'CO_EXECUTOR';
+
     public const ROLE_COORDINATOR = 'COORDINATOR';
+
     public const ROLE_LEARNER = 'LEARNER';
+
     public const ROLE_OBSERVER = 'OBSERVER';
 
     public const EXECUTION_ROLES = [self::ROLE_EXECUTOR, self::ROLE_CO_EXECUTOR, self::ROLE_COORDINATOR];
 
+    public const ROLE_LABELS = [
+        self::ROLE_EXECUTOR => 'Exécutant',
+        self::ROLE_CO_EXECUTOR => 'Co-exécutant',
+        self::ROLE_COORDINATOR => 'Coordinateur',
+        self::ROLE_LEARNER => 'Apprenant',
+        self::ROLE_OBSERVER => 'Observateur',
+    ];
+
+    public const STATUS_LABELS = [
+        self::STATUS_OFFERED => 'Proposition envoyée',
+        self::STATUS_INVITED => 'Invité·e',
+        self::STATUS_ACCEPTED => 'A accepté',
+        self::STATUS_DECLINED => 'A décliné',
+        self::STATUS_WITHDRAWN => 'S\'est retiré·e',
+        self::STATUS_RELEASED => 'Libéré·e',
+        self::STATUS_REMOVED => 'Retiré·e',
+    ];
+
     protected $table = 'dg_mission_assignments';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

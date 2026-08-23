@@ -7,7 +7,7 @@
         <div class="dg-page">
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-006 · Transmission</x-dg.label>
+                    <x-dg.label tone="saffron">Transmission</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Mes Transmissions</h1>
                     <p>Une Transmission organise une rencontre humaine autour d’une capacité. Proposer n’est pas être accepté, déclarer sa part terminée n’est pas valider la Transmission.</p>
                 </div>

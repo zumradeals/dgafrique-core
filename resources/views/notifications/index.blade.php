@@ -8,7 +8,7 @@
         <div class="dg-page">
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-054 · Notifications</x-dg.label>
+                    <x-dg.label tone="saffron">Notifications</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Notifications</h1>
                     <p>Ce qui vous concerne, à travers Missions, Transmission, Preuves, Besoins, Projets et ZUMRA — jamais un score ni une pression à réagir vite.</p>
                 </div>
