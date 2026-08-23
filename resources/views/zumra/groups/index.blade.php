@@ -24,13 +24,22 @@
                 @endif
             </div>
 
+            <form method="GET" action="{{ route('zumra.groups.index') }}" role="search" style="display:flex;gap:10px;margin-bottom:20px">
+                <label for="directory-search" class="sr-only">Rechercher une activité, un nom ou un objectif</label>
+                <input type="search" id="directory-search" name="q" class="dg-input" style="flex:1" placeholder="Chercher une activité, un nom, un objectif…" value="{{ $query ?? '' }}">
+                <button type="submit" class="dg-btn dg-btn--primary">Chercher</button>
+                @if(filled($query ?? null))
+                    <a href="{{ route('zumra.groups.index') }}" class="dg-btn dg-btn--quiet">Effacer</a>
+                @endif
+            </form>
+
             <div class="dg-band" style="margin-bottom:24px">
                 <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Une ZUMRA n’est pas un simple groupe de discussion.</strong>
                 Elle rassemble des personnes autour d’un objectif, d’une transmission et d’une action réelle. Une demande n’est jamais une adhésion automatique.
             </div>
 
             @if($groups->isEmpty())
-                <x-dg.empty title="La première ZUMRA peut commencer ici.">
+                <x-dg.empty :title="filled($query ?? null) ? 'Aucune ZUMRA ne correspond à « '.$query.' ».' : 'La première ZUMRA peut commencer ici.'">
                     <span>Aucune équipe fictive n’est affichée. Les groupes apparaîtront à mesure que des adhérents proposeront des projets humains réels.</span>
                 </x-dg.empty>
             @else

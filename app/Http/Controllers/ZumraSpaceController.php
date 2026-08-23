@@ -81,7 +81,7 @@ final class ZumraSpaceController
             ->groupBy('domain')
             ->orderByDesc('groups_count')
             ->orderBy('domain')
-            ->limit(5)
+            ->limit(6)
             ->get()
             ->map(fn (ZumraGroup $row): array => [
                 'domain' => $row->domain,
