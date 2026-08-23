@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 420" role="img" aria-labelledby="t d">
+  <title id="t">Projet collectif numérique</title><desc id="d">Trois personnes construisent ensemble un service numérique.</desc>
+  <defs><linearGradient id="b" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#e8d7b2"/><stop offset="1" stop-color="#b9d9c5"/></linearGradient></defs>
+  <rect width="480" height="420" rx="28" fill="url(#b)"/><circle cx="120" cy="120" r="43" fill="#7b4a2e"/><circle cx="245" cy="106" r="43" fill="#bd7d52"/><circle cx="362" cy="128" r="43" fill="#583525"/>
+  <path d="M52 350c8-102 40-164 68-164s61 62 69 164" fill="#034b37"/><path d="M173 350c7-112 39-180 72-180s67 68 75 180" fill="#e0aa11"/><path d="M297 350c8-99 39-159 66-159s59 60 66 159" fill="#c96b2a"/>
+  <rect x="121" y="249" width="240" height="112" rx="12" fill="#f8f5eb"/><rect x="143" y="270" width="196" height="68" rx="7" fill="#143f37"/><path d="M180 305h120" stroke="#91d36a" stroke-width="8" stroke-linecap="round"/>
+</svg>

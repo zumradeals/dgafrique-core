@@ -37,7 +37,7 @@
         $pageStyles[] = 'resources/css/needs-directory.css';
     }
     if (request()->routeIs('projects.show')) {
-        $pageStyles[] = 'resources/css/project-detail.css';
+        $pageStyles[] = 'resources/css/project-space.css';
     }
     if (request()->routeIs('projects.brain.show')) {
         $pageStyles[] = 'resources/css/project-brain.css';

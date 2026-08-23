@@ -649,3 +649,25 @@ et des valeurs de marque déjà normalisées dans la console institutionnelle de
 Toute Phase B ultérieure qui adopterait des valeurs hexadécimales différentes devra documenter sa
 propre source (colorimétrie réelle sur l'asset de marque officiel, jamais une estimation à l'œil)
 avant adoption, conformément au mandat UIUX-009.
+
+## 25. PROJECT-SPACE-001 — L’Espace Projet vivant (23 août 2026)
+
+La fiche Projet devient un espace d’exécution lisible dans la continuité directe de l’Espace
+ZUMRA : rail du collectif porteur, hero de situation, navigation interne, activité, jalons,
+besoins, membres, ressources et chemin de réussite. Cette composition est une projection de
+lecture du même objet `Project` et de ses relations réelles ; elle ne crée aucun moteur Projet
+parallèle.
+
+La progression circulaire reste le `progressionSeed()` déterministe déjà documenté : repère
+visuel sans écriture, score, décision ni confusion avec la maturité. Les jalons, événements,
+membres, besoins, partenariats et ressources affichés sont exclusivement les enregistrements
+consultables par l’acteur. Les surfaces de tâches et documents non encore motorisées annoncent
+explicitement leur caractère progressif ; elles n’inventent ni responsable, ni statut, ni date.
+
+Le décor enrichi de `ZumraWorldDemoSeeder` reste opt-in et reconnaissable comme démonstration.
+Ses membres Projet sont de vraies adhésions actives sans rôle attribué, et ses jalons de vraies
+lignes `ProjectMilestone`. Aucun seeding implicite en production n’est ajouté.
+
+Sur mobile, la navigation ZUMRA et les onglets Projet défilent dans leurs propres conteneurs ; la
+page reste bornée au viewport. L’ordre est : retour/navigation, hero, situation et exécution,
+contexte latéral, chemin collectif, puis cadre complet repliable.
