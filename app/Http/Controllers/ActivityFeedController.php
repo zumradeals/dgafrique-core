@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
+use App\Application\Activity\FeedDemoPresentation;
 use App\Application\Needs\NeedConfiguration;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
@@ -23,6 +24,7 @@ final class ActivityFeedController
         PersonRecommendationEngine $recommendationEngine,
         RecommendationConfiguration $recommendationConfiguration,
         NeedConfiguration $needConfiguration,
+        FeedDemoPresentation $presentation,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -79,6 +81,8 @@ final class ActivityFeedController
             'myGroups' => $myGroups,
             'recommendedPeople' => $recommendedPeople,
             'composerCategories' => $needConfiguration->get()['categories'],
+            'showcaseCards' => $page === 1 ? $presentation->cards() : [],
+            'networkStats' => $presentation->stats(),
         ]);
     }
 }

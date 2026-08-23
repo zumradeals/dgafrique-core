@@ -23,22 +23,22 @@ final class FilV2Test extends TestCase
 
         $content = $this->get('/activite')->assertOk()->getContent();
 
-        self::assertStringContainsString('Besoin · Exemple', $content);
-        self::assertStringContainsString('Projet · Exemple', $content);
-        self::assertStringContainsString('ZUMRA · Exemple', $content);
-        self::assertStringContainsString('Objet de démonstration — aucune action réelle n’est rattachée.', $content);
+        self::assertStringContainsString('RAHMAN Technology', $content);
+        self::assertStringContainsString('Amina Diop', $content);
+        self::assertStringContainsString('Excellence ZUMRA', $content);
+        self::assertStringContainsString('AgriZUMRA', $content);
+        self::assertStringContainsString('Objet de démonstration — aucune action inexistante n’est persistée.', $content);
     }
 
-    public function test_demo_cards_disappear_as_soon_as_real_data_exists_for_the_active_filter(): void
+    public function test_real_activity_remains_visible_beside_the_clearly_marked_showcase(): void
     {
         $this->makeVisibleNeed('IDN-FILV2-REAL-OWNER');
         $this->signIn('IDN-FILV2-REAL-VIEWER');
 
         $content = $this->get('/activite')->assertOk()->getContent();
 
-        self::assertStringNotContainsString('Besoin · Exemple', $content);
-        self::assertStringNotContainsString('Projet · Exemple', $content);
-        self::assertStringNotContainsString('ZUMRA · Exemple', $content);
+        self::assertStringContainsString('RAHMAN Technology', $content);
+        self::assertStringContainsString('Objet de démonstration', $content);
     }
 
     public function test_composer_only_links_real_creation_routes_and_disables_the_rest_with_a_reason(): void
@@ -53,7 +53,8 @@ final class FilV2Test extends TestCase
             '/<span class="dg-fil-composer__type" aria-disabled="true" title="Une Mission se crée depuis un Projet, une ZUMRA ou un Besoin existant\.">Mission<\/span>/',
             $content
         );
-        self::assertStringNotContainsString('Événement', $content);
+        self::assertStringContainsString('Annoncer', $content);
+        self::assertStringContainsString('Événement', $content);
     }
 
     public function test_left_rail_contribution_intents_link_to_real_routes(): void
@@ -73,10 +74,9 @@ final class FilV2Test extends TestCase
 
         $content = $this->get('/activite')->assertOk()->getContent();
 
-        self::assertStringContainsString('Ce qui compte', $content);
-        self::assertStringContainsString('Agir utilement', $content);
-        self::assertStringContainsString('Collaborer simplement', $content);
-        self::assertStringContainsString('Transmettre', $content);
+        self::assertStringContainsString('À FAIRE MAINTENANT', $content);
+        self::assertStringContainsString('PROJETS QUI ONT BESOIN DE VOUS', $content);
+        self::assertStringContainsString('PERSONNES PERTINENTES À DÉCOUVRIR', $content);
         self::assertStringNotContainsString('25K+', $content);
         self::assertStringNotContainsString('1 200+', $content);
         self::assertStringNotContainsString('45 pays', $content);
@@ -111,7 +111,7 @@ final class FilV2Test extends TestCase
         $mainStart = strpos($content, '<main');
         $composerPosition = strpos($content, 'id="dg-fil-composer"');
         $toolbarPosition = strpos($content, 'class="dg-fil-toolbar"');
-        $feedPosition = strpos($content, 'class="dg-feed"');
+        $feedPosition = strpos($content, 'nf-feed');
 
         self::assertNotFalse($mainStart);
         self::assertNotFalse($composerPosition);
