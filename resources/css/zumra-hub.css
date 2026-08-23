@@ -130,33 +130,82 @@
     font-weight: 500;
 }
 
-.zumra-hub__grid {
-    display: grid;
-    grid-template-columns: minmax(205px, 235px) minmax(0, 1fr) minmax(220px, 250px);
-    gap: clamp(1rem, 1.8vw, 1.4rem);
-    align-items: start;
-    margin-top: clamp(1.5rem, 2.6vw, 2.35rem);
+/* ZUMRA-SPACE-001 — la recherche par activité s'impose visuellement dès le hero, avant toute
+   ligne personnelle (Mes ZUMRA, décisions) : c'est la première clé de lecture du carrefour. */
+.zumra-hub__search {
+    display: flex;
+    gap: .6rem;
+    margin: 1.1rem 0 0;
 }
 
-.zumra-hub__rail,
-.zumra-hub__main {
+.zumra-hub__search-input {
+    flex: 1;
     min-width: 0;
+    height: 3.2rem;
+    border: 1px solid var(--zh-line-strong);
+    border-radius: .9rem;
+    padding: 0 1.1rem;
+    color: var(--zh-forest);
+    background: var(--zh-paper);
+    font-size: .95rem;
+    box-shadow: var(--zh-shadow);
 }
 
-.zumra-hub__rail {
+.zumra-hub__search-input::placeholder {
+    color: var(--zh-muted);
+}
+
+.zumra-hub__search-submit {
+    flex: 0 0 auto;
+    min-width: 6.5rem;
+    height: 3.2rem;
+    border: 1px solid var(--zh-forest);
+    border-radius: .9rem;
+    padding: 0 1.3rem;
+    color: #fffdf7;
+    background: linear-gradient(135deg, var(--zh-forest), #0a4d3d);
+    box-shadow: 0 12px 28px rgba(10, 66, 51, .12);
+    font-size: .82rem;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.zumra-hub__discover--top {
+    margin-top: clamp(2rem, 3.4vw, 3rem);
+    padding-bottom: clamp(1.6rem, 2.6vw, 2.4rem);
+    border-bottom: 1px solid var(--zh-line);
+}
+
+.zumra-hub__discover--top .zumra-hub__domain-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.zumra-hub__discover--top .zumra-hub__domain-card {
+    min-height: 10rem;
+    padding: 1.3rem 1.4rem;
+}
+
+.zumra-hub__discover--top .zumra-hub__domain-mark {
+    width: 3.4rem;
+    height: 3.4rem;
+    font-size: 1.35rem;
+}
+
+.zumra-hub__discover--top .zumra-hub__domain-card h3 {
+    font-size: 1.5rem;
+}
+
+.zumra-hub__personal {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+    gap: clamp(1.2rem, 2vw, 1.8rem);
+    margin-top: clamp(2rem, 3.2vw, 2.8rem);
+    align-items: start;
+}
+
+.zumra-hub__personal-side {
     display: grid;
     gap: 1rem;
-    align-content: start;
-}
-
-.zumra-hub__rail--right {
-    position: sticky;
-    top: 5.4rem;
-}
-
-.zumra-hub__main {
-    display: grid;
-    gap: 1.2rem;
 }
 
 .zumra-hub__widget {
@@ -170,10 +219,6 @@
 
 .zumra-hub__widget--attention {
     background: linear-gradient(145deg, #fffaf0, #fffdf8 72%);
-}
-
-.zumra-hub__widget--understand {
-    background: linear-gradient(160deg, var(--zh-sage), #f7f8f0 72%);
 }
 
 .zumra-hub__widget--program {
@@ -299,29 +344,11 @@
 
 .zumra-hub__all-clear p,
 .zumra-hub__decision-clear p,
-.zumra-hub__widget--understand > p,
 .zumra-hub__widget--decisions > p {
     margin: .3rem 0 0;
     color: var(--zh-muted);
     font-size: .63rem;
     line-height: 1.55;
-}
-
-.zumra-hub__principles {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .4rem;
-    margin: .9rem 0;
-}
-
-.zumra-hub__principles span {
-    border: 1px solid rgba(13,63,51,.12);
-    border-radius: 999px;
-    padding: .32rem .5rem;
-    color: #435e55;
-    background: rgba(255,255,255,.6);
-    font-size: .57rem;
-    font-weight: 650;
 }
 
 .zumra-hub__text-link,
@@ -763,11 +790,6 @@
 }
 
 @media (max-width: 1220px) {
-    .zumra-hub__grid {
-        grid-template-columns: minmax(190px, 215px) minmax(0,1fr) minmax(205px, 225px);
-        gap: .9rem;
-    }
-
     .zumra-hub__group-bottom {
         align-items: stretch;
         flex-direction: column;
@@ -784,18 +806,20 @@
         gap: 2rem;
     }
 
-    .zumra-hub__grid {
-        grid-template-columns: minmax(190px,220px) minmax(0,1fr);
-    }
-
-    .zumra-hub__rail--right {
-        position: static;
-        grid-column: 1 / -1;
-        grid-template-columns: repeat(2, minmax(0,1fr));
-    }
-
     .zumra-hub__domain-grid {
         grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__discover--top .zumra-hub__domain-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .zumra-hub__personal {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__personal-side {
+        grid-template-columns: repeat(2, minmax(0,1fr));
     }
 }
 
@@ -820,24 +844,12 @@
         padding: .8rem;
     }
 
-    .zumra-hub__grid {
+    .zumra-hub__personal {
         display: flex;
         flex-direction: column;
         gap: .9rem;
         margin-top: 1.1rem;
     }
-
-    .zumra-hub__rail,
-    .zumra-hub__main {
-        display: contents;
-    }
-
-    .zumra-hub__widget--attention { order: 1; }
-    .zumra-hub__widget--program { order: 2; }
-    .zumra-hub__main > .zumra-hub__section:first-child { order: 3; }
-    .zumra-hub__discover { order: 4; }
-    .zumra-hub__widget--understand { order: 5; }
-    .zumra-hub__widget--decisions { order: 6; }
 
     .zumra-hub__widget,
     .zumra-hub__section {
@@ -850,6 +862,22 @@
 
     .zumra-hub__context-note {
         margin-top: 1rem;
+    }
+
+    .zumra-hub__discover--top .zumra-hub__domain-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__personal-side {
+        grid-template-columns: 1fr;
+    }
+
+    .zumra-hub__search {
+        flex-direction: column;
+    }
+
+    .zumra-hub__search-submit {
+        width: 100%;
     }
 }
 

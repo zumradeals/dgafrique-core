@@ -187,7 +187,7 @@ final class DesignInvariantsPhase2Test extends TestCase
 
         $this->get('/zumra/groupes/'.$group->public_reference)
             ->assertOk()
-            ->assertSee('Cinq responsabilités, cinq personnes.')
+            ->assertSee('Gouvernance fondatrice')
             ->assertDontSee('Inviter un adhérent')
             ->assertDontSee('Demandes en attente');
     }

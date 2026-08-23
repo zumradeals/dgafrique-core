@@ -101,7 +101,8 @@ final class ZumraGroupWorkspaceTest extends TestCase
 
         $this->signIn('IDN-LEADER');
         $this->get(route('zumra.groups.show', $group))->assertOk()
-            ->assertSee('Cette ZUMRA ne porte encore aucun Projet ni Besoin visible.');
+            ->assertSee('Cette ZUMRA ne porte encore aucun Projet visible.')
+            ->assertSee('Cette ZUMRA ne porte encore aucun Besoin visible.');
     }
 
     private function groupNeed(ZumraGroup $group, string $status, string $title = 'Besoin du groupe'): Need

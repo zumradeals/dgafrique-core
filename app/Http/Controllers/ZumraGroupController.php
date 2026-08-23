@@ -9,6 +9,7 @@ use App\Application\Missions\MissionService;
 use App\Application\Needs\NeedService;
 use App\Application\Partnerships\PartnershipService;
 use App\Application\Projects\ProjectService;
+use App\Application\Transmission\TransmissionVisibilityService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
 use App\Application\Zumra\ZumraGroupConfiguration;
@@ -20,6 +21,7 @@ use App\Models\Partnership;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
+use App\Models\Transmission;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -34,16 +36,29 @@ final class ZumraGroupController
 {
     use PresentsPartnerships;
 
+    /**
+     * ZUMRA-SPACE-001 — l'activité est la première clé de recherche : `q` filtre sur l'activité
+     * principale, le nom et l'objectif fondateur, jamais une taxonomie fabriquée ici.
+     */
     public function index(Request $request, ZumraGroupConfiguration $configuration): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $membership = $this->programMembership($identity->reference);
-        $groups = ZumraGroup::query()->whereNotIn('state', [ZumraGroup::STATE_SUSPENDED])->latest()->paginate(12);
+        $query = trim((string) $request->query('q', ''));
+        $groups = ZumraGroup::query()
+            ->whereNotIn('state', [ZumraGroup::STATE_SUSPENDED])
+            ->when($query !== '', fn ($builder) => $builder->where(function ($builder) use ($query): void {
+                $like = '%'.$query.'%';
+                $builder->whereRaw('LOWER(domain) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(name) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(founding_objective) LIKE LOWER(?)', [$like]);
+            }))
+            ->latest()->paginate(12)->withQueryString();
         $myMemberships = ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->whereIn('status', [ZumraGroupMembership::STATUS_ACTIVE, ZumraGroupMembership::STATUS_INVITED, ZumraGroupMembership::STATUS_REQUESTED])->pluck('status', 'zumra_group_id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('zumra.groups.index', compact('identity', 'membership', 'groups', 'myMemberships', 'isAdministrator') + ['configuration' => $configuration->get()]);
+        return view('zumra.groups.index', compact('identity', 'membership', 'groups', 'myMemberships', 'isAdministrator', 'query') + ['configuration' => $configuration->get()]);
     }
 
     public function create(Request $request, ZumraGroupConfiguration $configuration): View
@@ -134,6 +149,7 @@ final class ZumraGroupController
         MissionService $missions,
         CommunityEventService $events,
         PartnershipService $partnerships,
+        TransmissionVisibilityService $transmissionVisibility,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -210,10 +226,24 @@ final class ZumraGroupController
 
         $activities = $group->activities()->latest('created_at')->get();
 
+        // ZUMRA-SPACE-001 — Transmissions réellement rattachées à cette ZUMRA (CAP-006,
+        // `Transmission::CONTEXT_ZUMRA`), filtrées par l'autorité déjà réelle du domaine
+        // Transmission (`TransmissionVisibilityService::canView()`), jamais une nouvelle
+        // autorité ni un système de formation parallèle fabriqué ici.
+        $groupTransmissions = Transmission::query()
+            ->where('context_type', Transmission::CONTEXT_ZUMRA)
+            ->where('context_reference', $group->public_reference)
+            ->latest('created_at')
+            ->limit(20)
+            ->get()
+            ->filter(fn (Transmission $transmission): bool => $transmissionVisibility->canView($transmission, $identity->reference))
+            ->values();
+
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
             'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
             'collectivePriority', 'myPendingRoleProposal', 'groupMissions', 'groupEvents', 'activities', 'canSetCharter',
+            'groupTransmissions',
         ) + ['isLeader' => $isLeader, 'groupPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations, 'manageableOrganizationCapabilities' => $manageableOrganizationCapabilities]);
     }
 

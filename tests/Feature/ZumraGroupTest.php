@@ -54,8 +54,8 @@ final class ZumraGroupTest extends TestCase
         self::assertSame(1, ZumraGroupEvent::query()->where('event', 'GROUP_PROPOSED')->count());
 
         $this->get(route('zumra.groups.show', $group))->assertOk()
-            ->assertSee('Cinq responsabilités, cinq personnes')
-            ->assertSee('1/5 responsabilités acceptées', false);
+            ->assertSee('Gouvernance fondatrice')
+            ->assertSee('1/5', false);
     }
 
     public function test_a_join_request_never_creates_membership_before_leader_approval(): void

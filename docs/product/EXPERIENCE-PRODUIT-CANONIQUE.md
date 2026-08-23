@@ -1288,3 +1288,53 @@ principale ; aucun article renuméroté ou réécrit).
 **Hors périmètre** : ZUMRA → Organisation (gap confirmé en Phase A — `ProjectAutonomyPathway`
 déclare une forme cible sans jamais créer d'`Organization` réelle ni la relier — documenté,
 non construit), tout matching géographique ou par activité, toute taxonomie globale des activités.
+
+## 34. Addendum daté — ZUMRA-SPACE-001, du carrefour ZUMRA à l'Espace ZUMRA (23 août 2026)
+
+**Portée : le monde ZUMRA cesse de ressembler à un tableau de bord personnel et devient un vrai
+carrefour de découverte par activité,** avec une fiche `zumra.groups.show` qui devient un véritable
+Espace ZUMRA organisé autour de l'humain plutôt que de la gouvernance. Un audit exhaustif (Phase A,
+sans code) a établi que `/zumra` n'offrait aucune recherche ni filtre, que son widget « Comprendre
+ZUMRA » réaffirmait une doctrine déjà périmée (les cinq responsabilités comme façade d'entrée), et
+que plusieurs capacités runtime déjà réelles (Transmissions rattachées à une ZUMRA, mesure d'impact
+collective) n'étaient jamais surfacées sur la fiche. Aucune nouvelle taxonomie, aucun nouveau système
+de formation, aucun deuxième Fil, aucune notion PUBLIC/PRIVATE/SECRET, aucun parrainage n'ont été
+introduits — chaque ajout réutilise une plomberie déjà confirmée par l'audit.
+
+**Décisions rendues durables** :
+
+- **`/zumra` devient un carrefour de recherche et de découverte, pas un tableau de bord.** Une
+  recherche réelle (`GET /zumra/groupes?q=`, filtrant `domain`/`name`/`founding_objective`) s'impose
+  visuellement dès le premier écran, suivie d'une section « Explorer par activité » agrandie. « Mes
+  ZUMRA », les décisions en attente et le suivi du Programme ZUMRA restent accessibles mais
+  redescendent en position secondaire, dans une colonne personnelle à deux volets plutôt qu'en tête
+  de page. Le widget « Comprendre ZUMRA » (quatre puces Domaine/Objectif/Charte/5 responsabilités)
+  est supprimé — c'était la contradiction doctrinale relevée en Phase A.
+- **La fiche ZUMRA se réorganise en six sections humaines : Accueil, Apprendre · Transmettre,
+  Contribuer, Construire, Échanger, Fonctionnement.** L'activité principale et les activités
+  dérivées ouvrent désormais la page (section Accueil). Les cinq responsabilités et la charte
+  interne quittent le premier plan pour la section Fonctionnement, en fin de page — toujours
+  accessibles, jamais dominantes.
+- **Les Transmissions rattachées à une ZUMRA deviennent visibles depuis sa fiche**, en filtrant par
+  `TransmissionVisibilityService::canView()` — le même service déjà utilisé ailleurs, aucune
+  nouvelle règle de visibilité créée. Le lien « Proposer une transmission pour cette ZUMRA » réutilise
+  la route générique `transmissions.create`, dont le contexte ZUMRA de l'acteur est déjà proposable
+  (`TransmissionController::contextOptions()`) — aucune présélection nouvelle construite.
+- **La naissance d'une ZUMRA s'intègre humainement au monde `/zumra`** : le lien d'entrée devient
+  « Faire naître une ZUMRA », le repère de retour devient « ZUMRA » (non plus « Les ZUMRA »), et la
+  mention de la charte est retirée du moment « Votre ZUMRA » — cohérent avec l'arbitrage
+  ZUMRA-HUMAN-BIRTH-001 (§33) selon lequel la charte n'est jamais une condition de naissance.
+- **Aucune visibilité PUBLIC/PRIVATE/SECRET introduite.** L'invariant existant est documenté et
+  conservé tel quel : l'existence d'une ZUMRA reste découvrable, certaines actions et contenus
+  internes restent protégés par les droits déjà en vigueur (adhésion, leadership).
+- **Le répertoire des ZUMRA gagne la même recherche**, avec un état vide honnête distinguant
+  « aucune ZUMRA proposée » de « aucune ZUMRA ne correspond à cette recherche ».
+
+**Hors périmètre** (conformément à l'arbitrage) : tout matching géographique ou par activité (les
+données déjà disponibles — activité, mode, localisation — restent préservées pour un futur
+rapprochement, non construit ici), tout parrainage ou mise en avant gouvernée d'une ZUMRA, tout
+second canal de conversation ou second Fil social.
+
+**Doctrine amendée** : aucune — ce chantier est une réorganisation d'expérience s'appuyant
+exclusivement sur des capacités déjà décrites par CAP-011, CAP-037, CAP-038 et la doctrine
+Transmission ; aucun CAP ni canon n'a été modifié.
