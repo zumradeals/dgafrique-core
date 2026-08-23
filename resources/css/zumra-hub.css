@@ -627,3 +627,182 @@
 @media (prefers-reduced-motion: reduce) {
     .zw-birth-btn, .zw-nav-item { transition: none; }
 }
+
+/* ---------- UIUX-010 — passe finale de fidélité visuelle ----------
+   La maquette est volontairement plus panoramique qu'un dashboard. Ces règles amplifient le
+   carrefour sans modifier ses données, ses routes ni sa hiérarchie métier. */
+.dg-page.zw {
+    max-width: 1920px;
+    padding-inline: clamp(18px, 1.45vw, 28px);
+    padding-top: 20px;
+}
+
+.zw-layout {
+    grid-template-columns: clamp(220px, 15.1vw, 260px) minmax(0, 1fr) clamp(270px, 18.2vw, 316px);
+    gap: clamp(16px, 1.25vw, 24px);
+}
+
+.zw-left, .zw-main, .zw-right { gap: 14px; }
+.zw-left, .zw-right { top: 84px; }
+
+.zw-birth-cta, .zw-nav, .zw-explore, .zw-fil-panel, .zw-card {
+    border-radius: 16px;
+    box-shadow: 0 8px 22px rgba(20, 40, 32, .055);
+}
+
+.zw-birth-cta { padding: 14px 16px; }
+.zw-birth-btn { font-size: .94rem; }
+.zw-nav-item { min-height: 42px; font-size: .88rem; }
+.zw-explore { padding: 14px 15px; }
+.zw-explore-item { padding-block: 5px; font-size: .86rem; }
+.zw-fil-panel { padding: 18px; }
+
+.zw-hero {
+    grid-template-columns: minmax(0, 1.32fr) minmax(300px, .92fr);
+    min-height: 322px;
+    border-radius: 18px;
+    background: linear-gradient(106deg, #004c35 0%, #00613e 54%, #003d2d 100%);
+}
+
+.zw-hero-copy {
+    position: relative;
+    z-index: 2;
+    padding: clamp(28px, 2.2vw, 42px);
+}
+
+.zw-hero-title { font-size: clamp(2.65rem, 3.25vw, 4rem); line-height: .94; }
+.zw-hero-tagline { font-size: clamp(1rem, 1.15vw, 1.24rem); }
+.zw-hero-lead { font-size: .96rem; margin-bottom: 16px; }
+.zw-hero-art { min-height: 322px; }
+.zw-hero-art::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, #00613e 0%, transparent 24%);
+    pointer-events: none;
+}
+
+.zw-search {
+    display: grid;
+    grid-template-columns: minmax(190px, 2fr) minmax(118px, .8fr) minmax(110px, .7fr) auto;
+    flex-wrap: nowrap;
+    padding: 6px;
+    gap: 7px;
+    background: rgba(255, 255, 255, .13);
+}
+.zw-search input, .zw-search select { min-width: 0; padding: 11px 12px; }
+.zw-search-submit { padding-inline: 18px; }
+.zw-popular { margin-top: 10px; gap: 6px; }
+.zw-popular-chip { font-size: .74rem; padding: 5px 10px; }
+
+.zw-section-heading { margin-top: 3px; }
+.zw-discover-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(10px, .85vw, 16px);
+}
+.zw-discover-card { border-radius: 15px; min-width: 0; }
+.zw-discover-cover { height: clamp(112px, 8.4vw, 148px); }
+.zw-discover-body { padding: 12px; gap: 7px; }
+.zw-discover-mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    margin-top: -30px;
+    position: relative;
+    z-index: 2;
+    border: 3px solid var(--zw-paper);
+}
+.zw-discover-name { font-size: clamp(.98rem, 1vw, 1.18rem); }
+.zw-discover-desc { font-size: .76rem; line-height: 1.42; min-height: 3.25em; }
+.zw-discover-meta { gap: 6px 10px; font-size: .68rem; }
+.zw-discover-open, .zw-discover-closed { font-size: .7rem; }
+.zw-discover-cta { margin-top: 0; padding: 7px; border-radius: 8px; font-size: .72rem; }
+
+.zw-card { padding: 16px; }
+.zw-card h2 { font-size: .66rem; margin-bottom: 10px; }
+.zw-membership-row strong { font-size: .9rem; }
+.zw-membership-row p { font-size: .79rem; line-height: 1.45; }
+.zw-nearby-item strong { font-size: .8rem; }
+.zw-nearby-item small, .zw-nearby-distance { font-size: .7rem; }
+
+.zw-lower {
+    margin-top: 14px;
+    margin-left: calc(clamp(220px, 15.1vw, 260px) + clamp(16px, 1.25vw, 24px));
+}
+.zw-participate { margin-top: 0; border-radius: 16px; padding: 16px 18px; }
+.zw-participate h2 { text-align: left; font-family: var(--dg-font-sans); font-size: .82rem; text-transform: uppercase; margin-bottom: 14px; }
+.zw-participate-grid { gap: 16px; }
+.zw-participate-step { display: grid; grid-template-columns: 42px 1fr; column-gap: 10px; }
+.zw-participate-num { grid-row: 1 / span 2; width: 42px; height: 42px; margin: 0; }
+.zw-participate-step strong { font-size: .82rem; }
+.zw-participate-step p { font-size: .73rem; line-height: 1.42; }
+.zw-stats { margin-top: 14px; border-radius: 16px; padding: 18px 22px; gap: 18px; }
+.zw-stat strong { font-size: 1.65rem; }
+.zw-stats-quote { font-size: .9rem; }
+
+@media (max-width: 1500px) {
+    .zw-layout { grid-template-columns: 210px minmax(0, 1fr) 270px; gap: 16px; }
+    .zw-lower { margin-left: 226px; }
+    .zw-hero { grid-template-columns: minmax(0, 1.25fr) minmax(240px, .75fr); }
+    .zw-hero-copy { padding: 28px; }
+    .zw-search { grid-template-columns: minmax(180px, 1.8fr) 115px 105px auto; }
+}
+
+@media (max-width: 1240px) {
+    .zw-layout { grid-template-columns: 200px minmax(0, 1fr) 250px; gap: 14px; }
+    .zw-lower { margin-left: 214px; }
+    .zw-hero { grid-template-columns: minmax(0, 1.15fr) minmax(205px, .65fr); }
+    .zw-search { grid-template-columns: 1fr 1fr; }
+    .zw-search-q { grid-column: 1 / -1; }
+    .zw-discover-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 980px) {
+    .dg-page.zw { padding: 14px 14px 84px; }
+    .zw-layout { gap: 12px; }
+    .zw-birth-cta { order: 1; }
+    .zw-nav { order: 2; }
+    .zw-hero { order: 3; }
+    #zw-discover { order: 4; }
+    .zw-membership-card { order: 5; }
+    #zw-attention { order: 6; }
+    .zw-nearby-card { order: 7; }
+    .zw-inspiration-card { order: 8; }
+    .zw-explore { order: 9; }
+    .zw-fil-panel { order: 10; }
+    .zw-lower { margin-left: 0; }
+    .zw-hero { grid-template-columns: minmax(0, 1.2fr) minmax(230px, .8fr); }
+    .zw-discover-grid { grid-template-columns: repeat(3, minmax(240px, 1fr)); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+    .zw-discover-card { scroll-snap-align: start; }
+}
+
+@media (max-width: 640px) {
+    .zw-birth-cta { padding: 11px 13px; }
+    .zw-birth-btn { font-size: .82rem; }
+    .zw-birth-cta p { font-size: .68rem; }
+    .zw-nav { display: grid; grid-template-columns: repeat(5, minmax(86px, 1fr)); overflow-x: auto; padding: 5px; scroll-snap-type: x mandatory; }
+    .zw-nav-item { min-height: 38px; padding: 7px 9px; font-size: .72rem; white-space: nowrap; scroll-snap-align: start; }
+    .zw-hero { grid-template-columns: 1fr; min-height: 0; }
+    .zw-hero-copy { padding: 22px 18px 18px; }
+    .zw-hero-eyebrow { font-size: .59rem; }
+    .zw-hero-title { font-size: 2.35rem; max-width: 8ch; }
+    .zw-hero-tagline { font-size: .91rem; }
+    .zw-hero-lead { font-size: .8rem; }
+    .zw-search { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .zw-search-q { grid-column: 1 / -1; }
+    .zw-search-location { grid-column: 1 / 2; }
+    .zw-search-submit { width: auto; }
+    .zw-hero-art { min-height: 150px; }
+    .zw-popular { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; }
+    .zw-popular-label, .zw-popular-chip { white-space: nowrap; }
+    .zw-discover-grid { grid-template-columns: repeat(8, minmax(78vw, 78vw)); gap: 12px; }
+    .zw-discover-cover { height: 128px; }
+    .zw-explore-list { flex-direction: row; overflow-x: auto; gap: 8px; }
+    .zw-explore-item { min-width: max-content; padding: 7px 9px; background: var(--zw-ivory); }
+    .zw-explore-count { display: none; }
+    .zw-participate { overflow: hidden; }
+    .zw-participate-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; }
+    .zw-participate-step { min-width: 78%; scroll-snap-align: start; }
+    .zw-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px; }
+    .zw-stats-quote { grid-column: 1 / -1; }
+}
