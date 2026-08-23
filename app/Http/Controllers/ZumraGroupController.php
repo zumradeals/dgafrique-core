@@ -28,6 +28,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 final class ZumraGroupController
@@ -142,8 +143,13 @@ final class ZumraGroupController
         foreach ($labels as $index => $label) {
             $label = trim((string) $label);
             $relation = trim((string) ($relations[$index] ?? ''));
-            if ($label === '' || $relation === '') {
+            if ($label === '') {
                 continue;
+            }
+            if ($relation === '') {
+                throw ValidationException::withMessages([
+                    "activity_relation.$index" => 'Expliquez comment cette activité dérive de l’activité principale.',
+                ]);
             }
             $activities[] = ['label' => $label, 'relation_to_principal' => $relation];
         }
