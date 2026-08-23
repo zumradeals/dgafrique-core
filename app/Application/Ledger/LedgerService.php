@@ -85,10 +85,15 @@ final class LedgerService
 
     /**
      * ZAHAB-001 — projette un mouvement de Wallet déjà autorisé par `ZahabWalletService` (crédit ou
-     * débit déjà validé, verrou déjà tenu). `$idempotencyKey` est fourni par l'appelant : rejouer le
-     * même mouvement (même clé) ne produit jamais une deuxième écriture — même filet de sécurité
-     * UNIQUE(source_type, source_id) que `post()`. `$businessReason` réutilise `purpose_code` (déjà
-     * utilisé pour les finalités CAP-061) plutôt que d'inventer une nouvelle colonne.
+     * débit déjà validé, verrou déjà tenu). `$idempotencyKey` identifie CE mouvement précis (une
+     * jambe) — distincte de `$operationReference`, qui identifie l'OPÉRATION métier pouvant un jour
+     * regrouper plusieurs jambes (ex. un futur virement payeur→bénéficiaire) sans jamais détourner
+     * `source_id` pour porter les deux notions à la fois (contre-validation post-#130).
+     *
+     * Rejouer la MÊME clé avec les MÊMES attributs retrouve toujours la même écriture (idempotence).
+     * Rejouer la même clé avec des attributs DIFFÉRENTS (autre Wallet, montant, sens...) est un
+     * conflit d'idempotence explicitement refusé — jamais un faux succès silencieux sur une requête
+     * logiquement différente.
      */
     public function postWalletMovement(
         ZahabWallet $wallet,
@@ -98,31 +103,56 @@ final class LedgerService
         string $businessReason,
         string $idempotencyKey,
         string $actorCoreReference,
+        ?string $operationReference = null,
     ): LedgerEntry {
         $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
         if ($existing !== null) {
+            $this->assertMovementMatches($existing, $wallet, $direction, $amount, $currency, $businessReason);
+
             return $existing;
         }
 
-        return $this->post(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey, [
-            'amount' => $amount,
-            'currency' => $currency,
-            'direction' => $direction,
-            'purpose_code' => $businessReason,
-            'period' => null,
-            'payer_core_reference' => $actorCoreReference,
-            'subject_type' => $wallet->subject_type,
-            'subject_reference' => $wallet->subject_reference,
-            'wallet_id' => $wallet->id,
-            'occurred_at' => now(),
-        ]);
+        try {
+            return LedgerEntry::query()->create([
+                'source_type' => LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT,
+                'source_id' => $idempotencyKey,
+                'entry_type' => LedgerEntry::TYPE_PAYMENT,
+                'amount' => $amount,
+                'currency' => $currency,
+                'direction' => $direction,
+                'purpose_code' => $businessReason,
+                'period' => null,
+                'payer_core_reference' => $actorCoreReference,
+                'subject_type' => $wallet->subject_type,
+                'subject_reference' => $wallet->subject_reference,
+                'wallet_id' => $wallet->id,
+                'zahab_operation_reference' => $operationReference,
+                'occurred_at' => now(),
+                'posted_at' => now(),
+            ]);
+        } catch (QueryException $exception) {
+            if ((string) $exception->getCode() === '23505') {
+                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey) ?? throw $exception;
+                $this->assertMovementMatches($existing, $wallet, $direction, $amount, $currency, $businessReason);
+
+                return $existing;
+            }
+            throw $exception;
+        }
     }
 
     /**
      * ZAHAB-001 — compense un mouvement de Wallet déjà posté, jamais en le modifiant (art. CAP-062,
-     * même principe que `reverses_entry_id` déjà réservé au schéma). Sens opposé, même montant, même
-     * Wallet ; `$idempotencyKey` est celle de LA COMPENSATION elle-même, jamais celle du mouvement
-     * d'origine (sinon la contrainte UNIQUE(source_type, source_id) la rejetterait comme un doublon).
+     * même principe que `reverses_entry_id` déjà réservé au schéma). `$idempotencyKey` est celle de
+     * LA COMPENSATION elle-même, jamais celle du mouvement d'origine.
+     *
+     * N'applique AUCUNE vérification de solde : c'est la responsabilité de l'appelant
+     * (`ZahabWalletService::reverse()`, sous le même verrou Wallet que `credit()`/`debit()`) — ce
+     * service reste un simple posteur d'écritures, jamais un lieu d'invariants métier. Refuse en
+     * revanche explicitement une deuxième compensation de la même écriture d'origine (une clé
+     * différente essayant de reverser un original déjà compensé), avec l'index UNIQUE partiel
+     * `dg_ledger_entries_reverses_entry_id_unique` comme dernier rempart contre une course
+     * concurrente qui contournerait la vérification applicative.
      */
     public function reverseWalletMovement(LedgerEntry $movement, string $idempotencyKey, string $actorCoreReference): LedgerEntry
     {
@@ -133,10 +163,18 @@ final class LedgerService
             throw new RuntimeException('LEDGER_ENTRY_ALREADY_A_REVERSAL');
         }
 
-        $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
-        if ($existing !== null) {
-            return $existing;
+        $existingByKey = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
+        if ($existingByKey !== null) {
+            abort_unless($existingByKey->reverses_entry_id === $movement->id, 409, 'ZAHAB_IDEMPOTENCY_CONFLICT');
+
+            return $existingByKey;
         }
+
+        abort_if(
+            LedgerEntry::query()->where('reverses_entry_id', $movement->id)->exists(),
+            409,
+            'Cette écriture a déjà été compensée.'
+        );
 
         $opposite = $movement->direction === LedgerEntry::DIRECTION_CREDIT
             ? LedgerEntry::DIRECTION_DEBIT
@@ -157,15 +195,41 @@ final class LedgerService
                 'subject_type' => $movement->subject_type,
                 'subject_reference' => $movement->subject_reference,
                 'wallet_id' => $movement->wallet_id,
+                'zahab_operation_reference' => $movement->zahab_operation_reference,
                 'occurred_at' => now(),
                 'posted_at' => now(),
             ]);
         } catch (QueryException $exception) {
             if ((string) $exception->getCode() === '23505') {
-                return $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey) ?? throw $exception;
+                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
+                if ($existing !== null) {
+                    return $existing;
+                }
+                // Violation de l'index partiel anti-double-reversal : une course concurrente sur
+                // la même écriture d'origine a gagné avant nous.
+                abort(409, 'Cette écriture a déjà été compensée.');
             }
             throw $exception;
         }
+    }
+
+    private function assertMovementMatches(
+        LedgerEntry $existing,
+        ZahabWallet $wallet,
+        string $direction,
+        int $amount,
+        string $currency,
+        string $businessReason,
+    ): void {
+        abort_unless(
+            $existing->wallet_id === $wallet->id
+                && $existing->direction === $direction
+                && $existing->amount === $amount
+                && $existing->currency === $currency
+                && $existing->purpose_code === $businessReason,
+            409,
+            'ZAHAB_IDEMPOTENCY_CONFLICT'
+        );
     }
 
     private function find(string $sourceType, string $sourceId): ?LedgerEntry

@@ -18,9 +18,12 @@ use Illuminate\Support\Facades\DB;
  *   (CAP-062, seule vérité des mouvements) ;
  * - un sujet ne possède jamais plus d'un Wallet actif (`walletFor()`, création paresseuse
  *   idempotente, même filet de sécurité UNIQUE que `LedgerService::post()`) ;
- * - aucun débit ne peut dépasser le solde disponible, même sous concurrence : `debit()` verrouille
- *   la ligne Wallet (`lockForUpdate()`) et recalcule le solde à l'intérieur de cette même
- *   transaction — deux débits concurrents pour le même Wallet se sérialisent sur ce verrou ;
+ * - aucun débit ni AUCUNE compensation produisant un débit (`reverse()` d'un CREDIT déjà dépensé)
+ *   ne peut dépasser le solde disponible, même sous concurrence : `debit()`/`reverse()` verrouillent
+ *   la ligne Wallet (`lockForUpdate()`) et recalculent le solde à l'intérieur de cette même
+ *   transaction — deux mutations concurrentes pour le même Wallet se sérialisent sur ce verrou ;
+ * - une écriture d'origine ne peut être compensée qu'une seule fois (`reverse()`, vérifié sous
+ *   verrou + index UNIQUE partiel `dg_ledger_entries_reverses_entry_id_unique` en dernier rempart) ;
  * - aucun crédit ni débit sans raison métier fermée (`REASONS`) — jamais un montant choisi
  *   librement par une route générique (art. 14 du mandat ZAHAB-001) ;
  * - l'idempotence (rejouer la même opération métier) est portée par `LedgerService`
@@ -108,19 +111,28 @@ final class ZahabWalletService
     }
 
     /**
-     * Crédit autorisé par une raison métier fermée. `$idempotencyKey` doit identifier de façon
-     * unique l'opération métier source (ex. l'id d'un futur paiement d'acquisition) : la rejouer ne
-     * crédite jamais deux fois.
+     * Crédit autorisé par une raison métier fermée. `$idempotencyKey` identifie CE mouvement précis
+     * (une jambe) : la rejouer avec les mêmes attributs ne crédite jamais deux fois ; la rejouer
+     * avec des attributs différents est un conflit d'idempotence explicitement refusé (jamais un
+     * faux succès silencieux — contre-validation post-#130). `$operationReference` est optionnel :
+     * il identifiera un jour l'OPÉRATION métier regroupant plusieurs jambes (ex. un virement), sans
+     * jamais être confondu avec `$idempotencyKey`.
      */
-    public function credit(ZahabWallet $wallet, int $amount, string $businessReason, string $idempotencyKey, string $actorCoreReference): LedgerEntry
-    {
+    public function credit(
+        ZahabWallet $wallet,
+        int $amount,
+        string $businessReason,
+        string $idempotencyKey,
+        string $actorCoreReference,
+        ?string $operationReference = null,
+    ): LedgerEntry {
         $this->assertValidMovement($amount, $businessReason);
 
-        return DB::transaction(function () use ($wallet, $amount, $businessReason, $idempotencyKey, $actorCoreReference): LedgerEntry {
+        return DB::transaction(function () use ($wallet, $amount, $businessReason, $idempotencyKey, $actorCoreReference, $operationReference): LedgerEntry {
             $locked = ZahabWallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
 
             return $this->ledger->postWalletMovement(
-                $locked, LedgerEntry::DIRECTION_CREDIT, $amount, self::CURRENCY, $businessReason, $idempotencyKey, $actorCoreReference
+                $locked, LedgerEntry::DIRECTION_CREDIT, $amount, self::CURRENCY, $businessReason, $idempotencyKey, $actorCoreReference, $operationReference
             );
         });
     }
@@ -129,29 +141,34 @@ final class ZahabWalletService
      * Débit atomique : jamais de solde négatif (art. 13 du mandat), jamais de double dépense sous
      * concurrence. Le verrou `lockForUpdate()` sur la ligne Wallet sérialise deux débits concurrents
      * pour le MÊME Wallet — le second ne recalcule son solde qu'après que le premier a validé et
-     * committé le sien. Une clé d'idempotence déjà utilisée retourne l'écriture existante SANS
-     * revérifier le solde : rejouer un débit déjà comptabilisé ne doit jamais échouer parce que ce
-     * même débit a, entre-temps, réduit le solde disponible.
+     * committé le sien. Une clé d'idempotence déjà utilisée saute la vérification de solde (rejouer
+     * un débit déjà comptabilisé ne doit jamais échouer parce que ce même débit a, entre-temps,
+     * réduit le solde disponible) mais passe quand même par `LedgerService::postWalletMovement()`,
+     * qui refuse explicitement un rejeu aux attributs différents (conflit d'idempotence).
      */
-    public function debit(ZahabWallet $wallet, int $amount, string $businessReason, string $idempotencyKey, string $actorCoreReference): LedgerEntry
-    {
+    public function debit(
+        ZahabWallet $wallet,
+        int $amount,
+        string $businessReason,
+        string $idempotencyKey,
+        string $actorCoreReference,
+        ?string $operationReference = null,
+    ): LedgerEntry {
         $this->assertValidMovement($amount, $businessReason);
 
-        return DB::transaction(function () use ($wallet, $amount, $businessReason, $idempotencyKey, $actorCoreReference): LedgerEntry {
+        return DB::transaction(function () use ($wallet, $amount, $businessReason, $idempotencyKey, $actorCoreReference, $operationReference): LedgerEntry {
             $locked = ZahabWallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
 
             $existing = LedgerEntry::query()
                 ->where('source_type', LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT)
                 ->where('source_id', $idempotencyKey)
                 ->first();
-            if ($existing !== null) {
-                return $existing;
+            if ($existing === null) {
+                abort_if($this->balance($locked) < $amount, 409, 'Solde ZAHAB insuffisant.');
             }
 
-            abort_if($this->balance($locked) < $amount, 409, 'Solde ZAHAB insuffisant.');
-
             return $this->ledger->postWalletMovement(
-                $locked, LedgerEntry::DIRECTION_DEBIT, $amount, self::CURRENCY, $businessReason, $idempotencyKey, $actorCoreReference
+                $locked, LedgerEntry::DIRECTION_DEBIT, $amount, self::CURRENCY, $businessReason, $idempotencyKey, $actorCoreReference, $operationReference
             );
         });
     }
@@ -160,13 +177,47 @@ final class ZahabWalletService
      * Compense un mouvement déjà posté (art. 22 du mandat) : jamais une modification, une nouvelle
      * écriture de sens opposé référençant l'originale (`reverses_entry_id`). `$idempotencyKey` est
      * celle de LA COMPENSATION, distincte de celle du mouvement d'origine.
+     *
+     * Corrections post-contre-validation (#130) :
+     * - une compensation qui produit un DEBIT (reversal d'un CREDIT) respecte EXACTEMENT le même
+     *   invariant qu'un débit normal : solde recalculé sous le même verrou Wallet, refus atomique
+     *   si insuffisant — jamais de solde négatif, même pour compenser un crédit déjà dépensé ;
+     * - une écriture d'origine ne peut être compensée qu'une seule fois : vérifié ici sous verrou
+     *   (première ligne de défense) et par `LedgerService::reverseWalletMovement()` (deuxième
+     *   ligne), l'index UNIQUE partiel `dg_ledger_entries_reverses_entry_id_unique` restant le
+     *   dernier rempart contre une course concurrente.
      */
     public function reverse(LedgerEntry $movement, string $idempotencyKey, string $actorCoreReference): LedgerEntry
     {
         abort_if($movement->wallet_id === null, 422, 'Cette écriture ne concerne aucun Wallet ZAHAB.');
 
         return DB::transaction(function () use ($movement, $idempotencyKey, $actorCoreReference): LedgerEntry {
-            ZahabWallet::query()->whereKey($movement->wallet_id)->lockForUpdate()->firstOrFail();
+            $wallet = ZahabWallet::query()->whereKey($movement->wallet_id)->lockForUpdate()->firstOrFail();
+
+            // Idempotence : rejouer la même clé retrouve toujours la même compensation, sans
+            // revérifier le solde (elle a déjà eu lieu par le passé).
+            $existingByKey = LedgerEntry::query()
+                ->where('source_type', LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT)
+                ->where('source_id', $idempotencyKey)
+                ->first();
+            if ($existingByKey !== null) {
+                abort_unless($existingByKey->reverses_entry_id === $movement->id, 409, 'ZAHAB_IDEMPOTENCY_CONFLICT');
+
+                return $existingByKey;
+            }
+
+            abort_if(
+                LedgerEntry::query()->where('reverses_entry_id', $movement->id)->exists(),
+                409,
+                'Cette écriture a déjà été compensée.'
+            );
+
+            $opposite = $movement->direction === LedgerEntry::DIRECTION_CREDIT
+                ? LedgerEntry::DIRECTION_DEBIT
+                : LedgerEntry::DIRECTION_CREDIT;
+            if ($opposite === LedgerEntry::DIRECTION_DEBIT) {
+                abort_if($this->balance($wallet) < $movement->amount, 409, 'Solde ZAHAB insuffisant pour compenser cette écriture.');
+            }
 
             return $this->ledger->reverseWalletMovement($movement, $idempotencyKey, $actorCoreReference);
         });

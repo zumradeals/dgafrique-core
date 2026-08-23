@@ -233,13 +233,13 @@ final class ZahabWalletTest extends TestCase
         self::assertSame([1000, 300], $movements->pluck('amount')->all());
     }
 
-    // ===== Compensation / reversal (art. 22 du mandat) =====
+    // ===== Compensation / reversal (art. 22 du mandat, scénarios A-F de la contre-validation) =====
 
-    public function test_reversing_a_credit_returns_the_balance_to_its_prior_state(): void
+    public function test_reversal_scenario_a_reversing_a_credit_returns_the_balance_to_its_prior_state(): void
     {
         $service = app(ZahabWalletService::class);
         $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
-        $movement = $service->credit($wallet, 1000, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $movement = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
 
         $reversal = $service->reverse($movement, (string) Str::uuid(), 'IDN-ADMIN');
 
@@ -249,6 +249,53 @@ final class ZahabWalletTest extends TestCase
         self::assertSame(LedgerEntry::DIRECTION_DEBIT, $reversal->direction);
         // Immutabilité : l'écriture d'origine n'est jamais modifiée par la compensation.
         self::assertSame(LedgerEntry::DIRECTION_CREDIT, $movement->refresh()->direction);
+    }
+
+    public function test_reversal_scenario_b_reversing_an_already_spent_credit_is_refused_never_negative(): void
+    {
+        // Défaut critique #2 de la contre-validation : CREDIT 500, DEBIT 400 (solde 100), puis
+        // reverse(CREDIT 500) exigerait un DEBIT de 500 que le Wallet n'a plus — refus atomique,
+        // jamais un solde négatif.
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $credit = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $service->debit($wallet, 400, ZahabWalletService::REASON_SERVICE_PURCHASE, (string) Str::uuid(), 'IDN-MEMBER');
+
+        $this->assertAborts(409, fn () => $service->reverse($credit, (string) Str::uuid(), 'IDN-ADMIN'));
+
+        self::assertSame(100, $service->balance($wallet));
+        self::assertSame(0, LedgerEntry::query()->where('reverses_entry_id', $credit->id)->count());
+    }
+
+    public function test_reversal_scenario_c_reversing_a_credit_is_allowed_once_funds_are_available_again(): void
+    {
+        // Même point de départ que B (solde 100 après CREDIT 500 / DEBIT 400), mais un second
+        // CREDIT 500 rend le solde disponible (600) suffisant pour compenser le premier CREDIT.
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $firstCredit = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $service->debit($wallet, 400, ZahabWalletService::REASON_SERVICE_PURCHASE, (string) Str::uuid(), 'IDN-MEMBER');
+        $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        self::assertSame(600, $service->balance($wallet));
+
+        $reversal = $service->reverse($firstCredit, (string) Str::uuid(), 'IDN-ADMIN');
+
+        self::assertSame(LedgerEntry::TYPE_REVERSAL, $reversal->entry_type);
+        self::assertSame(100, $service->balance($wallet));
+    }
+
+    public function test_reversal_scenario_d_a_second_reversal_with_a_new_key_is_refused(): void
+    {
+        // Défaut critique #1 : une écriture d'origine ne peut être compensée qu'une seule fois. Un
+        // rejeu de LA MÊME clé retrouve la même compensation (idempotence) ; une clé DIFFÉRENTE
+        // tentant de reverser un original déjà compensé est un refus métier explicite.
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $movement = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $service->reverse($movement, (string) Str::uuid(), 'IDN-ADMIN');
+
+        $this->assertAborts(409, fn () => $service->reverse($movement, (string) Str::uuid(), 'IDN-ADMIN'));
+        self::assertSame(1, LedgerEntry::query()->where('reverses_entry_id', $movement->id)->count());
     }
 
     public function test_reversing_the_same_movement_twice_with_the_same_key_is_idempotent(): void
@@ -263,6 +310,33 @@ final class ZahabWalletTest extends TestCase
 
         self::assertSame($first->id, $second->id);
         self::assertSame(0, $service->balance($wallet), 'Une double compensation rejouée ne doit jamais créditer deux fois.');
+        self::assertSame(1, LedgerEntry::query()->where('reverses_entry_id', $movement->id)->count());
+    }
+
+    public function test_reusing_a_reversal_key_against_a_different_original_is_an_idempotency_conflict(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $first = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $second = $service->credit($wallet, 300, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $key = (string) Str::uuid();
+        $service->reverse($first, $key, 'IDN-ADMIN');
+
+        $this->assertAborts(409, fn () => $service->reverse($second, $key, 'IDN-ADMIN'));
+    }
+
+    public function test_reversal_scenario_f_reversing_a_debit_produces_a_credit(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $service->credit($wallet, 1000, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $debit = $service->debit($wallet, 500, ZahabWalletService::REASON_SERVICE_PURCHASE, (string) Str::uuid(), 'IDN-MEMBER');
+
+        $reversal = $service->reverse($debit, (string) Str::uuid(), 'IDN-ADMIN');
+
+        self::assertSame(LedgerEntry::DIRECTION_CREDIT, $reversal->direction);
+        self::assertSame(1000, $service->balance($wallet));
+        self::assertSame(LedgerEntry::DIRECTION_DEBIT, $debit->refresh()->direction, 'L’écriture d’origine n’est jamais mutée.');
     }
 
     public function test_a_ledger_entry_that_is_not_a_wallet_movement_cannot_be_reversed_as_one(): void
@@ -284,6 +358,87 @@ final class ZahabWalletTest extends TestCase
         ]);
 
         $this->assertAborts(422, fn () => app(ZahabWalletService::class)->reverse($entry, (string) Str::uuid(), 'IDN-ADMIN'));
+    }
+
+    // ===== Idempotence multi-jambes et rejeu incompatible (défaut architectural, contre-validation) =====
+
+    public function test_the_same_leg_replayed_twice_produces_a_single_entry(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $key = (string) Str::uuid();
+
+        $first = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN', 'operation:ABC');
+        $second = $service->credit($wallet, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN', 'operation:ABC');
+
+        self::assertSame($first->id, $second->id);
+        self::assertSame(1, LedgerEntry::query()->where('zahab_operation_reference', 'operation:ABC')->count());
+    }
+
+    public function test_two_legs_of_the_same_operation_produce_two_distinct_entries(): void
+    {
+        // Modèle préparé par cette passe (contre-validation §4-6) : une opération métier peut
+        // regrouper plusieurs mouvements (jambes), chacun avec sa propre identité idempotente,
+        // sans que UNIQUE(source_type, source_id) empêche la seconde jambe d'exister.
+        $service = app(ZahabWalletService::class);
+        $payer = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-PAYER', 'IDN-PAYER');
+        $service->credit($payer, 1000, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $beneficiary = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-BENEFICIARY', 'IDN-BENEFICIARY');
+
+        $debitLeg = $service->debit($payer, 1000, ZahabWalletService::REASON_PROJECT_FUNDING, (string) Str::uuid(), 'IDN-PAYER', 'operation:funding-789');
+        $creditLeg = $service->credit($beneficiary, 1000, ZahabWalletService::REASON_PROJECT_FUNDING, (string) Str::uuid(), 'IDN-ADMIN', 'operation:funding-789');
+
+        self::assertNotSame($debitLeg->id, $creditLeg->id);
+        self::assertSame(2, LedgerEntry::query()->where('zahab_operation_reference', 'operation:funding-789')->count());
+        self::assertSame(0, $service->balance($payer));
+        self::assertSame(1000, $service->balance($beneficiary));
+    }
+
+    public function test_replaying_a_movement_key_with_a_different_wallet_is_an_idempotency_conflict(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $walletA = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-A', 'IDN-A');
+        $walletB = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-B', 'IDN-B');
+        $key = (string) Str::uuid();
+        $service->credit($walletA, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN');
+
+        $this->assertAborts(409, fn () => $service->credit($walletB, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN'));
+    }
+
+    public function test_replaying_a_movement_key_with_a_different_amount_is_an_idempotency_conflict(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $key = (string) Str::uuid();
+        $service->credit($wallet, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN');
+
+        $this->assertAborts(409, fn () => $service->credit($wallet, 900, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN'));
+        self::assertSame(500, $service->balance($wallet), 'La requête refusée ne doit laisser aucune trace sur le solde.');
+    }
+
+    public function test_replaying_a_movement_key_with_a_different_direction_is_an_idempotency_conflict(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $service->credit($wallet, 1000, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $key = (string) Str::uuid();
+        $service->debit($wallet, 500, ZahabWalletService::REASON_SERVICE_PURCHASE, $key, 'IDN-MEMBER');
+
+        // Rejouer la même clé de mouvement, mais comme un crédit cette fois : jamais un faux
+        // succès silencieux retournant le débit existant comme si la requête avait réussi.
+        $this->assertAborts(409, fn () => $service->credit($wallet, 500, ZahabWalletService::REASON_AID, $key, 'IDN-ADMIN'));
+    }
+
+    public function test_replaying_a_debit_movement_key_with_a_different_reason_is_an_idempotency_conflict(): void
+    {
+        $service = app(ZahabWalletService::class);
+        $wallet = $service->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
+        $service->credit($wallet, 1000, ZahabWalletService::REASON_AID, (string) Str::uuid(), 'IDN-ADMIN');
+        $key = (string) Str::uuid();
+        $service->debit($wallet, 500, ZahabWalletService::REASON_SERVICE_PURCHASE, $key, 'IDN-MEMBER');
+
+        $this->assertAborts(409, fn () => $service->debit($wallet, 500, ZahabWalletService::REASON_SPONSORSHIP, $key, 'IDN-MEMBER'));
+        self::assertSame(500, $service->balance($wallet), 'Le rejeu incompatible refusé ne doit jamais débiter une seconde fois.');
     }
 
     // ===== Montants (art. 6/18/19/20 du mandat) =====
