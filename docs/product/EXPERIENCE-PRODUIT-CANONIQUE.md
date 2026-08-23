@@ -1229,3 +1229,62 @@ exécutée), gouvernance collective (`GROUP`) au-delà de sa forme déjà exista
 responsables ZUMRA à la proposition d'un Projet personnel ancré (lacune déjà présente avant cette
 mission, non aggravée, non résolue), toute évolution de `Need`/`Proof` vers un ancrage ZUMRA
 analogue.
+
+## 33. Addendum daté — ZUMRA-HUMAN-BIRTH-001, naissance humaine d'une ZUMRA spécialisée (23 août 2026)
+
+**Portée : la naissance d'une ZUMRA devient bien plus légère que sa structuration ultérieure,**
+conformément à l'arbitrage du dépositaire GAMAD : une ZUMRA est un centre d'incubation humain
+spécialisé autour d'une activité (pas d'activité, pas de ZUMRA), qui peut naître avec une seule
+Personne — les cinq responsabilités relèvent de sa gouvernance ultérieure, jamais d'une condition
+d'existence. Un audit exhaustif (Phase A, sans code) a établi que le modèle `ZumraGroup` traitait
+déjà `domain` comme un champ non-inventable dès l'origine (CAP-011), mais qu'aucune activité
+dérivée, aucune capacité d'accueil/formation et aucune localisation n'étaient représentables, et
+que la charte — bien que la doctrine canonique ne l'exige qu'au passage `READY`
+(`ZUMRA-DOCTRINE-INVARIANTE.md` §10, jamais §7) — était imposée dès la création par une
+implémentation plus stricte que le canon lui-même.
+
+**Décisions rendues durables** :
+
+- **Quatre moments humains, un seul écran.** Le formulaire de naissance (`/zumra/groupes/proposer`)
+  se réorganise en « Votre activité » (activité principale), « Ce que vous voulez changer »
+  (objectif fondateur), « Comment vous allez commencer » (mode, lieu si pertinent, capacité
+  d'accueil/formation, premier responsable optionnel) et « Votre ZUMRA » (nom). Aucune
+  sauvegarde/reprise multi-requête n'a été construite — contrairement au parcours Projet
+  (UIUX-009B), le formulaire est assez court pour rester un seul envoi ; sa légèreté vient de ce
+  qu'il ne demande plus, pas d'une mécanique de brouillon supplémentaire.
+- **La charte interne devient différable.** Mini-audit dédié avant code (§7 de la doctrine ne
+  l'exige jamais à la création, seul §10 la place parmi les critères READY ;
+  `evaluateStructuralReadiness()` traite déjà une charte vide comme non satisfaite, sans nouvelle
+  logique) : `internal_charter` est désormais nullable, complétable après coup par un responsable
+  via `ZumraGroupService::setCharter()`, réservé à la phase `CONSTITUTING`. Le gate de contribution
+  collective (`ContributionService`, exige `VALIDATED`) reste inchangé — une ZUMRA sans charte ne
+  peut simplement jamais dépasser `CONSTITUTING`. Les deux formulaires de démarrage express intégrés
+  au parcours Projet et au Cerveau (issus de PROJET-ZUMRA-INVARIANT-001) suivent la même règle, pour
+  éviter qu'une naissance en contexte Projet reste plus lourde que la naissance principale.
+- **Activités dérivées avec filiation explicite, jamais une taxonomie globale.** Nouveau modèle
+  `ZumraGroupActivity` (`dg_zumra_group_activities`) : un libellé et un texte humain obligatoire
+  expliquant comment l'activité dérive, spécialise ou applique l'activité principale — jamais une
+  validation automatique de cohérence, jamais un référentiel rigide fabriqué ici. Déclarables dès la
+  naissance (facultatif) ou après coup depuis la fiche, réservées aux responsables.
+- **Capacité d'accueil/formation, un signal jamais un critère.** `welcome_capacity` (nullable)
+  répond à « comment votre ZUMRA pourra-t-elle accueillir des personnes qui souhaitent apprendre
+  cette activité ? » (déjà capable, progressivement, ou doit d'abord trouver des transmetteurs) —
+  potentiellement exploitable par un futur matching humain, non construit dans ce chantier.
+- **Localisation alignée sur le patron déjà établi.** `location` (nullable, texte libre) reprend
+  exactement la forme de `Project.location`/`Need.location`/`CommunityEvent.location` — aucune
+  logique de rayon géographique n'existe nulle part dans le code, et ce chantier n'en invente pas.
+
+**Compatibilité** : toutes les ZUMRA nées avant ce chantier ont déjà une charte non vide (contrainte
+`NOT NULL` depuis l'origine) — aucune n'est affectée par la colonne devenue nullable, aucun
+rétro-remplissage, aucune donnée supprimée.
+
+**Doctrine amendée** : `docs/capacites/specs/CAP-011-zumra-groupe-humain.md` (naissance légère,
+charte différable, activités dérivées, capacité d'accueil documentées) et
+`docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` (deux clarifications additives au préambule : la charte
+comme critère READY et non de création — correction d'une implémentation plus stricte que le canon,
+non une modification du canon — et la filiation obligatoire des activités dérivées vers l'activité
+principale ; aucun article renuméroté ou réécrit).
+
+**Hors périmètre** : ZUMRA → Organisation (gap confirmé en Phase A — `ProjectAutonomyPathway`
+déclare une forme cible sans jamais créer d'`Organization` réelle ni la relier — documenté,
+non construit), tout matching géographique ou par activité, toute taxonomie globale des activités.
