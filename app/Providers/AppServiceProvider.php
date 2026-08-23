@@ -58,6 +58,7 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('contribution-payment-status', static fn (Request $request): Limit => Limit::perMinute(12)->by($request->ip()));
         RateLimiter::for('contribution-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('ledger-read', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));
+        RateLimiter::for('zahab-read', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));
         RateLimiter::for('collective-capability-consent', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('collective-capability-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('need-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));

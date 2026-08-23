@@ -20,7 +20,7 @@ final class CleanupZumraPaginationTest extends TestCase
     public function test_search_results_are_exhaustive_and_the_second_page_links_to_spaces(): void
     {
         $this->programMember('IDN-PAGINATION-SEARCH');
-        $groups = $this->groups(11, 'Recherche Audit', null, 'IDN-PAGINATION-SEARCH');
+        $groups = $this->makeGroups(11, 'Recherche Audit', null, 'IDN-PAGINATION-SEARCH');
         $this->signIn('IDN-PAGINATION-SEARCH');
 
         $this->get('/zumra?q=Recherche+Audit')->assertOk()
@@ -37,7 +37,7 @@ final class CleanupZumraPaginationTest extends TestCase
     {
         $actor = 'IDN-PAGINATION-MINE';
         $this->programMember($actor);
-        $groups = $this->groups(11, 'Mine Audit', ZumraGroupMembership::STATUS_ACTIVE, $actor);
+        $groups = $this->makeGroups(11, 'Mine Audit', ZumraGroupMembership::STATUS_ACTIVE, $actor);
         $this->signIn($actor);
 
         $query = 'view=mine&q=Mine+Audit&mode=HYBRID&location=Abidjan';
@@ -55,7 +55,7 @@ final class CleanupZumraPaginationTest extends TestCase
     {
         $actor = 'IDN-PAGINATION-INVITED';
         $this->programMember($actor);
-        $groups = $this->groups(11, 'Invitation Audit', ZumraGroupMembership::STATUS_INVITED, $actor);
+        $groups = $this->makeGroups(11, 'Invitation Audit', ZumraGroupMembership::STATUS_INVITED, $actor);
         $this->signIn($actor);
 
         $this->get('/zumra?view=invited')->assertOk()->assertDontSee($groups[8]->name);
@@ -66,7 +66,7 @@ final class CleanupZumraPaginationTest extends TestCase
     {
         $actor = 'IDN-PAGINATION-REQUESTED';
         $this->programMember($actor);
-        $groups = $this->groups(11, 'Demande Audit', ZumraGroupMembership::STATUS_REQUESTED, $actor);
+        $groups = $this->makeGroups(11, 'Demande Audit', ZumraGroupMembership::STATUS_REQUESTED, $actor);
         $this->signIn($actor);
 
         $this->get('/zumra?view=requested')->assertOk()->assertDontSee($groups[8]->name);
@@ -76,7 +76,7 @@ final class CleanupZumraPaginationTest extends TestCase
     }
 
     /** @return array<int, ZumraGroup> */
-    private function groups(int $count, string $prefix, ?string $membershipStatus, string $actor): array
+    private function makeGroups(int $count, string $prefix, ?string $membershipStatus, string $actor): array
     {
         $groups = [];
         foreach (range(1, $count) as $index) {
