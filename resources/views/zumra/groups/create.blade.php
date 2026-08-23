@@ -1,19 +1,21 @@
 {{--
-    Naissance d'une ZUMRA — ZUMRA-HUMAN-BIRTH-001. Quatre moments humains, un seul écran : la
-    naissance reste bien plus légère que la structuration (charte, activités dérivées, cinq
-    responsabilités) qui vient ensuite, depuis la fiche. Aucune validation, financement ni
-    nomination automatique.
+    Naissance d'une ZUMRA — ZUMRA-HUMAN-BIRTH-001, intégrée au carrefour /zumra depuis UIUX-010.
+    Quatre moments humains, un seul écran : la naissance reste bien plus légère que la
+    structuration (activités dérivées, cinq responsabilités, puis charte) qui vient ensuite,
+    depuis l'Espace ZUMRA. Aucune validation, financement ni nomination automatique. La charte
+    n'est plus mentionnée ici (UIUX-010 §17) : elle se découvre plus tard, au moment où elle
+    devient pertinente, sans que son mécanisme différé (ZUMRA-HUMAN-BIRTH-001) change.
 --}}
 <x-layouts.portal title="Faire naître une ZUMRA — DG Afrique">
     <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
         <div class="dg-page" style="max-width:820px">
-            <a href="{{ route('zumra.groups.index') }}" class="dg-crumb">← Les ZUMRA</a>
+            <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">Groupe humain</x-dg.label>
+                    <x-dg.label tone="saffron">Depuis le monde ZUMRA</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['creation_title'] }}</h1>
-                    <p>Une ZUMRA est un centre d’incubation autour d’une activité. Elle peut commencer avec vous seul·e — le reste (charte, activités dérivées, responsabilités) se construit ensuite, depuis sa fiche.</p>
+                    <p>Une ZUMRA est un centre d’incubation autour d’une activité. Elle peut commencer avec vous seul·e — le reste (activités dérivées, responsabilités) se construit ensuite, depuis son Espace.</p>
                 </div>
             </div>
 
@@ -94,10 +96,6 @@
                     <div class="dg-field">
                         <label for="name">Comment souhaitez-vous l’appeler ?</label>
                         <input type="text" id="name" name="name" class="dg-input" value="{{ old('name') }}" maxlength="140" required>
-                    </div>
-                    <div class="dg-band" style="margin-top:12px">
-                        <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">La charte interne n’est pas requise aujourd’hui</strong>
-                        Vous pourrez la rédiger ensuite, depuis la fiche de votre ZUMRA — elle sera seulement nécessaire pour la rendre prête à valider.
                     </div>
                 </x-dg.fieldset>
 
