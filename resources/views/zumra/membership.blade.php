@@ -83,7 +83,7 @@
                         <ul style="margin-top:12px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--dg-text)">
                             <li>· Demander à rejoindre une ZUMRA</li>
                             <li>· Recevoir des invitations</li>
-                            <li>· Proposer une nouvelle ZUMRA</li>
+                            <li>· Faire naître une ZUMRA</li>
                             <li>· Accéder progressivement aux mises en relation</li>
                         </ul>
                         <form method="POST" action="{{ route('zumra.membership.store') }}" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
