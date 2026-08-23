@@ -107,8 +107,8 @@
 
                     <section aria-labelledby="zw-discover-title" id="zw-discover">
                         <div class="zw-section-heading">
-                            <h2 id="zw-discover-title">ZUMRA à découvrir</h2>
-                            <a href="{{ route('zumra.index') }}">Voir toutes <span aria-hidden="true">→</span></a>
+                            <h2 id="zw-discover-title">{{ $isExhaustive ? 'Résultats ZUMRA' : 'ZUMRA à découvrir' }}</h2>
+                            @unless($isExhaustive)<a href="{{ route('zumra.index') }}">Voir toutes <span aria-hidden="true">→</span></a>@endunless
                         </div>
 
                         @if($discoverGroups->isNotEmpty())
@@ -146,6 +146,9 @@
                                     </article>
                                 @endforeach
                             </div>
+                            @if($isExhaustive && $discoverGroups->hasPages())
+                                <div>{{ $discoverGroups->links('pagination.dg') }}</div>
+                            @endif
                         @else
                             <x-dg.empty :title="$query !== '' || $mode !== null || $location !== '' ? 'Aucune ZUMRA ne correspond à cette recherche.' : ($personalFilter ? 'Rien ici pour le moment.' : 'La première ZUMRA peut commencer ici.')">
                                 <span>Aucune équipe fictive n’est affichée. Les ZUMRA apparaissent à mesure que des adhérents proposent des activités réelles.</span>
