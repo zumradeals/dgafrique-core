@@ -4,9 +4,7 @@
 --}}
 <x-layouts.portal title="{{ $group->name }} — ZUMRA">
     <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:1200px">
-            <a href="{{ route('zumra.groups.index') }}" class="dg-crumb">← Les ZUMRA</a>
-
+        <div class="dg-page">
             @if(session('status'))
                 <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
             @endif
