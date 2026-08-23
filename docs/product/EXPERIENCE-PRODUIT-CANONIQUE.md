@@ -1090,3 +1090,69 @@ B dédiée à la hiérarchie d'action.
 de financement de Projet, découverte de Mission, hiérarchie d'action de Mon espace, portail public
 vs. application membre (Landing), Cerveau/Crédit IA, toute règle ou transition métier — aucun n'a
 été touché.
+
+## 31. Addendum daté — UIUX-009B, création humaine progressive d'un Projet (23 août 2026)
+
+**Portée : reconstruction complète du parcours manuel de naissance d'un Projet — un formulaire
+monolithique devient un parcours court, progressif, sauvegardable et reprenable, indépendant du
+Cerveau.** Ce chantier était explicitement réservé « Phase B » par l'audit UIUX-009 Phase A et par
+l'addendum §30 ci-dessus.
+
+**Décisions rendues durables** :
+
+- **Un brouillon de Projet est une entité à part entière, hors `dg_projects` et hors namespace
+  Cerveau — jamais un état `DRAFT` inventé sur `Project`.** Les colonnes texte de `dg_projects` sont
+  `NOT NULL` au niveau schéma (une ligne à moitié remplie ne peut pas exister), et le calcul de
+  quota de `ProjectService::create()` compte toute ligne hors `COMPLETED`/`ARCHIVED` — un brouillon
+  déguisé en `Project` aurait donc silencieusement consommé le quota avant même d'être complet. Le
+  nouveau modèle `App\Models\ProjectDraft` (`dg_project_drafts` : UUID, acteur, payload JSON
+  progressif, étape courante, statut, horodatages) reprend la forme déjà éprouvée en production par
+  `ProjectBrainIntent` (statuts `DRAFT`/`CREATED`, reprise par UUID stable), sans jamais le
+  réutiliser directement : le Cerveau reste une seconde porte d'entrée entièrement indépendante,
+  jamais une dépendance du parcours déterministe.
+- **La convergence finale est unique.** `ProjectDraftService::confirm()` appelle exactement le même
+  `ProjectService::create()`, inchangé, que `ProjectBrainProjectBirthService::confirm()` pour le
+  Cerveau — aucune règle métier (adhésion Programme, compatibilité porteur/régime, quota de projets
+  actifs, `maturity` toujours `IDEA`) n'est dupliquée ni réécrite pour ce nouveau chemin.
+- **Les jalons détaillés sortent de la naissance du Projet.** `milestones` était une exigence de
+  validation du seul contrôleur (`ProjectController::store()`, supprimé), jamais une règle de
+  `ProjectService::create()` — `ProjectList::fromText('')` accepte déjà une chaîne vide et ne crée
+  alors aucun jalon, comportement inchangé. Les jalons deviendront un des premiers pas du Projet
+  après sa naissance, jamais une condition pour naître.
+- **Les portes bloquantes s'expliquent au plus tôt, jamais après coup.** L'absence d'adhésion
+  Programme ZUMRA active est signalée avant même qu'un brouillon soit créé ; le quota de projets
+  actifs est vérifié dès la toute première question de contenu (« Pour qui »), pas seulement à la
+  confirmation finale — application directe d'un constat de l'audit UIUX-009 Phase A (règles
+  invisibles ne se révélant qu'en échec de soumission).
+- **Le parcours est utilisable entièrement sans Cerveau, par construction, pas par accident** : dix
+  étapes courtes (« Pour qui » → « Votre idée », découpée en quatre questions successives (nom,
+  résumé, problème, solution) → « À qui » → « Où et comment », lieu conditionnel → « Objectifs » →
+  « Ce qui pourrait manquer », collections dynamiques différables → « Relire », résumé humain avec
+  édition par section avant confirmation). Chaque étape peut être sauvegardée explicitement
+  (« Enregistrer et continuer plus tard », sans validation de complétude) et reprise plus tard au
+  point exact où elle a été laissée, jamais depuis le début. `ProjectBrainIntent` et sa mémoire
+  restent entièrement intacts et non référencés par ce code.
+- **L'illustration facultative du Projet (`image_path`, CAP-013/014/019) survit à la disparition du
+  formulaire unique** : elle se demande désormais à la toute dernière étape (« Relire »), au moment
+  de la confirmation, plutôt qu'au milieu d'un long formulaire — cohérent avec sa nature
+  différable et « à l'ajout rapide ».
+
+**Bogue corrigé en cours de mission (routage, pas une décision produit)** : la route générique
+`POST /projets/proposer/{draft}/{step}` (`step` = `[a-z]+`) était déclarée avant les routes
+nommées `abandonner`/`confirmer`, qui satisfont toutes deux ce même motif — Laravel routait donc
+silencieusement une confirmation ou un abandon vers la validation d'étape générique, qui les
+rejetait en 404. Les routes nommées sont désormais déclarées en premier. Le limiteur de débit
+`project-write` (8/min, dimensionné pour l'ancien formulaire à une seule soumission et les
+réponses occasionnelles du Cerveau) sous-dimensionnait aussi un parcours à dix étapes courtes plus
+ajout/retrait de collections ; un limiteur dédié `project-draft-write` (40/min) a été introduit
+pour ce seul chemin, sans toucher au limiteur du Cerveau.
+
+**Limites documentées (non résolues ici)** : le brouillon ne conserve qu'un seul exemplaire actif
+par acteur (`findOrStart`) — une personne qui démarre volontairement une seconde idée en parallèle
+doit d'abord abandonner ou terminer la première ; ce choix suit la sémantique déjà établie par
+`ProjectBrainIntent` et n'a pas été reconsidéré ici.
+
+**Hors périmètre** : jalons détaillés (deviennent un premier pas post-naissance, mission séparée),
+Cerveau/`ProjectBrainIntent` (non modifiés), écran de financement de Projet, découverte de Mission,
+hiérarchie d'action de Mon espace au-delà de la carte de reprise ajoutée, toute règle métier de
+`ProjectService::create()` — aucun n'a été touché.

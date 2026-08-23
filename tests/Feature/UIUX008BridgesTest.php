@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Application\Organizations\OrganizationService;
 use App\Models\Organization;
 use App\Models\OrganizationMembership;
+use App\Models\ProjectDraft;
 use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,12 +76,12 @@ final class UIUX008BridgesTest extends TestCase
         $this->activateProgram('IDN-U8-DIRECT');
         $this->signIn('IDN-U8-DIRECT');
 
-        // La voie directe découverte sur /projets mène bien au formulaire simple, jamais au Cerveau.
-        $this->get(route('projects.create'))->assertOk()->assertDontSee(route('projects.brain.start'), false);
-
-        $payload = $this->projectPayload();
-        $this->post(route('projects.store'), $payload)->assertRedirect();
-        self::assertDatabaseHas('dg_projects', ['name' => $payload['name']]);
+        // La voie directe découverte sur /projets mène bien au parcours déterministe progressif
+        // (UIUX-009B), jamais au Cerveau — le formulaire simple d'origine a depuis été remplacé
+        // par ce parcours, sous le même nom de route « projects.create ».
+        $this->get(route('projects.create'))->assertRedirect();
+        $draft = ProjectDraft::query()->where('actor_core_reference', 'IDN-U8-DIRECT')->firstOrFail();
+        $this->get(route('projects.draft.show', [$draft, 'audience']))->assertOk()->assertDontSee(route('projects.brain.start'), false);
     }
 
     // ===== §5 Organisation — approbation d'adhésion =====
@@ -157,25 +158,6 @@ final class UIUX008BridgesTest extends TestCase
     }
 
     // ===== Helpers =====
-
-    private function projectPayload(array $overrides = []): array
-    {
-        return array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
-            'name' => 'Projet direct '.uniqid(),
-            'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services utiles.',
-            'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre et transformer leurs acquis.',
-            'proposed_solution' => 'Mettre en place un atelier progressif avec transmission entre pairs et accompagnement.',
-            'beneficiaries' => 'Jeunes débutants et personnes en reconversion dans la commune.',
-            'domain' => 'DIGITAL', 'participation_mode' => 'HYBRID', 'location' => 'Abidjan',
-            'objectives' => "Former une première équipe\nProduire trois services pilotes",
-            'required_capabilities' => "Formation numérique\nGestion de projet",
-            'required_resources' => "Ordinateurs\nConnexion internet",
-            'risks' => "Disponibilité irrégulière\nAccès au matériel",
-            'milestones' => "Constituer l'équipe\nPréparer le lieu\nLancer le pilote",
-            'property_regime' => 'PERSONAL_SUPPORTED', 'visibility' => 'PUBLIC',
-        ], $overrides);
-    }
 
     private function organization(string $founder, array $overrides = []): Organization
     {

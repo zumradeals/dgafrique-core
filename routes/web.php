@@ -30,6 +30,7 @@ use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\PartnershipController;
 use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectDraftController;
 use App\Http\Controllers\ProjectMatchingController;
 use App\Http\Controllers\QuickCapabilityController;
 use App\Http\Controllers\RecommendationController;
@@ -82,8 +83,17 @@ Route::post('/besoins', [NeedController::class, 'store'])->middleware(['core.mem
 Route::get('/besoins/{need}', [NeedController::class, 'show'])->whereUuid('need')->middleware('core.member')->name('needs.show');
 Route::put('/besoins/{need}/etat', [NeedController::class, 'transition'])->whereUuid('need')->middleware(['core.member', 'throttle:need-transition'])->name('needs.transition');
 Route::get('/projets', [ProjectController::class, 'index'])->middleware('core.member')->name('projects.index');
-Route::get('/projets/proposer', [ProjectController::class, 'create'])->middleware('core.member')->name('projects.create');
-Route::post('/projets', [ProjectController::class, 'store'])->middleware(['core.member', 'throttle:project-write'])->name('projects.store');
+// UIUX-009B — parcours progressif et sauvegardable, indépendant du Cerveau. Remplace l'ancien
+// formulaire monolithique (ProjectController::create/store, supprimés) : « projects.create » garde
+// son nom pour tous les liens existants (Mon espace, fiche ZUMRA, sheet Agir…) mais mène désormais
+// à ce parcours plutôt qu'à un formulaire unique.
+Route::get('/projets/proposer', [ProjectDraftController::class, 'entry'])->middleware('core.member')->name('projects.create');
+Route::get('/projets/proposer/{draft}/{step}', [ProjectDraftController::class, 'show'])->whereUuid('draft')->where('step', '[a-z]+')->middleware('core.member')->name('projects.draft.show');
+// Les routes nommées (abandonner/confirmer) doivent être déclarées avant le joker {step} :
+// celui-ci accepte "[a-z]+" et intercepterait sinon silencieusement ces deux mots.
+Route::post('/projets/proposer/{draft}/abandonner', [ProjectDraftController::class, 'abandon'])->whereUuid('draft')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.abandon');
+Route::post('/projets/proposer/{draft}/confirmer', [ProjectDraftController::class, 'confirm'])->whereUuid('draft')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.confirm');
+Route::post('/projets/proposer/{draft}/{step}', [ProjectDraftController::class, 'update'])->whereUuid('draft')->where('step', '[a-z]+')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.update');
 Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid('project')->middleware('core.member')->name('projects.show');
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
 Route::get('/projets/{project}/correspondances', [ProjectMatchingController::class, 'index'])->whereUuid('project')->middleware(['core.member', 'throttle:project-matching'])->name('projects.matching');

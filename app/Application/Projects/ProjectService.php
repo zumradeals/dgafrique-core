@@ -5,13 +5,26 @@ use App\Application\Needs\NeedService; use App\Application\Zumra\ZumraGroupServi
 final class ProjectService
 {
     public function __construct(private readonly ZumraGroupService $groups,private readonly NeedService $needs,private readonly ProjectAuthority $authority){}
+    /** Extrait pour être vérifiable tôt dans un parcours progressif (UIUX-009B), sans dupliquer la requête. */
+    public function hasActiveProgramMembership(string $actor): bool
+    {
+        return ZumraProgramMembership::query()->where('core_identity_reference',$actor)->where('status',ZumraProgramMembership::STATUS_ACTIVE)->exists();
+    }
+
+    /** Même calcul que create() ci-dessous, extrait pour permettre un avertissement précoce (UIUX-009B) plutôt qu'un échec tardif. */
+    public function activeProjectQuotaExceeded(string $ownerType,string $ownerReference,array $config): bool
+    {
+        $limit=$ownerType===Project::OWNER_PERSON?(int)$config['max_active_personal_projects']:(int)$config['max_active_group_projects'];
+        return Project::query()->where('owner_type',$ownerType)->where('owner_reference',$ownerReference)->whereNotIn('status',[Project::STATUS_COMPLETED,Project::STATUS_ARCHIVED])->count()>=$limit;
+    }
+
     public function create(string $actor,array $data,array $config): Project
     {
-        abort_unless(ZumraProgramMembership::query()->where('core_identity_reference',$actor)->where('status',ZumraProgramMembership::STATUS_ACTIVE)->exists(),403);
+        abort_unless($this->hasActiveProgramMembership($actor),403);
         $owner=$actor; $status=Project::STATUS_PROPOSED;
         if($data['owner_type']===Project::OWNER_GROUP){$group=ZumraGroup::query()->where('public_reference',$data['group_reference'])->firstOrFail(); abort_unless($this->authority->isActiveGroupMember($group->id,$actor),403); abort_unless(in_array($data['property_regime'],['ZUMRA_COLLECTIVE','PARTNERSHIP','COMMUNITY_INTEREST'],true),422,'Le régime choisi ne correspond pas au porteur collectif.'); $owner=$group->id;}
         else { abort_unless(in_array($data['property_regime'],['PERSONAL_SUPPORTED','PARTNERSHIP','COMMUNITY_INTEREST'],true),422,'Le régime choisi ne correspond pas au porteur personnel.'); }
-        $limit=$data['owner_type']===Project::OWNER_PERSON?(int)$config['max_active_personal_projects']:(int)$config['max_active_group_projects']; abort_if(Project::query()->where('owner_type',$data['owner_type'])->where('owner_reference',$owner)->whereNotIn('status',[Project::STATUS_COMPLETED,Project::STATUS_ARCHIVED])->count()>=$limit,409,'Le nombre maximal de projets actifs est atteint.');
+        abort_if($this->activeProjectQuotaExceeded($data['owner_type'],$owner,$config),409,'Le nombre maximal de projets actifs est atteint.');
         $source=null; if(!empty($data['source_need_reference'])){$need=Need::query()->where('public_reference',$data['source_need_reference'])->firstOrFail(); abort_unless($this->needs->canView($need,$actor),404); $source=$need->id;}
         return DB::transaction(function()use($actor,$data,$owner,$status,$source):Project{$project=Project::query()->create(['public_reference'=>(string)Str::uuid(),'owner_type'=>$data['owner_type'],'owner_reference'=>$owner,'initiator_core_reference'=>$actor,'source_need_id'=>$source,'name'=>$data['name'],'summary'=>$data['summary'],'problem'=>$data['problem'],'proposed_solution'=>$data['proposed_solution'],'beneficiaries'=>$data['beneficiaries'],'domain'=>$data['domain'],'participation_mode'=>$data['participation_mode'],'location'=>$data['location']??null,'image_path'=>$data['image_path']??null,'objectives'=>ProjectList::fromText($data['objectives']),'required_capabilities'=>ProjectList::fromText($data['required_capabilities']),'required_resources'=>ProjectList::fromText($data['required_resources']),'risks'=>ProjectList::fromText($data['risks']),'property_regime'=>$data['property_regime'],'visibility'=>$data['owner_type']===Project::OWNER_PERSON&&$data['visibility']===Project::VISIBILITY_GROUP?Project::VISIBILITY_PRIVATE:$data['visibility'],'status'=>$status,'maturity'=>'IDEA','decided_by_core_reference'=>$status===Project::STATUS_ADOPTED?$actor:null,'adopted_at'=>$status===Project::STATUS_ADOPTED?now():null]); foreach(ProjectList::fromText($data['milestones'],12) as $i=>$title){$project->milestones()->create(['title'=>$title,'position'=>$i+1]);}$this->event($project,$status===Project::STATUS_ADOPTED?'PROJECT_ADOPTED':'PROJECT_PROPOSED',$actor);return $project;});
     }

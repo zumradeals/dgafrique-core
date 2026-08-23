@@ -246,6 +246,26 @@
                 </main>
 
                 <aside class="dg-space-rail" aria-label="Votre contexte">
+                    {{-- UIUX-009B — brouillon de Projet en préparation, reprenable ici sans jamais
+                         afficher de pourcentage de complétion artificiel (voir audit UIUX-009B
+                         Phase A : la complétion réelle d'un brouillon n'est pas un fait mesurable
+                         de façon honnête). Card discrète, jamais la priorité dominante. --}}
+                    @if($projectDraft)
+                        <section class="dg-space-rail-card">
+                            <div class="dg-space-rail-card__head">
+                                <div class="dg-space-rail-card__kicker">Projet en préparation</div>
+                                <h3>{{ $projectDraft->payload['name'] ?? 'Votre idée de projet' }}</h3>
+                            </div>
+                            <div class="dg-space-rail-row">
+                                <span class="dg-space-rail-row__mark">{{ mb_strtoupper(mb_substr($projectDraft->payload['name'] ?? 'Projet', 0, 2)) }}</span>
+                                <div>
+                                    <strong>Vous avez commencé cette idée.</strong>
+                                </div>
+                            </div>
+                            <div class="dg-space-rail-row"><div><strong><a href="{{ route('projects.draft.show', [$projectDraft, $projectDraft->current_step]) }}">Continuer →</a></strong></div></div>
+                        </section>
+                    @endif
+
                     {{-- UIUX-007 — regroupement visuel léger de « Mes ZUMRA » et « Mes
                          Organisations » sous une même notion (« Mes structures »), jamais une
                          fusion de modèle : ZUMRA ≠ Organisation reste deux cartes distinctes. --}}

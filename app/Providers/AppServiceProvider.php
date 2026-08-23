@@ -64,6 +64,9 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('need-transition', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('need-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('project-write', static fn (Request $request): Limit => Limit::perMinute(8)->by($request->ip()));
+        // UIUX-009B — parcours progressif à dix étapes courtes (plus ajout/retrait de collections) :
+        // une même personne peut légitimement enchaîner bien plus de dix écritures par minute.
+        RateLimiter::for('project-draft-write', static fn (Request $request): Limit => Limit::perMinute(40)->by($request->ip()));
         RateLimiter::for('project-transition', static fn (Request $request): Limit => Limit::perMinute(15)->by($request->ip()));
         RateLimiter::for('project-configuration', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('project-matching', static fn (Request $request): Limit => Limit::perMinute(30)->by($request->ip()));

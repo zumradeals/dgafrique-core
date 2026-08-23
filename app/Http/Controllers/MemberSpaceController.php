@@ -22,6 +22,7 @@ use App\Models\OrganizationMembership;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
+use App\Models\ProjectDraft;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -76,6 +77,15 @@ final class MemberSpaceController
             ->where('owner_type', Project::OWNER_PERSON)
             ->where('owner_reference', $identity->reference)
             ->where('status', Project::STATUS_ADOPTED)
+            ->latest('created_at')
+            ->first();
+
+        // UIUX-009B — brouillon de Projet en cours, reprenable depuis Mon espace. Une simple carte
+        // discrète (jamais un pourcentage de complétion, jamais la priorité dominante) : voir
+        // docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md §31.
+        $projectDraft = ProjectDraft::query()
+            ->where('actor_core_reference', $identity->reference)
+            ->where('status', ProjectDraft::STATUS_DRAFT)
             ->latest('created_at')
             ->first();
 
@@ -146,6 +156,7 @@ final class MemberSpaceController
             'weekItems' => $rest->whereIn('kind', ['PROJECTS', 'ZUMRA'])->take(2)->values(),
             'myGroups' => $myGroups,
             'myOrganizations' => $myOrganizations,
+            'projectDraft' => $projectDraft,
             'opportunitiesCount' => $opportunitiesCount,
             'recommendedPeople' => $recommendedPeople,
             'receivedShares' => $receivedShares,
