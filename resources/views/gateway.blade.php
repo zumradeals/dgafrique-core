@@ -36,6 +36,9 @@
                         <span><b aria-hidden="true">↗</b> Je veux apprendre</span>
                     </div>
 
+                    {{-- Aperçu illustratif — jamais une donnée métier réelle (§11 DESIGN-INVARIANTS.md). --}}
+                    <p class="dgg-example-preview">{{ $exampleMoment['titre'] }} · Exemple</p>
+
                     <a href="{{ route('landing') }}" class="dgg-discover">Découvrir comment fonctionne le réseau <span aria-hidden="true">→</span></a>
                 </div>
 

@@ -10,7 +10,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-069 · Missions</x-dg.label>
+                    <x-dg.label tone="saffron">Missions</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">
                         {{ $parent ? 'Proposer une sous-Mission' : 'Proposer une Mission' }}
                     </h1>

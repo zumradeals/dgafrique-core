@@ -174,15 +174,19 @@ final class ActivityFeedTest extends TestCase
             ->assertDontSee('abonnés');
     }
 
-    public function test_member_space_exposes_real_activity_preview(): void
+    public function test_member_space_never_presents_a_strangers_project_as_personally_relevant(): void
     {
+        // UIUX-002 — décision « corriger les faux Pour vous » : un projet sans relation
+        // personnelle réelle avec ce membre (ni porteur, ni équipe) ne doit plus jamais être
+        // présenté sur Mon espace comme personnellement destiné à lui — ni comme priorité
+        // (déjà corrigé par UIUX-001), ni dans les sections « Pour vous »/« Cette semaine ».
         $project = $this->project('Projet dans Mon espace', Project::VISIBILITY_PUBLIC);
         $this->projectEvent($project, 'PROJECT_IN_PROGRESS');
         $this->signIn('IDN-VIEWER');
 
         $this->get('/espace')
             ->assertOk()
-            ->assertSee('Projet dans Mon espace')
+            ->assertDontSee('Projet dans Mon espace')
             ->assertSee('Aujourd’hui — une seule chose compte');
     }
 

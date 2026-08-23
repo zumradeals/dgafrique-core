@@ -4,19 +4,20 @@
 .portal-body {
     margin: 0;
     overflow: hidden;
-    background: #f7f4ee;
+    /* Le fond réel est porté par .dgg-shell (100dvh, couvre tout le viewport) — voir dg.css pour
+       la couleur canonique unique dont hérite .dgg-shell ci-dessous. */
 }
 
 .dgg-shell {
-    --dgg-petrol: #123f4a;
-    --dgg-petrol-deep: #0d3139;
-    --dgg-action: #e86f2c;
-    --dgg-action-deep: #cc581c;
-    --dgg-ivory: #f7f4ee;
-    --dgg-paper: #fffdf9;
-    --dgg-line: #e7ded2;
-    --dgg-text: #17363d;
-    --dgg-muted: #6c7778;
+    --dgg-petrol: var(--dg-forest, #1c1b17);
+    --dgg-petrol-deep: var(--dg-forest-action, #34322a);
+    --dgg-action: var(--dg-saffron, #f8d40a);
+    --dgg-action-deep: var(--dg-saffron-ink, #6b5300);
+    --dgg-ivory: var(--dg-ivory, #f5f4ef);
+    --dgg-paper: var(--dg-card, #ffffff);
+    --dgg-line: var(--dg-line, #e2ded2);
+    --dgg-text: var(--dg-ink, #1c1b17);
+    --dgg-muted: var(--dg-muted, #6e6c60);
 
     height: 100dvh;
     min-height: 100dvh;
@@ -24,7 +25,7 @@
     display: grid;
     grid-template-rows: 72px minmax(0, 1fr) 36px;
     background:
-        radial-gradient(circle at 12% 14%, rgba(232,111,44,.08), transparent 28%),
+        radial-gradient(circle at 12% 14%, rgba(248,212,10,.10), transparent 28%),
         var(--dgg-ivory);
     color: var(--dgg-text);
     font-family: var(--dg-font-sans, 'Instrument Sans', system-ui, sans-serif);
@@ -59,8 +60,9 @@
     padding: 0 18px;
     border-radius: 13px;
     background: var(--dgg-action);
-    color: #fff !important;
-    box-shadow: 0 10px 24px rgba(232,111,44,.18);
+    color: var(--dgg-petrol) !important;
+    font-weight: 700;
+    box-shadow: 0 10px 24px rgba(248,212,10,.28);
 }
 
 .dgg-stage {
@@ -99,7 +101,7 @@
     border: 1px solid rgba(255,255,255,.12);
     box-shadow:
         0 0 0 68px rgba(255,255,255,.025),
-        0 0 0 136px rgba(232,111,44,.04);
+        0 0 0 136px rgba(248,212,10,.06);
 }
 
 .dgg-story__copy {
@@ -118,7 +120,7 @@
     line-height: 1.2;
     text-transform: uppercase;
     letter-spacing: .17em;
-    color: #f4b18d;
+    color: var(--dgg-action);
 }
 
 .dgg-story h1 {
@@ -136,7 +138,7 @@
     display: block;
     margin-top: 8px;
     font-style: normal;
-    color: #f58a4d;
+    color: var(--dgg-action);
 }
 
 .dgg-story__copy > p {
@@ -174,9 +176,16 @@
     display: grid;
     place-items: center;
     border-radius: 50%;
-    background: rgba(232,111,44,.18);
-    color: #ff9a60;
+    background: rgba(248,212,10,.22);
+    color: var(--dgg-action);
     font-size: 13px;
+}
+
+.dgg-example-preview {
+    margin: 14px 0 0;
+    font-size: 12px;
+    font-style: italic;
+    color: rgba(255,255,255,.5);
 }
 
 .dgg-discover {
@@ -261,7 +270,7 @@
 
 .dgg-field input:focus {
     border-color: var(--dgg-action);
-    box-shadow: 0 0 0 3px rgba(232,111,44,.12);
+    box-shadow: 0 0 0 3px rgba(248,212,10,.22);
 }
 
 .dgg-login,
@@ -279,8 +288,8 @@
 .dgg-login {
     border: 0;
     background: var(--dgg-action);
-    color: #fff;
-    box-shadow: 0 10px 24px rgba(232,111,44,.18);
+    color: var(--dgg-petrol);
+    box-shadow: 0 10px 24px rgba(248,212,10,.28);
 }
 
 .dgg-login:hover { background: var(--dgg-action-deep); }
@@ -336,8 +345,8 @@
     line-height: 1.45;
 }
 
-.dgg-alert--danger { background: #fff0eb; color: #9d3e1d; }
-.dgg-alert--success { background: #eaf4ef; color: #245e4d; }
+.dgg-alert--danger { background: var(--dg-tint-danger, #fbe9e7); color: #8f2e25; }
+.dgg-alert--success { background: var(--dg-tint-success, #e2f2e9); color: #1a5c47; }
 
 .dgg-footer {
     width: min(1440px, calc(100% - 64px));

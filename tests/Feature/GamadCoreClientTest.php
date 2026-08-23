@@ -41,8 +41,7 @@ final class GamadCoreClientTest extends TestCase
         $identity = $this->client->resolveIdentity('PER-GAMAD-000000001', 'secret-bearer');
 
         self::assertSame('PER-GAMAD-000000001', $identity->reference);
-        Http::assertSent(fn ($request): bool =>
-            $request->hasHeader('Authorization', 'Bearer secret-bearer')
+        Http::assertSent(fn ($request): bool => $request->hasHeader('Authorization', 'Bearer secret-bearer')
             && $request->hasHeader('X-Correlation-ID')
         );
     }
@@ -86,8 +85,7 @@ final class GamadCoreClientTest extends TestCase
 
         self::assertSame('PER-GAMAD-000000001', $proof->identity->reference);
         self::assertSame('A2', $proof->session->assurance);
-        Http::assertSent(fn ($request): bool =>
-            $request->method() === 'DELETE'
+        Http::assertSent(fn ($request): bool => $request->method() === 'DELETE'
             && $request->url() === 'https://core.test/api/v1/sessions/current'
             && $request->hasHeader('Authorization', 'Bearer temporary-test-token')
         );
@@ -157,5 +155,101 @@ final class GamadCoreClientTest extends TestCase
         } finally {
             Http::assertNothingSent();
         }
+    }
+
+    public function test_it_provisions_an_organization_identity_via_a_product_session(): void
+    {
+        $client = new GamadCoreClient('https://core.test/api/v1', 'PRD-GAMAD-005', 'product-secret');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'product-bearer'], 201),
+            'core.test/api/v1/identites' => Http::response([
+                'identite' => ['reference' => 'IDN-CORE-ORG-000000001', 'etat' => 'ACTIVE', 'assurance' => 'A1'],
+            ], 201),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => 'PRD-GAMAD-005', 'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00']),
+        ]);
+
+        $identity = $client->provisionOrganizationIdentity('Coopérative numérique');
+
+        self::assertSame('IDN-CORE-ORG-000000001', $identity['reference']);
+        self::assertSame('ACTIVE', $identity['etat']);
+        self::assertSame('A1', $identity['assurance']);
+        Http::assertSent(fn ($request): bool => $request->url() === 'https://core.test/api/v1/identites'
+            && ($request['canal'] ?? null) === 'PRODUIT_RECONNU'
+            && ($request['type'] ?? null) === 'organisation'
+            && $request->hasHeader('Authorization', 'Bearer product-bearer'));
+        Http::assertSent(fn ($request): bool => $request->method() === 'DELETE' && $request->url() === 'https://core.test/api/v1/sessions/current');
+    }
+
+    public function test_it_creates_the_canonical_organization_from_a_provisioned_identity(): void
+    {
+        $client = new GamadCoreClient('https://core.test/api/v1', 'PRD-GAMAD-005', 'product-secret');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'product-bearer'], 201),
+            'core.test/api/v1/organisations' => Http::response([
+                'resultat' => [
+                    'reference' => 'ORG-GAMAD-000001', 'identite_reference' => 'IDN-CORE-ORG-000000001',
+                    'etat' => 'PREPARATION', 'type_organisation_reference' => 'COOPERATIVE',
+                ],
+            ], 201),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => 'PRD-GAMAD-005', 'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00']),
+        ]);
+
+        $organization = $client->createOrganization('IDN-CORE-ORG-000000001', [
+            'type_organisation_reference' => 'COOPERATIVE',
+            'proprietaire_reference' => 'IDN-FOUNDER',
+            'denomination_officielle' => 'Coopérative numérique',
+            'classification_reference' => 'INTERNE',
+        ]);
+
+        self::assertSame('ORG-GAMAD-000001', $organization['reference']);
+        self::assertSame('IDN-CORE-ORG-000000001', $organization['identite_reference']);
+        self::assertSame('PREPARATION', $organization['etat']);
+        Http::assertSent(fn ($request): bool => $request->url() === 'https://core.test/api/v1/organisations'
+            && ($request['identite_reference'] ?? null) === 'IDN-CORE-ORG-000000001'
+            && ($request['denomination_officielle'] ?? null) === 'Coopérative numérique');
+    }
+
+    public function test_it_treats_an_incomplete_core_organization_response_as_a_protocol_error(): void
+    {
+        $client = new GamadCoreClient('https://core.test/api/v1', 'PRD-GAMAD-005', 'product-secret');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'product-bearer'], 201),
+            'core.test/api/v1/identites' => Http::response(['identite' => []], 201),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => 'PRD-GAMAD-005', 'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00']),
+        ]);
+
+        $this->expectException(CoreProtocolException::class);
+
+        $client->provisionOrganizationIdentity('Coopérative numérique');
+    }
+
+    public function test_it_resolves_an_existing_organization_by_identity_without_mutating_anything(): void
+    {
+        $client = new GamadCoreClient('https://core.test/api/v1', 'PRD-GAMAD-005', 'product-secret');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'product-bearer'], 201),
+            'core.test/api/v1/organisations/resolution/*' => Http::response([
+                'organisation' => ['reference' => 'ORG-GAMAD-000001', 'etat' => 'ACTIVE'],
+            ], 200),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => 'PRD-GAMAD-005', 'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00']),
+        ]);
+
+        $organization = $client->resolveOrganizationByIdentity('IDN-CORE-ORG-000000001');
+
+        self::assertSame('ORG-GAMAD-000001', $organization['reference']);
+        Http::assertSent(fn ($request): bool => $request->method() === 'GET'
+            && $request->url() === 'https://core.test/api/v1/organisations/resolution/IDN-CORE-ORG-000000001');
+    }
+
+    public function test_it_returns_null_when_no_organization_is_yet_attached_to_an_identity(): void
+    {
+        $client = new GamadCoreClient('https://core.test/api/v1', 'PRD-GAMAD-005', 'product-secret');
+        Http::fake([
+            'core.test/api/v1/sessions' => Http::response(['jeton' => 'product-bearer'], 201),
+            'core.test/api/v1/organisations/resolution/*' => Http::response(['erreur' => 'ORGANISATION_INTROUVABLE'], 404),
+            'core.test/api/v1/sessions/current' => Http::response(['entite' => 'PRD-GAMAD-005', 'assurance' => 'A1', 'expire_le' => '2026-08-16T23:59:00+00:00']),
+        ]);
+
+        self::assertNull($client->resolveOrganizationByIdentity('IDN-CORE-ORG-UNKNOWN'));
     }
 }

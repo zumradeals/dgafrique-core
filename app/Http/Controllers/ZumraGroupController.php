@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Community\CommunityEventService;
+use App\Application\Missions\MissionService;
 use App\Application\Needs\NeedService;
+use App\Application\Partnerships\PartnershipService;
 use App\Application\Projects\ProjectService;
-use App\Application\Zumra\ZumraGroupConfiguration;
-use App\Application\Zumra\ZumraGroupService;
 use App\Application\Zumra\CollectiveCapabilityConfiguration;
 use App\Application\Zumra\CollectiveCapabilityProfile;
+use App\Application\Zumra\ZumraGroupConfiguration;
+use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
+use App\Http\Controllers\Concerns\PresentsPartnerships;
 use App\Models\Need;
+use App\Models\Partnership;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
@@ -27,6 +32,8 @@ use Illuminate\View\View;
 
 final class ZumraGroupController
 {
+    use PresentsPartnerships;
+
     public function index(Request $request, ZumraGroupConfiguration $configuration): View
     {
         /** @var CoreIdentity $identity */
@@ -49,7 +56,7 @@ final class ZumraGroupController
         return view('zumra.groups.create', compact('identity', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
-    public function store(Request $request, ZumraGroupService $service): RedirectResponse
+    public function store(Request $request, ZumraGroupConfiguration $configuration, ZumraGroupService $service): RedirectResponse
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -63,7 +70,7 @@ final class ZumraGroupController
             'assume_primary_lead' => ['nullable', 'boolean'],
         ]);
         $data['assume_primary_lead'] = $request->boolean('assume_primary_lead');
-        $group = $service->create($identity->reference, $data);
+        $group = $service->create($identity->reference, $data, (int) $configuration->get()['max_simultaneous_founder_roles']);
 
         return redirect()->route('zumra.groups.show', $group)->with('status', 'Votre ZUMRA est créée en constitution. Aucun rôle vacant n’a été attribué automatiquement.');
     }
@@ -76,14 +83,26 @@ final class ZumraGroupController
         CollectiveCapabilityProfile $capabilityProfile,
         NeedService $needs,
         ProjectService $projects,
+        MissionService $missions,
+        CommunityEventService $events,
+        PartnershipService $partnerships,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
-        abort_if($group->state === ZumraGroup::STATE_SUSPENDED && !$service->isLeader($group, $identity->reference), 404);
+        abort_if($group->state === ZumraGroup::STATE_SUSPENDED && ! $service->isLeader($group, $identity->reference), 404);
         $isLeader = $service->isLeader($group, $identity->reference);
         $membership = $group->memberships()->where('core_identity_reference', $identity->reference)->first();
         $roles = $group->roles()->orderByRaw("case role when 'PRIMARY_LEAD' then 1 when 'FIRST_DEPUTY' then 2 when 'SECOND_DEPUTY' then 3 when 'FINANCE_LEAD' then 4 else 5 end")->get();
         $roleProfiles = PersonProfile::query()->whereIn('core_identity_reference', $roles->pluck('core_identity_reference')->filter())->get()->keyBy('core_identity_reference');
+
+        // UIUX-002 — décision #4 : découvrir/comprendre/accepter une responsabilité qui vous est
+        // personnellement proposée, directement sur la fiche de la ZUMRA — aucune requête
+        // supplémentaire, dérivé de $roles déjà chargé.
+        $myPendingRoleProposal = $roles->first(
+            fn (ZumraGroupRole $role): bool => $role->status === ZumraGroupRole::STATUS_PROPOSED
+                && $role->core_identity_reference !== null
+                && hash_equals($role->core_identity_reference, $identity->reference),
+        );
         $pendingRequests = $isLeader
             ? $group->memberships()->where('status', ZumraGroupMembership::STATUS_REQUESTED)->oldest('requested_at')->get()
             : collect();
@@ -110,10 +129,41 @@ final class ZumraGroupController
 
         $collectivePriority = $isLeader ? $this->collectivePriority($group, $pendingRequests, $groupNeeds, $groupProjects) : null;
 
+        // UIUX-003 — décision #2 : Missions et Événements réellement rattachés à cette ZUMRA
+        // (relations backend déjà prouvées : Mission.context_type=ZUMRA, CommunityEvent
+        // organizer_type=ZUMRA_GROUP), affichés seulement pour un membre actif ou responsable —
+        // exactement la même autorité que ces deux services exigent déjà eux-mêmes (jamais
+        // recalculée ici, jamais assouplie pour peupler la page).
+        $isActiveMember = $membership?->status === ZumraGroupMembership::STATUS_ACTIVE;
+        $groupMissions = $isActiveMember || $isLeader
+            ? $missions->forContext('ZUMRA', $group->public_reference, $identity->reference)->take(6)
+            : collect();
+        $groupEvents = $isActiveMember || $isLeader
+            ? $events->forZumraGroup($group, $identity->reference)->take(6)
+            : collect();
+
+        // UIUX-005 — Partenariats réellement associés à cette ZUMRA (CAP-065), visibles seulement
+        // pour un membre actif ou responsable — même autorité que Missions/Événements ci-dessus,
+        // jamais assouplie pour peupler la page.
+        $groupPartnerships = $isActiveMember || $isLeader
+            ? Partnership::query()
+                ->where('context_type', Partnership::CONTEXT_ZUMRA)
+                ->where('context_reference', $group->public_reference)
+                ->latest('created_at')
+                ->limit(20)
+                ->get()
+                ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
+                ->values()
+            : collect();
+        $presentedPartnerships = $this->presentPartnerships($groupPartnerships, $identity->reference, $partnerships);
+        $manageableOrganizations = $this->manageableOrganizations($identity->reference);
+        $manageableOrganizationCapabilities = $this->manageableOrganizationCapabilities($identity->reference);
+
         return view('zumra.groups.show', compact(
             'identity', 'group', 'membership', 'roles', 'roleProfiles', 'pendingRequests', 'requestProfiles',
-            'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects', 'collectivePriority',
-        ) + ['isLeader' => $isLeader]);
+            'collectiveCapabilitySettings', 'collectiveCapabilities', 'isAdministrator', 'groupNeeds', 'groupProjects',
+            'collectivePriority', 'myPendingRoleProposal', 'groupMissions', 'groupEvents',
+        ) + ['isLeader' => $isLeader, 'groupPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations, 'manageableOrganizationCapabilities' => $manageableOrganizationCapabilities]);
     }
 
     /**
@@ -122,9 +172,9 @@ final class ZumraGroupController
      * Aucun siège vacant ici : aucune action réelle n'existe encore pour en proposer un (§2 de
      * la fiche), une priorité doit toujours pointer vers une action réellement exécutable.
      *
-     * @param Collection<int, ZumraGroupMembership> $pendingRequests
-     * @param Collection<int, Need> $groupNeeds
-     * @param Collection<int, Project> $groupProjects
+     * @param  Collection<int, ZumraGroupMembership>  $pendingRequests
+     * @param  Collection<int, Need>  $groupNeeds
+     * @param  Collection<int, Project>  $groupProjects
      */
     private function collectivePriority(ZumraGroup $group, Collection $pendingRequests, Collection $groupNeeds, Collection $groupProjects): ?array
     {
@@ -205,6 +255,29 @@ final class ZumraGroupController
         $service->leave($group, $identity->reference, (int) $configuration->get()['established_member_threshold']);
 
         return redirect()->route('zumra.groups.index')->with('status', 'Vous avez quitté cette ZUMRA. Son historique reste conservé.');
+    }
+
+    public function proposeRole(Request $request, ZumraGroup $group, string $role, ZumraGroupService $service): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        abort_unless(array_key_exists($role, ZumraGroupRole::LABELS), 422, 'Responsabilité inconnue.');
+        $data = $request->validate(['person_reference' => ['required', 'uuid']]);
+        $profile = PersonProfile::query()->where('discovery_reference', $data['person_reference'])->where('discovery_consent', true)->firstOrFail();
+        $service->proposeRole($group, $identity->reference, $role, $profile->core_identity_reference);
+
+        return back()->with('status', 'Responsabilité proposée. Elle ne sera occupée qu’après acceptation explicite.');
+    }
+
+    public function acceptRole(Request $request, ZumraGroup $group, string $role, ZumraGroupConfiguration $configuration, ZumraGroupService $service): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        abort_unless(array_key_exists($role, ZumraGroupRole::LABELS), 422, 'Responsabilité inconnue.');
+        $settings = $configuration->get();
+        $service->acceptRole($group, $identity->reference, $role, (int) $settings['max_simultaneous_founder_roles'], (bool) $settings['auto_validation_enabled']);
+
+        return back()->with('status', 'Vous occupez désormais cette responsabilité.');
     }
 
     private function programMembership(string $identity): ?ZumraProgramMembership

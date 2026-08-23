@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration {
     public function up(): void
     {
-        DB::statement('ALTER TABLE dg_project_brain_intents ALTER COLUMN actor_core_reference TYPE VARCHAR(120) USING actor_core_reference::text');
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE dg_project_brain_intents ALTER COLUMN actor_core_reference TYPE VARCHAR(120) USING actor_core_reference::text');
+        }
     }
 
     public function down(): void

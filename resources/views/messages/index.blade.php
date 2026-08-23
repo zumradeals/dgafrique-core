@@ -12,7 +12,7 @@
 
             <section class="rounded-[1.5rem] bg-slate-950 p-6 text-white shadow-xl sm:p-8">
                 <div class="flex flex-wrap items-end justify-between gap-5">
-                    <div><p class="mb-2 text-xs font-black uppercase tracking-[.16em] text-cyan-300">CAP-020 · coordination</p><h1 class="m-0 text-3xl font-black tracking-tight">Vos conversations d’action</h1><p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Échangez avec une personne, une ZUMRA ou autour d’un besoin et d’un projet. La messagerie reste privée et au service d’une action concrète.</p></div>
+                    <div><p class="mb-2 text-xs font-black uppercase tracking-[.16em] text-cyan-300">Coordination</p><h1 class="m-0 text-3xl font-black tracking-tight">Vos conversations d’action</h1><p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Échangez avec une personne, une ZUMRA ou autour d’un besoin et d’un projet. La messagerie reste privée et au service d’une action concrète.</p></div>
                     <form method="POST" action="{{ route('messages.support') }}">@csrf<button class="rounded-xl border-0 bg-cyan-300 px-4 py-3 text-sm font-black text-slate-950">Écrire à DG Afrique</button></form>
                 </div>
             </section>

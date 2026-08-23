@@ -1,9 +1,11 @@
 # DG Afrique — Invariants de design
 
 **Statut : CANONIQUE DESIGN — ADOPTÉ**  
-**Version : 1.0** (voir addendum daté §16 pour la Landing)  
+**Version : 1.0**, avec §5 (matières/couleurs/typographie) **supersédé par l’addendum daté §22
+(UIUX-009A, 22 août 2026)** — voir aussi l’addendum daté §16 pour la Landing.  
 **Date d’adoption : 16 août 2026**  
-**Référence visuelle :** `docs/design/reference/claude-2026-08-16/`
+**Référence visuelle :** `docs/design/reference/claude-2026-08-16/` (v1.0, conservée comme
+archive historique — voir §22 pour la palette réellement en vigueur depuis le 22 août 2026)
 
 ## 1. Autorité et portée
 
@@ -328,3 +330,322 @@ surface serveur).
 **Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
 conversation, non archivée dans `docs/design/reference/`, reproduite dans
 `resources/views/projects/index.blade.php` et `resources/css/projects-directory.css`).
+
+## 19. Addendum daté — Dossier Projet / Vue d’ensemble (20 août 2026)
+
+**Portée : la page détail d’un projet uniquement** (`resources/views/projects/show.blade.php`,
+`app/Http/Controllers/ProjectController.php::show()`, `app/Models/ProjectEvent.php`,
+`resources/css/project-detail.css`). Ce changement suit la procédure de gouvernance du §14.
+`resources/views/projects/overview-v2.blade.php` (route `projects.overview`, la page « Projet
+vivant » du workspace Cerveau) n’est pas concerné : c’est une interface distincte, non gouvernée
+par `x-dg.shell`, hors du périmètre de cette maquette.
+
+**Invariant concerné** : §11 (démonstration marquée uniquement) et §13 (brancher sur les routes et
+services réels) — cette refonte réorganise visuellement une page déjà quasi-entièrement réelle
+(problème/solution/bénéficiaires, jalons, équipe, besoins, accompagnement, transitions de statut)
+sans qu’aucun invariant n’ait besoin d’être révisé pour l’essentiel du contenu.
+
+**Ce qui change** :
+- Nouvel en-tête avec actions réelles (**Partager** → `shares.project`, **Ouvrir le Cerveau** →
+  `projects.brain.show`) et un badge **Actif/Archivé** dérivé honnêtement de `Project.status`
+  (`!= ARCHIVED`), distinct du statut métier affiché dans « Informations clés ».
+- Des onglets internes (Vue d’ensemble/Activités/Équipe/Besoins/Ressources/Documents/
+  Conversations) implémentés comme des **ancres réelles vers des sections de cette même page** —
+  jamais des pages fabriquées ou des liens morts, conformément à la consigne de ne pas construire
+  arbitrairement un contenu d’onglet qui n’existe pas encore.
+- Le bandeau de maturité passe d’une présentation verticale à une présentation **horizontale sur
+  desktop** (≥ 900px) : réutilise le composant `x-dg.stagewalk` **sans toucher à son DOM ni à sa
+  classe testée** (`DesignInvariantsPhase2Test::test_project_maturity_stagewalk_shows_all_eight_stages_not_a_percentage`
+  reste vert tel quel) — seule une feuille de style scoping (`project-detail.css`) transforme la
+  disposition. Sous 900px, la présentation verticale d’origine du composant reste inchangée, ce qui
+  correspond aussi à la direction demandée pour mobile (« maturité affichée verticalement »).
+  Aucun pourcentage n’apparaît sur ce composant, toujours conformément à CAP-017.
+- **« Progression globale » (X %)** est une **projection d’affichage** distincte de la maturité,
+  clairement annoncée « · Projection » : un entier déterministe dérivé de `crc32(project->id)`,
+  calculé à l’affichage, **jamais persisté, jamais un calcul métier réel**. Le bouton « Voir le
+  détail → » associé reste désactivé avec sa raison, faute de moteur de progression canonique —
+  même discipline que `overview-v2.blade.php` (« La progression reste une projection jusqu’au
+  moteur de progression canonique »).
+- **« Documents & Preuves »** est un nouveau bloc honnête : aucun modèle ne relie de document à un
+  projet aujourd’hui (`Proof` n’a pas de portée projet exploitable ici) — état vide réel («aucun
+  document pour le moment ») + action « Ajouter un document » visuellement présente mais
+  désactivée avec sa raison (espace documentaire GamaDrive non relié).
+- **« Activité récente »** est un nouveau bloc **entièrement réel** : les six derniers
+  `ProjectEvent` du projet (`ProjectEvent::EVENT_LABELS`, nouvelle constante), avec l’acteur
+  affiché via son `discovery_display_name` ou « Membre DG Afrique » (anonymat assumé, §9). Le CTA
+  « Voir toute l’activité → » reste désactivé avec sa raison, faute de journal dédié.
+- **« Suivre » / « Suivre les mises à jour »** (en-tête et colonne latérale) restent désactivés
+  avec leur raison : aucun mécanisme de notification par objet n’existe aujourd’hui — ceci n’est
+  pas un mécanisme de popularité (§8), seulement une préférence de suivi non encore câblée.
+- La colonne latérale (« Progression globale », « Informations clés », « Actions rapides ») est
+  nouvelle mais chaque champ d’« Informations clés » (domaine, statut, visibilité, créé le,
+  dernière activité) et chaque action de « Actions rapides » (Cerveau, `projects.matching` si
+  `canDecide`, `shares.project`) proviennent de données ou de routes déjà réelles.
+- Aucune capacité existante n’a été supprimée : gestion d’équipe (inviter/demander/accepter/
+  quitter/retirer), besoins du projet, repositionnement de maturité avec historique,
+  accompagnement DG Afrique, transitions de statut, et l’avertissement « Aucun financement n’est
+  ouvert ici » restent mot pour mot identiques, seulement redisposés dans la page.
+
+**Ce qui ne change pas** : §7/§8/§10 restent pleinement en vigueur (pas de mécanique de
+popularité, état vide honnête partout où aucune donnée réelle n’existe). Aucune donnée de
+démonstration n’a été introduite pour cette page — contrairement à `/projets` (§18), il n’existe
+aucun fichier de fixtures ici : quand une donnée réelle manque, la page l’affiche honnêtement vide
+plutôt que de la remplacer par un exemple.
+
+**Compatibilité vérifiée** : doctrine (aucune fausse mutation Core — chaque bouton pointe vers une
+route réelle ou est visuellement désactivé avec sa raison), accessibilité (`aria-disabled`,
+raisons lisibles, ancres de navigation réelles au clavier), mobile (colonne unique, onglets
+défilables horizontalement, maturité verticale, testé aux viewports 390×844), sécurité (aucune
+nouvelle surface serveur, `ProjectController::show()` garde exactement ses autorisations
+`canView`/`canDecide` existantes).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/projects/show.blade.php` et `resources/css/project-detail.css`).
+
+## 20. Addendum daté — Cerveau du Projet / PVB-I05 V1 (20 août 2026)
+
+**Portée : l'écran de conversation du Cerveau uniquement** (`resources/views/projects/brain.blade.php`
+et ses partiels `resources/views/projects/partials/brain-*.blade.php`,
+`app/Http/Controllers/ProjectBrainController.php::show()`, `resources/css/project-brain.css`,
+`Project::progressionSeed()`). Ce changement suit la procédure de gouvernance du §14. Le flux de
+naissance du projet (`projects.brain.start.*`, `resources/views/projects/brain-start.blade.php`)
+et `resources/views/projects/overview-v2.blade.php` (route `projects.overview`) ne sont pas
+concernés — périmètres distincts, non touchés par cette refonte.
+
+**Invariant concerné** : §11 (démonstration marquée uniquement), §13 (brancher sur les routes et
+services réels), et corrige une régression accumulée au fil de PVB-I05.1/.2/.3 : l'écran affichait
+deux bandeaux de navigation superposés (le contournement `.dg-global-nav` injecté par
+`portal.blade.php` **et** son propre en-tête `.pw-top`), sa palette pétrole/orange
+(`project-workspace-v2.css`, PVB-I05.2) était neutralisée par un bloc `&lt;style&gt;` inline navy/violet
+resté dans la vue, et la colonne « Projets & conversations » ne listait jamais qu'un seul projet
+réel (`Project::query()-&gt;whereKey($project-&gt;id)`) complétée par une liste de projets et de
+sous-conversations **entièrement fabriquée et non marquée** — en contradiction directe avec §11.
+
+**Ce qui change** :
+- L'écran rejoint enfin `x-dg.shell` (navigation globale réelle, identique à `/projets` et
+  `/projets/{project}`) : plus de double bandeau, plus de pied de page dupliqué. Le bloc `&lt;style&gt;`
+  inline est supprimé ; `resources/css/project-brain.css` (nouveau, scopé à `projects.brain.show`
+  uniquement) porte la palette pétrole/orange déjà établie.
+- **Colonne gauche** : `ProjectBrainController::show()` construit désormais une vraie liste « mes
+  projets » (même filtrage `ProjectService::canView` que `ProjectController::index()`), avec un
+  indicateur réel « conversation active » par projet (existence d'une `ProjectBrainConversation`
+  pour l'acteur courant) — les sous-conversations fictives (« Financement & Apports », etc.) ont
+  été retirées : une seule conversation réelle existe par (projet, acteur) aujourd'hui, et le §12
+  de la demande produit demande explicitement d'éviter les seeds conversationnels quand une vraie
+  conversation existe.
+- **Fil de conversation** : entièrement inchangé dans son contrat métier — mêmes messages
+  (`ProjectBrainMessage`), même carte de brouillon en attente liée à `message.meta.draft_reference`
+  et `ProjectBrainDraft`, mêmes routes `projects.brain.needs.confirm`/`.drafts.cancel`, même
+  formulaire de composition (`projects.brain.needs.prepare`, champ `message`). L'ancienne carte
+  d'exemple « Créer une équipe projet » (non reliée à un brouillon réel, boutons
+  `type="button"` sans action) est conservée comme illustration **uniquement dans l'état vide**
+  (avant toute conversation réelle), avec ses actions explicitement désactivées
+  (`aria-disabled="true"`, raison accessible) plutôt que des boutons silencieusement inertes.
+- **Colonne droite « Projet vivant »** : Besoins, Missions (nouveau : `Mission::where('context_type',
+  'PROJECT')`, filtré par `MissionVisibilityService::canViewMission`, jamais interrogé depuis cet
+  écran auparavant) et Équipe sont désormais entièrement réels, avec état vide honnête quand ils
+  sont vides — remplaçant le remplissage silencieux par des données fictives non marquées. Le
+  « Prochain jalon » devient réel (`$project-&gt;milestones()-&gt;where('status','!=','COMPLETED')-&gt;first()`)
+  au lieu d'un texte fixe avec un faux compte à rebours. L'« Avancement » (pourcentage) reste une
+  projection d'affichage clairement annoncée, désormais portée par `Project::progressionSeed()`
+  (même formule que « Progression globale » sur `/projets/{project}`, §19, pour que les deux écrans
+  montrent le même chiffre pour un même projet plutôt que deux projections divergentes). « Preuves
+  récentes » et « Opportunités pour vous » restent des projections métier explicitement annoncées
+  « · Exemple », cohérentes avec la demande produit (§12) — aucune n'est jamais écrite en base.
+- La liste « Projets archivés » affiche un compte réel (filtré `canView`) plutôt qu'un chiffre fixe,
+  et reste désactivée avec sa raison tant qu'aucune vue dédiée n'existe pour la parcourir.
+- Tiroirs mobiles (`&lt;details&gt;`, sans JavaScript) pour « Projets & conversations » et
+  « Projet vivant », conformément à la consigne de rendre les deux colonnes latérales accessibles
+  sans jamais réduire simplement les trois colonnes desktop.
+
+**Ce qui ne change pas** : aucune mutation Core silencieuse — chaque bouton pointe vers une route
+réelle ou est désactivé avec sa raison ; la confirmation explicite avant création d'un besoin
+(CAP existant) reste l'unique chemin d'écriture. §7/§8/§10 restent pleinement en vigueur.
+
+**Compatibilité vérifiée** : doctrine (les seuls contenus de démonstration restants — carte
+d'exemple à l'état vide, Preuves récentes, Opportunités — sont explicitement marqués et
+désactivés), accessibilité (`aria-disabled`, raisons lisibles, tiroirs `&lt;details&gt;` navigables au
+clavier), mobile (colonne unique, tiroirs pour les deux panneaux latéraux, testé au viewport
+390×844), sécurité (`ProjectBrainController::show()` garde `ProjectService::canView` sur le projet
+courant et sur chaque projet listé dans la colonne gauche ; `MissionVisibilityService::canViewMission`
+filtre les Missions affichées).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/projects/brain.blade.php` et `resources/css/project-brain.css`).
+
+## 21. Addendum daté — Portail Besoins (20 août 2026)
+
+**Portée : l'écran `/besoins` uniquement** (`resources/views/needs/index.blade.php`,
+`app/Http/Controllers/NeedController.php::index()`,
+`app/Application/Needs/NeedDirectoryDemoContent.php`, `resources/css/needs-directory.css`). Ce
+changement suit la procédure de gouvernance du §14. `needs.show`, `needs.create` et les routes
+satellites (commentaires, partages, missions liées à un besoin) ne sont pas concernés.
+
+**Invariant concerné** : §11 (fixtures « Exemple », centralisées, jamais persistées) et §18
+(DEMO-FIRST, REAL-DATA-TAKES-OVER, déjà appliqué à `/projets`), étendus ici à un troisième écran.
+
+**Problème utilisateur justifiant le changement** : une maquette a été fournie pour le portail
+Besoins, avec une carte d'exemple (« Apprendre le forex ») déjà présente dans la maquette aux
+côtés d'un besoin réel. Vérification effectuée avant implémentation : cette chaîne n'existe nulle
+part dans le dépôt (ni vue, ni fixture, ni seeder) — ce n'est donc pas une dette existante à
+corriger, mais un contenu à introduire comme démonstration, suivant exactement le même patron que
+« GAMAD Technology » sur `/projets` (§18).
+
+**Ce qui change** :
+- Le portail Besoins peut désormais afficher une carte d'exemple (« Apprendre le forex », voir
+  `resources/design-reference/needs-demo.json`), marquée **« · Exemple »** sur son badge de
+  catégorie, **uniquement lorsqu'aucun besoin réel visible n'existe pour la catégorie de la
+  carte** et seulement en première page — dès qu'un besoin réel existe pour cette catégorie
+  (`TRAINING` pour cette carte), elle disparaît d'elle-même
+  (`NeedDirectoryDemoContent::demoCards()`), et n'est jamais écrite dans `dg_needs` ni seedée
+  (`database/seeders/DatabaseSeeder.php` reste intentionnellement vide) ;
+- ses actions (« Comprendre le besoin → », signet) restent visuellement présentes mais
+  désactivées, avec la raison accessible « Objet de démonstration — aucune action réelle n'est
+  rattachée. » (conforme au §13) ;
+- **« Aperçu des besoins »** (besoins ouverts/en attente/pourvus) est en revanche un **calcul
+  réel**, pas une projection : `NeedController::index()` tallie les statuts réels
+  (`OPEN`/`PROPOSED`/`RESOLVED`) sur l'ensemble des besoins visibles de l'identité, indépendamment
+  des filtres appliqués à la liste — le modèle permettait déjà ce calcul, la règle §12 de la
+  demande produit (« préférer systématiquement un calcul réel lorsqu'il est disponible ») a été
+  suivie plutôt que d'en faire une projection comme les statistiques réseau de `/projets` (§18) ;
+- l'action « signet » (sauvegarder un besoin) apparaît visuellement sur toutes les cartes,
+  réelles et de démonstration, mais reste désactivée avec sa raison sur les deux : aucune
+  fonctionnalité de favoris n'existe aujourd'hui pour aucun objet du portail (vérifié avant
+  implémentation — aucun modèle, migration ou route ne l'implémente) ;
+- le tri (« Trier par ») et la bascule grille/liste sont présentés visuellement (fidélité à la
+  maquette) mais désactivés avec leur raison : aucun contrat de tri autre que « plus récents »
+  (déjà le comportement réel par défaut) ni de vue liste n'existe aujourd'hui.
+
+**Ce qui ne change pas** : le formulaire de filtre réel (`method="GET" class="dg-filters"`,
+catégorie + état, bouton « Filtrer ») garde exactement son contrat et son test existants ; aucune
+capacité métier de `NeedController` n'a été retirée. Les tags multiples visibles sur la carte de
+démonstration ne sont **pas** reproduits sur les cartes réelles : `Need` n'a pas de champ de tags
+multiples (seul `capability_label`, un champ unique optionnel, existe et s'affiche comme tel) —
+fabriquer plusieurs tags pour un besoin réel aurait été une donnée inventée, écart assumé et
+documenté plutôt qu'une fausse fonctionnalité (voir `docs/design/DIFFERENCES.md`).
+
+**Compatibilité vérifiée** : doctrine (démonstration jamais confondue avec du réel — badge
+« · Exemple » + actions désactivées avec raison, exactement le contrat de `/projets`),
+accessibilité (`aria-disabled`, raisons lisibles au clavier/lecteur d'écran), mobile (filtres
+empilés, cartes pleine largeur, panneau « Aperçu des besoins » repositionné dans le flux, testé au
+viewport 390×844), sécurité (aucune nouvelle surface serveur, `NeedController::index()` garde
+exactement `NeedService::canView` existant sur chaque besoin).
+
+**Référence visuelle** : maquette fournie par le demandeur le 20 août 2026 (transmise en
+conversation, non archivée dans `docs/design/reference/`, reproduite dans
+`resources/views/needs/index.blade.php` et `resources/css/needs-directory.css`).
+
+## 22. Addendum daté — Fondation humaine et identité GAMAD, UIUX-009A (22 août 2026)
+
+**Portée : la fondation visuelle transversale du produit** — tokens de couleur/surface/texte,
+composants fondamentaux (`resources/css/dg.css`, `resources/css/identity-v2.css`,
+`resources/css/app.css`, `resources/css/gateway-v2.css`, `resources/css/auth-v2.css`), la landing
+(`resources/views/gateway.blade.php`, `resources/views/foundation.blade.php`) et un ensemble
+mécanique de traductions d'énumérations brutes vers un langage humain. Ce changement suit la
+procédure de gouvernance du §14. Il ne reconstruit aucun parcours métier classé C/D par l'audit
+UIUX-009 Phase A (formulaire de création manuelle de Projet, champ de récurrence Mission, écran de
+financement de Projet, découverte de Mission) — ces reconstructions restent réservées à de futures
+Phases B distinctes.
+
+**Invariant concerné** : §5 (matières, couleurs, typographie) est **supersédé** par le présent
+addendum — la palette ivoire/forêt/cuivre/safran qu'il fixait n'a jamais été celle réellement
+rendue à l'utilisateur (voir ci-dessous) et est remplacée par la palette décrite ici. §2 (« Une
+identité. Des personnes. Des capacités. Des actions. Des outils spécialisés. ») et §6 (« couleur =
+sens, jamais décoration arbitraire ») restent pleinement en vigueur et sont même renforcés : la
+discipline « une famille de couleur par domaine » est conservée à l'identique, seules les valeurs
+sous-jacentes changent.
+
+**Problème utilisateur justifiant le changement** : l'autorité produit a indiqué explicitement,
+comme point de départ de la mission UIUX-009, ne pas aimer la couleur de fond de DG Afrique
+depuis le début. L'audit UIUX-009 Phase A a établi un fait technique qui change le sens de cette
+plainte : le fond `#F8F3EA` que le présent document fixait comme canonique en v1.0 **n'a jamais
+été le fond réellement rendu**. `resources/css/identity-v2.css` définissait, hors de tout
+`@layer`, une seconde règle `.dg, .portal-body { background: ... }` qui l'emportait
+systématiquement sur la règle canonique de `dg.css` (calquée dans `@layer components`) — un
+accident de cascade CSS, jamais une décision. Le fond réellement vu par l'autorité produit était
+`#FFF7EF` (application connectée) ou `#F7F4EE` (page d'accueil publique, `gateway-v2.css`, encore
+un troisième fond codé en dur) — jamais celui documenté. Un deuxième problème, indépendant du
+premier mais soulevé par le même audit : la palette de DG Afrique ne partageait aucune valeur avec
+celle de la console institutionnelle de l'écosystème GAMAD, alors que les deux portent la même
+famille de marque.
+
+**Ce qui change** :
+- **Une seule vérité CSS.** `dg.css` (`@layer components`, correctement calqué) devient la seule
+  source déclarant le fond de page (`.dg, .portal-body`). `identity-v2.css` ne redéfinit plus
+  aucune règle de fond ni aucun composant : il ne contient plus qu'un alias de compatibilité
+  (`--dg-petrol`, `--dg-orange`, `--dg-ivory-v2`, etc. → les tokens canoniques ci-dessous) pour les
+  feuilles de style de parcours spécifiques qui les consomment encore
+  (`member-space-v2.css`, `fil-v2.css`, `project-brain.css`, `projects-directory.css`,
+  `project-workspace-v2.css` — migrer ces cinq fichiers vers les noms canoniques reste un travail
+  de parcours individuel, hors périmètre de cette fondation). `gateway-v2.css` et le jeu de tokens
+  legacy de `app.css` (`--navy`, `--ocean`, `--cyan`, `--mint`, `--amber`, `--cloud`, utilisés par
+  les écrans d'Administration non encore propagés) pointent désormais tous vers les mêmes valeurs
+  canoniques plutôt que vers des palettes indépendantes.
+- **Nouvelle palette mère GAMAD**, extraite des valeurs déjà normalisées et publiées par la
+  console institutionnelle de l'écosystème (jamais estimées à l'œil sur le logo) :
+  `--gamad-yellow: #F8D40A`, `--gamad-blue: #0875A2`, `--gamad-green: #007A43`,
+  `--gamad-red: #B83232` (fonctionnel — signal de danger uniquement, jamais un signal de marque).
+- **Nouvelle palette DG Afrique**, construite sur cette base mère : fond de page clair et neutre
+  `--dg-ivory: #F5F4EF` ; surfaces blanches `--dg-card: #FFFFFF` (contraste net entre page et
+  cartes, blanc jamais dominant sur toute la structure — §5 v1.0 déjà correct sur ce point) ;
+  ancrage sombre neutre `--dg-forest: #1C1B17` (anthracite, remplace l'ancien vert forêt —
+  utilisé pour la hiérarchie de texte, les boutons primaires et les bandeaux sombres) ; safran
+  `--dg-saffron: var(--gamad-yellow)` conservé exactement dans son rôle déjà décrit au §6 (rare,
+  signal de décision humaine attendue — jamais la couleur de fond ni celle de chaque bouton) ;
+  bleu `--dg-night: var(--gamad-blue)` conservé dans son rôle déjà décrit au §6 (outils
+  spécialisés/domaine projet) ; vert `var(--gamad-green)` nouvellement affecté au domaine
+  action/transmission ; cuivre `--dg-copper: #A9552B` inchangé (domaine besoin). Tokens
+  sémantiques génériques ajoutés pour les usages transversaux futurs : `--dg-bg`, `--dg-surface`,
+  `--dg-border`, `--dg-primary`, `--dg-success`, `--dg-warning`, `--dg-danger`, `--dg-info`.
+- **Composants fondamentaux** recolorés sans changement de structure : topbar (fusion des
+  raffinements déjà présents dans `identity-v2.css` — flou d'arrière-plan, soulignement de
+  l'onglet actif — désormais dans `dg.css`), barre mobile, barre d'onglets, feuille Agir, cartes,
+  boutons (primaire/secondaire/discret), champs de formulaire (ajout d'un état d'erreur
+  `[aria-invalid]` et d'un état désactivé, absents jusqu'ici), badges, liens, `:focus-visible`
+  générique (absent jusqu'ici — ajouté pour l'accessibilité).
+- **Traduction humaine mécanique** de valeurs d'énumération jusqu'ici affichées brutes : statut/
+  rôle de participant Transmission, type de référence et statut de témoin Preuve, rôle/statut
+  d'assignation Mission, type de bloqueur Mission (y compris le menu déroulant qui affichait
+  littéralement `MISSING_FINANCING`), type de dépendance Mission, visibilité et origine
+  Transmission/Preuve/Mission, statuts de membership ZUMRA `EXCLUDED`/`SUSPENDED` (jusqu'ici
+  affichés en anglais brut au moment le plus vulnérable pour la personne concernée). Douze badges
+  d'éveil de page « CAP-0XX · … » retirés des écrans généraux (Transmission, Preuve, Mission,
+  Notifications, ZUMRA, Messages, Partage, Contribution contextuelle) au profit du seul intitulé
+  humain. Deux mentions du nom du backend d'identité (« Core » / « GAMAD Core ») retirées d'un
+  texte d'accompagnement et d'un message d'erreur réel côté Organisation. Le champ de récurrence
+  Mission (texte libre RRULE) n'a **pas** été touché — sa reconstruction est un changement
+  structurel réservé à une Phase B « parcours », non à cette fondation.
+- **Landing** (`gateway.blade.php`, page d'accueil publique, et `foundation.blade.php`,
+  `/decouvrir`) rattachée à la même fondation : plus de fond codé en dur indépendant, mêmes
+  tokens, même traitement de la marque (`.dg-brand`/`.dg-brandmark`). Aucune reconstruction de
+  structure — la question « portail de découverte public ou application membre ? » identifiée par
+  l'audit reste un chantier produit distinct, non traité ici.
+
+**Ce qui ne change pas** : §2, §3, §6 (couleur = sens), §7 (une priorité dominante à la fois —
+non corrigé ici : l'audit UIUX-009 Phase A a documenté une violation réelle de cet invariant sur
+Mon espace, réservée à une Phase B dédiée à la hiérarchie d'action), §8 (pas de mécanique de
+popularité), §9 (présence humaine digne), §10 (état vide honnête), §11 (données de démonstration
+marquées Exemple — non modifié ; la carte d'exemple « GAMAD Technology » déjà adoptée par
+l'addendum §18 reste visible telle quelle, hors périmètre de cette fondation), §12 (outils
+spécialisés), §13 (hiérarchie avec le métier). Aucune règle métier, aucune transition, aucune
+capacité n'a été modifiée par cette mission — seuls des tokens visuels, des composants
+transversaux et des traductions d'affichage ont changé.
+
+**Compatibilité vérifiée** : doctrine (le nom de l'institution mère reste absent de toute
+interface — `IdentityAuthorityGuardTest` toujours vert ; les traductions ajoutées sont des
+formulations humaines nouvelles, jamais une exposition supplémentaire de vocabulaire interne),
+accessibilité (`:focus-visible` générique ajouté, états d'erreur/désactivé de formulaire ajoutés,
+contrastes du signal safran/jaune vérifiés en texte anthracite sur fond clair), mobile et desktop
+(390×844 et 1440×900, huit écrans représentatifs — Accueil, Mon espace, Fil, Projets,
+Projets/création, fiche ZUMRA, fiche Organisation, Notifications — aucun débordement horizontal
+constaté), sécurité (aucune nouvelle surface serveur, aucune règle d'autorisation modifiée — voir
+`tests/Feature/UIUX009AHumanLanguageTest.php`).
+
+**Référence visuelle** : aucune maquette externe fournie pour cette mission — direction construite
+directement à partir de l'audit UIUX-009 Phase A (rapport livré en conversation le 22 août 2026)
+et des valeurs de marque déjà normalisées dans la console institutionnelle de l'écosystème GAMAD.
+Toute Phase B ultérieure qui adopterait des valeurs hexadécimales différentes devra documenter sa
+propre source (colorimétrie réelle sur l'asset de marque officiel, jamais une estimation à l'œil)
+avant adoption, conformément au mandat UIUX-009.

@@ -22,6 +22,7 @@
     @if($item['context'])
         <x-dg.note>{{ $item['context'] }}</x-dg.note>
     @endif
+    <x-dg.feed.relevance :item="$item" />
 
     @if($item['maturity'])
         <x-dg.maturity :stages="array_slice(\App\Application\Projects\ProjectMaturityService::STAGES, 0, 6, true)" :current="$item['maturity']" />

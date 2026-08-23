@@ -189,6 +189,102 @@ désactivées avec la mention « créez votre compte pour voir les [besoins|proj
   la barre de filtre, `people.index`, `projects.brain.start`, `activity.index`) : aucune destination
   fictive.
 
+## Dossier Projet / Vue d’ensemble — refonte visuelle du 20 août 2026 (addendum §19)
+
+- Les onglets internes de la maquette (Activités/Équipe/Besoins/Ressources/Documents/
+  Conversations) n'ont pas de route dédiée séparée aujourd'hui : ce sont des ancres réelles
+  (`#dg-project-activite`, `#dg-project-equipe-detail`, etc.) vers des sections déjà présentes sur
+  la page « Vue d'ensemble ». Rien n'a été fabriqué : cliquer sur un onglet mène toujours à un
+  contenu réel, jamais à un lien mort ou à une page vide.
+- Le bandeau horizontal de maturité réutilise `x-dg.stagewalk` sans modifier son DOM ni sa classe
+  testée — seule `resources/css/project-detail.css` change la disposition (ligne + marqueurs
+  circulaires en rang, au lieu d'une liste verticale), et uniquement à partir de 900px ; sous ce
+  seuil la présentation d'origine du composant reste inchangée. Toujours aucun pourcentage
+  (CAP-017).
+- « Progression globale » (pourcentage affiché en colonne latérale) **n'est pas** un calcul
+  métier : c'est une projection d'affichage dérivée de `crc32($project->id)`, jamais persistée,
+  annoncée « · Projection ». Elle est volontairement indépendante du repère de maturité (qui, lui,
+  reste gouverné par CAP-017) pour ne jamais laisser croire à un second calcul de maturité déguisé.
+- « Documents & Preuves » est un état honnête nouveau : aucun modèle ne relie de document à un
+  projet aujourd'hui (`Proof::ORIGIN_PROJECT` existe mais sert uniquement à construire le pool
+  d'acquittement personnel d'un porteur, pas une liste de documents par projet). Le bouton
+  « Ajouter un document » reste désactivé avec sa raison (espace GamaDrive non relié).
+- « Activité récente » est en revanche entièrement réelle : `ProjectEvent::EVENT_LABELS`
+  (nouvelle constante sur le modèle) traduit les codes d'événements déjà journalisés
+  (`ProjectService`, `ProjectMaturityService`, `ProjectTeamService`, `ProjectAccompanimentService`,
+  `ProjectAutonomyPathwayService`) en libellés lisibles ; l'acteur est affiché via son
+  `discovery_display_name` ou « Membre DG Afrique » (anonymat assumé). « Voir toute l'activité → »
+  reste désactivé, faute de journal dédié au-delà des six derniers événements affichés.
+- « Suivre » (en-tête) et « Suivre les mises à jour » (actions rapides) restent désactivés : aucun
+  système de notification par objet n'existe aujourd'hui pour un projet.
+- L'« Espace porteur » (invitation par référence publique) et la gestion complète de l'équipe
+  (demander/inviter/accepter/quitter/retirer, approbation des demandes en attente) sont
+  entièrement conservés et fonctionnels — seulement redisposés : un aperçu compact (avatars +
+  « Voir toute l'équipe → ») apparaît dans le flux principal, la gestion détaillée reste sur la
+  même page, ancrée par l'onglet « Équipe ».
+
+## Cerveau du Projet — refonte visuelle du 20 août 2026 (addendum §20, PVB-I05 V1)
+
+- L'écran rejoint `x-dg.shell` (navigation globale réelle) et perd le bandeau de contournement
+  `.dg-global-nav` ainsi que son propre `.pw-top`/`.pw-bottom` : ces deux navigations dupliquaient
+  déjà la navigation réelle et sont supprimées plutôt que fusionnées.
+- La colonne « Projets & conversations » liste désormais les vrais projets accessibles de l'acteur
+  (même filtrage `ProjectService::canView` que `/projets`) au lieu d'un unique projet réel complété
+  par une liste fabriquée non marquée (`Coopérative Maraîchère`, `Transformation Manioc`, etc. dans
+  l'ancienne version). Les sous-conversations par projet (« Financement & Apports », « Équipement &
+  Matériel »…) ont été retirées : aucun modèle ne les représente aujourd'hui — une seule
+  `ProjectBrainConversation` existe par (projet, acteur) — et le conserver aurait maintenu un seed
+  conversationnel alors qu'une vraie conversation existe déjà, contraire à la demande produit.
+- « Missions (N) » est un nouveau bloc entièrement réel (`Mission::where('context_type','PROJECT')`,
+  filtré par `MissionVisibilityService::canViewMission`) — l'ancienne version affichait deux
+  Missions fictives non filtrées et non marquées.
+- « Prochain jalon » devient réel (le prochain `ProjectMilestone` non complété), remplaçant un
+  texte fixe « Validation local · dans 5 jours » sans aucune donnée réelle sous-jacente.
+- « Avancement » (pourcentage) reste une projection d'affichage, mais désormais calculée par
+  `Project::progressionSeed()` — la même formule que « Progression globale » sur la fiche projet
+  (`/projets/{project}`, §19) — pour que les deux écrans montrent le même chiffre pour un même
+  projet, plutôt que deux nombres fixes différents (35 % ici, 45 % sur la fiche) qui auraient laissé
+  croire à deux calculs distincts.
+- La carte d'exemple « Créer une équipe projet » (illustrant une action en attente de validation)
+  est conservée uniquement dans l'état vide de la conversation, avec ses boutons explicitement
+  `aria-disabled` et leur raison — l'ancienne version les affichait en permanence dans le fil réel,
+  avec des `<button type="button">` sans aucune action, ambigus quant à leur fonctionnalité.
+- « Projets archivés » affiche désormais un compte réel (filtré par visibilité) plutôt qu'un
+  chiffre fixe (« 8 » dans l'ancienne version) ; reste désactivé avec sa raison tant qu'aucune vue
+  dédiée n'existe pour parcourir ces projets.
+- « Preuves récentes » et « Opportunités pour vous » restent des projections métier explicitement
+  annoncées « · Exemple », avec leurs actions désactivées et leur raison — conformément à la
+  philosophie « seeds de projection produit » explicitement demandée pour ces deux blocs
+  spécifiquement (aucun module Documents/Preuves ni Opportunités n'existe encore pour un projet).
+
+## Portail Besoins — refonte visuelle du 20 août 2026 (addendum §21)
+
+- La carte d'exemple « Apprendre le forex » visible dans la maquette n'existait nulle part dans le
+  dépôt avant ce chantier (vérifié par recherche exhaustive) — ce n'est pas une donnée
+  précédemment présente à conserver, mais une nouvelle carte de démonstration introduite en
+  suivant le patron déjà établi par `projets-demo.json` (§18) : `resources/design-reference/needs-demo.json`,
+  chargée par `NeedDirectoryDemoContent`, jamais lue directement par la vue.
+- Les tags multiples affichés sur la carte de démonstration (« Formation », « Finance »,
+  « Développement personnel ») ne sont **pas** reproduits sur les cartes de besoins réels : le
+  modèle `Need` n'a qu'un seul champ optionnel de ce type (`capability_label`), pas une liste de
+  tags. Une carte réelle affiche donc au plus un seul tag (si `capability_label` est renseigné),
+  jamais trois tags inventés — différence visuelle assumée plutôt qu'une donnée fabriquée.
+- Le bouton signet (bookmark) est visuellement présent sur toutes les cartes mais désactivé avec
+  sa raison (« La sauvegarde de besoins favoris arrivera prochainement. ») : aucune fonctionnalité
+  de favoris n'existe aujourd'hui dans le dépôt, pour aucun objet (recherche exhaustive effectuée
+  avant implémentation — aucun modèle, migration ou route).
+- « Aperçu des besoins » (besoins ouverts/en attente/pourvus) est un calcul réel effectué par
+  `NeedController::index()` sur l'ensemble des besoins visibles de l'identité (`NeedService::canView`),
+  indépendant des filtres appliqués à la liste principale — pas une projection comme les
+  statistiques réseau de `/projets` (§18), le modèle le permettant déjà.
+- « Trier par » (fixé sur « Plus récents », déjà le comportement réel par défaut) et la bascule
+  grille/liste restent visuellement présents mais désactivés avec leur raison, faute de contrat de
+  tri alternatif ou de vue liste implémentés aujourd'hui.
+- Le formulaire de filtre réel (catégorie + état, `method="GET" class="dg-filters"`, bouton
+  « Filtrer ») est inchangé dans son contrat et positionné dans le même conteneur visuel que les
+  contrôles projetés (tri, bascule vue), sans jamais être imbriqué dans un même `<form>` qui
+  soumettrait des champs sans contrat métier.
+
 ## Périmètre non touché après la Phase 2
 
 Connexion, Messages, Partages, Commentaires, `projects.autonomy.*`,

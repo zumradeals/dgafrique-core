@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectMaturityService;
 use App\Application\Projects\ProjectService;
+use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectAccompaniment;
 use App\Models\ProjectEvent;
@@ -76,18 +77,19 @@ final class ProjectMaturityTest extends TestCase
         self::assertSame('TEAM', $project->maturity);
     }
 
-    public function test_potential_satellite_is_only_a_repere_without_side_effects(): void
+    public function test_autonomy_ready_is_only_a_repere_without_side_effects(): void
     {
         $this->member('IDN-OWNER');
         $project = $this->project('IDN-OWNER');
 
-        app(ProjectMaturityService::class)->change($project, 'IDN-OWNER', 'POTENTIAL_SATELLITE');
+        app(ProjectMaturityService::class)->change($project, 'IDN-OWNER', 'AUTONOMY_READY');
 
-        self::assertSame('POTENTIAL_SATELLITE', $project->refresh()->maturity);
+        self::assertSame('AUTONOMY_READY', $project->refresh()->maturity);
         self::assertSame(Project::STATUS_PROPOSED, $project->status);
         self::assertSame('IDN-OWNER', $project->owner_reference);
         self::assertSame(0, ProjectAccompaniment::query()->count());
         self::assertSame(1, Satellite::query()->count(), 'atteindre ce repère ne doit jamais créer de satellite (CAP-048, registre distinct et administratif)');
+        self::assertSame(0, Organization::query()->count(), 'atteindre ce repère ne doit jamais créer d’Organisation (CAP-066, geste humain distinct)');
         self::assertFalse(Schema::hasTable('dg_project_funding'));
     }
 
@@ -130,7 +132,7 @@ final class ProjectMaturityTest extends TestCase
                 'property_regime' => 'PERSONAL_SUPPORTED',
                 'visibility' => 'PUBLIC',
             ],
-            (new ProjectConfiguration())->defaults()
+            (new ProjectConfiguration)->defaults()
         );
     }
 

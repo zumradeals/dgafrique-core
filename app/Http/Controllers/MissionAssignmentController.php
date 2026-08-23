@@ -52,7 +52,7 @@ final class MissionAssignmentController
     {
         $identity = $this->identity($request);
         $data = $request->validate([
-            'discovery_reference' => ['required', 'string', 'max:64'],
+            'discovery_reference' => ['required', 'uuid'],
             'role' => ['required', Rule::in(MissionAssignmentService::ROLES)],
         ]);
         $assignments->invite($mission, $identity->reference, $data['discovery_reference'], $data['role']);

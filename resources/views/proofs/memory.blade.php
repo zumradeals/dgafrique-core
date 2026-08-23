@@ -9,7 +9,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-035 · Mémoire d’expérience</x-dg.label>
+                    <x-dg.label tone="saffron">Mémoire d’expérience</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $isOwnMemory ? 'Ma mémoire d’expérience' : 'Mémoire d’expérience — '.$ownerLabel }}</h1>
                     <p>Une chronologie des preuves {{ $isOwnMemory ? 'que vous avez enregistrées' : 'que cette personne a choisi de rendre visibles' }}. Ce n’est jamais un score ni un classement.</p>
                 </div>

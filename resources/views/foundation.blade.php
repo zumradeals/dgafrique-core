@@ -153,31 +153,52 @@
             </div>
         </div>
 
+        {{--
+            UIUX-001 §5 « Découvrir » — DEMO-FIRST, REAL-DATA-TAKES-OVER (même règle que le Fil V2
+            et les portails Projets/Besoins, DESIGN-INVARIANTS.md §17/§18/§21) : dès qu'un Besoin ou
+            Projet réellement public existe, il remplace entièrement les cartes d'exemple — jamais
+            de compte de participants fabriqué pour un objet réel.
+        --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" data-dg-moments>
-            @foreach($exampleMoments as $moment)
+            @forelse($realMoments as $moment)
                 @php([$badgeTone, $badgeLabel] = match($moment['type']) {
                     'besoin' => ['need', 'Besoin'],
                     'projet' => ['project', 'Projet'],
-                    default => ['neutral', 'ZUMRA'],
                 })
                 <div class="dg-card dg-card--tight" data-dg-moment="{{ $moment['type'] }}" style="display:flex;flex-direction:column;gap:12px">
-                    <span class="dg-badge dg-badge--{{ $badgeTone }}">{{ $badgeLabel }} · Exemple</span>
+                    <span class="dg-badge dg-badge--{{ $badgeTone }}">{{ $badgeLabel }}</span>
                     <strong style="font-size:16px;color:var(--dg-forest);line-height:1.3">{{ $moment['titre'] }}</strong>
                     @if(!empty($moment['lieu']))
                         <span class="dg-meta">{{ $moment['lieu'] }}</span>
                     @endif
                     <span class="dg-meta">{{ $moment['meta'] }}</span>
-                    <div class="flex items-center justify-between" style="margin-top:auto">
-                        <div class="dg-people">
-                            @for($i = 0; $i < min(3, (int) ceil($moment['participants'] / 8)) + 1; $i++)
-                                <x-dg.avatar size="sm" :tone="['copper','night','saffron'][$i % 3]" initials="?" />
-                            @endfor
-                            <span class="dg-meta" style="margin-left:8px">+{{ $moment['participants'] }}</span>
-                        </div>
-                        <span class="dg-meta">{{ $moment['tempsEcoule'] }}</span>
-                    </div>
                 </div>
-            @endforeach
+            @empty
+                @foreach($exampleMoments as $moment)
+                    @php([$badgeTone, $badgeLabel] = match($moment['type']) {
+                        'besoin' => ['need', 'Besoin'],
+                        'projet' => ['project', 'Projet'],
+                        default => ['neutral', 'ZUMRA'],
+                    })
+                    <div class="dg-card dg-card--tight" data-dg-moment="{{ $moment['type'] }}" style="display:flex;flex-direction:column;gap:12px">
+                        <span class="dg-badge dg-badge--{{ $badgeTone }}">{{ $badgeLabel }} · Exemple</span>
+                        <strong style="font-size:16px;color:var(--dg-forest);line-height:1.3">{{ $moment['titre'] }}</strong>
+                        @if(!empty($moment['lieu']))
+                            <span class="dg-meta">{{ $moment['lieu'] }}</span>
+                        @endif
+                        <span class="dg-meta">{{ $moment['meta'] }}</span>
+                        <div class="flex items-center justify-between" style="margin-top:auto">
+                            <div class="dg-people">
+                                @for($i = 0; $i < min(3, (int) ceil($moment['participants'] / 8)) + 1; $i++)
+                                    <x-dg.avatar size="sm" :tone="['copper','night','saffron'][$i % 3]" initials="?" />
+                                @endfor
+                                <span class="dg-meta" style="margin-left:8px">+{{ $moment['participants'] }}</span>
+                            </div>
+                            <span class="dg-meta">{{ $moment['tempsEcoule'] }}</span>
+                        </div>
+                    </div>
+                @endforeach
+            @endforelse
         </div>
 
         <div style="text-align:center;margin-top:24px">
@@ -277,7 +298,7 @@
                     <a href="{{ route('login') }}" style="color:var(--dg-on-deep-muted)">Contact</a>
                 </div>
             </div>
-            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(239,230,214,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
+            <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(217,214,203,.14);font-size:12px;text-align:center">DG Afrique — le réseau où les capacités deviennent des actions.</div>
         </div>
     </footer>
 

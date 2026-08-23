@@ -20,6 +20,10 @@
                 <div style="text-align:right;display:flex;flex-direction:column;gap:10px;align-items:flex-end">
                     <x-dg.label>Visible avec consentement</x-dg.label>
                     <x-dg.btn variant="primary" :href="route('messages.direct', $profile->discovery_reference)" method="POST">Écrire un message</x-dg.btn>
+                    {{-- UIUX-007 — Personne → Transmission : réutilise strictement le moteur
+                         Transmission existant (invitation explicite, acceptation requise) ; ne
+                         suppose jamais que la personne acceptera. --}}
+                    <x-dg.btn variant="quiet" :href="route('transmissions.create', ['invite' => $profile->discovery_reference])">Proposer une transmission</x-dg.btn>
                 </div>
             </div>
 

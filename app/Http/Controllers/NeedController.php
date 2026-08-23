@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Missions\MissionContextRegistry;
 use App\Application\Needs\NeedConfiguration;
+use App\Application\Needs\NeedDirectoryDemoContent;
 use App\Application\Needs\NeedService;
+use App\Application\Partnerships\PartnershipService;
 use App\Domain\Identity\CoreIdentity;
+use App\Http\Controllers\Concerns\PresentsPartnerships;
 use App\Models\Need;
+use App\Models\Partnership;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ProjectTeamMember;
@@ -22,27 +27,41 @@ use Illuminate\View\View;
 
 final class NeedController
 {
-    public function index(Request $request, NeedConfiguration $configuration, NeedService $service): View
+    use PresentsPartnerships;
+
+    public function index(Request $request, NeedConfiguration $configuration, NeedService $service, NeedDirectoryDemoContent $demoContent): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $settings = $configuration->get();
+        $categoryFilter = $request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories']) ? (string) $request->query('category') : null;
+        $statusFilter = $request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true) ? (string) $request->query('status') : null;
         $query = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->latest('created_at')->limit(300);
-        if ($request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories'])) {
-            $query->where('category', $request->query('category'));
+        if ($categoryFilter !== null) {
+            $query->where('category', $categoryFilter);
         }
-        if ($request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true)) {
-            $query->where('status', $request->query('status'));
+        if ($statusFilter !== null) {
+            $query->where('status', $statusFilter);
         }
         $visible = $query->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference))->values();
         $page = max(1, (int) $request->query('page', 1));
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
+        $demoCards = $demoContent->demoCards($visible, $page, $categoryFilter);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
         $projects = Project::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_PROJECT)->pluck('owner_reference'))->get()->keyBy('id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.index', compact('identity', 'needs', 'groups', 'projects', 'isAdministrator') + ['configuration' => $settings]);
+        // « Aperçu des besoins » : un calcul réel sur l'ensemble des besoins accessibles à l'identité
+        // (indépendant des filtres appliqués à la liste), jamais une projection — le modèle le permet.
+        $allVisible = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->limit(300)->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference));
+        $overview = [
+            'open' => $allVisible->where('status', Need::STATUS_OPEN)->count(),
+            'pending' => $allVisible->where('status', Need::STATUS_PROPOSED)->count(),
+            'resolved' => $allVisible->where('status', Need::STATUS_RESOLVED)->count(),
+        ];
+
+        return view('needs.index', compact('identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview') + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View
@@ -59,9 +78,13 @@ final class NeedController
                 ->orWhereIn('id', $projectIds);
         })->whereNotIn('status', [Project::STATUS_ARCHIVED])->orderBy('name')->get();
         $preselectedProject = $projects->firstWhere('public_reference', $request->query('project'));
+        // UIUX-007 — CTA contextuel « Créer un Besoin pour cette ZUMRA » depuis la fiche ZUMRA :
+        // même patron que $preselectedProject, jamais une préautorisation nouvelle — le groupe
+        // doit déjà figurer dans $groups (adhésion active déjà vérifiée par la requête ci-dessus).
+        $preselectedGroup = $groups->firstWhere('public_reference', $request->query('group'));
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.create', compact('identity', 'groups', 'projects', 'preselectedProject', 'isAdministrator') + ['configuration' => $configuration->get()]);
+        return view('needs.create', compact('identity', 'groups', 'projects', 'preselectedProject', 'preselectedGroup', 'isAdministrator') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request, NeedConfiguration $configuration, NeedService $service): RedirectResponse
@@ -90,7 +113,7 @@ final class NeedController
         return redirect()->route('needs.show', $need)->with('status', $need->status === Need::STATUS_PROPOSED ? 'Le besoin est proposé aux responsables de la ZUMRA. Il n’est pas encore publié officiellement.' : 'Votre besoin est publié selon la visibilité choisie.');
     }
 
-    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service): View
+    public function show(Request $request, Need $need, NeedConfiguration $configuration, NeedService $service, PartnershipService $partnerships, MissionContextRegistry $missionContexts): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -99,7 +122,31 @@ final class NeedController
         $project = $need->owner_type === Need::OWNER_PROJECT ? Project::query()->find($need->owner_reference) : null;
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + ['configuration' => $configuration->get(), 'canDecide' => $service->canDecide($need, $identity->reference)]);
+        // UIUX-007 — « Je peux aider » : la seule transition métier qui représente réellement la
+        // réponse d'une personne à un Besoin est déjà `NeedMissionContext::canPropose()` (adhésion
+        // Programme ZUMRA active + visibilité + Besoin non archivé) — jamais Partnership, qui reste
+        // une relation métier distincte et n'est jamais choisie par défaut ici.
+        $canProposeMission = $missionContexts->for('NEED')->canPropose($need, $identity->reference);
+
+        // UIUX-005 — Partenariats réellement associés à ce Besoin, filtrés par la même autorité
+        // que le service lui-même (PartnershipService::canView()), jamais recalculée en Blade.
+        $needPartnerships = Partnership::query()
+            ->where('context_type', Partnership::CONTEXT_NEED)
+            ->where('context_reference', $need->public_reference)
+            ->latest('created_at')
+            ->limit(20)
+            ->get()
+            ->filter(fn (Partnership $partnership): bool => $partnerships->canView($partnership, $identity->reference))
+            ->values();
+
+        return view('needs.show', compact('identity', 'need', 'group', 'project', 'isAdministrator') + [
+            'configuration' => $configuration->get(),
+            'canDecide' => $service->canDecide($need, $identity->reference),
+            'canProposeMission' => $canProposeMission,
+            'needPartnerships' => $this->presentPartnerships($needPartnerships, $identity->reference, $partnerships),
+            'manageableOrganizations' => $this->manageableOrganizations($identity->reference),
+            'manageableOrganizationCapabilities' => $this->manageableOrganizationCapabilities($identity->reference),
+        ]);
     }
 
     public function transition(Request $request, Need $need, NeedService $service): RedirectResponse

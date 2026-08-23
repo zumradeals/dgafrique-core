@@ -9,7 +9,7 @@
 
             <div class="dg-page-header">
                 <div>
-                    <x-dg.label tone="saffron">CAP-006 · Transmission</x-dg.label>
+                    <x-dg.label tone="saffron">Transmission</x-dg.label>
                     <h1 class="dg-display dg-display--screen" style="margin-top:6px">Proposer une Transmission</h1>
                     <p>Une Transmission reste une proposition tant que les autres participants ne l’ont pas explicitement acceptée.</p>
                 </div>
@@ -19,8 +19,18 @@
                 <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
+            @if($prefillInvite)
+                {{-- UIUX-007 — contexte conservé depuis un profil découvert. Le consentement et
+                     l'acceptation explicite restent entièrement ceux du moteur Transmission :
+                     cette invitation n'est qu'une proposition de plus, jamais garantie. --}}
+                <div class="dg-band" style="margin-bottom:20px">Vous proposez cette Transmission en pensant à <strong>{{ $prefillInvite->discovery_display_name }}</strong>, qui recevra une invitation à y participer une fois la Transmission créée.</div>
+            @endif
+
             <form method="POST" action="{{ route('transmissions.store') }}" style="display:flex;flex-direction:column;gap:20px">
                 @csrf
+                @if($prefillInvite)
+                    <input type="hidden" name="invite_discovery_reference" value="{{ $prefillInvite->discovery_reference }}">
+                @endif
 
                 <x-dg.fieldset>
                     <legend><x-dg.label>La capacité</x-dg.label></legend>

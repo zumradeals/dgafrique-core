@@ -16,6 +16,10 @@
         </h2>
         <p style="margin:0;font-size:15px;line-height:1.7;color:var(--dg-on-deep-text);max-width:66ch">{{ $item['summary'] }}</p>
 
+        @if($item['relevance_reason'] ?? null)
+            <p style="margin:0;font-size:13px;color:var(--dg-on-deep-muted)">{{ $item['relevance_reason'] }}</p>
+        @endif
+
         @if($item['seats'])
             <div class="flex flex-wrap gap-2">
                 @foreach($item['seats'] as $seat)

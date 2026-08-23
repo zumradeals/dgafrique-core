@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Zumra\ZumraAttentionSource;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
@@ -17,7 +18,7 @@ use Illuminate\View\View;
 
 final class ZumraSpaceController
 {
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ZumraAttentionSource $zumraAttention): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -52,29 +53,23 @@ final class ZumraSpaceController
                 ];
             });
 
-        // Groupes où ce membre détient une responsabilité acceptée : les demandes en attente
-        // de leurs éventuels candidats méritent d'être visibles depuis le hub.
-        $ledGroupIds = ZumraGroupRole::query()
-            ->where('core_identity_reference', $identity->reference)
-            ->where('status', ZumraGroupRole::STATUS_ACCEPTED)
-            ->pluck('zumra_group_id');
-
-        $pendingRequestsToDecide = $ledGroupIds->isEmpty() ? collect() : ZumraGroupMembership::query()
-            ->whereIn('zumra_group_id', $ledGroupIds)
-            ->where('status', ZumraGroupMembership::STATUS_REQUESTED)
-            ->get()
-            ->groupBy('zumra_group_id')
-            ->map(fn ($rows, $groupId) => [
-                'group' => ZumraGroup::query()->find($groupId),
+        // UIUX-002 : même source que MemberSpaceController::priority() et
+        // NotificationSourceRegistry — une seule définition de « demande d'adhésion à décider »
+        // et de « responsabilité proposée », jamais recalculée séparément ici.
+        $pendingRequestsToDecide = $zumraAttention->pendingJoinRequestsForLeader($identity->reference)
+            ->groupBy(fn (array $row): string => $row['group']->id)
+            ->map(fn (Collection $rows): array => [
+                'group' => $rows->first()['group'],
                 'count' => $rows->count(),
             ])
-            ->filter(fn (array $row): bool => $row['group'] !== null)
             ->values();
+
+        $myPendingRoleProposals = $zumraAttention->myPendingRoleProposals($identity->reference);
 
         // « À faire maintenant » reste volontairement court : uniquement des actions réelles,
         // jamais une activité simulée ni un score. Deux éléments maximum pour préserver la
         // hiérarchie calme du hub.
-        $attentionItems = $this->attentionItems($pendingRequestsToDecide, $myGroups);
+        $attentionItems = $this->attentionItems($myPendingRoleProposals, $pendingRequestsToDecide, $myGroups);
 
         // Les domaines reflètent exactement le même univers découvrable que l'annuaire ZUMRA :
         // tout collectif non suspendu. Ils servent d'orientation visuelle, sans faux volume.
@@ -100,13 +95,34 @@ final class ZumraSpaceController
     }
 
     /**
+     * @param  Collection<int, array{group: ZumraGroup, role: ZumraGroupRole}>  $myPendingRoleProposals
      * @param  Collection<int, array{group: ZumraGroup, count: int}>  $pendingRequestsToDecide
      * @param  Collection<int, array{group: ZumraGroup, status: string, role_label: ?string}>  $myGroups
      * @return Collection<int, array{kind: string, eyebrow: string, heading: string, body: string, action_label: string, action_href: string}>
      */
-    private function attentionItems(Collection $pendingRequestsToDecide, Collection $myGroups): Collection
+    private function attentionItems(Collection $myPendingRoleProposals, Collection $pendingRequestsToDecide, Collection $myGroups): Collection
     {
         $items = collect();
+
+        foreach ($myPendingRoleProposals as $row) {
+            /** @var ZumraGroup $group */
+            $group = $row['group'];
+            /** @var ZumraGroupRole $role */
+            $role = $row['role'];
+
+            $items->push([
+                'kind' => 'role_proposal',
+                'eyebrow' => 'Responsabilité proposée',
+                'heading' => (ZumraGroupRole::LABELS[$role->role] ?? $role->role).' — '.$group->name,
+                'body' => 'Accepter reste entièrement votre choix.',
+                'action_label' => 'Voir la proposition',
+                'action_href' => route('zumra.groups.show', $group),
+            ]);
+
+            if ($items->count() >= 2) {
+                return $items;
+            }
+        }
 
         foreach ($pendingRequestsToDecide as $row) {
             /** @var ZumraGroup $group */

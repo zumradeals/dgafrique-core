@@ -95,7 +95,7 @@
                                 <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
                                     <div>
                                         <strong style="color:var(--dg-ink)">{{ hash_equals($participant->core_identity_reference, $identity->reference) ? 'Vous' : 'Membre DG Afrique' }}</strong>
-                                        <span class="dg-meta"> · {{ $participant->role === 'TRANSMITTER' ? 'Transmetteur' : 'Apprenant' }} · {{ $participant->status }}@if($participant->declared_done_at) · part déclarée terminée @endif</span>
+                                        <span class="dg-meta"> · {{ $participant->role === 'TRANSMITTER' ? 'Transmetteur' : 'Apprenant' }} · {{ \App\Models\TransmissionParticipant::STATUS_LABELS[$participant->status] ?? $participant->status }}@if($participant->declared_done_at) · part déclarée terminée @endif</span>
                                     </div>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap">
                                         @if($participant->status === 'OFFERED' && $canManageParticipation)
@@ -221,6 +221,21 @@
                         </x-dg.card>
                     @endif
 
+                    @if($myParticipant?->status === \App\Models\TransmissionParticipant::STATUS_ACCEPTED && in_array($transmission->status, [\App\Models\Transmission::STATUS_COMPLETED_CONFIRMED, \App\Models\Transmission::STATUS_COMPLETED_BY_CONTEXT], true))
+                        {{-- UIUX-007 — Transmission → Preuve : une Transmission réellement
+                             terminée ouvre une porte facultative vers le Carnet de preuves.
+                             Jamais de preuve créée automatiquement ; jamais une certification de
+                             compétence — les règles de témoin/reconnaissance/contestation restent
+                             entièrement celles du Carnet de preuves. --}}
+                        <x-dg.card>
+                            <x-dg.label>Garder une trace</x-dg.label>
+                            <p class="dg-hint" style="margin-top:6px">Cette Transmission est terminée. Vous pouvez, si vous le souhaitez, en garder une trace dans votre Carnet de preuves — cela ne certifie rien automatiquement.</p>
+                            <x-dg.actions flush>
+                                <x-dg.btn variant="quiet" :href="route('proofs.create', ['origin_type' => 'TRANSMISSION', 'origin_reference' => $transmission->public_reference])">Enregistrer une preuve →</x-dg.btn>
+                            </x-dg.actions>
+                        </x-dg.card>
+                    @endif
+
                     {{-- ===== Coordination (CAP-020/021/022) ===== --}}
                     <x-dg.card>
                         <x-dg.label>Coordination et circulation</x-dg.label>
@@ -265,9 +280,9 @@
                     <x-dg.card tight>
                         <dl class="dg-dl">
                             <div><dt>Contexte</dt><dd>{{ $contextLabel ?? 'Aucun — privée' }}</dd></div>
-                            <div><dt>Visibilité</dt><dd>{{ $transmission->visibility }}</dd></div>
+                            <div><dt>Visibilité</dt><dd>{{ \App\Models\Transmission::VISIBILITY_LABELS[$transmission->visibility] ?? $transmission->visibility }}</dd></div>
                             @if($transmission->availability_note)<div><dt>Disponibilité</dt><dd>{{ $transmission->availability_note }}</dd></div>@endif
-                            <div><dt>Origine</dt><dd>{{ $transmission->origin_type }}</dd></div>
+                            <div><dt>Origine</dt><dd>{{ \App\Models\Transmission::ORIGIN_LABELS[$transmission->origin_type] ?? $transmission->origin_type }}</dd></div>
                         </dl>
                     </x-dg.card>
                 </aside>

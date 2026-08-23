@@ -206,6 +206,39 @@ final class NotificationServiceTest extends TestCase
         self::assertNull($sections['recentes']->first(fn (array $i): bool => $i['source_type'] === 'MISSION'), 'Une fois l’accès au contexte perdu, la notification disparaît immédiatement — aucune fuite du titre/lien.');
     }
 
+    public function test_zumra_role_proposal_appears_as_actionable_only_for_the_proposed_person(): void
+    {
+        $group = $this->group('IDN-ZLEADER5');
+        $service = app(ZumraGroupService::class);
+        $service->proposeRole($group, 'IDN-ZLEADER5', 'FIRST_DEPUTY', 'IDN-ZPROPOSED5');
+
+        $sections = app(NotificationService::class)->sections('IDN-ZPROPOSED5');
+        self::assertTrue($sections['a_traiter']->contains(
+            fn (array $i): bool => $i['source_type'] === 'ZUMRA' && str_contains($i['title'], 'Proposition de responsabilité'),
+        ));
+
+        $strangerSections = app(NotificationService::class)->sections('IDN-ZSTRANGER5');
+        self::assertTrue($strangerSections['a_traiter']->isEmpty());
+    }
+
+    public function test_zumra_pending_join_request_appears_as_actionable_only_for_the_leader(): void
+    {
+        $group = $this->group('IDN-ZLEADER6');
+        ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-ZAPPLICANT6',
+            'status' => ZumraGroupMembership::STATUS_REQUESTED, 'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => 'IDN-ZAPPLICANT6', 'requested_at' => now(),
+        ]);
+
+        $sections = app(NotificationService::class)->sections('IDN-ZLEADER6');
+        self::assertTrue($sections['a_traiter']->contains(
+            fn (array $i): bool => $i['source_type'] === 'ZUMRA' && str_contains($i['title'], 'demande d’adhésion'),
+        ));
+
+        $memberSections = app(NotificationService::class)->sections('IDN-ZAPPLICANT6');
+        self::assertTrue($memberSections['a_traiter']->isEmpty(), 'La personne candidate ne décide pas elle-même de sa propre demande.');
+    }
+
     public function test_never_seeds_fictional_notification_data(): void
     {
         $this->get('/')->assertOk();

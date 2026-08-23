@@ -1,19 +1,21 @@
-# Référentiel des capacités
+# Documentation des capacités DG Afrique
 
-`CAPABILITY-INDEX.md` contient les 84 capacités canoniques de DG Afrique.
+Avant toute intervention, lire `../AI-RULES.md`.
 
-## Nouveau départ
+## Documents actifs
 
-Ce dépôt est une reconstruction. Les validations du portail précédent ne sont pas transférées. Le tracker repart donc de CAP-001.
+- `CAPABILITY-INDEX.md` — les 84 capacités, leurs domaines et leur routage. Ce n'est pas un tracker d'avancement.
+- `CAPABILITY-COVERAGE.md` — unique synthèse documentaire du statut réel des CAP, toujours subordonnée au code et aux tests de `main`.
+- `OVERRIDES.md` — décisions explicites qui modifient ou précisent le référentiel.
+- `specs/` — contrats et invariants encore utiles à l'implémentation.
+- `TEMPLATE.md` — aide à la rédaction d'une nouvelle fiche lorsqu'elle est réellement nécessaire.
 
-Les fichiers sous `legacy/specs/` sont des documents historiques utiles. Ils ne constituent ni une validation, ni une architecture à recopier. Chaque fiche doit être réauditée et réécrite lorsqu'elle devient le gate actif.
+## Historique
 
-## Séquence
+L'historique Git conserve les versions précédentes. Les anciens trackers, snapshots, doublons, quarantaines et anciennes specs ne doivent pas rester dans l'arbre courant comme sources concurrentes.
 
-1. `À SPÉCIFIER` ;
-2. `EN SPEC` ;
-3. `EN DÉVELOPPEMENT` ;
-4. `EN PRÉPRODUCTION` ;
-5. `VALIDÉ PROD`.
+Les preuves courantes de livraison vivent dans le code, les tests, les PR et les journaux CI.
 
-Un seul gate principal avance à la fois, sauf dérogation écrite dans `OVERRIDES.md`.
+## Règle satellite
+
+La maturité d'un Projet ne produit jamais un satellite logiciel. Les satellites éventuels proviennent uniquement de l'extraction justifiée d'un outil spécialisé conçu d'abord comme module extractible. Voir `../architecture/ADR-005-extractable-specialized-tools.md`.

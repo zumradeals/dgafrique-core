@@ -40,7 +40,7 @@
                             <div class="flex justify-between"><dt style="opacity:.75">Adhésion depuis</dt><dd>{{ $membership->activated_at->format('d/m/Y') }}</dd></div>
                             <div class="flex justify-between"><dt style="opacity:.75">État</dt><dd>{{ $labels[$state] ?? $state }}</dd></div>
                         </dl>
-                        <div class="flex items-center justify-between" style="padding-top:10px;border-top:1px solid rgba(239,230,214,.2);font-size:12px;opacity:.85">
+                        <div class="flex items-center justify-between" style="padding-top:10px;border-top:1px solid rgba(217,214,203,.2);font-size:12px;opacity:.85">
                             <span>{{ $card->public_reference }}</span>
                             <span>Formation · Travail · Adoration</span>
                         </div>

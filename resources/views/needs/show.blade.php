@@ -18,7 +18,16 @@
                 <div>
                     <x-dg.badge tone="need">{{ $configuration['categories'][$need->category] ?? $need->category }}</x-dg.badge>
                     <h1 class="dg-display dg-display--screen" style="margin-top:10px">{{ $need->title }}</h1>
-                    <p>{{ match($need->owner_type) { 'GROUP' => $group?->name ?? 'ZUMRA', 'PROJECT' => $project?->name ?? 'Projet', default => 'Besoin personnel' } }}</p>
+                    {{-- UIUX-003 : retour réel vers le contexte porteur, même patron que
+                         missions.show/proofs.show (contextUrl/contextLabel) — jamais un lien
+                         fabriqué : seul un propriétaire réellement visible devient un lien. --}}
+                    @if($need->owner_type === 'GROUP' && $group)
+                        <p><a href="{{ route('zumra.groups.show', $group) }}" style="color:var(--dg-copper);font-weight:600">{{ $group->name }}</a></p>
+                    @elseif($need->owner_type === 'PROJECT' && $project)
+                        <p><a href="{{ route('projects.show', $project) }}" style="color:var(--dg-copper);font-weight:600">{{ $project->name }}</a></p>
+                    @else
+                        <p>{{ match($need->owner_type) { 'GROUP' => 'ZUMRA', 'PROJECT' => 'Projet', default => 'Besoin personnel' } }}</p>
+                    @endif
                 </div>
                 <x-dg.label>{{ ['PROPOSED' => 'Proposé', 'OPEN' => 'Ouvert', 'IN_PROGRESS' => 'En cours', 'RESOLVED' => 'Résolu', 'ARCHIVED' => 'Archivé'][$need->status] ?? $need->status }}</x-dg.label>
             </div>
@@ -82,6 +91,22 @@
                             </x-dg.actions>
                         </x-dg.fieldset>
                     @endif
+
+                    {{-- UIUX-005 — Partenariats réellement associés à ce Besoin (CAP-065), filtrés
+                         par PartnershipService::canView(), jamais recalculée en Blade. --}}
+                    @if($needPartnerships !== [])
+                        <div>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                <x-dg.label>Partenariats</x-dg.label>
+                                <span class="dg-meta">{{ count($needPartnerships) }} partenariat{{ count($needPartnerships) > 1 ? 's' : '' }}</span>
+                            </div>
+                            @foreach($needPartnerships as $row)
+                                <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    <x-dg.partnership-propose-form :organizations="$manageableOrganizations" :capabilities="$manageableOrganizationCapabilities" context-type="NEED" :context-reference="$need->public_reference" />
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">
@@ -104,6 +129,15 @@
                         @if(! $canDecide && in_array($need->status, ['OPEN', 'IN_PROGRESS', 'RESOLVED']))
                             <div style="margin-top:16px">
                                 <x-dg.btn variant="need" :href="route('messages.need', $need)" method="POST">Coordonner autour de ce besoin</x-dg.btn>
+                            </div>
+                        @endif
+
+                        @if($canProposeMission)
+                            {{-- UIUX-007 — « Je peux aider » : réutilise strictement la Mission déjà
+                                 existante depuis un Besoin (CAP-069). Ne devient jamais une décision :
+                                 la Mission reste soumise à l'officialisation de l'autorité du Besoin. --}}
+                            <div style="margin-top:10px">
+                                <x-dg.btn variant="quiet" :href="route('needs.missions.create', $need)">Je peux apporter cette capacité →</x-dg.btn>
                             </div>
                         @endif
                         <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">

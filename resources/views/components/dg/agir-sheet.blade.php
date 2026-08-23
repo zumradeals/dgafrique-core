@@ -22,7 +22,9 @@
             <span aria-hidden="true">→</span>
         </a>
 
-        <a href="{{ route('member.profile.edit') }}" class="dg-sheet__action dg-sheet__action--project">
+        {{-- UIUX-008 — ce lien pointait vers member.profile.edit (bogue trouvé par l'audit Phase A) :
+             la seule porte globale vers la création de Transmission était inopérante. --}}
+        <a href="{{ route('transmissions.create') }}" class="dg-sheet__action dg-sheet__action--project">
             <span class="dg-sheet__action-mark" aria-hidden="true">↗</span>
             <span style="flex:1">
                 <strong>Proposer une transmission</strong>

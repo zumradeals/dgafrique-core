@@ -12,14 +12,23 @@ final class ZumraGroupMembership extends Model
     use HasUuids;
 
     public const STATUS_REQUESTED = 'REQUESTED';
+
     public const STATUS_INVITED = 'INVITED';
+
     public const STATUS_ACTIVE = 'ACTIVE';
+
     public const STATUS_LEFT = 'LEFT';
+
     public const STATUS_EXCLUDED = 'EXCLUDED';
 
+    public const STATUS_SUSPENDED = 'SUSPENDED';
+
     protected $table = 'dg_zumra_group_memberships';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
+
     protected $fillable = [
         'zumra_group_id', 'core_identity_reference', 'status', 'entry_mode',
         'initiated_by_core_reference', 'motivation', 'decision_reason',

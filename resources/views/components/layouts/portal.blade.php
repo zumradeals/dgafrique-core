@@ -4,7 +4,11 @@
 ])
 @php
     $pageStyles = (array) $styles;
-    $isProjectWorkspace = request()->routeIs('projects.brain.*');
+    // Le Cerveau (projects.brain.show) a rejoint x-dg.shell / la navigation globale réelle
+    // (PVB-I05 V1) : il ne doit plus recevoir le bandeau de contournement .dg-global-nav ni
+    // l'ancienne feuille de style project-workspace-v2.css, réservés au flux de naissance du
+    // projet (projects.brain.start.*), hors périmètre de cette refonte.
+    $isProjectWorkspace = request()->routeIs('projects.brain.*') && ! request()->routeIs('projects.brain.show');
     if (request()->routeIs('zumra.index')) {
         $pageStyles[] = 'resources/css/zumra-hub.css';
     }
@@ -19,6 +23,15 @@
     }
     if (request()->routeIs('projects.index')) {
         $pageStyles[] = 'resources/css/projects-directory.css';
+    }
+    if (request()->routeIs('needs.index')) {
+        $pageStyles[] = 'resources/css/needs-directory.css';
+    }
+    if (request()->routeIs('projects.show')) {
+        $pageStyles[] = 'resources/css/project-detail.css';
+    }
+    if (request()->routeIs('projects.brain.show')) {
+        $pageStyles[] = 'resources/css/project-brain.css';
     }
     if ($isProjectWorkspace) {
         $pageStyles[] = 'resources/css/project-workspace-v2.css';

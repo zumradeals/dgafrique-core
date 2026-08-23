@@ -38,6 +38,22 @@
                 <div class="dg-disclosure__body">Chaque responsabilité est acceptée explicitement par la personne qui la porte. Un siège vacant reste visible comme vacant — jamais rempli par un profil fictif. Rejoindre cette ZUMRA se fait par demande approuvée ou invitation acceptée, jamais automatiquement.</div>
             </details>
 
+            @if($myPendingRoleProposal)
+                {{-- UIUX-002 — décision #4 : découvrir/comprendre/accepter une responsabilité
+                     proposée personnellement. Aucun refus n'est proposé ici : cette transition
+                     n'existe pas dans le métier (ZumraGroupRole ne connaît que
+                     VACANT → PROPOSED → ACCEPTED). --}}
+                <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
+                    <x-dg.label tone="saffron">Une responsabilité vous est proposée</x-dg.label>
+                    <h2 class="dg-display" style="font-size:20px;margin-top:8px">{{ \App\Models\ZumraGroupRole::LABELS[$myPendingRoleProposal->role] ?? $myPendingRoleProposal->role }} — {{ $group->name }}</h2>
+                    <p class="dg-body" style="margin-top:6px">Cette responsabilité fondatrice vous a été proposée par un responsable de cette ZUMRA. Accepter reste entièrement votre choix.</p>
+                    <form method="POST" action="{{ route('zumra.groups.roles.accept', [$group, $myPendingRoleProposal->role]) }}" style="margin-top:14px">
+                        @csrf
+                        <button type="submit" class="dg-btn dg-btn--saffron">Accepter cette responsabilité</button>
+                    </form>
+                </div>
+            @endif
+
             @if($collectivePriority)
                 <div class="dg-card" style="margin-bottom:20px;border-color:var(--dg-saffron)">
                     <x-dg.label tone="saffron">Aujourd’hui — une seule chose compte pour cette ZUMRA</x-dg.label>
@@ -112,15 +128,23 @@
                                     @foreach($groupProjects as $project)
                                         <a href="{{ route('projects.show', $project) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                             <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="project">Projet</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $project->name }}</strong></span>
-                                            <span class="dg-meta" style="flex:none">{{ $project->status }}</span>
+                                            <span class="dg-meta" style="flex:none">{{ ['PROPOSED'=>'Proposé','ADOPTED'=>'Adopté','IN_PROGRESS'=>'En action','COMPLETED'=>'Réalisé'][$project->status] ?? $project->status }}</span>
                                         </a>
                                     @endforeach
                                     @foreach($groupNeeds as $need)
                                         <a href="{{ route('needs.show', $need) }}" style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
                                             <span style="display:flex;align-items:center;gap:10px;min-width:0"><x-dg.badge tone="need">Besoin</x-dg.badge><strong style="font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $need->title }}</strong></span>
-                                            <span class="dg-meta" style="flex:none">{{ $need->status }}</span>
+                                            <span class="dg-meta" style="flex:none">{{ ['PROPOSED'=>'Proposé','OPEN'=>'Ouvert','IN_PROGRESS'=>'En cours','RESOLVED'=>'Résolu'][$need->status] ?? $need->status }}</span>
                                         </a>
                                     @endforeach
+                                </div>
+                            @endif
+                            @if($membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE)
+                                {{-- UIUX-007 — CTA contextuel : même autorité que NeedService/ProjectService
+                                     (tout membre actif peut proposer, jamais une autorité nouvelle). --}}
+                                <div style="padding:12px 24px;border-top:1px solid var(--dg-line-inner);display:flex;gap:16px;flex-wrap:wrap">
+                                    <a href="{{ route('needs.create', ['group' => $group->public_reference]) }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">+ Créer un besoin pour cette ZUMRA</a>
+                                    <a href="{{ route('projects.create', ['group' => $group->public_reference]) }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">+ Proposer un projet pour cette ZUMRA</a>
                                 </div>
                             @endif
                         </x-dg.card>
@@ -136,12 +160,58 @@
                             @endif
                         </x-dg.card>
                     </div>
+
+                    @if(($isLeader || $membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE) && ($groupMissions->isNotEmpty() || $groupEvents->isNotEmpty()))
+                        {{-- UIUX-003 — décision #2 : Missions/Événements réels de cette ZUMRA, visibles
+                             seulement pour un membre actif ou responsable (même autorité que les
+                             services eux-mêmes exigent), jamais un catalogue global. --}}
+                        <x-dg.card style="padding:0;overflow:hidden">
+                            <div style="padding:22px 24px 14px;display:flex;align-items:baseline;justify-content:space-between">
+                                <x-dg.label>Ce qui se passe dans cette ZUMRA</x-dg.label>
+                                <span class="dg-meta">{{ $groupMissions->count() }} mission{{ $groupMissions->count() > 1 ? 's' : '' }} · {{ $groupEvents->count() }} événement{{ $groupEvents->count() > 1 ? 's' : '' }}</span>
+                            </div>
+                            <div style="padding:0 24px 8px;border-top:1px solid var(--dg-line-inner)">
+                                @foreach($groupMissions as $mission)
+                                    <a href="{{ route('missions.show', $mission) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                        <x-dg.badge tone="neutral">Mission</x-dg.badge>
+                                        <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $mission->title }}</strong>
+                                        <span class="dg-meta" style="flex:none">{{ \App\Models\Mission::STATUS_LABELS[$mission->status] ?? $mission->status }}</span>
+                                    </a>
+                                @endforeach
+                                @foreach($groupEvents as $event)
+                                    <a href="{{ route('community-events.show', $event) }}" style="display:flex;align-items:center;gap:10px;padding:12px 0;color:inherit;border-bottom:1px solid var(--dg-line-inner)">
+                                        <x-dg.badge tone="saffron">Événement</x-dg.badge>
+                                        <strong style="flex:1;min-width:0;font-size:14px;color:var(--dg-forest);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ $event->title }}</strong>
+                                        <span class="dg-meta" style="flex:none">{{ match($event->status) { 'CANCELLED' => 'Annulé', 'COMPLETED' => 'Tenu', default => 'À venir' } }} · {{ $event->scheduled_at->translatedFormat('d M') }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </x-dg.card>
+                    @endif
+
+                    @if($isLeader || $membership?->status === \App\Models\ZumraGroupMembership::STATUS_ACTIVE)
+                        {{-- UIUX-005 — Partenariats réellement associés à cette ZUMRA (CAP-065),
+                             même autorité que Missions/Événements ci-dessus. --}}
+                        @if($groupPartnerships !== [])
+                            <div>
+                                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+                                    <x-dg.label>Partenariats</x-dg.label>
+                                    <span class="dg-meta">{{ count($groupPartnerships) }} partenariat{{ count($groupPartnerships) > 1 ? 's' : '' }}</span>
+                                </div>
+                                @foreach($groupPartnerships as $row)
+                                    <div style="margin-bottom:12px"><x-dg.partnership-row :row="$row" /></div>
+                                @endforeach
+                            </div>
+                        @endif
+
+                        <x-dg.partnership-propose-form :organizations="$manageableOrganizations" :capabilities="$manageableOrganizationCapabilities" context-type="ZUMRA" :context-reference="$group->public_reference" />
+                    @endif
                 </div>
 
                 <aside style="display:flex;flex-direction:column;gap:16px">
                     <x-dg.card tight>
                         <x-dg.label>Votre relation</x-dg.label>
-                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">{{ ! $membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Vous êtes invité', 'REQUESTED' => 'Votre demande est étudiée', 'LEFT' => 'Vous avez quitté cette ZUMRA', default => $membership->status } }}</h2>
+                        <h2 class="dg-display" style="font-size:18px;margin-top:6px">{{ ! $membership ? 'Vous ne faites pas encore partie de cette ZUMRA.' : match($membership->status) { 'ACTIVE' => 'Vous êtes membre', 'INVITED' => 'Vous êtes invité', 'REQUESTED' => 'Votre demande est étudiée', 'LEFT' => 'Vous avez quitté cette ZUMRA', 'EXCLUDED' => 'Vous avez été retiré·e de cette ZUMRA', 'SUSPENDED' => 'Votre participation est suspendue', default => $membership->status } }}</h2>
 
                         @if(! $membership || in_array($membership->status, ['LEFT', 'EXCLUDED']))
                             <form method="POST" action="{{ route('zumra.groups.request', $group) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
@@ -211,6 +281,10 @@
                             <x-dg.label>Espace responsable</x-dg.label>
                             <h2 class="dg-display" style="font-size:16px;margin-top:6px">Inviter un adhérent</h2>
                             <p class="dg-hint" style="margin-top:8px">Utilisez la référence publique visible sur son profil. L’invitation devra être acceptée.</p>
+                            {{-- UIUX-007 — doctrine humaine §6/§7 : développer le collectif reste
+                                 la mission du premier responsable, jamais un moteur de recrutement.
+                                 Réutilise strictement la découverte de Personnes déjà existante. --}}
+                            <a href="{{ route('people.index') }}" class="dg-meta" style="display:block;margin-top:8px;color:var(--dg-copper);font-weight:600">Trouver des collaborateurs →</a>
                             <form method="POST" action="{{ route('zumra.groups.invite', $group) }}" style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
                                 @csrf
                                 <div class="dg-field">
@@ -219,6 +293,7 @@
                                 </div>
                                 <button type="submit" class="dg-btn dg-btn--primary">Envoyer l’invitation</button>
                             </form>
+                            <a href="{{ route('community-events.zumra.create', $group) }}" class="dg-meta" style="display:block;margin-top:12px;color:var(--dg-copper);font-weight:600">Organiser un événement →</a>
                         </x-dg.card>
 
                         @if($pendingRequests->isNotEmpty())

@@ -33,7 +33,7 @@ final readonly class AccountRegistrationController
             $pending = $this->core->createAccount($data['name'], 'EMAIL', mb_strtolower($data['email']), $data['password']);
         } catch (CoreAccountException $exception) {
             $message = $exception->status === 409
-                ? 'Cette adresse possède déjà un Compte GAMAD. Connectez-vous ou reprenez sa vérification.'
+                ? 'Cette adresse possède déjà un compte. Connectez-vous ou reprenez sa vérification.'
                 : 'Le compte ne peut pas être créé pour le moment. Réessayez dans un instant.';
             return back()->withInput($request->only('name', 'email'))->withErrors(['email' => $message]);
         } catch (CoreUnavailableException|CoreProtocolException) {
@@ -43,7 +43,7 @@ final readonly class AccountRegistrationController
         $this->pendingSession->put($request->session(), $pending);
 
         return redirect()->route('register.verify')->with('status', $pending->delivered
-            ? 'Un code GAMAD à 6 chiffres vient d’être envoyé à votre adresse.'
+            ? 'Un code à 6 chiffres vient d’être envoyé à votre adresse.'
             : 'Le compte existe, mais le code n’a pas pu être livré. Demandez un nouvel envoi.');
     }
 
@@ -98,6 +98,6 @@ final readonly class AccountRegistrationController
         }
 
         $this->pendingSession->put($request->session(), $renewed);
-        return back()->with('status', 'Un nouveau code GAMAD a été envoyé.');
+        return back()->with('status', 'Un nouveau code a été envoyé.');
     }
 }

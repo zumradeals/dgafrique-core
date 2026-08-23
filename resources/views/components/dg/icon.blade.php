@@ -122,5 +122,38 @@
             <path d="M14.7 4.6c1.9 0 3.4 1.5 3.4 3.3 0 .4-.06.8-.2 1.1 1.2.5 2 1.7 2 3 0 1.1-.6 2.1-1.5 2.7.2.4.3.9.3 1.4 0 1.8-1.5 3.3-3.3 3.3-.3 0-.6 0-.9-.1-.4 1-1.4 1.7-2.5 1.7V6.1c0-.8.9-1.5 2.7-1.5Z" {!! $stroke !!} />
             <path d="M12 6.8v14M8.3 10.2c.8.3 1.6.3 2.4 0M13.3 10.2c.8.3 1.6.3 2.4 0M7.8 14.6c.8.3 1.7.3 2.5 0M13.7 14.6c.8.3 1.7.3 2.5 0" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity=".7" />
             @break
+        @case('paperclip')
+            <path d="M8 12.5 14.8 5.7a3 3 0 0 1 4.2 4.2l-8.3 8.3a5 5 0 0 1-7-7l7.6-7.6" {!! $stroke !!} />
+            @break
+        @case('image')
+            <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" {!! $stroke !!} />
+            <circle cx="9" cy="10" r="1.6" {!! $stroke !!} />
+            <path d="M4 17.5 9 13l3 2.6 4-3.6 4 4" {!! $stroke !!} />
+            @break
+        @case('document')
+            <path d="M7 3.5h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" {!! $stroke !!} />
+            <path d="M14 3.5v4h4M9 13h6M9 16.5h6" {!! $stroke !!} />
+            @break
+        @case('mic')
+            <rect x="9.3" y="3.5" width="5.4" height="10.5" rx="2.7" {!! $stroke !!} />
+            <path d="M6 11.5a6 6 0 0 0 12 0M12 17.5v3M9.3 20.5h5.4" {!! $stroke !!} />
+            @break
+        @case('send')
+            <path d="M4 12 20 4l-6 16-3-7-7-1Z" {!! $stroke !!} stroke-linejoin="round" />
+            @break
+        @case('settings')
+            <circle cx="12" cy="12" r="3" {!! $stroke !!} />
+            <path d="M12 3.5v2.2M12 18.3v2.2M20.5 12h-2.2M5.7 12H3.5M17.7 6.3l-1.6 1.6M7.9 16.1l-1.6 1.6M17.7 17.7l-1.6-1.6M7.9 7.9 6.3 6.3" {!! $stroke !!} />
+            @break
+        @case('chevron-down')
+            <path d="M6 9.5 12 15l6-5.5" {!! $stroke !!} />
+            @break
+        @case('calendar')
+            <rect x="3.5" y="5" width="17" height="15.5" rx="2.3" {!! $stroke !!} />
+            <path d="M3.5 9.5h17M8 3.5v3M16 3.5v3" {!! $stroke !!} />
+            @break
+        @case('bookmark')
+            <path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.6L6 20V5a1 1 0 0 1 1-1Z" {!! $stroke !!} stroke-linejoin="round" />
+            @break
     @endswitch
 </svg>

@@ -6,8 +6,8 @@ namespace App\Application\Comments;
 
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Needs\NeedService;
-use App\Application\Proof\ProofVisibilityService;
 use App\Application\Projects\ProjectService;
+use App\Application\Proof\ProofVisibilityService;
 use App\Application\Transmission\TransmissionVisibilityService;
 use App\Models\ContextComment;
 use App\Models\Mission;
@@ -23,6 +23,7 @@ use Illuminate\Support\Str;
 final class ContextCommentService
 {
     public const MAX_BODY_LENGTH = 1200;
+
     private const THREAD_LIMIT = 100;
 
     public function __construct(
@@ -31,8 +32,7 @@ final class ContextCommentService
         private readonly MissionVisibilityService $missionVisibility,
         private readonly TransmissionVisibilityService $transmissionVisibility,
         private readonly ProofVisibilityService $proofVisibility,
-    ) {
-    }
+    ) {}
 
     public function needThread(Need $need, string $actor): array
     {
@@ -203,6 +203,7 @@ final class ContextCommentService
         $comments = ContextComment::query()
             ->where('context_type', $context['type'])
             ->where('context_reference', $context['reference'])
+            ->whereNull('hidden_at')
             ->latest('posted_at')
             ->limit(self::THREAD_LIMIT)
             ->get()

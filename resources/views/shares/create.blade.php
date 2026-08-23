@@ -14,7 +14,7 @@
             @endif
 
             <header class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-                <p class="text-xs font-black uppercase tracking-[.18em] text-sky-700">CAP-022 · PARTAGE AVEC CONTEXTE</p>
+                <p class="text-xs font-black uppercase tracking-[.18em] text-sky-700">Partage avec contexte</p>
                 <h1 class="mt-2 text-3xl font-black tracking-tight text-slate-950">Partager utilement</h1>
                 <p class="mt-3 max-w-3xl text-sm leading-6 text-slate-600">Transmettez cet objet à une personne ou à l’une de vos ZUMRA en expliquant pourquoi il peut soutenir une action réelle. Le partage pointe toujours vers l’objet d’origine : il ne le copie pas.</p>
             </header>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Administration\ProjectSatelliteLauncherController as AdministrationProjectSatelliteLauncherController;
+use App\Http\Controllers\Administration\ProjectAutonomyPathwayController;
 use App\Http\Controllers\ProjectAutonomyController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,7 +22,7 @@ Route::middleware('web')->group(function (): void {
         ->middleware(['core.member', 'throttle:project-autonomy'])
         ->name('projects.autonomy.close');
 
-    Route::get('/administration/lanceur-satellites', [AdministrationProjectSatelliteLauncherController::class, 'index'])
+    Route::get('/administration/parcours-autonomie', [ProjectAutonomyPathwayController::class, 'index'])
         ->middleware(['core.member', 'portal.admin'])
-        ->name('administration.project-satellite-launcher.index');
+        ->name('administration.project-autonomy-pathway.index');
 });

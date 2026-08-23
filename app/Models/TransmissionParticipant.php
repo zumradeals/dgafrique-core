@@ -13,21 +13,43 @@ final class TransmissionParticipant extends Model
     use HasUuids;
 
     public const ROLE_TRANSMITTER = 'TRANSMITTER';
+
     public const ROLE_LEARNER = 'LEARNER';
 
     public const ROLES = [self::ROLE_TRANSMITTER, self::ROLE_LEARNER];
 
     public const STATUS_INVITED = 'INVITED';
+
     public const STATUS_OFFERED = 'OFFERED';
+
     public const STATUS_ACCEPTED = 'ACCEPTED';
+
     public const STATUS_DECLINED = 'DECLINED';
+
     public const STATUS_WITHDRAWN = 'WITHDRAWN';
+
     public const STATUS_REMOVED = 'REMOVED';
 
     public const CURRENT_STATUSES = [self::STATUS_INVITED, self::STATUS_OFFERED, self::STATUS_ACCEPTED];
 
+    public const STATUS_LABELS = [
+        self::STATUS_INVITED => 'Invité·e',
+        self::STATUS_OFFERED => 'Proposition envoyée',
+        self::STATUS_ACCEPTED => 'A accepté',
+        self::STATUS_DECLINED => 'A décliné',
+        self::STATUS_WITHDRAWN => 'S\'est retiré·e',
+        self::STATUS_REMOVED => 'Retiré·e',
+    ];
+
+    public const ROLE_LABELS = [
+        self::ROLE_TRANSMITTER => 'Transmet',
+        self::ROLE_LEARNER => 'Apprend',
+    ];
+
     protected $table = 'dg_transmission_participants';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [

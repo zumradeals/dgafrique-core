@@ -12,6 +12,9 @@ final class GeniusPayClient
 {
     public function createMembershipPayment(string $identityReference, string $successUrl, string $errorUrl): array
     {
+        if (! config('payments.membership.enabled')) {
+            throw new RuntimeException('PAYMENT_PROVIDER_NOT_LIVE');
+        }
         $amount = (int) config('payments.membership.amount');
         if ($amount !== 500 || config('payments.membership.currency') !== 'XOF') {
             throw new RuntimeException('PAYMENT_CANONICAL_PRICE_INVALID');
@@ -32,6 +35,35 @@ final class GeniusPayClient
         return $this->normalize(is_array($data) ? $data : [], allowMissingInitialStatus: true);
     }
 
+    /**
+     * CAP-061 — création générique, contrairement à createMembershipPayment() qui reste
+     * verrouillée à 500 XOF « adhésion » (CAP-007B, jamais modifiée). Réutilise request()/
+     * normalize() à l'identique : le provider reste seul responsable du checkout et du
+     * mouvement d'argent réel, DG Afrique ne construit aucune abstraction bancaire parallèle.
+     *
+     * @param  array<string, string>  $metadata
+     */
+    public function createContributionPayment(int $amount, string $currency, string $description, array $metadata, string $successUrl, string $errorUrl): array
+    {
+        if ($amount <= 0 || $currency === '') {
+            throw new RuntimeException('PAYMENT_CANONICAL_PRICE_INVALID');
+        }
+
+        $response = $this->request()->post('/payments', [
+            'amount' => $amount,
+            'currency' => $currency,
+            'description' => $description,
+            'success_url' => $successUrl,
+            'error_url' => $errorUrl,
+            'metadata' => $metadata,
+        ]);
+        $data = $response->throw()->json('data');
+
+        // Même tolérance qu'à la création d'un paiement d'adhésion (GeniusPay sandbox peut
+        // renvoyer un statut absent sur la création initiale) — jamais tolérée à la réconciliation.
+        return $this->normalize(is_array($data) ? $data : [], allowMissingInitialStatus: true);
+    }
+
     public function payment(string $reference): array
     {
         $data = $this->request()->get('/payments/'.rawurlencode($reference))->throw()->json('data');
@@ -48,10 +80,13 @@ final class GeniusPayClient
         $key = trim((string) config('payments.geniuspay.api_key'));
         $secret = trim((string) config('payments.geniuspay.api_secret'));
         $environment = (string) config('payments.geniuspay.environment');
-        // CAP-007B : sandbox reste un environnement de paiement légitime (tests réels chez le
-        // prestataire, sans argent réel) — seule l'ACTIVATION de l'adhésion qui en résulte reste
-        // gouvernée séparément par `sandbox_activation_allowed` (voir MembershipPaymentService).
-        if (! config('payments.membership.enabled') || ! in_array($environment, ['live', 'sandbox'], true) || $key === '' || $secret === '') {
+        // Connexion au prestataire lui-même — générique, jamais spécifique à une finalité
+        // (adhésion CAP-007B ou contribution CAP-061). L'activation métier propre à chaque
+        // finalité (payments.membership.enabled, ContributionConfiguration) est vérifiée par
+        // chaque appelant, jamais ici : sandbox reste un environnement de paiement légitime
+        // (tests réels chez le prestataire, sans argent réel) — seule la FINALISATION d'un
+        // paiement en sandbox reste gouvernée séparément par `sandbox_activation_allowed`.
+        if (! in_array($environment, ['live', 'sandbox'], true) || $key === '' || $secret === '') {
             throw new RuntimeException('PAYMENT_PROVIDER_NOT_LIVE');
         }
 
@@ -61,10 +96,10 @@ final class GeniusPayClient
     }
 
     /**
-     * @param bool $allowMissingInitialStatus true uniquement pour createMembershipPayment() —
-     *   jamais pour payment()/reconcile(), qui doivent toujours recevoir un vrai statut du
-     *   prestataire. Un statut absent n'est jamais transformé silencieusement en COMPLETED :
-     *   au mieux, sur une création par ailleurs valide, en PENDING.
+     * @param  bool  $allowMissingInitialStatus  true uniquement pour createMembershipPayment() —
+     *                                           jamais pour payment()/reconcile(), qui doivent toujours recevoir un vrai statut du
+     *                                           prestataire. Un statut absent n'est jamais transformé silencieusement en COMPLETED :
+     *                                           au mieux, sur une création par ailleurs valide, en PENDING.
      */
     private function normalize(array $raw, bool $allowMissingInitialStatus = false): array
     {

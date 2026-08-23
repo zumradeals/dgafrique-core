@@ -13,16 +13,18 @@ final class MessageEntry extends Model
     use HasUuids;
 
     protected $table = 'dg_message_entries';
+
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
-        'conversation_id', 'sender_core_reference', 'body', 'sent_at',
+        'conversation_id', 'sender_core_reference', 'body', 'sent_at', 'hidden_at',
     ];
 
     protected function casts(): array
     {
-        return ['sent_at' => 'immutable_datetime'];
+        return ['sent_at' => 'immutable_datetime', 'hidden_at' => 'immutable_datetime'];
     }
 
     public function conversation(): BelongsTo

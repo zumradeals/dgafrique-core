@@ -19,14 +19,21 @@
                 <x-dg.btn variant="project" :href="route('projects.brain.start')">+ Parler de mon idée</x-dg.btn>
             </div>
 
-            <section class="dg-card" style="margin-bottom:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;background:linear-gradient(135deg,#fff 0%,#fff7ef 100%)">
+            <section class="dg-card" style="margin-bottom:22px;padding:28px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;background:linear-gradient(135deg,var(--dg-card) 0%,var(--dg-ivory) 100%)">
                 <div>
                     <x-dg.label tone="night">Cerveau du Projet</x-dg.label>
                     <h2 class="dg-display dg-display--card" style="margin:8px 0 7px">Qu’est-ce que vous voulez réaliser ?</h2>
                     <p style="max-width:720px;margin:0 0 16px">Une idée encore floue suffit. Expliquez-la comme vous la raconteriez à quelqu’un. Nous avancerons une question utile à la fois.</p>
-                    <x-dg.btn variant="project" :href="route('projects.brain.start')">Commencer la conversation →</x-dg.btn>
+                    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+                        <x-dg.btn variant="project" :href="route('projects.brain.start')">Commencer la conversation →</x-dg.btn>
+                        {{-- UIUX-008 — invariant : le Cerveau augmente DG Afrique, il ne le
+                             conditionne pas (audit Phase A — /projets était le seul écran où les
+                             trois CTA visibles menaient tous au Cerveau). Voie directe toujours
+                             utilisable, sans dupliquer le formulaire ni dégrader le Cerveau. --}}
+                        <a href="{{ route('projects.create') }}" class="dg-meta" style="color:var(--dg-copper);font-weight:600">Créer directement un projet →</a>
+                    </div>
                 </div>
-                <span aria-hidden="true" style="display:grid;place-items:center;width:104px;height:104px;border-radius:28px;background:rgba(217,160,43,.12);color:var(--dg-saffron-ink)">
+                <span aria-hidden="true" style="display:grid;place-items:center;width:104px;height:104px;border-radius:28px;background:rgba(248,212,10,.16);color:var(--dg-saffron-ink)">
                     <x-dg.icon name="brain" size="52" />
                 </span>
             </section>

@@ -3,32 +3,42 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AccountRegistrationController;
-use App\Http\Controllers\GatewayController;
-use App\Http\Controllers\LandingController;
-use App\Http\Controllers\Administration\ProfileConfigurationController;
-use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
-use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
-use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
-use App\Http\Controllers\Administration\RecommendationConfigurationController;
-use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
 use App\Http\Controllers\Administration\CollectiveCapabilityConfigurationController;
+use App\Http\Controllers\Administration\ContributionConfigurationController;
+use App\Http\Controllers\Administration\LedgerController as AdministrationLedgerController;
 use App\Http\Controllers\Administration\NeedConfigurationController;
+use App\Http\Controllers\Administration\PeopleDiscoveryConfigurationController;
+use App\Http\Controllers\Administration\ProfileConfigurationController;
 use App\Http\Controllers\Administration\ProjectConfigurationController;
 use App\Http\Controllers\Administration\ProjectMatchingConfigurationController;
+use App\Http\Controllers\Administration\RecommendationConfigurationController;
+use App\Http\Controllers\Administration\ZumraCardController as AdministrationZumraCardController;
+use App\Http\Controllers\Administration\ZumraGroupConfigurationController;
+use App\Http\Controllers\Administration\ZumraGroupLifecycleController;
+use App\Http\Controllers\Administration\ZumraProgramConfigurationController;
+use App\Http\Controllers\ContributionController;
+use App\Http\Controllers\GatewayController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\LedgerController;
 use App\Http\Controllers\MemberProfileController;
 use App\Http\Controllers\MemberSessionController;
 use App\Http\Controllers\MemberSpaceController;
-use App\Http\Controllers\ZumraSpaceController;
-use App\Http\Controllers\ZumraProgramMembershipController;
-use App\Http\Controllers\ZumraMembershipPaymentController;
-use App\Http\Controllers\ZumraCardController;
-use App\Http\Controllers\PeopleDiscoveryController;
-use App\Http\Controllers\RecommendationController;
-use App\Http\Controllers\ZumraGroupController;
-use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\NeedController;
+use App\Http\Controllers\OpportunityController;
+use App\Http\Controllers\OrganizationCapabilityController;
+use App\Http\Controllers\OrganizationController;
+use App\Http\Controllers\PartnershipController;
+use App\Http\Controllers\PeopleDiscoveryController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMatchingController;
+use App\Http\Controllers\QuickCapabilityController;
+use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ZumraCardController;
+use App\Http\Controllers\ZumraCollectiveCapabilityController;
+use App\Http\Controllers\ZumraGroupController;
+use App\Http\Controllers\ZumraMembershipPaymentController;
+use App\Http\Controllers\ZumraProgramMembershipController;
+use App\Http\Controllers\ZumraSpaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', GatewayController::class)->name('gateway');
@@ -52,6 +62,8 @@ Route::get('/espace/profil', [MemberProfileController::class, 'edit'])
     ->middleware('core.member')->name('member.profile.edit');
 Route::put('/espace/profil', [MemberProfileController::class, 'update'])
     ->middleware(['core.member', 'throttle:profile-update'])->name('member.profile.update');
+Route::post('/espace/capacite-rapide', [QuickCapabilityController::class, 'store'])
+    ->middleware(['core.member', 'throttle:profile-update'])->name('member.capability.quick');
 Route::get('/personnes', [PeopleDiscoveryController::class, 'index'])
     ->middleware(['core.member', 'throttle:people-discovery'])->name('people.index');
 Route::get('/personnes/{reference}', [PeopleDiscoveryController::class, 'show'])
@@ -62,6 +74,8 @@ Route::post('/recommandations/personnes/{reference}/masquer', [RecommendationCon
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.hide');
 Route::post('/recommandations/personnes/{reference}/restaurer', [RecommendationController::class, 'restore'])
     ->whereUuid('reference')->middleware(['core.member', 'throttle:recommendation-decisions'])->name('recommendations.restore');
+Route::get('/opportunites', [OpportunityController::class, 'index'])
+    ->middleware(['core.member', 'throttle:opportunities'])->name('opportunities.index');
 Route::get('/besoins', [NeedController::class, 'index'])->middleware('core.member')->name('needs.index');
 Route::get('/besoins/exprimer', [NeedController::class, 'create'])->middleware('core.member')->name('needs.create');
 Route::post('/besoins', [NeedController::class, 'store'])->middleware(['core.member', 'throttle:need-write'])->name('needs.store');
@@ -74,6 +88,22 @@ Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid(
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
 Route::get('/projets/{project}/correspondances', [ProjectMatchingController::class, 'index'])->whereUuid('project')->middleware(['core.member', 'throttle:project-matching'])->name('projects.matching');
 Route::post('/projets/{project}/correspondances/{profile}/masquer', [ProjectMatchingController::class, 'hide'])->whereUuid('project')->whereUuid('profile')->middleware(['core.member', 'throttle:project-match-decisions'])->name('projects.matching.hide');
+Route::get('/organisations', [OrganizationController::class, 'index'])->middleware('core.member')->name('organizations.index');
+Route::get('/organisations/creer', [OrganizationController::class, 'create'])->middleware('core.member')->name('organizations.create');
+Route::post('/organisations', [OrganizationController::class, 'store'])->middleware(['core.member', 'throttle:organization-write'])->name('organizations.store');
+Route::get('/organisations/{organization}', [OrganizationController::class, 'show'])->whereUuid('organization')->middleware('core.member')->name('organizations.show');
+Route::post('/organisations/{organization}/rejoindre', [OrganizationController::class, 'requestToJoin'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-membership'])->name('organizations.join');
+Route::post('/organisations/{organization}/demandes/{membership}/approuver', [OrganizationController::class, 'approveRequest'])->whereUuid('organization')->whereUuid('membership')->middleware(['core.member', 'throttle:organization-membership'])->name('organizations.requests.approve');
+Route::post('/organisations/{organization}/capacites', [OrganizationCapabilityController::class, 'store'])->whereUuid('organization')->middleware(['core.member', 'throttle:organization-capability'])->name('organizations.capabilities.store');
+Route::delete('/organisations/{organization}/capacites/{capability}', [OrganizationCapabilityController::class, 'destroy'])->whereUuid('organization')->whereUuid('capability')->middleware(['core.member', 'throttle:organization-capability'])->name('organizations.capabilities.destroy');
+Route::get('/partenariats', [PartnershipController::class, 'index'])->middleware('core.member')->name('partnerships.index');
+Route::post('/partenariats', [PartnershipController::class, 'store'])->middleware(['core.member', 'throttle:partnership-write'])->name('partnerships.store');
+Route::get('/partenariats/{partnership}', [PartnershipController::class, 'show'])->whereUuid('partnership')->middleware('core.member')->name('partnerships.show');
+Route::post('/partenariats/{partnership}/activation', [PartnershipController::class, 'activate'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.activate');
+Route::post('/partenariats/{partnership}/pause', [PartnershipController::class, 'pause'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.pause');
+Route::post('/partenariats/{partnership}/reprise', [PartnershipController::class, 'resume'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.resume');
+Route::post('/partenariats/{partnership}/retrait', [PartnershipController::class, 'withdraw'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.withdraw');
+Route::post('/partenariats/{partnership}/fin', [PartnershipController::class, 'end'])->whereUuid('partnership')->middleware(['core.member', 'throttle:partnership-decisions'])->name('partnerships.end');
 Route::get('/zumra', ZumraSpaceController::class)
     ->middleware('core.member')->name('zumra.index');
 Route::get('/zumra/adhesion', [ZumraProgramMembershipController::class, 'show'])
@@ -108,8 +138,38 @@ Route::post('/zumra/groupes/{group}/demandes/{membership}/approuver', [ZumraGrou
     ->whereUuid('group')->whereUuid('membership')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.requests.approve');
 Route::post('/zumra/groupes/{group}/quitter', [ZumraGroupController::class, 'leave'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.leave');
+Route::post('/zumra/groupes/{group}/roles/{role}/proposer', [ZumraGroupController::class, 'proposeRole'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.roles.propose');
+Route::post('/zumra/groupes/{group}/roles/{role}/accepter', [ZumraGroupController::class, 'acceptRole'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.roles.accept');
 Route::put('/zumra/groupes/{group}/capacites-collectives/consentement', [ZumraCollectiveCapabilityController::class, 'consent'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:collective-capability-consent'])->name('zumra.groups.collective-capabilities.consent');
+Route::post('/zumra/groupes/{group}/contribution', [ContributionController::class, 'proposeCollective'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.propose');
+Route::post('/zumra/groupes/{group}/contribution/approbation', [ContributionController::class, 'approveCollective'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.approve');
+
+Route::get('/contributions', [ContributionController::class, 'index'])
+    ->middleware('core.member')->name('contributions.index');
+Route::post('/contributions/individuelle', [ContributionController::class, 'startIndividual'])
+    ->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.individual.start');
+Route::post('/contributions/{contribution}/pause', [ContributionController::class, 'pause'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.pause');
+Route::post('/contributions/{contribution}/reprise', [ContributionController::class, 'resume'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.resume');
+Route::post('/contributions/{contribution}/arret', [ContributionController::class, 'stop'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.stop');
+Route::post('/contributions/{contribution}/paiement', [ContributionController::class, 'pay'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment'])->name('contributions.pay');
+Route::get('/contributions/{contribution}/paiements/retour', [ContributionController::class, 'returned'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment-status'])->name('contributions.payment.return');
+Route::get('/contributions/recus/{receipt}', [ContributionController::class, 'receipt'])
+    ->middleware('core.member')->name('contributions.receipt');
+
+Route::get('/finances/ledger', [LedgerController::class, 'index'])
+    ->middleware(['core.member', 'throttle:ledger-read'])->name('ledger.index');
+Route::get('/finances/ledger/{entry}', [LedgerController::class, 'show'])
+    ->whereUuid('entry')->middleware(['core.member', 'throttle:ledger-read'])->name('ledger.show');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
     Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
@@ -133,6 +193,29 @@ Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->gr
     Route::get('/groupes-zumra', [ZumraGroupConfigurationController::class, 'edit'])->name('administration.zumra.groups.edit');
     Route::put('/groupes-zumra', [ZumraGroupConfigurationController::class, 'update'])
         ->middleware('throttle:zumra-group-configuration')->name('administration.zumra.groups.update');
+    Route::post('/groupes-zumra/{group}/pret', [ZumraGroupLifecycleController::class, 'markReady'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.ready');
+    Route::post('/groupes-zumra/{group}/validation', [ZumraGroupLifecycleController::class, 'validate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.validate');
+    Route::post('/groupes-zumra/{group}/activation', [ZumraGroupLifecycleController::class, 'activate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.activate');
+    Route::post('/groupes-zumra/{group}/avertissement', [ZumraGroupLifecycleController::class, 'warn'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.warn');
+    Route::post('/groupes-zumra/{group}/suspension', [ZumraGroupLifecycleController::class, 'suspend'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.suspend');
+    Route::post('/groupes-zumra/{group}/rehabilitation', [ZumraGroupLifecycleController::class, 'enterRehabilitation'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.rehabilitate');
+    Route::post('/groupes-zumra/{group}/reactivation', [ZumraGroupLifecycleController::class, 'reactivate'])
+        ->whereUuid('group')->middleware('throttle:zumra-group-lifecycle')->name('administration.zumra.groups.reactivate');
+    Route::get('/contributions', [ContributionConfigurationController::class, 'edit'])->name('administration.contributions.edit');
+    Route::put('/contributions', [ContributionConfigurationController::class, 'update'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.update');
+    Route::post('/contributions/finalites/{purpose}/retrait', [ContributionConfigurationController::class, 'retirePurpose'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.retire');
+    Route::post('/contributions/finalites/{purpose}/reactivation', [ContributionConfigurationController::class, 'reactivatePurpose'])
+        ->middleware('throttle:contribution-configuration')->name('administration.contributions.purposes.reactivate');
+    Route::get('/ledger', [AdministrationLedgerController::class, 'index'])
+        ->middleware('throttle:ledger-read')->name('administration.ledger.index');
     Route::get('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'edit'])->name('administration.collective-capabilities.edit');
     Route::put('/capacites-collectives', [CollectiveCapabilityConfigurationController::class, 'update'])
         ->middleware('throttle:collective-capability-configuration')->name('administration.collective-capabilities.update');
