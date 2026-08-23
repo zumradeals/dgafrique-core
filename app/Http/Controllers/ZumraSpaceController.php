@@ -18,6 +18,7 @@ use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProximityShowcase;
 use App\Support\ZumraDomainPresentation;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -37,6 +38,10 @@ final class ZumraSpaceController
         $profile = PersonProfile::query()->find($identity->reference);
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+        $query = is_string($request->query('q')) ? trim($request->query('q')) : '';
+        $mode = in_array($request->query('mode'), ['PHYSICAL', 'DIGITAL', 'HYBRID'], true) ? $request->query('mode') : null;
+        $location = is_string($request->query('location')) ? trim($request->query('location')) : '';
+        $personalFilter = in_array($request->query('view'), ['mine', 'invited', 'requested'], true) ? $request->query('view') : null;
 
         $myMemberships = ZumraGroupMembership::query()
             ->where('core_identity_reference', $identity->reference)
@@ -113,16 +118,11 @@ final class ZumraSpaceController
             ->get()
             ->pluck('label');
 
-        $discoverGroups = $this->diverseDiscoverGroups(8)
-            ->map(fn (ZumraGroup $group): array => [
-                'group' => $group,
-                'cover' => ZumraDomainPresentation::cover($group->domain),
-                'initials' => mb_strtoupper(mb_substr($group->name, 0, 1)),
-                'mode_label' => match ($group->participation_mode) {
-                    'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride',
-                },
-                'welcome_open' => in_array($group->welcome_capacity, [ZumraGroup::WELCOME_ALREADY_CAPABLE, ZumraGroup::WELCOME_PROGRESSIVELY], true),
-            ]);
+        $isExhaustive = $query !== '' || $mode !== null || $location !== '' || $personalFilter !== null;
+        $discoverGroups = $isExhaustive
+            ? $this->filteredGroups($identity->reference, $query, $mode, $location, $personalFilter)
+                ->paginate(8)->withQueryString()->through(fn (ZumraGroup $group): array => $this->presentGroup($group))
+            : $this->diverseDiscoverGroups(8)->map(fn (ZumraGroup $group): array => $this->presentGroup($group));
 
         $fil = $this->filPanel();
         $stats = $this->stats();
@@ -131,7 +131,7 @@ final class ZumraSpaceController
         return view('zumra.index', compact(
             'identity', 'profile', 'membership', 'isAdministrator', 'myGroups', 'navCounts',
             'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities',
-            'discoverGroups', 'fil', 'stats', 'nearby',
+            'discoverGroups', 'isExhaustive', 'fil', 'stats', 'nearby', 'query', 'mode', 'location', 'personalFilter',
         ));
     }
 
@@ -235,6 +235,43 @@ final class ZumraSpaceController
         }
 
         return $primary->concat($rest)->take($limit)->values();
+    }
+
+    private function filteredGroups(string $identityReference, string $query, ?string $mode, string $location, ?string $personalFilter): Builder
+    {
+        return ZumraGroup::query()
+            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->when($query !== '', fn ($builder) => $builder->where(function ($builder) use ($query): void {
+                $like = '%'.$query.'%';
+                $builder->whereRaw('LOWER(domain) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(name) LIKE LOWER(?)', [$like])
+                    ->orWhereRaw('LOWER(founding_objective) LIKE LOWER(?)', [$like]);
+            }))
+            ->when($mode !== null, fn ($builder) => $builder->where('participation_mode', $mode))
+            ->when($location !== '', fn ($builder) => $builder->whereRaw('LOWER(location) LIKE LOWER(?)', ['%'.$location.'%']))
+            ->when($personalFilter !== null, function ($builder) use ($personalFilter, $identityReference): void {
+                $status = match ($personalFilter) {
+                    'invited' => ZumraGroupMembership::STATUS_INVITED,
+                    'requested' => ZumraGroupMembership::STATUS_REQUESTED,
+                    default => ZumraGroupMembership::STATUS_ACTIVE,
+                };
+                $builder->whereHas('memberships', fn ($memberships) => $memberships
+                    ->where('core_identity_reference', $identityReference)
+                    ->where('status', $status));
+            })->oldest();
+    }
+
+    private function presentGroup(ZumraGroup $group): array
+    {
+        return [
+            'group' => $group,
+            'cover' => ZumraDomainPresentation::cover($group->domain),
+            'initials' => mb_strtoupper(mb_substr($group->name, 0, 1)),
+            'mode_label' => match ($group->participation_mode) {
+                'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride',
+            },
+            'welcome_open' => in_array($group->welcome_capacity, [ZumraGroup::WELCOME_ALREADY_CAPABLE, ZumraGroup::WELCOME_PROGRESSIVELY], true),
+        ];
     }
 
     /**

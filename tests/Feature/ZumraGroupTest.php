@@ -115,8 +115,6 @@ final class ZumraGroupTest extends TestCase
         PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-ADMIN']);
         $this->signIn('IDN-ADMIN');
         $this->put('/administration/groupes-zumra', [
-            'directory_title' => 'Les équipes en action',
-            'directory_intro' => 'Une présentation administrable des équipes.',
             'creation_title' => 'Créer une équipe utile',
             'established_member_threshold' => 75,
             'max_simultaneous_founder_roles' => 4,

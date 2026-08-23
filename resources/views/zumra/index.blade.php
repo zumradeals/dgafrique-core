@@ -26,10 +26,10 @@
                     </div>
 
                     <nav class="zw-nav" aria-label="Navigation ZUMRA">
-                        <a href="{{ route('zumra.index') }}" class="zw-nav-item is-active" aria-current="page">Découvrir</a>
-                        <a href="{{ route('zumra.groups.index', ['view' => 'mine']) }}" class="zw-nav-item">Mes ZUMRA <span class="zw-nav-badge">{{ $navCounts['mine'] }}</span></a>
-                        <a href="{{ route('zumra.groups.index', ['view' => 'invited']) }}" class="zw-nav-item">Invitations <span class="zw-nav-badge">{{ $navCounts['invitations'] }}</span></a>
-                        <a href="{{ route('zumra.groups.index', ['view' => 'requested']) }}" class="zw-nav-item">Mes demandes <span class="zw-nav-badge">{{ $navCounts['requests'] }}</span></a>
+                        <a href="{{ route('zumra.index') }}" class="zw-nav-item {{ $personalFilter === null ? 'is-active' : '' }}" @if($personalFilter === null) aria-current="page" @endif>Découvrir</a>
+                        <a href="{{ route('zumra.index', ['view' => 'mine']) }}" class="zw-nav-item {{ $personalFilter === 'mine' ? 'is-active' : '' }}" @if($personalFilter === 'mine') aria-current="page" @endif>Mes ZUMRA <span class="zw-nav-badge">{{ $navCounts['mine'] }}</span></a>
+                        <a href="{{ route('zumra.index', ['view' => 'invited']) }}" class="zw-nav-item {{ $personalFilter === 'invited' ? 'is-active' : '' }}" @if($personalFilter === 'invited') aria-current="page" @endif>Invitations <span class="zw-nav-badge">{{ $navCounts['invitations'] }}</span></a>
+                        <a href="{{ route('zumra.index', ['view' => 'requested']) }}" class="zw-nav-item {{ $personalFilter === 'requested' ? 'is-active' : '' }}" @if($personalFilter === 'requested') aria-current="page" @endif>Mes demandes <span class="zw-nav-badge">{{ $navCounts['requests'] }}</span></a>
                         <a href="#zw-attention" class="zw-nav-item">À faire maintenant <span class="zw-nav-badge">{{ $navCounts['attention'] }}</span></a>
                     </nav>
 
@@ -38,7 +38,7 @@
                         @if($discoverDomains->isNotEmpty())
                             <div class="zw-explore-list">
                                 @foreach($discoverDomains as $d)
-                                    <a href="{{ route('zumra.groups.index', ['q' => $d['domain']]) }}" class="zw-explore-item">
+                                    <a href="{{ route('zumra.index', ['q' => $d['domain']]) }}" class="zw-explore-item">
                                         <x-dg.zumra-domain-icon :domain="$d['domain']" />
                                         <span class="zw-explore-label">{{ $d['domain'] }}</span>
                                         <span class="zw-explore-count">{{ $d['count'] }}</span>
@@ -75,18 +75,19 @@
                             <p class="zw-hero-tagline">Apprendre. Transmettre. Construire. Agir ensemble.</p>
                             <p class="zw-hero-lead">Découvrez des ZUMRA, rejoignez celles qui vous inspirent ou faites naître la vôtre.</p>
 
-                            <form method="GET" action="{{ route('zumra.groups.index') }}" role="search" class="zw-search">
+                            <form method="GET" action="{{ route('zumra.index') }}" role="search" class="zw-search">
+                                @if($personalFilter)<input type="hidden" name="view" value="{{ $personalFilter }}">@endif
                                 <label for="zw-q" class="sr-only">Rechercher une activité, une ZUMRA, un mot-clé</label>
-                                <input type="search" id="zw-q" name="q" class="zw-search-q" placeholder="Rechercher une activité, une ZUMRA, un mot-clé…">
+                                <input type="search" id="zw-q" name="q" class="zw-search-q" value="{{ $query }}" placeholder="Rechercher une activité, une ZUMRA, un mot-clé…">
                                 <label for="zw-mode" class="sr-only">Mode</label>
                                 <select id="zw-mode" name="mode" class="zw-search-select">
                                     <option value="">Toutes activités</option>
-                                    <option value="PHYSICAL">Physique</option>
-                                    <option value="DIGITAL">Numérique</option>
-                                    <option value="HYBRID">Hybride</option>
+                                    <option value="PHYSICAL" @selected($mode === 'PHYSICAL')>Physique</option>
+                                    <option value="DIGITAL" @selected($mode === 'DIGITAL')>Numérique</option>
+                                    <option value="HYBRID" @selected($mode === 'HYBRID')>Hybride</option>
                                 </select>
                                 <label for="zw-location" class="sr-only">Lieu</label>
-                                <input type="text" id="zw-location" name="location" class="zw-search-location" placeholder="Lieu">
+                                <input type="text" id="zw-location" name="location" class="zw-search-location" value="{{ $location }}" placeholder="Lieu">
                                 <button type="submit" class="zw-search-submit">Rechercher</button>
                             </form>
 
@@ -94,7 +95,7 @@
                                 <div class="zw-popular">
                                     <span class="zw-popular-label">Populaires :</span>
                                     @foreach($popularActivities as $label)
-                                        <a href="{{ route('zumra.groups.index', ['q' => $label]) }}" class="zw-popular-chip">{{ $label }}</a>
+                                        <a href="{{ route('zumra.index', ['q' => $label]) }}" class="zw-popular-chip">{{ $label }}</a>
                                     @endforeach
                                 </div>
                             @endif
@@ -106,8 +107,8 @@
 
                     <section aria-labelledby="zw-discover-title" id="zw-discover">
                         <div class="zw-section-heading">
-                            <h2 id="zw-discover-title">ZUMRA à découvrir</h2>
-                            <a href="{{ route('zumra.groups.index') }}">Voir toutes <span aria-hidden="true">→</span></a>
+                            <h2 id="zw-discover-title">{{ $isExhaustive ? 'Résultats ZUMRA' : 'ZUMRA à découvrir' }}</h2>
+                            @unless($isExhaustive)<a href="{{ route('zumra.index') }}">Voir toutes <span aria-hidden="true">→</span></a>@endunless
                         </div>
 
                         @if($discoverGroups->isNotEmpty())
@@ -145,8 +146,11 @@
                                     </article>
                                 @endforeach
                             </div>
+                            @if($isExhaustive && $discoverGroups->hasPages())
+                                <div>{{ $discoverGroups->links('pagination.dg') }}</div>
+                            @endif
                         @else
-                            <x-dg.empty title="La première ZUMRA peut commencer ici.">
+                            <x-dg.empty :title="$query !== '' || $mode !== null || $location !== '' ? 'Aucune ZUMRA ne correspond à cette recherche.' : ($personalFilter ? 'Rien ici pour le moment.' : 'La première ZUMRA peut commencer ici.')">
                                 <span>Aucune équipe fictive n’est affichée. Les ZUMRA apparaissent à mesure que des adhérents proposent des activités réelles.</span>
                             </x-dg.empty>
                         @endif
@@ -188,7 +192,7 @@
                                 <span>Aucune action ZUMRA ne demande votre attention pour le moment.</span>
                             </div>
                         @endif
-                        <a href="{{ route('zumra.groups.index', ['view' => 'mine']) }}" class="zw-card-footer">Voir toutes mes actions <span aria-hidden="true">→</span></a>
+                        <a href="{{ route('zumra.index', ['view' => 'mine']) }}" class="zw-card-footer">Voir toutes mes actions <span aria-hidden="true">→</span></a>
                     </div>
 
                     <div class="zw-card zw-nearby-card">
@@ -206,7 +210,7 @@
                                     </div>
                                 @endforeach
                             </div>
-                            <a href="{{ route('zumra.groups.index') }}" class="zw-card-footer">Voir plus <span aria-hidden="true">→</span></a>
+                            <a href="{{ route('zumra.index') }}" class="zw-card-footer">Voir plus <span aria-hidden="true">→</span></a>
                             <p style="margin:.6rem 0 0;font-size:.72rem;color:var(--zw-muted)">Sélection illustrative en attendant un vrai rapprochement géographique — DG Afrique ne collecte pas encore de localisation précise.</p>
                         @else
                             <p style="font-size:.84rem;color:var(--zw-muted)">Le rapprochement par proximité arrive bientôt.</p>

@@ -87,7 +87,7 @@
                             </span>
                         </summary>
                         <div class="dg-space-intent-reveal dg-space-intent-links">
-                            <a href="{{ route('zumra.groups.index') }}">Rejoindre un collectif actif →</a>
+                            <a href="{{ route('zumra.index') }}">Rejoindre un collectif actif →</a>
                             <a href="{{ route('organizations.index') }}">Rejoindre une organisation →</a>
                             {{-- UIUX-007 — doctrine humaine §6 : une personne seule peut déjà créer
                                  une ZUMRA réelle et opérationnelle, jamais après avoir dû réunir

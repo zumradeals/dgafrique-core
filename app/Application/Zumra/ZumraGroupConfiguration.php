@@ -18,8 +18,6 @@ final class ZumraGroupConfiguration
     public function defaults(): array
     {
         return [
-            'directory_title' => 'Des équipes pour transformer les capacités en action.',
-            'directory_intro' => 'Découvrez des ZUMRA réelles, organisées autour d’un domaine, d’un objectif et d’une charte.',
             'creation_title' => 'Faire naître une ZUMRA',
             'established_member_threshold' => 50,
             'max_simultaneous_founder_roles' => 3,

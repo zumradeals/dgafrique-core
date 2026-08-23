@@ -22,7 +22,7 @@
 
             <div class="zs-layout">
                 <aside class="zs-left" aria-label="Navigation de l’espace ZUMRA">
-                    <a href="{{ route('zumra.groups.index') }}" class="zs-back">← Retour au monde ZUMRA</a>
+                    <a href="{{ route('zumra.index') }}" class="zs-back">← Retour au monde ZUMRA</a>
                     <nav class="zs-nav">
                         <p class="zs-eyebrow">Espace ZUMRA</p>
                         <a class="is-active" href="#accueil">⌂ <span>Accueil</span></a>
