@@ -68,7 +68,9 @@ final class DesignInvariantsPhase2Test extends TestCase
 
         $content = $this->get('/zumra')->assertOk()->getContent();
 
-        self::assertStringNotContainsString('Fil ZUMRA', $content);
+        // UIUX-010 : le panneau « Fil ZUMRA » du carrefour est un raccourci assumé vers le Fil
+        // global filtré (label validé par la maquette), jamais un moteur de fil autonome — ce que
+        // ces trois absences continuent de garantir.
         self::assertStringNotContainsString('Le réseau se construit sur des données réelles.', $content);
         self::assertStringNotContainsString('Profils à suivre', $content);
         self::assertStringNotContainsString('Projets tendances', $content);

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 620" role="img" aria-label="Un réseau de personnes reliées autour d'activités communes">
+  <defs>
+    <radialGradient id="zwHeroGlow" cx="62%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#1f6b45"/>
+      <stop offset="60%" stop-color="#0b4a30"/>
+      <stop offset="100%" stop-color="#063523"/>
+    </radialGradient>
+    <linearGradient id="zwHeroFade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8d40a" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#f8d40a" stop-opacity=".12"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="760" height="620" fill="url(#zwHeroGlow)"/>
+  <rect width="760" height="620" fill="url(#zwHeroFade)"/>
+
+  <g opacity=".18" stroke="#f7f1e6" stroke-width="1.4">
+    <line x1="150" y1="150" x2="330" y2="230"/>
+    <line x1="330" y1="230" x2="520" y2="170"/>
+    <line x1="330" y1="230" x2="300" y2="400"/>
+    <line x1="300" y1="400" x2="480" y2="440"/>
+    <line x1="480" y1="440" x2="560" y2="300"/>
+    <line x1="560" y1="300" x2="520" y2="170"/>
+    <line x1="300" y1="400" x2="150" y2="460"/>
+    <line x1="480" y1="440" x2="600" y2="500"/>
+  </g>
+
+  <g fill="#f8d40a">
+    <circle cx="330" cy="230" r="7"/>
+    <circle cx="520" cy="170" r="5"/>
+    <circle cx="300" cy="400" r="6"/>
+    <circle cx="480" cy="440" r="8"/>
+    <circle cx="560" cy="300" r="5"/>
+    <circle cx="150" cy="150" r="5"/>
+    <circle cx="150" cy="460" r="5"/>
+    <circle cx="600" cy="500" r="6"/>
+  </g>
+
+  <!-- Trois silhouettes abstraites, réunies, jamais figuratives à l'excès -->
+  <g transform="translate(150,300)">
+    <ellipse cx="0" cy="150" rx="70" ry="26" fill="#000" opacity=".14"/>
+    <path d="M -55 150 Q -60 40 0 30 Q 60 40 55 150 Z" fill="#f7f1e6"/>
+    <circle cx="0" cy="-30" r="52" fill="#e8b923"/>
+  </g>
+
+  <g transform="translate(330,340)">
+    <ellipse cx="0" cy="170" rx="82" ry="30" fill="#000" opacity=".16"/>
+    <path d="M -64 170 Q -70 40 0 26 Q 70 40 64 170 Z" fill="#dda51b"/>
+    <circle cx="0" cy="-42" r="60" fill="#f7f1e6"/>
+  </g>
+
+  <g transform="translate(530,320)">
+    <ellipse cx="0" cy="155" rx="72" ry="27" fill="#000" opacity=".14"/>
+    <path d="M -56 155 Q -62 42 0 30 Q 62 42 56 155 Z" fill="#c96b2c"/>
+    <circle cx="0" cy="-32" r="54" fill="#f2c94c"/>
+  </g>
+
+  <g stroke="#f7f1e6" stroke-width="3" stroke-linecap="round" opacity=".85" fill="none">
+    <path d="M 220 300 Q 260 265 300 300" />
+    <path d="M 400 290 Q 440 255 480 292" />
+  </g>
+</svg>

@@ -6,16 +6,28 @@ namespace App\Http\Controllers;
 
 use App\Application\Zumra\ZumraAttentionSource;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\CommunityEvent;
+use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
+use App\Models\Project;
 use App\Models\ZumraGroup;
+use App\Models\ZumraGroupActivity;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
+use App\Models\ZumraProximityShowcase;
+use App\Support\ZumraDomainPresentation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
+/**
+ * UIUX-010 — le carrefour ZUMRA. Chaque bloc réutilise une capacité déjà confirmée par l'audit
+ * (adhésion, décisions, activités dérivées, domaines) ; les deux seules surfaces sans métier réel
+ * derrière elles (Fil ZUMRA détaillé, proximité géographique) sont explicitement documentées
+ * comme vitrines en attendant leur moteur, jamais présentées comme le produit final.
+ */
 final class ZumraSpaceController
 {
     public function __invoke(Request $request, ZumraAttentionSource $zumraAttention): View
@@ -53,9 +65,6 @@ final class ZumraSpaceController
                 ];
             });
 
-        // UIUX-002 : même source que MemberSpaceController::priority() et
-        // NotificationSourceRegistry — une seule définition de « demande d'adhésion à décider »
-        // et de « responsabilité proposée », jamais recalculée séparément ici.
         $pendingRequestsToDecide = $zumraAttention->pendingJoinRequestsForLeader($identity->reference)
             ->groupBy(fn (array $row): string => $row['group']->id)
             ->map(fn (Collection $rows): array => [
@@ -66,13 +75,19 @@ final class ZumraSpaceController
 
         $myPendingRoleProposals = $zumraAttention->myPendingRoleProposals($identity->reference);
 
-        // « À faire maintenant » reste volontairement court : uniquement des actions réelles,
-        // jamais une activité simulée ni un score. Deux éléments maximum pour préserver la
-        // hiérarchie calme du hub.
+        // « À faire maintenant » reste volontairement court dans son détail (deux éléments
+        // maximum, jamais un score) ; le badge de navigation porte lui le total réel.
         $attentionItems = $this->attentionItems($myPendingRoleProposals, $pendingRequestsToDecide, $myGroups);
+        $attentionTotal = $myPendingRoleProposals->count() + (int) $pendingRequestsToDecide->sum('count')
+            + $myGroups->where('status', ZumraGroupMembership::STATUS_INVITED)->count();
 
-        // Les domaines reflètent exactement le même univers découvrable que l'annuaire ZUMRA :
-        // tout collectif non suspendu. Ils servent d'orientation visuelle, sans faux volume.
+        $navCounts = [
+            'mine' => $myGroups->where('status', ZumraGroupMembership::STATUS_ACTIVE)->count(),
+            'invitations' => $myGroups->where('status', ZumraGroupMembership::STATUS_INVITED)->count(),
+            'requests' => $myGroups->where('status', ZumraGroupMembership::STATUS_REQUESTED)->count(),
+            'attention' => $attentionTotal,
+        ];
+
         $discoverDomains = ZumraGroup::query()
             ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
             ->whereNotNull('domain')
@@ -81,16 +96,42 @@ final class ZumraSpaceController
             ->groupBy('domain')
             ->orderByDesc('groups_count')
             ->orderBy('domain')
-            ->limit(5)
+            ->limit(8)
             ->get()
             ->map(fn (ZumraGroup $row): array => [
                 'domain' => $row->domain,
                 'count' => (int) $row->getAttribute('groups_count'),
+                'icon_key' => ZumraDomainPresentation::key($row->domain),
             ]);
 
+        $popularActivities = ZumraGroupActivity::query()
+            ->selectRaw('label, COUNT(*) AS uses_count')
+            ->groupBy('label')
+            ->orderByDesc('uses_count')
+            ->orderBy('label')
+            ->limit(6)
+            ->get()
+            ->pluck('label');
+
+        $discoverGroups = $this->diverseDiscoverGroups(8)
+            ->map(fn (ZumraGroup $group): array => [
+                'group' => $group,
+                'cover' => ZumraDomainPresentation::cover($group->domain),
+                'initials' => mb_strtoupper(mb_substr($group->name, 0, 1)),
+                'mode_label' => match ($group->participation_mode) {
+                    'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride',
+                },
+                'welcome_open' => in_array($group->welcome_capacity, [ZumraGroup::WELCOME_ALREADY_CAPABLE, ZumraGroup::WELCOME_PROGRESSIVELY], true),
+            ]);
+
+        $fil = $this->filPanel();
+        $stats = $this->stats();
+        $nearby = ZumraProximityShowcase::query()->orderBy('sort_order')->limit(4)->get();
+
         return view('zumra.index', compact(
-            'identity', 'profile', 'membership', 'isAdministrator', 'myGroups',
-            'pendingRequestsToDecide', 'attentionItems', 'discoverDomains',
+            'identity', 'profile', 'membership', 'isAdministrator', 'myGroups', 'navCounts',
+            'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities',
+            'discoverGroups', 'fil', 'stats', 'nearby',
         ));
     }
 
@@ -164,5 +205,87 @@ final class ZumraSpaceController
         }
 
         return $items;
+    }
+
+    /**
+     * « ZUMRA à découvrir » privilégie la diversité des activités représentées (une ZUMRA par
+     * domaine avant d'en montrer une seconde) plutôt qu'un simple tri chronologique ou par
+     * taille, pour que la découverte reste un vrai aperçu du réseau plutôt qu'un domaine unique
+     * qui écraserait les autres.
+     */
+    private function diverseDiscoverGroups(int $limit): Collection
+    {
+        $candidates = ZumraGroup::query()
+            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->oldest()
+            ->limit($limit * 4)
+            ->get();
+
+        $seenDomains = [];
+        $primary = collect();
+        $rest = collect();
+        foreach ($candidates as $group) {
+            $domainKey = mb_strtolower(trim((string) $group->domain));
+            if ($domainKey !== '' && ! isset($seenDomains[$domainKey])) {
+                $seenDomains[$domainKey] = true;
+                $primary->push($group);
+            } else {
+                $rest->push($group);
+            }
+        }
+
+        return $primary->concat($rest)->take($limit)->values();
+    }
+
+    /**
+     * Le Fil ZUMRA détaillé (un fil dédié, filtrable, commentable) reste une direction produit
+     * documentée, pas un chantier de cette mission : ce panneau ne fait qu'orienter vers la vue
+     * déjà réelle du Fil global filtrée par type ZUMRA (`activity.index`), jamais un second Fil.
+     *
+     * @return array{href: string, avatars: list<string>, remainder: int}
+     */
+    private function filPanel(): array
+    {
+        $recentMembers = ZumraGroupMembership::query()
+            ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+            ->join('dg_person_profiles', 'dg_person_profiles.core_identity_reference', '=', 'dg_zumra_group_memberships.core_identity_reference')
+            ->where('dg_person_profiles.discovery_consent', true)
+            ->orderByDesc('dg_zumra_group_memberships.joined_at')
+            ->limit(60)
+            ->pluck('dg_person_profiles.discovery_display_name', 'dg_zumra_group_memberships.core_identity_reference')
+            ->unique();
+
+        $shown = $recentMembers->take(4);
+
+        return [
+            'href' => route('activity.index', ['type' => 'ZUMRA']),
+            'avatars' => $shown->map(fn (string $name): string => mb_strtoupper(mb_substr($name, 0, 1)))->values()->all(),
+            'remainder' => max(0, $recentMembers->count() - $shown->count()),
+        ];
+    }
+
+    /**
+     * Statistiques réelles, jamais des nombres fabriqués : elles reflètent exactement ce que
+     * contient la base au moment de l'affichage — vides sur un portail neuf, vivantes une fois
+     * `ZumraWorldDemoSeeder` exécuté sur un environnement de démonstration.
+     *
+     * @return array{groups: int, groups_delta: int, members: int, members_delta: int, domains: int, actions: int}
+     */
+    private function stats(): array
+    {
+        $activeGroups = ZumraGroup::query()->where('state', '!=', ZumraGroup::STATE_SUSPENDED);
+
+        $needsOpen = Need::query()->where('owner_type', Need::OWNER_GROUP)->where('status', Need::STATUS_OPEN)->count();
+        $projectsOngoing = Project::query()->where('owner_type', Project::OWNER_GROUP)->whereIn('status', [Project::STATUS_ADOPTED, Project::STATUS_IN_PROGRESS])->count();
+        $eventsScheduled = CommunityEvent::query()->where('organizer_type', CommunityEvent::ORGANIZER_ZUMRA_GROUP)->where('status', CommunityEvent::STATUS_SCHEDULED)->count();
+
+        return [
+            'groups' => (clone $activeGroups)->count(),
+            'groups_delta' => (clone $activeGroups)->where('created_at', '>=', now()->subDays(30))->count(),
+            'members' => (int) (clone $activeGroups)->sum('active_member_count'),
+            'members_delta' => ZumraGroupMembership::query()->where('status', ZumraGroupMembership::STATUS_ACTIVE)->where('joined_at', '>=', now()->subDays(30))->count(),
+            'domains' => (int) (clone $activeGroups)->whereNotNull('domain')->where('domain', '!=', '')->distinct()->count('domain'),
+            'actions' => $needsOpen + $projectsOngoing + $eventsScheduled,
+        ];
     }
 }

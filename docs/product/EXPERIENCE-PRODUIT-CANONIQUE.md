@@ -1288,3 +1288,69 @@ principale ; aucun article renuméroté ou réécrit).
 **Hors périmètre** : ZUMRA → Organisation (gap confirmé en Phase A — `ProjectAutonomyPathway`
 déclare une forme cible sans jamais créer d'`Organization` réelle ni la relier — documenté,
 non construit), tout matching géographique ou par activité, toute taxonomie globale des activités.
+
+## 34. Addendum daté — UIUX-010, « Le monde ZUMRA » (23 août 2026)
+
+**Portée : reconstruction fidèle du carrefour `/zumra` à partir d'une maquette validée par le
+propriétaire produit**, avec un principe explicite : l'absence de moteur métier derrière un
+élément visible de la maquette n'autorise jamais sa suppression — soit il se branche sur une
+capacité réelle déjà existante, soit il devient une vitrine de démonstration honnêtement
+documentée comme telle, jamais un faux fonctionnel.
+
+**`/zumra` = le carrefour du monde ZUMRA.** Architecture à trois colonnes desktop (sidebar univers
+ZUMRA · carrefour central · contexte personnel) qui occupe réellement l'espace disponible ; la
+ZUMRA active de la session ne monopolise plus l'écran — « Mes ZUMRA », invitations et demandes
+personnelles deviennent des entrées de navigation avec compteur réel, jamais la façade d'entrée.
+
+**L'activité est le premier axe de lecture et de découverte, avant la gouvernance.** La recherche
+(`?q=`, filtrant domaine/nom/objectif), les filtres mode/lieu et la section « Explorer par
+activité » s'imposent visuellement dès le premier écran. `App\Support\ZumraDomainPresentation`
+attache une icône et une illustration à un domaine en texte libre par correspondance approximative
+(jamais une taxonomie stockée) — un domaine non reconnu retombe simplement sur une présentation
+générique, sans jamais bloquer une activité nouvelle. « ZUMRA à découvrir » privilégie la diversité
+des activités représentées (une ZUMRA par domaine avant d'en montrer une seconde) plutôt qu'un tri
+brut, pour que la découverte reste un vrai aperçu du réseau.
+
+**Naissance intégrée au monde ZUMRA.** Le repère de retour, les libellés et le sous-titre du CTA
+« Faire naître une ZUMRA » (adhésion active ou non) situent la naissance depuis l'intérieur de
+l'univers ZUMRA plutôt que comme un formulaire administratif isolé. La mention de la charte est
+retirée du moment de naissance (déjà retirée de son mécanisme de blocage par
+ZUMRA-HUMAN-BIRTH-001, §33) — elle se découvre plus tard, depuis l'Espace ZUMRA.
+
+**Deux vitrines de démonstration, explicitement distinguées du reste :**
+- *Fil ZUMRA* — un panneau qui pointe vers le Fil global déjà réel filtré par type ZUMRA
+  (`activity.index`, `type=ZUMRA`), jamais un second moteur de fil. Direction produit documentée :
+  un fil dédié, filtrable et commentable, reste à arbitrer séparément.
+- *Près de vous* — `ZumraProximityShowcase` (nouvelle table dédiée, seedée) affiche une sélection
+  illustrative explicitement légendée comme telle sur la page elle-même (« sélection illustrative
+  en attendant un vrai rapprochement géographique — DG Afrique ne collecte pas encore de
+  localisation précise »). Aucune coordonnée géographique n'existe nulle part dans le produit ;
+  cette table ne prétend jamais le contraire. Direction produit documentée pour un futur
+  rapprochement réel (personne ↔ activité ↔ mode ↔ proximité), non construit ici.
+
+**Tout le reste du carrefour est réel, pas seedé :**
+- Statistiques de la bande verte (ZUMRA actives, membres engagés, domaines, actions en cours,
+  deltas mensuels) — agrégats calculés en direct sur la base au moment de l'affichage ; vides sur
+  un portail neuf, vivants une fois `ZumraWorldDemoSeeder` exécuté sur un environnement de
+  démonstration. Aucun nombre n'est jamais codé en dur dans la vue.
+- « Populaires » (chips de recherche) — les libellés d'activités dérivées (`ZumraGroupActivity`)
+  les plus fréquents, déjà réels depuis ZUMRA-HUMAN-BIRTH-001.
+- « Ouverte à de nouveaux membres » — dérivé de `welcome_capacity`, déjà réel.
+- Adhésion, décisions, invitations — inchangés, mêmes services qu'avant ce chantier.
+
+**`ZumraWorldDemoSeeder`** (`database/seeders/`, volontairement absent de
+`DatabaseSeeder::run()` qui reste vide — GAMAD Core est l'autorité d'identité) plante un réseau de
+démonstration réaliste (~30 ZUMRA réparties sur huit familles d'activité, chacune créée via
+`ZumraGroupService::create()` — les mêmes invariants qu'une naissance réelle) pour qu'un
+environnement de démonstration ressemble effectivement au réseau vivant demandé par le mandat.
+Toutes les identités seedées portent le préfixe `DEMO-` ; l'identité `DEMO-IDN-VIEWER` porte un état
+personnel complet (ZUMRA rejointe, invitation reçue, demande propre en attente) pour observer les
+blocs personnels du carrefour sans reconstruire de fixtures.
+
+**Doctrine amendée** : aucune — ce chantier est une reconstruction d'expérience et une nouvelle
+vitrine de démonstration explicitement non-métier ; aucun CAP ni canon n'a été modifié. La table
+`dg_zumra_proximity_showcases` est additive et ne touche aucun invariant existant.
+
+**Hors périmètre** (conformément au mandat) : tout moteur de proximité géographique réel, tout
+parrainage ou mise en avant gouvernée d'une ZUMRA, tout second canal de conversation ou second Fil
+social, toute taxonomie d'activités stockée en base.

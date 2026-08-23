@@ -24,14 +24,47 @@
                 @endif
             </div>
 
-            <div class="dg-band" style="margin-bottom:24px">
-                <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Une ZUMRA n’est pas un simple groupe de discussion.</strong>
-                Elle rassemble des personnes autour d’un objectif, d’une transmission et d’une action réelle. Une demande n’est jamais une adhésion automatique.
-            </div>
+            <form method="GET" action="{{ route('zumra.groups.index') }}" role="search" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px">
+                @if($personalFilter)
+                    <input type="hidden" name="view" value="{{ $personalFilter }}">
+                @endif
+                <label for="directory-search" class="sr-only">Rechercher une activité, un nom ou un objectif</label>
+                <input type="search" id="directory-search" name="q" class="dg-input" style="flex:2 1 220px" placeholder="Chercher une activité, un nom, un objectif…" value="{{ $query ?? '' }}">
+                <label for="directory-mode" class="sr-only">Mode</label>
+                <select id="directory-mode" name="mode" class="dg-input" style="flex:1 1 140px">
+                    <option value="">Tous modes</option>
+                    <option value="PHYSICAL" @selected(($mode ?? null) === 'PHYSICAL')>Physique</option>
+                    <option value="DIGITAL" @selected(($mode ?? null) === 'DIGITAL')>Numérique</option>
+                    <option value="HYBRID" @selected(($mode ?? null) === 'HYBRID')>Hybride</option>
+                </select>
+                <label for="directory-location" class="sr-only">Lieu</label>
+                <input type="text" id="directory-location" name="location" class="dg-input" style="flex:1 1 160px" placeholder="Lieu (ville, quartier…)" value="{{ $location ?? '' }}">
+                <button type="submit" class="dg-btn dg-btn--primary">Chercher</button>
+                @if(filled($query ?? null) || filled($mode ?? null) || filled($location ?? null))
+                    <a href="{{ route('zumra.groups.index', $personalFilter ? ['view' => $personalFilter] : []) }}" class="dg-btn dg-btn--quiet">Effacer</a>
+                @endif
+            </form>
+
+            @if($personalFilter)
+                <div class="dg-band" style="margin-bottom:24px">
+                    {{ match($personalFilter) {
+                        'mine' => 'Vue filtrée : les ZUMRA où votre adhésion est active.',
+                        'invited' => 'Vue filtrée : les ZUMRA qui vous ont invité·e.',
+                        'requested' => 'Vue filtrée : les ZUMRA où votre demande d’adhésion attend une décision.',
+                        default => '',
+                    } }}
+                    <a href="{{ route('zumra.groups.index') }}">Voir tout le répertoire →</a>
+                </div>
+            @else
+                <div class="dg-band" style="margin-bottom:24px">
+                    <strong style="display:block;font-size:14px;color:var(--dg-forest);margin-bottom:4px">Une ZUMRA n’est pas un simple groupe de discussion.</strong>
+                    Elle rassemble des personnes autour d’un objectif, d’une transmission et d’une action réelle. Une demande n’est jamais une adhésion automatique.
+                </div>
+            @endif
 
             @if($groups->isEmpty())
-                <x-dg.empty title="La première ZUMRA peut commencer ici.">
-                    <span>Aucune équipe fictive n’est affichée. Les groupes apparaîtront à mesure que des adhérents proposeront des projets humains réels.</span>
+                <x-dg.empty :title="filled($query ?? null) || filled($mode ?? null) || filled($location ?? null) ? 'Aucune ZUMRA ne correspond à cette recherche.' : ($personalFilter ? 'Rien ici pour le moment.' : 'La première ZUMRA peut commencer ici.')">
+                    <span>Aucune équipe fictive n’est affichée. Les groupes apparaissent à mesure que des adhérents proposent des projets humains réels.</span>
                 </x-dg.empty>
             @else
                 <div class="dg-grid">

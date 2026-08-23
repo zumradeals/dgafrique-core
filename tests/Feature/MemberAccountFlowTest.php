@@ -118,7 +118,7 @@ final class MemberAccountFlowTest extends TestCase
         $this->get('/zumra')
             ->assertOk()
             ->assertSee('ZUMRA')
-            ->assertSee('Votre première ZUMRA vous attend')
+            ->assertSee('La première ZUMRA peut commencer ici.')
             ->assertDontSee('Contribution à jour')
             ->assertDontSee('24 J’aime');
     }
