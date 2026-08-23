@@ -96,6 +96,19 @@ final class ZumraHumanBirthTest extends TestCase
         self::assertStringContainsString('Application de la couture générale', $activity->relation_to_principal);
     }
 
+    public function test_a_derived_activity_without_its_relation_is_rejected_instead_of_silently_ignored(): void
+    {
+        $this->programMember('IDN-BIRTH-ACT-NOREL');
+        $this->signIn('IDN-BIRTH-ACT-NOREL');
+
+        $this->post('/zumra/groupes', $this->minimalPayload() + [
+            'activity_label' => ['Solutions numériques agricoles'],
+            'activity_relation' => [''],
+        ])->assertSessionHasErrors('activity_relation.0');
+
+        self::assertSame(0, ZumraGroup::query()->count());
+    }
+
     public function test_a_leader_can_add_a_derived_activity_after_birth_but_must_state_the_relation(): void
     {
         $group = $this->group('IDN-BIRTH-LEAD');
