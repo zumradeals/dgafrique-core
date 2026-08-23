@@ -18,6 +18,7 @@ export default defineConfig({
                 'resources/css/fil-v2.css',
                 'resources/css/project-workspace-v2.css',
                 'resources/css/projects-directory.css',
+                'resources/css/zumra-project-birth.css',
                 'resources/css/needs-directory.css',
                 'resources/css/project-detail.css',
                 'resources/css/project-brain.css',
