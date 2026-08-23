@@ -745,7 +745,9 @@
     .zw-lower { margin-left: 226px; }
     .zw-hero { grid-template-columns: minmax(0, 1.25fr) minmax(240px, .75fr); }
     .zw-hero-copy { padding: 28px; }
-    .zw-search { grid-template-columns: minmax(180px, 1.8fr) 115px 105px auto; }
+    .zw-search { grid-template-columns: minmax(0, 1.8fr) 108px 98px auto; }
+    .zw-search input, .zw-search select { padding-inline: 10px; font-size: .84rem; }
+    .zw-search-submit { padding-inline: 14px; }
 }
 
 @media (max-width: 1240px) {
@@ -759,7 +761,19 @@
 
 @media (max-width: 980px) {
     .dg-page.zw { padding: 14px 14px 84px; }
-    .zw-layout { gap: 12px; }
+    .zw-layout { grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; max-width: 100%; width: 100%; overflow: clip; }
+    .zw-layout > *,
+    .zw-birth-cta,
+    .zw-nav,
+    .zw-hero,
+    #zw-discover,
+    .zw-card,
+    .zw-explore,
+    .zw-fil-panel {
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+    }
     .zw-birth-cta { order: 1; }
     .zw-nav { order: 2; }
     .zw-hero { order: 3; }
@@ -772,7 +786,7 @@
     .zw-fil-panel { order: 10; }
     .zw-lower { margin-left: 0; }
     .zw-hero { grid-template-columns: minmax(0, 1.2fr) minmax(230px, .8fr); }
-    .zw-discover-grid { grid-template-columns: repeat(3, minmax(240px, 1fr)); overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+    .zw-discover-grid { grid-template-columns: repeat(3, minmax(240px, 1fr)); width: 100%; min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding-bottom: 8px; }
     .zw-discover-card { scroll-snap-align: start; }
 }
 
@@ -780,7 +794,7 @@
     .zw-birth-cta { padding: 11px 13px; }
     .zw-birth-btn { font-size: .82rem; }
     .zw-birth-cta p { font-size: .68rem; }
-    .zw-nav { display: grid; grid-template-columns: repeat(5, minmax(86px, 1fr)); overflow-x: auto; padding: 5px; scroll-snap-type: x mandatory; }
+    .zw-nav { display: grid; grid-template-columns: repeat(5, minmax(86px, 1fr)); overflow-x: auto; overflow-y: hidden; padding: 5px; scroll-snap-type: x mandatory; }
     .zw-nav-item { min-height: 38px; padding: 7px 9px; font-size: .72rem; white-space: nowrap; scroll-snap-align: start; }
     .zw-hero { grid-template-columns: 1fr; min-height: 0; }
     .zw-hero-copy { padding: 22px 18px 18px; }
@@ -793,15 +807,15 @@
     .zw-search-location { grid-column: 1 / 2; }
     .zw-search-submit { width: auto; }
     .zw-hero-art { min-height: 150px; }
-    .zw-popular { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 3px; }
+    .zw-popular { min-width: 0; max-width: 100%; flex-wrap: nowrap; overflow-x: auto; overflow-y: hidden; padding-bottom: 3px; }
     .zw-popular-label, .zw-popular-chip { white-space: nowrap; }
     .zw-discover-grid { grid-template-columns: repeat(8, minmax(78vw, 78vw)); gap: 12px; }
     .zw-discover-cover { height: 128px; }
-    .zw-explore-list { flex-direction: row; overflow-x: auto; gap: 8px; }
+    .zw-explore-list { min-width: 0; max-width: 100%; flex-direction: row; overflow-x: auto; overflow-y: hidden; gap: 8px; }
     .zw-explore-item { min-width: max-content; padding: 7px 9px; background: var(--zw-ivory); }
     .zw-explore-count { display: none; }
     .zw-participate { overflow: hidden; }
-    .zw-participate-grid { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 10px; }
+    .zw-participate-grid { min-width: 0; max-width: 100%; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; gap: 10px; }
     .zw-participate-step { min-width: 78%; scroll-snap-align: start; }
     .zw-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px; }
     .zw-stats-quote { grid-column: 1 / -1; }
