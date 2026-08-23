@@ -34,7 +34,7 @@ final class ZumraGroupTest extends TestCase
     {
         $this->programMember('IDN-ACTIVE');
         $this->signIn('IDN-ACTIVE');
-        $this->get('/zumra/groupes/proposer')->assertOk()->assertSee('Proposer une nouvelle ZUMRA');
+        $this->get('/zumra/groupes/proposer')->assertOk()->assertSee('Faire naître une ZUMRA');
     }
 
     public function test_creation_opens_a_real_constitution_with_five_distinct_seats(): void

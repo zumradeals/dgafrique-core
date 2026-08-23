@@ -1354,3 +1354,13 @@ vitrine de démonstration explicitement non-métier ; aucun CAP ni canon n'a ét
 **Hors périmètre** (conformément au mandat) : tout moteur de proximité géographique réel, tout
 parrainage ou mise en avant gouvernée d'une ZUMRA, tout second canal de conversation ou second Fil
 social, toute taxonomie d'activités stockée en base.
+
+### UIUX-010B — Faire naître une ZUMRA
+
+**Faire naître une ZUMRA est un parcours de clarification progressive, pas un formulaire
+administratif.** L'expérience suit quatre moments humains : **l'activité → l'intention → le cadre
+→ l'initiative humaine**. Une seule étape est présentée à la fois ; les réponses restent présentes
+dans le formulaire pendant la navigation et alimentent un aperçu vivant. La sauvegarde durable
+n'est pas simulée : elle reste un besoin ultérieur. La discipline n'est pas affichée car aucune
+distinction métier correspondante n'existe aujourd'hui. La charte demeure hors de la naissance et
+se découvre plus tard, dans l'Espace ZUMRA.

@@ -30,6 +30,22 @@ final class ZumraHumanBirthTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_birth_page_is_a_four_step_human_journey_without_charter_or_technical_language(): void
+    {
+        $this->programMember('IDN-BIRTH-UI');
+        $this->signIn('IDN-BIRTH-UI');
+
+        $content = $this->get('/zumra/groupes/proposer')->assertOk()->getContent();
+
+        self::assertStringContainsString('data-step="1"', $content);
+        self::assertStringContainsString('data-step="4"', $content);
+        self::assertStringContainsString('Aperçu de votre ZUMRA', $content);
+        self::assertStringContainsString('Faire naître ma ZUMRA', $content);
+        self::assertStringContainsString('activity_relation[]', $content);
+        self::assertStringNotContainsString('internal_charter', $content);
+        self::assertStringNotContainsString('Votre objectif fondateur', $content);
+    }
+
     public function test_a_zumra_is_born_with_only_activity_objective_mode_and_name(): void
     {
         $this->programMember('IDN-BIRTH-MIN');
@@ -78,6 +94,19 @@ final class ZumraHumanBirthTest extends TestCase
         $activity = $group->activities()->sole();
         self::assertSame('Couture pour enfants', $activity->label);
         self::assertStringContainsString('Application de la couture générale', $activity->relation_to_principal);
+    }
+
+    public function test_a_derived_activity_without_its_relation_is_rejected_instead_of_silently_ignored(): void
+    {
+        $this->programMember('IDN-BIRTH-ACT-NOREL');
+        $this->signIn('IDN-BIRTH-ACT-NOREL');
+
+        $this->post('/zumra/groupes', $this->minimalPayload() + [
+            'activity_label' => ['Solutions numériques agricoles'],
+            'activity_relation' => [''],
+        ])->assertSessionHasErrors('activity_relation.0');
+
+        self::assertSame(0, ZumraGroup::query()->count());
     }
 
     public function test_a_leader_can_add_a_derived_activity_after_birth_but_must_state_the_relation(): void
