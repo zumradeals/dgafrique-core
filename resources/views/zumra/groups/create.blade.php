@@ -1,106 +1,16 @@
-{{--
-    Naissance d'une ZUMRA — ZUMRA-HUMAN-BIRTH-001, intégrée au carrefour /zumra depuis UIUX-010.
-    Quatre moments humains, un seul écran : la naissance reste bien plus légère que la
-    structuration (activités dérivées, cinq responsabilités, puis charte) qui vient ensuite,
-    depuis l'Espace ZUMRA. Aucune validation, financement ni nomination automatique. La charte
-    n'est plus mentionnée ici (UIUX-010 §17) : elle se découvre plus tard, au moment où elle
-    devient pertinente, sans que son mécanisme différé (ZUMRA-HUMAN-BIRTH-001) change.
---}}
 <x-layouts.portal title="Faire naître une ZUMRA — DG Afrique">
-    <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:820px">
-            <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
-
-            <div class="dg-page-header">
-                <div>
-                    <x-dg.label tone="saffron">Depuis le monde ZUMRA</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $configuration['creation_title'] }}</h1>
-                    <p>Une ZUMRA est un centre d’incubation autour d’une activité. Elle peut commencer avec vous seul·e — le reste (activités dérivées, responsabilités) se construit ensuite, depuis son Espace.</p>
-                </div>
-            </div>
-
-            @if($errors->any())
-                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
-            @endif
-
-            <form method="POST" action="{{ route('zumra.groups.store') }}" style="display:flex;flex-direction:column;gap:20px">
-                @csrf
-
-                <x-dg.fieldset>
-                    <legend>
-                        <span style="font-family:var(--dg-font-mono);font-size:11px;color:var(--dg-faint)">01</span>
-                        <x-dg.label>Votre activité</x-dg.label>
-                    </legend>
-                    <p class="dg-hint">Pas d’activité, pas de ZUMRA : c’est elle qui donne son identité au mouvement. Vous pourrez développer des activités dérivées ensuite, depuis sa fiche.</p>
-                    <div class="dg-field">
-                        <label for="domain">Votre activité principale</label>
-                        <input type="text" id="domain" name="domain" class="dg-input" value="{{ old('domain') }}" maxlength="140" placeholder="Ex. Couture, numérique, agriculture…" required>
-                    </div>
-                </x-dg.fieldset>
-
-                <x-dg.fieldset>
-                    <legend>
-                        <span style="font-family:var(--dg-font-mono);font-size:11px;color:var(--dg-faint)">02</span>
-                        <x-dg.label>Ce que vous voulez changer</x-dg.label>
-                    </legend>
-                    <div class="dg-field">
-                        <label for="founding_objective">Votre objectif fondateur</label>
-                        <textarea id="founding_objective" name="founding_objective" class="dg-textarea" rows="5" minlength="40" maxlength="1800" required>{{ old('founding_objective') }}</textarea>
-                        <span class="dg-hint">Décrivez ce que vous voulez apprendre, transmettre, construire ou résoudre à travers cette activité.</span>
-                    </div>
-                </x-dg.fieldset>
-
-                <x-dg.fieldset>
-                    <legend>
-                        <span style="font-family:var(--dg-font-mono);font-size:11px;color:var(--dg-faint)">03</span>
-                        <x-dg.label>Comment vous allez commencer</x-dg.label>
-                    </legend>
-                    <p class="dg-hint">Une ZUMRA peut agir localement, en ligne ou dans les deux espaces.</p>
-                    <div class="dg-radio-group">
-                        @foreach(['PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', 'HYBRID' => 'Hybride'] as $value => $label)
-                            <label class="dg-radio">
-                                <input type="radio" name="participation_mode" value="{{ $value }}" @checked(old('participation_mode', 'HYBRID') === $value)>
-                                {{ $label }}
-                            </label>
-                        @endforeach
-                    </div>
-                    <div class="dg-field" style="margin-top:12px">
-                        <label for="location">Où (si présentiel ou hybride)</label>
-                        <input type="text" id="location" name="location" class="dg-input" value="{{ old('location') }}" maxlength="160" placeholder="Ville, quartier… laissez vide si entièrement en ligne">
-                    </div>
-                    <div class="dg-field" style="margin-top:16px">
-                        <label>Comment votre ZUMRA pourra-t-elle accueillir des personnes qui souhaitent apprendre cette activité ?</label>
-                        <div class="dg-radio-group" style="margin-top:8px">
-                            @foreach($welcomeCapacities as $value => $label)
-                                <label class="dg-radio">
-                                    <input type="radio" name="welcome_capacity" value="{{ $value }}" @checked(old('welcome_capacity') === $value)>
-                                    {{ $label }}
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
-                    <label class="dg-consent" style="margin-top:16px">
-                        <input type="checkbox" name="assume_primary_lead" value="1" @checked(old('assume_primary_lead'))>
-                        <span>
-                            <strong>J’accepte d’être le premier responsable.</strong>
-                            Vous pouvez commencer seul·e. Ce choix est explicite ; les quatre autres sièges resteront vacants jusqu’à de vraies acceptations.
-                        </span>
-                    </label>
-                </x-dg.fieldset>
-
-                <x-dg.fieldset>
-                    <legend>
-                        <span style="font-family:var(--dg-font-mono);font-size:11px;color:var(--dg-faint)">04</span>
-                        <x-dg.label>Votre ZUMRA</x-dg.label>
-                    </legend>
-                    <div class="dg-field">
-                        <label for="name">Comment souhaitez-vous l’appeler ?</label>
-                        <input type="text" id="name" name="name" class="dg-input" value="{{ old('name') }}" maxlength="140" required>
-                    </div>
-                </x-dg.fieldset>
-
-                <button type="submit" class="dg-btn dg-btn--saffron" style="align-self:flex-start">Faire naître ma ZUMRA</button>
-            </form>
-        </div>
-    </x-dg.shell>
-</x-layouts.portal>
+<x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
+<div class="dg-page zb" data-zumra-birth>
+<form method="POST" action="{{ route('zumra.groups.store') }}" class="zb-layout" novalidate>@csrf
+<aside class="zb-rail"><a href="{{ route('zumra.index') }}" class="zb-back">← Retour au monde ZUMRA</a><div class="zb-rail-progress"><small>Naissance d’une ZUMRA</small><strong>Étape <span data-step-number>1</span> sur 4</strong><i><b data-progress></b></i></div><nav class="zb-step-nav">@foreach([1=>['L’activité','Le cœur de votre ZUMRA'],2=>['L’intention','Pourquoi cette ZUMRA existe'],3=>['Le cadre','Où et comment vous agirez'],4=>['Vous','Qui en prend l’initiative']] as $n=>[$title,$sub])<button type="button" class="zb-step-link {{ $n===1?'is-active':'' }}" data-go-step="{{ $n }}"><span>{{ $n }}</span><b>{{ $title }}</b><small>{{ $sub }}</small></button>@endforeach</nav><div class="zb-help"><strong>Besoin d’aide ?</strong><p>Nous sommes là pour vous accompagner à chaque étape.</p><a href="{{ route('zumra.index') }}">🎧 Contacter un guide</a></div><p class="zb-rail-note">🛡️ Vous pourrez inviter d’autres personnes et organiser votre gouvernance après la création.</p></aside>
+<main class="zb-workshop"><header class="zb-heading"><h1>Faire naître une ZUMRA <span>✨</span></h1><p>Donnez vie à votre espace d’activité et commencez à rassembler les bonnes personnes.</p></header><div class="zb-progress-line">@foreach([1=>['L’activité','Le cœur de votre ZUMRA'],2=>['L’intention','Pourquoi cette ZUMRA existe'],3=>['Le cadre','Où et comment vous agirez'],4=>['Vous','Qui en prend l’initiative']] as $n=>[$title,$sub])<div class="{{ $n===1?'is-active':'' }}" data-progress-step="{{ $n }}"><span>{{ $n }}</span><b>{{ $title }}</b><small>{{ $sub }}</small></div>@endforeach</div>
+@if($errors->any())<div class="zb-error">{{ $errors->first() }}</div>@endif
+<section class="zb-panel is-active" data-step="1"><h2>1. L’activité : le cœur de votre ZUMRA</h2><p>Toute ZUMRA naît d’une activité principale qui donne son sens à l’espace que vous voulez créer.</p><label class="zb-field"><b>Activité principale <em>*</em></b><input id="domain" name="domain" value="{{ old('domain') }}" maxlength="140" placeholder="Rechercher ou choisir une activité principale…" required><small>Exemples : Développement web, Agriculture urbaine, Couture, Transformation alimentaire, Design, Éducation…</small></label><div class="zb-derived"><b>Activités dérivées <span>(facultatif)</span></b><p>Ajoutez une activité complémentaire et expliquez son lien avec l’activité principale.</p><div data-derived-list></div><button type="button" data-add-derived>＋ Ajouter une activité dérivée</button></div></section>
+<section class="zb-panel" data-step="2"><h2>2. L’intention : pourquoi cette ZUMRA existe</h2><p>Parlez simplement de ce que vous souhaitez rendre possible avec d’autres personnes.</p><label class="zb-field"><b>Pourquoi voulez-vous faire naître cette ZUMRA ? <em>*</em></b><textarea id="founding_objective" name="founding_objective" rows="7" minlength="40" maxlength="1800" required placeholder="Quelle situation souhaitez-vous améliorer, pour qui et comment ?">{{ old('founding_objective') }}</textarea><small>40 caractères minimum. Utilisez vos propres mots, sans jargon technique.</small></label></section>
+<section class="zb-panel" data-step="3"><h2>3. Le cadre : où et comment vous agirez</h2><p>Choisissez la manière dont votre ZUMRA commencera réellement à vivre.</p><fieldset class="zb-choice"><legend>Comment votre ZUMRA agira-t-elle ? <em>*</em></legend>@foreach(['PHYSICAL'=>'En présentiel','DIGITAL'=>'En ligne','HYBRID'=>'Hybride'] as $value=>$label)<label><input type="radio" name="participation_mode" value="{{ $value }}" @checked(old('participation_mode','HYBRID')===$value) required><span>{{ $label }}</span></label>@endforeach</fieldset><label class="zb-field" data-location-field><b>Où votre ZUMRA commencera-t-elle ses activités ?</b><input id="location" name="location" value="{{ old('location') }}" maxlength="160" placeholder="Ville, quartier ou zone…"></label><fieldset class="zb-choice zb-choice--stack"><legend>Comment pourra-t-elle accueillir les personnes qui souhaitent apprendre ?</legend>@foreach($welcomeCapacities as $value=>$label)<label><input type="radio" name="welcome_capacity" value="{{ $value }}" @checked(old('welcome_capacity')===$value)><span>{{ $label }}</span></label>@endforeach</fieldset></section>
+<section class="zb-panel" data-step="4"><h2>4. Vous : qui en prend l’initiative</h2><p>Votre intention devient maintenant un espace humain réel.</p><label class="zb-field"><b>Comment souhaitez-vous appeler votre ZUMRA ? <em>*</em></b><input id="name" name="name" value="{{ old('name') }}" maxlength="140" required placeholder="Ex. GAMAD Technology"></label><label class="zb-lead"><input type="checkbox" name="assume_primary_lead" value="1" @checked(old('assume_primary_lead'))><span><b>Souhaitez-vous en être le premier responsable ?</b>Une ZUMRA peut naître avec vous seul·e. Les autres responsabilités resteront vacantes et personne ne sera ajouté automatiquement.</span></label></section>
+<footer class="zb-actions"><button type="button" class="zb-secondary" data-prev>← Précédent</button><a href="{{ route('zumra.index') }}">Annuler et quitter</a><button type="button" class="zb-next" data-next>Suivant : L’intention →</button><button type="submit" class="zb-submit" data-submit hidden>Faire naître ma ZUMRA ✨</button></footer></main>
+<aside class="zb-context"><section class="zb-context-card"><h2>🎯 À quoi sert cette étape ?</h2><div data-help-copy></div><strong data-principle></strong></section><section class="zb-preview"><h2>Aperçu de votre ZUMRA</h2><div class="zb-preview-mark">🌱</div><strong data-preview-name>Nom de votre ZUMRA</strong><small data-preview-subtitle>(à définir à la dernière étape)</small><dl><div><dt>🔗 Activité principale</dt><dd data-preview-domain>—</dd></div><div><dt>🧩 Activités dérivées</dt><dd data-preview-derived>—</dd></div><div><dt>📍 Lieu</dt><dd data-preview-location>—</dd></div><div><dt>◉ Mode</dt><dd data-preview-mode>Hybride</dd></div></dl></section><section class="zb-question"><strong>Une question ?</strong><p>Consultez notre guide ou échangez avec un autre créateur de ZUMRA.</p><a href="{{ route('zumra.index') }}">Voir le guide</a></section></aside>
+</form></div>
+<script>(()=>{const r=document.querySelector('[data-zumra-birth]');if(!r)return;let s=1,p=[...r.querySelectorAll('[data-step]')],l=[...r.querySelectorAll('[data-go-step]')],g=[...r.querySelectorAll('[data-progress-step]')],h=[['Définir clairement votre activité principale permettra aux bonnes personnes de vous découvrir et donnera une direction forte à votre ZUMRA.','Pas de ZUMRA sans activité. L’activité est la raison d’être de votre espace.'],['Votre intention rassemble les personnes autour d’une utilité commune et donne une direction humaine aux premières actions.','Dites ce que vous voulez améliorer, avec vos mots.'],['Le cadre rend votre départ réaliste : il précise où vous agirez et votre capacité actuelle à accueillir des personnes.','Ne promettez que ce que votre ZUMRA peut réellement transmettre.'],['Le nom rend votre espace reconnaissable. La responsabilité principale reste toujours un choix explicite.','Aucune personne ni responsabilité n’est ajoutée automatiquement.']],t=['','L’intention','Le cadre','Vous'];function show(n){s=Math.max(1,Math.min(4,n));p.forEach(x=>x.classList.toggle('is-active',+x.dataset.step===s));l.forEach(x=>x.classList.toggle('is-active',+x.dataset.goStep===s));g.forEach(x=>x.classList.toggle('is-active',+x.dataset.progressStep<=s));r.querySelector('[data-step-number]').textContent=s;r.querySelector('[data-progress]').style.width=s*25+'%';r.querySelector('[data-prev]').hidden=s===1;r.querySelector('[data-next]').hidden=s===4;r.querySelector('[data-submit]').hidden=s!==4;r.querySelector('[data-next]').textContent=s<4?'Suivant : '+t[s]+' →':''}function valid(){for(const f of p[s-1].querySelectorAll('[required]'))if(!f.checkValidity()){f.reportValidity();return false}return true}function val(q){return r.querySelector(q)?.value.trim()||''}function preview(){r.querySelector('[data-help-copy]').innerHTML='<p>'+h[s-1][0]+'</p>';r.querySelector('[data-principle]').textContent=h[s-1][1];r.querySelector('[data-preview-name]').textContent=val('#name')||'Nom de votre ZUMRA';r.querySelector('[data-preview-subtitle]').textContent=val('#founding_objective')||'(à définir à la dernière étape)';r.querySelector('[data-preview-domain]').textContent=val('#domain')||'—';r.querySelector('[data-preview-location]').textContent=val('#location')||'—';let m=r.querySelector('[name="participation_mode"]:checked');r.querySelector('[data-preview-mode]').textContent=m?{PHYSICAL:'Présentiel',DIGITAL:'En ligne',HYBRID:'Hybride'}[m.value]:'—';r.querySelector('[data-location-field]').hidden=m?.value==='DIGITAL';let d=[...r.querySelectorAll('[name="activity_label[]"]')].map(x=>x.value.trim()).filter(Boolean);r.querySelector('[data-preview-derived]').textContent=d.join(', ')||'—'}r.querySelector('[data-next]').onclick=()=>{if(valid()){show(s+1);preview()}};r.querySelector('[data-prev]').onclick=()=>{show(s-1);preview()};l.forEach(x=>x.onclick=()=>{let n=+x.dataset.goStep;if(n<=s||valid()){show(n);preview()}});const list=r.querySelector('[data-derived-list]');r.querySelector('[data-add-derived]').onclick=()=>{let row=document.createElement('div');row.className='zb-derived-row';row.innerHTML='<input name="activity_label[]" maxlength="140" placeholder="Activité dérivée"><textarea name="activity_relation[]" maxlength="600" rows="2" placeholder="Comment dérive-t-elle de l’activité principale ?"></textarea><button type="button" aria-label="Retirer">×</button>';row.querySelector('button').onclick=()=>{row.remove();preview()};row.querySelectorAll('input,textarea').forEach(x=>x.oninput=preview);list.append(row);row.querySelector('input').focus()};r.querySelectorAll('input,textarea').forEach(x=>x.oninput=preview);r.querySelectorAll('[name="participation_mode"]').forEach(x=>x.onchange=preview);show(1);preview()})();</script>
+</x-dg.shell></x-layouts.portal>
