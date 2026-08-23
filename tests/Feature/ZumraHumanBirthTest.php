@@ -30,6 +30,22 @@ final class ZumraHumanBirthTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_birth_page_is_a_four_step_human_journey_without_charter_or_technical_language(): void
+    {
+        $this->programMember('IDN-BIRTH-UI');
+        $this->signIn('IDN-BIRTH-UI');
+
+        $content = $this->get('/zumra/groupes/proposer')->assertOk()->getContent();
+
+        self::assertStringContainsString('data-step="1"', $content);
+        self::assertStringContainsString('data-step="4"', $content);
+        self::assertStringContainsString('Aperçu de votre ZUMRA', $content);
+        self::assertStringContainsString('Faire naître ma ZUMRA', $content);
+        self::assertStringContainsString('activity_relation[]', $content);
+        self::assertStringNotContainsString('internal_charter', $content);
+        self::assertStringNotContainsString('Votre objectif fondateur', $content);
+    }
+
     public function test_a_zumra_is_born_with_only_activity_objective_mode_and_name(): void
     {
         $this->programMember('IDN-BIRTH-MIN');
