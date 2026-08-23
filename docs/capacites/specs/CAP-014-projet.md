@@ -13,7 +13,7 @@ Le projet est un objet évolutif qui transforme une idée, une opportunité ou u
 
 ## Identité et portage
 
-Chaque projet possède sa référence fonctionnelle, son initiateur et un porteur explicite. Il peut être personnel accompagné ou porté par une ZUMRA. Une idée publiée ne transfère aucune propriété. Le régime annoncé est personnel accompagné, collectif de ZUMRA, partenariat ou intérêt communautaire ; les droits juridiques devront être contractualisés avant tout engagement financier.
+Chaque projet possède sa référence fonctionnelle, son initiateur, un porteur explicite et une ZUMRA d'appartenance — **tout projet appartient toujours à une ZUMRA** (PROJET-ZUMRA-INVARIANT-001), y compris lorsqu'une Personne l'initie et le gouverne seule : une ZUMRA peut elle-même ne compter qu'une seule personne, sans qu'il y ait opposition entre initiative individuelle et appartenance à une ZUMRA. Le régime « personnel accompagné » désigne donc la gouvernance du projet par la Personne à l'intérieur de sa ZUMRA — jamais un projet extérieur à toute ZUMRA. Une idée publiée ne transfère aucune propriété. Le régime annoncé est personnel accompagné, collectif de ZUMRA, partenariat ou intérêt communautaire ; les droits juridiques devront être contractualisés avant tout engagement financier.
 
 ## Gouvernance
 

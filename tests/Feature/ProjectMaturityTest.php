@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectMaturityService;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Organization;
 use App\Models\Project;
 use App\Models\ProjectAccompaniment;
@@ -108,6 +109,16 @@ final class ProjectMaturityTest extends TestCase
         self::assertSame(Project::STATUS_PROPOSED, $project->status);
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function project(string $identity): Project
     {
         return app(ProjectService::class)->create(
@@ -115,6 +126,7 @@ final class ProjectMaturityTest extends TestCase
             [
                 'owner_type' => 'PERSON',
                 'group_reference' => null,
+                'zumra_group_reference' => $this->zumraFor($identity),
                 'source_need_reference' => null,
                 'name' => 'Atelier numérique communautaire',
                 'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',

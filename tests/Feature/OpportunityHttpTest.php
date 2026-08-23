@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Application\Missions\MissionWorkflow;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\Mission;
 use App\Models\PersonProfile;
@@ -119,7 +120,7 @@ final class OpportunityHttpTest extends TestCase
     private function openMission(string $owner, string $title): Mission
     {
         $this->activateProgram($owner);
-        $project = app(ProjectService::class)->create($owner, $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create($owner, $this->projectPayload(['zumra_group_reference' => $this->zumraFor($owner)]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(MissionWorkflow::class);
         $mission = $workflow->create($owner, 'PROJECT', $project->public_reference, [
@@ -130,6 +131,16 @@ final class OpportunityHttpTest extends TestCase
         $mission = $workflow->propose($mission, $owner);
 
         return $workflow->officialize($mission, $owner, ['expected_result' => 'Résultat attendu de test.']);
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

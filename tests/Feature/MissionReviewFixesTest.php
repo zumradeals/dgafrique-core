@@ -164,7 +164,7 @@ final class MissionReviewFixesTest extends TestCase
     {
         $this->activateProgram('IDN-CREATOR');
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->group('IDN-OWNER')->public_reference]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
 
         $mission = $workflow->create('IDN-CREATOR', 'PROJECT', $project->public_reference, [
@@ -242,7 +242,7 @@ final class MissionReviewFixesTest extends TestCase
     public function test_authority_pool_is_not_masked_by_unrelated_recent_missions(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->group('IDN-OWNER')->public_reference]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
 
         $mission = $workflow->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
@@ -255,7 +255,7 @@ final class MissionReviewFixesTest extends TestCase
         // laisserait masquer la décision de IDN-OWNER.
         for ($i = 0; $i < 6; $i++) {
             $this->activateProgram("IDN-OTHER-{$i}");
-            $otherProject = app(ProjectService::class)->create("IDN-OTHER-{$i}", $this->projectPayload(['name' => "Autre projet {$i}"]), (new ProjectConfiguration)->defaults());
+            $otherProject = app(ProjectService::class)->create("IDN-OTHER-{$i}", $this->projectPayload(['name' => "Autre projet {$i}", 'zumra_group_reference' => $this->group("IDN-OTHER-{$i}")->public_reference]), (new ProjectConfiguration)->defaults());
             $other = $workflow->create("IDN-OTHER-{$i}", 'PROJECT', $otherProject->public_reference, [
                 'title' => "Mission étrangère {$i}", 'description' => 'Une Mission sans rapport, proposée après celle de IDN-OWNER.',
             ]);
@@ -271,7 +271,7 @@ final class MissionReviewFixesTest extends TestCase
     public function test_engine_calls_the_specific_adapter_method_not_can_officialize(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->group('IDN-OWNER')->public_reference]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
         $mission = $workflow->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
             'title' => 'Mission témoin', 'description' => 'Sert à prouver que canCancel() est réellement consulté.',
@@ -418,7 +418,7 @@ final class MissionReviewFixesTest extends TestCase
     public function test_recurrence_deadline_is_relative_to_each_occurrence_not_a_copy_of_source_due_at(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->group('IDN-OWNER')->public_reference]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
         $mission = $workflow->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
             'title' => 'Mission avec échéance', 'description' => 'Sa récurrence doit garder un décalage relatif.',
@@ -531,7 +531,7 @@ final class MissionReviewFixesTest extends TestCase
             $context = $this->group($owner);
             $contextReference = $context->public_reference;
         } else {
-            $context = app(ProjectService::class)->create($owner, $this->projectPayload(['name' => $title.' — projet']), (new ProjectConfiguration)->defaults());
+            $context = app(ProjectService::class)->create($owner, $this->projectPayload(['name' => $title.' — projet', 'zumra_group_reference' => $this->group($owner)->public_reference]), (new ProjectConfiguration)->defaults());
             $contextReference = $context->public_reference;
         }
 

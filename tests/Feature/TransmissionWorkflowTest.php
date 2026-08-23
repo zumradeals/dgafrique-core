@@ -12,6 +12,7 @@ use App\Application\Projects\ProjectService;
 use App\Application\Transmission\TransmissionContextService;
 use App\Application\Transmission\TransmissionMatchingEngine;
 use App\Application\Transmission\TransmissionParticipationService;
+use App\Application\Transmission\TransmissionService;
 use App\Application\Transmission\TransmissionVisibilityService;
 use App\Application\Transmission\TransmissionWorkflow;
 use App\Application\Zumra\ZumraGroupService;
@@ -210,7 +211,7 @@ final class TransmissionWorkflowTest extends TestCase
     {
         $this->activateProgram('IDN-DECIDER');
         $this->activateProgram('IDN-TEACH');
-        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-DECIDER')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(TransmissionWorkflow::class);
         $contexts = app(TransmissionContextService::class);
@@ -241,7 +242,7 @@ final class TransmissionWorkflowTest extends TestCase
         $this->activateProgram('IDN-DECIDER');
         $this->activateProgram('IDN-TEACH');
         $this->activateProgram('IDN-LEARN2');
-        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-DECIDER')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(TransmissionWorkflow::class);
         $participation = app(TransmissionParticipationService::class);
@@ -264,7 +265,7 @@ final class TransmissionWorkflowTest extends TestCase
         // contextuelle est refusée — même par une autorité légitime.
         $this->assertAborts(409, fn () => $workflow->validateByContext($transmission, 'IDN-DECIDER'), 'Aucune trace : validation contextuelle refusée.');
 
-        app(\App\Application\Transmission\TransmissionService::class)->addContribution($transmission, 'IDN-TEACH', 'Séance de suivi budgétaire réalisée avec le budget du projet.');
+        app(TransmissionService::class)->addContribution($transmission, 'IDN-TEACH', 'Séance de suivi budgétaire réalisée avec le budget du projet.');
 
         $transmission = $workflow->validateByContext($transmission, 'IDN-DECIDER', 'Réalisation confirmée par le porteur du projet.');
         self::assertSame(Transmission::STATUS_COMPLETED_BY_CONTEXT, $transmission->status);
@@ -383,7 +384,7 @@ final class TransmissionWorkflowTest extends TestCase
     public function test_mission_context_link_and_need_context_visibility_only(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-OWNER')]), (new ProjectConfiguration)->defaults());
         $missionWorkflow = app(MissionWorkflow::class);
         $mission = $missionWorkflow->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
             'title' => 'Former un pair', 'description' => 'Organiser une session de formation entre pairs sur le terrain.',
@@ -486,6 +487,16 @@ final class TransmissionWorkflowTest extends TestCase
         } catch (HttpException $e) {
             self::assertSame($status, $e->getStatusCode(), $message);
         }
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

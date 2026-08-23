@@ -7,14 +7,13 @@ namespace Tests\Feature;
 use App\Application\Missions\MissionAssignmentService;
 use App\Application\Missions\MissionBlockerService;
 use App\Application\Missions\MissionDependencyService;
-use App\Application\Missions\MissionMatchingEngine;
 use App\Application\Missions\MissionRecurrenceService;
-use App\Application\Missions\MissionService;
 use App\Application\Missions\MissionSubmissionService;
 use App\Application\Missions\MissionWorkflow;
 use App\Application\Missions\Support\RecurrenceRule;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
@@ -44,7 +43,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_invite_rejects_an_unresolvable_discovery_reference(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission A');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission A');
         $assignments = app(MissionAssignmentService::class);
 
         $this->assertAborts(422, fn () => $assignments->invite($mission, 'IDN-OWNER', (string) Str::uuid(), MissionAssignment::ROLE_LEARNER));
@@ -53,7 +52,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_invite_resolves_a_real_discoverable_person_to_the_correct_core_identity(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission A');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission A');
         $discoveryReference = $this->discoverableProfile('IDN-REAL-PERSON', 'Awa Réelle');
 
         $assignments = app(MissionAssignmentService::class);
@@ -65,7 +64,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_mission_show_and_matching_pages_never_expose_a_raw_core_identity_reference(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission publique', visibility: Mission::VISIBILITY_PUBLIC);
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission publique', visibility: Mission::VISIBILITY_PUBLIC);
         $mission->capabilityRequirements()->create([
             'label' => 'Developpement web', 'normalized_label' => 'developpement web',
             'requirement_level' => 'REQUIRED', 'quantity' => 1,
@@ -119,7 +118,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_creating_a_second_recurrence_for_the_same_source_is_rejected(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission récurrente unique');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission récurrente unique');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY', 'UTC');
 
@@ -128,7 +127,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_recurrence_state_machine_forbids_stopped_reactivation(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission cycle récurrence');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission cycle récurrence');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrence = $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY', 'UTC');
 
@@ -158,7 +157,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_recurrence_state_machine_allows_pause_then_stop_directly(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission pause puis stop');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission pause puis stop');
         $recurrences = app(MissionRecurrenceService::class);
         $recurrence = $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY', 'UTC');
         $recurrences->pause($mission, $recurrence, 'IDN-OWNER');
@@ -169,7 +168,7 @@ final class MissionReviewFixesRound2Test extends TestCase
 
     public function test_rrule_parser_rejects_unsupported_and_duplicate_keys_via_the_service(): void
     {
-        [$mission, ] = $this->openMission('IDN-OWNER', 'Mission RRULE stricte');
+        [$mission] = $this->openMission('IDN-OWNER', 'Mission RRULE stricte');
         $recurrences = app(MissionRecurrenceService::class);
 
         $this->assertAborts(422, fn () => $recurrences->create($mission, 'IDN-OWNER', 'FREQ=DAILY;BYHOUR=09', 'UTC'));
@@ -193,7 +192,7 @@ final class MissionReviewFixesRound2Test extends TestCase
     public function test_monthly_recurrence_anchor_is_persisted_and_reused_across_real_occurrence_generation(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-OWNER')]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
         $mission = $workflow->create('IDN-OWNER', 'PROJECT', $project->public_reference, [
             'title' => 'Revue mensuelle', 'description' => 'Une revue mensuelle ancrée le 31 du mois.',
@@ -221,7 +220,7 @@ final class MissionReviewFixesRound2Test extends TestCase
     public function test_contribute_report_additional_blocker_and_dependency_remove_reject_on_terminal_mission(): void
     {
         [$mission, $projectRef] = $this->openMission('IDN-OWNER', 'Mission à verrouiller');
-        [$other, ] = $this->openMission('IDN-OWNER', 'Autre Mission', contextReferenceReuse: $projectRef);
+        [$other] = $this->openMission('IDN-OWNER', 'Autre Mission', contextReferenceReuse: $projectRef);
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
         $blockers = app(MissionBlockerService::class);
@@ -261,7 +260,7 @@ final class MissionReviewFixesRound2Test extends TestCase
         if ($contextReferenceReuse !== null) {
             $contextReference = $contextReferenceReuse;
         } else {
-            $project = app(ProjectService::class)->create($owner, $this->projectPayload(['name' => $title.' — projet '.uniqid()]), (new ProjectConfiguration)->defaults());
+            $project = app(ProjectService::class)->create($owner, $this->projectPayload(['name' => $title.' — projet '.uniqid(), 'zumra_group_reference' => $this->zumraFor($owner)]), (new ProjectConfiguration)->defaults());
             $contextReference = $project->public_reference;
         }
 
@@ -309,6 +308,16 @@ final class MissionReviewFixesRound2Test extends TestCase
         ]);
 
         return $profile;
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

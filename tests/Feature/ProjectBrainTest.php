@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\PersonProfile;
 use App\Models\Project;
@@ -141,11 +142,22 @@ final class ProjectBrainTest extends TestCase
         self::assertStringContainsString('dg-brain-drawer--aside', $content);
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function project(string $owner, array $overrides = []): Project
     {
         return app(ProjectService::class)->create($owner, array_replace([
             'owner_type' => 'PERSON',
             'group_reference' => null,
+            'zumra_group_reference' => $this->zumraFor($owner),
             'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',

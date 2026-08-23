@@ -13,17 +13,21 @@ use App\Application\Missions\MissionWorkflow;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
 use App\Application\Sharing\ContextShareService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
+use App\Models\ContextComment;
 use App\Models\ContextShare;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionEvent;
 use App\Models\MissionRecurrence;
 use App\Models\PersonProfile;
+use App\Models\Project;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -174,7 +178,7 @@ final class MissionStructureMatchingTest extends TestCase
         $comments = app(ContextCommentService::class);
 
         $comments->addMission($mission, 'IDN-OWNER', 'COORDINATION', 'Merci de préparer le matériel avant vendredi.');
-        self::assertSame(1, \App\Models\ContextComment::query()->count());
+        self::assertSame(1, ContextComment::query()->count());
 
         $this->assertAborts(404, fn () => $comments->addMission($mission, 'IDN-STRANGER', 'QUESTION', 'Puis-je participer ?'));
     }
@@ -194,8 +198,8 @@ final class MissionStructureMatchingTest extends TestCase
         self::assertSame($rolesBefore, ZumraGroupRole::query()->count(), 'MISSIONS ne crée jamais de rôle ZUMRA/Projet.');
 
         // Le Fil unique est /activite : aucune route « missions.feed » ou équivalente n'existe.
-        self::assertFalse(\Illuminate\Support\Facades\Route::has('missions.feed'));
-        self::assertTrue(\Illuminate\Support\Facades\Route::has('activity.index') || \Illuminate\Support\Facades\Route::has('activite'));
+        self::assertFalse(Route::has('missions.feed'));
+        self::assertTrue(Route::has('activity.index') || Route::has('activite'));
     }
 
     private function assertAborts(int $status, callable $fn): void
@@ -208,7 +212,7 @@ final class MissionStructureMatchingTest extends TestCase
         }
     }
 
-    /** @return array{0: Mission, 1: \App\Models\Project} */
+    /** @return array{0: Mission, 1: Project} */
     private function openMissionWithProject(array $missionOverrides = []): array
     {
         $this->activateProgram('IDN-OWNER');
@@ -247,10 +251,20 @@ final class MissionStructureMatchingTest extends TestCase
         return $profile;
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function projectPayload(array $overrides = []): array
     {
         return array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor('IDN-OWNER'), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',

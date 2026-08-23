@@ -403,12 +403,25 @@ final class PartnershipHttpTest extends TestCase
         ], $overrides));
     }
 
+    /** PROJET-ZUMRA-INVARIANT-001 — mémoïsé par acteur pour éviter une ZUMRA par appel. */
+    private array $zumraByActor = [];
+
+    private function zumraFor(string $actor): string
+    {
+        return $this->zumraByActor[$actor] ??= app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.Str::random(6), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function project(string $owner, array $overrides = []): Project
     {
         $this->activateProgram($owner);
 
         return app(ProjectService::class)->create($owner, array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor($owner), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',

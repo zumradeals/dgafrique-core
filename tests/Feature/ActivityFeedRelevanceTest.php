@@ -8,6 +8,7 @@ use App\Application\Activity\ActivityFeedService;
 use App\Application\Missions\MissionWorkflow;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\Need;
@@ -356,7 +357,7 @@ final class ActivityFeedRelevanceTest extends TestCase
     private function openMission(string $owner, array $missionOverrides = []): array
     {
         $this->activateProgram($owner);
-        $project = app(ProjectService::class)->create($owner, $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create($owner, $this->projectPayload(['zumra_group_reference' => $this->zumraFor($owner)]), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
 
         $mission = $workflow->create($owner, 'PROJECT', $project->public_reference, array_replace([
@@ -368,6 +369,16 @@ final class ActivityFeedRelevanceTest extends TestCase
         $mission = $workflow->officialize($mission, $owner, ['expected_result' => 'Une session pilote réalisée.']);
 
         return [$mission, $project];
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

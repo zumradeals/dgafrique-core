@@ -9,6 +9,7 @@ use App\Application\Missions\MissionWorkflow;
 use App\Application\Opportunities\OpportunityEngine;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
@@ -348,10 +349,23 @@ final class OpportunityEngineTest extends TestCase
         return [$mission, $project];
     }
 
+    /** PROJET-ZUMRA-INVARIANT-001 — mémoïsé, une seule ZUMRA solo pour 'IDN-OWNER' dans ce fichier. */
+    private ?string $ownerZumraReference = null;
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.Str::random(6), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function projectPayload(array $overrides = []): array
     {
         return array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->ownerZumraReference ??= $this->zumraFor('IDN-OWNER'), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',

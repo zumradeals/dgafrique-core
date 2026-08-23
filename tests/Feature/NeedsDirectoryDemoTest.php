@@ -8,6 +8,7 @@ use App\Application\Needs\NeedConfiguration;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
@@ -101,10 +102,20 @@ final class NeedsDirectoryDemoTest extends TestCase
         ], $overrides), (new NeedConfiguration)->defaults());
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function projectPayload(): array
     {
         return [
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor('IDN-NDIR-PROJECT'), 'source_need_reference' => null,
             'name' => 'GAMAD Technology',
             'summary' => 'Centre d’initiation informatique à Bouaké pour former les jeunes.',
             'problem' => 'Les jeunes de Bouaké manquent de compétences numériques suffisamment détaillées pour ce test.',

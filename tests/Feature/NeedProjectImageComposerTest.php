@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\Project;
+use App\Models\ProjectDraft;
+use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -93,10 +97,11 @@ final class NeedProjectImageComposerTest extends TestCase
         Storage::fake('public');
         $this->member('IDN-OWNER');
         $this->signIn('IDN-OWNER');
+        $draft = $this->walkThroughProjectIdea('IDN-OWNER');
 
-        $this->post('/projets', $this->projectPayload([
+        $this->post(route('projects.draft.confirm', $draft), [
             'image' => UploadedFile::fake()->image('projet.jpg', 400, 300),
-        ]))->assertRedirect();
+        ])->assertRedirect();
 
         $project = Project::query()->sole();
         self::assertNotNull($project->image_path);
@@ -108,10 +113,11 @@ final class NeedProjectImageComposerTest extends TestCase
         Storage::fake('public');
         $this->member('IDN-OWNER');
         $this->signIn('IDN-OWNER');
+        $draft = $this->walkThroughProjectIdea('IDN-OWNER');
 
-        $this->post('/projets', $this->projectPayload([
+        $this->post(route('projects.draft.confirm', $draft), [
             'image' => UploadedFile::fake()->create('projet.txt', 10, 'text/plain'),
-        ]))->assertSessionHasErrors('image');
+        ])->assertSessionHasErrors('image');
         self::assertSame(0, Project::query()->count());
     }
 
@@ -119,7 +125,8 @@ final class NeedProjectImageComposerTest extends TestCase
     {
         $this->member('IDN-OWNER');
         $this->signIn('IDN-OWNER');
-        $this->post('/projets', $this->projectPayload())->assertRedirect();
+        $draft = $this->walkThroughProjectIdea('IDN-OWNER');
+        $this->post(route('projects.draft.confirm', $draft))->assertRedirect();
         $project = Project::query()->sole();
 
         $show = $this->get('/projets/'.$project->public_reference);
@@ -145,33 +152,45 @@ final class NeedProjectImageComposerTest extends TestCase
         ], $overrides);
     }
 
-    private function projectPayload(array $overrides = []): array
+    /**
+     * Parcourt le brouillon UIUX-009B jusqu'à « relire » — l'upload d'image reste vérifié à sa
+     * toute dernière étape (confirmation), là où il vit désormais.
+     */
+    private function walkThroughProjectIdea(string $actor): ProjectDraft
     {
-        return array_replace([
-            'owner_type' => 'PERSON',
-            'name' => 'Atelier numérique communautaire',
-            'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services utiles.',
-            'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre et transformer leurs acquis.',
-            'proposed_solution' => 'Mettre en place un atelier progressif avec transmission entre pairs et accompagnement réel.',
-            'beneficiaries' => 'Jeunes débutants et personnes en reconversion dans la commune.',
-            'domain' => 'DIGITAL',
-            'participation_mode' => 'HYBRID',
-            'objectives' => "Former une première équipe\nProduire trois services pilotes",
-            'required_capabilities' => "Formation numérique\nGestion de projet",
-            'required_resources' => "Ordinateurs\nConnexion internet",
-            'risks' => '',
-            'milestones' => "Constituer l’équipe\nPréparer le lieu\nLancer le pilote",
-            'property_regime' => 'PERSONAL_SUPPORTED',
-            'visibility' => 'PUBLIC',
-        ], $overrides);
+        $this->get(route('projects.create'))->assertRedirect();
+        $draft = ProjectDraft::query()->where('actor_core_reference', $actor)->where('status', ProjectDraft::STATUS_DRAFT)->latest('created_at')->firstOrFail();
+
+        $zumra = app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.Str::random(6), 'domain' => 'Numérique',
+            'founding_objective' => str_repeat('Ancrer ce projet dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ]);
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra->public_reference, '_intent' => 'continue'])->assertRedirect();
+        $steps = [
+            'nom' => ['name' => 'Atelier numérique communautaire'],
+            'resume' => ['summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services utiles.'],
+            'probleme' => ['problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre et transformer leurs acquis.'],
+            'solution' => ['proposed_solution' => 'Mettre en place un atelier progressif avec transmission entre pairs et accompagnement réel.'],
+            'beneficiaires' => ['beneficiaries' => 'Jeunes débutants et personnes en reconversion dans la commune.'],
+            'logistique' => ['domain' => 'DIGITAL', 'participation_mode' => 'HYBRID'],
+        ];
+        foreach ($steps as $step => $answers) {
+            $this->post(route('projects.draft.update', [$draft, $step]), $answers + ['_intent' => 'continue'])->assertRedirect();
+        }
+        $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Former une première équipe', 'Produire trois services pilotes'], '_intent' => 'continue'])->assertRedirect();
+        $this->post(route('projects.draft.update', [$draft, 'besoins']), ['_intent' => 'continue'])->assertRedirect();
+
+        return $draft->fresh();
     }
 
     private function member(string $id): void
     {
         $body = str_repeat('Respect et transmission. ', 5);
-        $charter = \App\Models\ZumraCharter::query()->firstOrCreate(
+        $charter = ZumraCharter::query()->firstOrCreate(
             ['version' => '2026.1'],
-            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => \App\Models\ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
+            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
         );
         ZumraProgramMembership::query()->create([
             'core_identity_reference' => $id,

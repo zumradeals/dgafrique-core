@@ -1090,3 +1090,142 @@ B dédiée à la hiérarchie d'action.
 de financement de Projet, découverte de Mission, hiérarchie d'action de Mon espace, portail public
 vs. application membre (Landing), Cerveau/Crédit IA, toute règle ou transition métier — aucun n'a
 été touché.
+
+## 31. Addendum daté — UIUX-009B, création humaine progressive d'un Projet (23 août 2026)
+
+**Portée : reconstruction complète du parcours manuel de naissance d'un Projet — un formulaire
+monolithique devient un parcours court, progressif, sauvegardable et reprenable, indépendant du
+Cerveau.** Ce chantier était explicitement réservé « Phase B » par l'audit UIUX-009 Phase A et par
+l'addendum §30 ci-dessus.
+
+**Décisions rendues durables** :
+
+- **Un brouillon de Projet est une entité à part entière, hors `dg_projects` et hors namespace
+  Cerveau — jamais un état `DRAFT` inventé sur `Project`.** Les colonnes texte de `dg_projects` sont
+  `NOT NULL` au niveau schéma (une ligne à moitié remplie ne peut pas exister), et le calcul de
+  quota de `ProjectService::create()` compte toute ligne hors `COMPLETED`/`ARCHIVED` — un brouillon
+  déguisé en `Project` aurait donc silencieusement consommé le quota avant même d'être complet. Le
+  nouveau modèle `App\Models\ProjectDraft` (`dg_project_drafts` : UUID, acteur, payload JSON
+  progressif, étape courante, statut, horodatages) reprend la forme déjà éprouvée en production par
+  `ProjectBrainIntent` (statuts `DRAFT`/`CREATED`, reprise par UUID stable), sans jamais le
+  réutiliser directement : le Cerveau reste une seconde porte d'entrée entièrement indépendante,
+  jamais une dépendance du parcours déterministe.
+- **La convergence finale est unique.** `ProjectDraftService::confirm()` appelle exactement le même
+  `ProjectService::create()`, inchangé, que `ProjectBrainProjectBirthService::confirm()` pour le
+  Cerveau — aucune règle métier (adhésion Programme, compatibilité porteur/régime, quota de projets
+  actifs, `maturity` toujours `IDEA`) n'est dupliquée ni réécrite pour ce nouveau chemin.
+- **Les jalons détaillés sortent de la naissance du Projet.** `milestones` était une exigence de
+  validation du seul contrôleur (`ProjectController::store()`, supprimé), jamais une règle de
+  `ProjectService::create()` — `ProjectList::fromText('')` accepte déjà une chaîne vide et ne crée
+  alors aucun jalon, comportement inchangé. Les jalons deviendront un des premiers pas du Projet
+  après sa naissance, jamais une condition pour naître.
+- **Les portes bloquantes s'expliquent au plus tôt, jamais après coup.** L'absence d'adhésion
+  Programme ZUMRA active est signalée avant même qu'un brouillon soit créé ; le quota de projets
+  actifs est vérifié dès la toute première question de contenu (« Pour qui »), pas seulement à la
+  confirmation finale — application directe d'un constat de l'audit UIUX-009 Phase A (règles
+  invisibles ne se révélant qu'en échec de soumission).
+- **Le parcours est utilisable entièrement sans Cerveau, par construction, pas par accident** : dix
+  étapes courtes (« Pour qui » → « Votre idée », découpée en quatre questions successives (nom,
+  résumé, problème, solution) → « À qui » → « Où et comment », lieu conditionnel → « Objectifs » →
+  « Ce qui pourrait manquer », collections dynamiques différables → « Relire », résumé humain avec
+  édition par section avant confirmation). Chaque étape peut être sauvegardée explicitement
+  (« Enregistrer et continuer plus tard », sans validation de complétude) et reprise plus tard au
+  point exact où elle a été laissée, jamais depuis le début. `ProjectBrainIntent` et sa mémoire
+  restent entièrement intacts et non référencés par ce code.
+- **L'illustration facultative du Projet (`image_path`, CAP-013/014/019) survit à la disparition du
+  formulaire unique** : elle se demande désormais à la toute dernière étape (« Relire »), au moment
+  de la confirmation, plutôt qu'au milieu d'un long formulaire — cohérent avec sa nature
+  différable et « à l'ajout rapide ».
+
+**Bogue corrigé en cours de mission (routage, pas une décision produit)** : la route générique
+`POST /projets/proposer/{draft}/{step}` (`step` = `[a-z]+`) était déclarée avant les routes
+nommées `abandonner`/`confirmer`, qui satisfont toutes deux ce même motif — Laravel routait donc
+silencieusement une confirmation ou un abandon vers la validation d'étape générique, qui les
+rejetait en 404. Les routes nommées sont désormais déclarées en premier. Le limiteur de débit
+`project-write` (8/min, dimensionné pour l'ancien formulaire à une seule soumission et les
+réponses occasionnelles du Cerveau) sous-dimensionnait aussi un parcours à dix étapes courtes plus
+ajout/retrait de collections ; un limiteur dédié `project-draft-write` (40/min) a été introduit
+pour ce seul chemin, sans toucher au limiteur du Cerveau.
+
+**Limites documentées (non résolues ici)** : le brouillon ne conserve qu'un seul exemplaire actif
+par acteur (`findOrStart`) — une personne qui démarre volontairement une seconde idée en parallèle
+doit d'abord abandonner ou terminer la première ; ce choix suit la sémantique déjà établie par
+`ProjectBrainIntent` et n'a pas été reconsidéré ici.
+
+**Hors périmètre** : jalons détaillés (deviennent un premier pas post-naissance, mission séparée),
+Cerveau/`ProjectBrainIntent` (non modifiés), écran de financement de Projet, découverte de Mission,
+hiérarchie d'action de Mon espace au-delà de la carte de reprise ajoutée, toute règle métier de
+`ProjectService::create()` — aucun n'a été touché.
+
+**Correction (PROJET-ZUMRA-INVARIANT-001, §32 ci-dessous)** — cet addendum décrivait l'étape
+« Pour qui » comme un choix strict entre porteur personnel sans ZUMRA et porteur ZUMRA, et
+qualifiait le régime de propriété de « calculé silencieusement à partir du porteur » sans jamais
+demander de ZUMRA pour le régime personnel. Un arbitrage doctrinal ultérieur a établi qu'un Projet
+appartient toujours à une ZUMRA, y compris sous gouvernance personnelle — voir §32 pour la
+correction complète du parcours et du modèle de données.
+
+## 32. Addendum daté — PROJET-ZUMRA-INVARIANT-001, ancrage ZUMRA obligatoire (23 août 2026)
+
+**Portée : correction doctrinale portant sur l'appartenance d'un Projet à une ZUMRA, appliquée au
+parcours déterministe (#117) et au Cerveau.** Un audit ciblé, mené sans code après la livraison de
+UIUX-009B, a établi que la notion de « Projet personnel accompagné » telle qu'implémentée était
+doctrinalement incorrecte : elle traitait la gouvernance personnelle comme une alternative à
+l'appartenance ZUMRA, alors que l'invariant canonique est qu'**un Projet appartient toujours à une
+ZUMRA**, qu'il soit gouverné par une Personne seule ou collectivement.
+
+**Décisions rendues durables** :
+
+- **Modèle conceptuel à quatre axes, désormais orthogonaux.** `initiator_core_reference` (qui a
+  initié), `zumra_group_id` (dans quelle ZUMRA le Projet grandit — nouvelle colonne `dg_projects`,
+  nullable uniquement pour compatibilité historique), `owner_type`/`owner_reference` (qui décide
+  aujourd'hui — Personne ou ZUMRA collectivement) et `property_regime` (le régime du Projet, jamais
+  une preuve d'absence de ZUMRA). Pour un Projet à gouvernance `GROUP`, la ZUMRA gouvernante est
+  aussi la ZUMRA d'ancrage — un seul choix, jamais deux. Pour un Projet à gouvernance `PERSON`,
+  l'ancrage est distinct et toujours requis (`ProjectService::create()` — `abort` explicite si
+  absent, jamais de valeur par défaut fabriquée).
+- **Une ZUMRA solo est un ancrage valide, pas un cas à inventer.** `ZumraGroupService::create()`
+  démarre déjà toute ZUMRA à l'état `CONSTITUTING` avec un seul membre actif, sans exiger les cinq
+  responsabilités fondatrices pour exister (elles ne conditionnent que `READY`/`VALIDATED`) — la
+  mécanique existait déjà et sert désormais aussi de socle à l'invariant Projet.
+- **L'étape « Pour qui » du parcours déterministe devient « Dans quelle ZUMRA ce Projet va-t-il
+  grandir ? ».** Le membre choisit une ZUMRA dont il est membre actif (obligatoire, quelle que soit
+  la gouvernance choisie ensuite) ; « pour moi-même » sans ZUMRA n'est plus une réponse possible, au
+  niveau serveur et non seulement au niveau de la copie. Sans ZUMRA existante, un module dédié
+  (`projects.draft.zumra.create`/`store`, réutilisant `ZumraGroupService::create()` sans logique
+  dupliquée) permet de démarrer une ZUMRA solo explicitement, jamais silencieusement, puis revient
+  automatiquement au brouillon — jamais perdu pendant ce détour.
+- **Le Cerveau converge vers le même invariant, sans jamais créer de ZUMRA automatiquement.**
+  `ProjectBrainProjectBirthService` distingue désormais `contentReady()` (le récit narratif est
+  structuré par l'IA) de `ready()` (contenu structuré ET ZUMRA choisie par la personne) —
+  `context['zumra_group_reference']` vit hors de `project_state`, donc hors de portée de l'IA
+  conversationnelle. Tant qu'aucune ZUMRA n'est choisie, l'interface présente explicitement cette
+  décision humaine plutôt que le bouton de confirmation.
+- **Besoin d'origine restauré, resté facultatif.** L'ancien formulaire unique permettait de
+  rattacher un Projet à un `source_need_reference` ; #117 avait perdu cette possibilité en la
+  forçant à `null`. Elle réapparaît à l'étape « Votre idée » (nom du Projet), présentée seulement si
+  la personne a déjà des Besoins ouverts/en cours, jamais imposée.
+- **`ProjectAuthority::canView()` reconnaît désormais la visibilité `GROUP` via l'ancrage ZUMRA** —
+  gap déjà présent avant cette mission (la visibilité `GROUP` n'était honorée que pour les Projects
+  à gouvernance `GROUP`, jamais pour un ancrage ZUMRA sur gouvernance personnelle). Le repliement
+  préexistant `owner_type=PERSON` + visibilité `GROUP` → `PRIVATE` dans `ProjectService::create()`
+  reste inchangé : cette mission ne l'a pas retouché, n'ayant reçu mandat que d'ancrer, jamais
+  d'étendre une capacité de visibilité au-delà de ce qui existait.
+- **Missions, Matching, financement et Partnerships n'ont reçu aucune logique parallèle** — tous
+  délèguent déjà à `ProjectAuthority::canView()`/`canDecide()`, qui absorbe l'invariant sans
+  modification de leur côté.
+
+**Compatibilité** : les Projects nés avant cette évolution conservent `zumra_group_id = null` et
+restent intégralement lisibles et fonctionnels (`ProjectAuthority`, Fil, Missions, financement,
+Partnerships) — aucun backfill automatique, aucune ZUMRA fabriquée pour eux, aucune donnée
+supprimée.
+
+**Doctrine amendée** : `docs/capacites/specs/CAP-014-projet.md` (suppression de la fausse
+disjonction « personnel accompagné ou porté par une ZUMRA ») et `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`
+(clarification d'interprétation ajoutée au préambule, art. 15.1 non réécrit — même patron que la
+clarification solo-ZUMRA déjà présente, suivant la procédure de gouvernance §26 du canon).
+
+**Hors périmètre** : migration des Projects historiques (stratégies proposées à l'audit, aucune
+exécutée), gouvernance collective (`GROUP`) au-delà de sa forme déjà existante, notification des
+responsables ZUMRA à la proposition d'un Projet personnel ancré (lacune déjà présente avant cette
+mission, non aggravée, non résolue), toute évolution de `Need`/`Proof` vers un ancrage ZUMRA
+analogue.
