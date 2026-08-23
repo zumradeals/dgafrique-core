@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\CommunityEvent;
+use App\Models\Project;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupActivity;
 use App\Models\ZumraGroupMembership;
@@ -28,6 +30,9 @@ final class ZumraWorldSeederSmokeTest extends TestCase
         $rahman = ZumraGroup::query()->where('name', 'RAHMAN Technology')->sole();
         self::assertSame(15, $rahman->active_member_count);
         self::assertSame('Numériques', $rahman->domain);
+        self::assertSame(3, $rahman->activities()->count());
+        self::assertTrue(Project::query()->where('zumra_group_id', $rahman->id)->where('name', 'Plateforme de services numériques solidaires')->exists());
+        self::assertTrue(CommunityEvent::query()->where('organizer_reference', $rahman->id)->where('title', 'Réunion de constitution')->exists());
 
         $viewer = 'DEMO-IDN-VIEWER';
         self::assertSame(

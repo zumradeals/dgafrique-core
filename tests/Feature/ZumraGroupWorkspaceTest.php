@@ -101,6 +101,10 @@ final class ZumraGroupWorkspaceTest extends TestCase
 
         $this->signIn('IDN-LEADER');
         $this->get(route('zumra.groups.show', $group))->assertOk()
+            ->assertSee('Que voulez-vous faire aujourd’hui ?')
+            ->assertSee('Fil d’activités')
+            ->assertSee('Notre intention')
+            ->assertSee('À propos & Gouvernance', false)
             ->assertSee('Cette ZUMRA ne porte encore aucun Projet ni Besoin visible.');
     }
 

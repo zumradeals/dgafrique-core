@@ -15,6 +15,9 @@
     if (request()->routeIs('zumra.groups.create')) {
         $pageStyles[] = 'resources/css/zumra-birth.css';
     }
+    if (request()->routeIs('zumra.groups.show')) {
+        $pageStyles[] = 'resources/css/zumra-space.css';
+    }
     if (request()->routeIs('member.space')) {
         $pageStyles[] = 'resources/css/member-space-v2.css';
     }

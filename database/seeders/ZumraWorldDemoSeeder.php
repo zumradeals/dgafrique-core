@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Application\Zumra\ZumraGroupService;
+use App\Models\CommunityEvent;
 use App\Models\PersonProfile;
+use App\Models\Project;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
@@ -57,6 +59,7 @@ final class ZumraWorldDemoSeeder extends Seeder
 
         $flagship = $this->flagshipGroups($service, $charter);
         $this->populateDomains($service, $charter, $flagship);
+        $this->flagshipSpaceDecor($flagship);
         $this->proximityShowcase();
         $this->demoViewerPersonalState($flagship);
 
@@ -72,7 +75,11 @@ final class ZumraWorldDemoSeeder extends Seeder
                 'objective' => 'Nous développons et transmettons des solutions numériques utiles aux particuliers et aux professionnels.',
                 'mode' => 'HYBRID', 'location' => 'Abidjan', 'members' => 15,
                 'welcome' => ZumraGroup::WELCOME_ALREADY_CAPABLE,
-                'activities' => [['label' => 'Développement web', 'relation_to_principal' => 'Application directe de l’activité numérique principale à la conception de sites et services web.']],
+                'activities' => [
+                    ['label' => 'Formation au numérique', 'relation_to_principal' => 'Transmission des compétences directement mobilisées par l’activité numérique principale.'],
+                    ['label' => 'Design et communication digitale', 'relation_to_principal' => 'Conception des interfaces et supports nécessaires aux services numériques portés par la ZUMRA.'],
+                    ['label' => 'Conseil et accompagnement digital', 'relation_to_principal' => 'Accompagnement des usages qui prolonge directement les services numériques et digitaux de la ZUMRA.'],
+                ],
             ],
             [
                 'founder' => 'DEMO-IDN-F002', 'name' => 'Atelier Bois & Design', 'domain' => 'Artisanat',
@@ -242,6 +249,63 @@ final class ZumraWorldDemoSeeder extends Seeder
         foreach ($rows as $row) {
             ZumraProximityShowcase::query()->create($row);
         }
+    }
+
+    /**
+     * ZUMRA-SPACE-002 — décor strictement opt-in de l’espace RAHMAN : objets métier réels,
+     * reconnaissables par leurs références DEMO et créés seulement par ce seeder de staging.
+     */
+    private function flagshipSpaceDecor(array $flagship): void
+    {
+        $rahman = $flagship['RAHMAN Technology'] ?? null;
+        if (! $rahman) {
+            return;
+        }
+
+        Project::query()->firstOrCreate(
+            ['owner_type' => Project::OWNER_GROUP, 'owner_reference' => $rahman->id, 'name' => 'Plateforme de services numériques solidaires'],
+            [
+                'public_reference' => (string) Str::uuid(),
+                'initiator_core_reference' => $rahman->proposer_core_reference,
+                'zumra_group_id' => $rahman->id,
+                'source_need_id' => null,
+                'summary' => 'Connecter les talents locaux aux besoins numériques réels des particuliers et des professionnels.',
+                'problem' => 'Les besoins numériques locaux trouvent difficilement les bonnes compétences de proximité.',
+                'proposed_solution' => 'Une plateforme sobre de mise en relation et de transmission portée collectivement.',
+                'beneficiaries' => 'Communautés et professionnels locaux',
+                'domain' => 'DIGITAL',
+                'participation_mode' => 'HYBRID',
+                'location' => 'Abidjan',
+                'objectives' => ['Relier les besoins et les compétences'],
+                'required_capabilities' => ['Développement web', 'Design'],
+                'required_resources' => ['Temps de contribution'],
+                'risks' => ['Disponibilité des membres'],
+                'property_regime' => 'ZUMRA_COLLECTIVE',
+                'visibility' => Project::VISIBILITY_GROUP,
+                'status' => Project::STATUS_ADOPTED,
+                'maturity' => 'IDEA',
+                'decided_by_core_reference' => $rahman->proposer_core_reference,
+                'adopted_at' => now()->subDays(2),
+            ],
+        );
+
+        CommunityEvent::query()->firstOrCreate(
+            [
+                'organizer_type' => CommunityEvent::ORGANIZER_ZUMRA_GROUP,
+                'organizer_reference' => $rahman->id,
+                'title' => 'Réunion de constitution',
+            ],
+            [
+                'public_reference' => (string) Str::uuid(),
+                'organizer_core_reference' => $rahman->proposer_core_reference,
+                'description' => 'Temps collectif de préparation des prochaines actions de la ZUMRA.',
+                'location' => 'Abidjan et en ligne',
+                'visibility' => CommunityEvent::VISIBILITY_INTERNAL,
+                'status' => CommunityEvent::STATUS_SCHEDULED,
+                'scheduled_at' => now()->addDays(7)->setTime(19, 0),
+                'decided_by_core_reference' => $rahman->proposer_core_reference,
+            ],
+        );
     }
 
     /** Une identité de démonstration avec un état personnel complet : ZUMRA rejointe, invitation, demande en attente. */
