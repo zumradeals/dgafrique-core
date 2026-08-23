@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 namespace App\Http\Controllers;
-use App\Application\Missions\MissionContextRegistry; use App\Application\Needs\NeedService; use App\Application\Partnerships\PartnershipService; use App\Application\Projects\ProjectConfiguration; use App\Application\Projects\ProjectDirectoryDemoContent; use App\Application\Projects\ProjectMaturityService; use App\Application\Projects\ProjectService; use App\Application\Projects\ProjectSignalsEngine; use App\Domain\Identity\CoreIdentity; use App\Http\Controllers\Concerns\PresentsPartnerships; use App\Models\Need; use App\Models\Partnership; use App\Models\PersonProfile; use App\Models\PortalAdministrator; use App\Models\Project; use App\Models\ProjectTeamMember; use App\Models\ZumraGroup; use Illuminate\Http\RedirectResponse; use Illuminate\Http\Request; use Illuminate\Pagination\LengthAwarePaginator; use Illuminate\Validation\Rule; use Illuminate\View\View;
+use App\Application\Missions\MissionContextRegistry; use App\Application\Needs\NeedService; use App\Application\Partnerships\PartnershipService; use App\Application\Projects\ProjectConfiguration; use App\Application\Projects\ProjectHubPresentation; use App\Application\Projects\ProjectMaturityService; use App\Application\Projects\ProjectService; use App\Application\Projects\ProjectSignalsEngine; use App\Domain\Identity\CoreIdentity; use App\Http\Controllers\Concerns\PresentsPartnerships; use App\Models\Need; use App\Models\Partnership; use App\Models\PersonProfile; use App\Models\PortalAdministrator; use App\Models\Project; use App\Models\ProjectTeamMember; use App\Models\ZumraGroup; use Illuminate\Http\RedirectResponse; use Illuminate\Http\Request; use Illuminate\Pagination\LengthAwarePaginator; use Illuminate\Support\Str; use Illuminate\Validation\Rule; use Illuminate\View\View;
 final class ProjectController
 {
     use PresentsPartnerships;
@@ -9,7 +9,43 @@ final class ProjectController
     // UIUX-009B — la création (create/store) vit désormais dans ProjectDraftController, parcours
     // progressif et sauvegardable indépendant du Cerveau. « projects.create » (route publique)
     // pointe vers ce nouveau contrôleur ; index/show/transition/maturity restent ici, inchangés.
-    public function index(Request $request,ProjectConfiguration $configuration,ProjectService $service,ProjectDirectoryDemoContent $demoContent):View{/** @var CoreIdentity $identity */$identity=$request->attributes->get('dg_identity');$settings=$configuration->get();$domainFilter=$request->filled('domain')&&isset($settings['domains'][(string)$request->query('domain')])?(string)$request->query('domain'):null;$query=Project::query()->where('status','!=',Project::STATUS_ARCHIVED)->latest();if($domainFilter!==null)$query->where('domain',$domainFilter);$visible=$query->limit(300)->get()->filter(fn(Project $p)=>$service->canView($p,$identity->reference))->values();$page=max(1,(int)$request->query('page',1));$per=(int)$settings['directory_page_size'];$projects=new LengthAwarePaginator($visible->forPage($page,$per),$visible->count(),$per,$page,['path'=>$request->url(),'query'=>$request->query()]);$demoCards=$demoContent->demoCards($visible,$page,$domainFilter);$groups=ZumraGroup::query()->whereIn('id',$visible->where('owner_type',Project::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');$manageableProjectIds=$visible->filter(fn(Project $p)=>$service->canDecide($p,$identity->reference))->pluck('id')->all();$isAdministrator=PortalAdministrator::query()->whereKey($identity->reference)->exists();return view('projects.index',compact('identity','projects','groups','manageableProjectIds','isAdministrator','demoCards')+['configuration'=>$settings,'communityStats'=>$demoContent->communityStats()]);}
+    public function index(Request $request, ProjectConfiguration $configuration, ProjectService $service, ProjectHubPresentation $presentation): View
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        $settings = $configuration->get();
+        $query = Project::query()->where('status', '!=', Project::STATUS_ARCHIVED)->latest();
+        if ($request->filled('q')) {
+            $term = Str::limit((string) $request->query('q'), 120, '');
+            // Le JSON required_capabilities n’est volontairement pas interrogé comme texte :
+            // SQLite et PostgreSQL n’ont pas la même sémantique. L’index de compétences reste
+            // une capacité future, sans requête fragile ni promesse fabriquée ici.
+            $query->where(fn ($builder) => $builder->where('name', 'like', '%'.$term.'%')->orWhere('summary', 'like', '%'.$term.'%'));
+        }
+        if ($request->filled('domain') && isset($settings['domains'][(string) $request->query('domain')])) {
+            $query->where('domain', (string) $request->query('domain'));
+        }
+        if ($request->filled('status') && in_array($request->query('status'), [Project::STATUS_PROPOSED, Project::STATUS_IN_PROGRESS, Project::STATUS_COMPLETED], true)) {
+            $query->where('status', (string) $request->query('status'));
+        }
+        if ($request->filled('country')) {
+            $query->where('location', 'like', '%'.Str::limit((string) $request->query('country'), 80, '').'%');
+        }
+        if ($request->filled('group')) {
+            $groupId = ZumraGroup::query()->where('public_reference', $request->query('group'))->value('id');
+            $query->where('zumra_group_id', $groupId ?: '00000000-0000-0000-0000-000000000000');
+        }
+        $visible = $query->limit(300)->get()->filter(fn (Project $project) => $service->canView($project, $identity->reference))->values();
+        $page = max(1, (int) $request->query('page', 1));
+        $projects = new LengthAwarePaginator($visible->forPage($page, 8), $visible->count(), 8, $page, ['path' => $request->url(), 'query' => $request->query()]);
+        $groups = ZumraGroup::query()->whereIn('id', $visible->pluck('zumra_group_id')->filter())->get()->keyBy('id');
+        $memberCounts = ProjectTeamMember::query()->whereIn('project_id', $visible->pluck('id'))->where('status', ProjectTeamMember::STATUS_ACTIVE)->selectRaw('project_id, count(*) as aggregate')->groupBy('project_id')->pluck('aggregate', 'project_id');
+        $cards = $projects->getCollection()->mapWithKeys(fn (Project $project) => [$project->id => $presentation->for($project, (int) ($memberCounts[$project->id] ?? 0))]);
+        $filterGroups = ZumraGroup::query()->whereIn('id', Project::query()->whereNotNull('zumra_group_id')->pluck('zumra_group_id'))->orderBy('name')->limit(100)->get();
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+
+        return view('projects.index', compact('identity', 'projects', 'groups', 'cards', 'filterGroups', 'isAdministrator') + ['configuration' => $settings, 'networkStats' => $presentation->networkStats()]);
+    }
     public function show(Request $request,Project $project,ProjectConfiguration $configuration,ProjectService $service,NeedService $needs,ProjectSignalsEngine $signalsEngine,PartnershipService $partnerships,MissionContextRegistry $missionContexts):View{/** @var CoreIdentity $identity */$identity=$request->attributes->get('dg_identity');abort_unless($service->canView($project,$identity->reference),404);$group=$project->owner_type===Project::OWNER_GROUP?ZumraGroup::query()->find($project->owner_reference):null;$maturityHistory=$project->events()->where('event','PROJECT_MATURITY_CHANGED')->orderByDesc('occurred_at')->get();$isAdministrator=PortalAdministrator::query()->whereKey($identity->reference)->exists();$canDecide=$service->canDecide($project,$identity->reference);
         // UIUX-007 — porte visible vers la création de Mission déjà existante (CAP-069), jamais dupliquée : mêmes conditions que le Cerveau.
         $canProposeMission=$missionContexts->for('PROJECT')->canPropose($project,$identity->reference);

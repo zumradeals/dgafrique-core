@@ -671,3 +671,28 @@ lignes `ProjectMilestone`. Aucun seeding implicite en production n’est ajouté
 Sur mobile, la navigation ZUMRA et les onglets Projet défilent dans leurs propres conteneurs ; la
 page reste bornée au viewport. L’ordre est : retour/navigation, hero, situation et exécution,
 contexte latéral, chemin collectif, puis cadre complet repliable.
+
+## 26. PROJECT-HUB-001 — Le Carrefour des Projets (23 août 2026)
+
+Le Carrefour des Projets rend visibles les initiatives portées par les ZUMRA du réseau et permet
+de les découvrir, de comprendre leur progression et d’identifier différentes manières d’y
+contribuer. Il relie explicitement chaque carte à son Espace Projet et, lorsqu’elle est connue, à
+sa ZUMRA porteuse.
+
+**Carrefour Projet ≠ Espace Projet.** Le Carrefour organise la découverte transversale du réseau ;
+l’Espace Projet reste le lieu vivant d’exécution, de collaboration et de preuve d’un projet
+particulier. Aucun second moteur Projet n’est introduit.
+
+Le seeder `ProjectHubDemoSeeder` est dédié, opt-in et non appelé par `DatabaseSeeder`. Il crée huit
+vrais Projects, leurs ZUMRA porteuses et des adhésions Projet actives sans aucun rôle attribué.
+Les pourcentages, priorités, états éditoriaux, statistiques continentales, catégories et projets
+récents de la maquette restent dans `ProjectHubPresentation` : une projection de démonstration
+remplaçable, jamais une taxonomie, une autorité, une transaction ou une mesure Core.
+
+| Élément | Réel | Seed | Préparatoire |
+| --- | --- | --- | --- |
+| Projet / ZUMRA porteuse / membres | Oui | Oui | Non |
+| Recherche / statut / pays / domaine / ZUMRA | Oui, sur champs existants | Oui | Non |
+| Progression / priorité / catégorie / impact | Non canonique | Projection marquée | Oui |
+| Contribution financière / bénévolat | Non | Non | Surface sans écriture |
+| Compétences / ressources | Champs Project existants | Possibles | Moteurs spécialisés ultérieurs |
