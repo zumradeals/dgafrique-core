@@ -696,3 +696,20 @@ remplaçable, jamais une taxonomie, une autorité, une transaction ou une mesure
 | Progression / priorité / catégorie / impact | Non canonique | Projection marquée | Oui |
 | Contribution financière / bénévolat | Non | Non | Surface sans écriture |
 | Compétences / ressources | Champs Project existants | Possibles | Moteurs spécialisés ultérieurs |
+
+## 27. FEED-001 — Fil global, réseau social d’action (23 août 2026)
+
+Le Fil DG Afrique ne montre pas seulement ce que les personnes disent. Il montre ce qu’elles
+apprennent, transmettent, recherchent, construisent et accomplissent ensemble. La route canonique
+reste `activity.index` : aucun second Fil n’est créé. Les objets sociaux restent Transmission,
+Ressource, Besoin, Projet, Événement et Action ; les personnes et ZUMRA en sont les acteurs.
+
+Le moteur `ActivityFeedService` et ses contrôles de visibilité restent inchangés. FEED-001 ajoute
+une projection de démonstration explicitement marquée pour planter le monde attendu, ainsi qu’un
+seeder opt-in `DgNetworkFeedDemoSeeder` qui réutilise `ProjectHubDemoSeeder` et crée seulement des
+profils démonstratifs consentis. Les actions immédiates, recommandations, statistiques, ressource,
+sondage et événements sans moteur canonique sont des surfaces préparatoires sans écriture.
+
+Sur mobile, les deux rails sont retirés du flux principal, le compositeur arrive en premier et
+les groupes d’actions défilent dans leurs propres conteneurs. Aucun signal de popularité n’est
+introduit : contribuer, transmettre, répondre et faire avancer restent prioritaires.
