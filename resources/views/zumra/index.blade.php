@@ -221,7 +221,8 @@
                 </aside>
             </div>
 
-            <section class="zw-participate" aria-labelledby="zw-participate-title">
+            <div class="zw-lower">
+                <section class="zw-participate" aria-labelledby="zw-participate-title">
                 <h2 id="zw-participate-title">Comment participer dans une ZUMRA ?</h2>
                 <div class="zw-participate-grid">
                     <div class="zw-participate-step">
@@ -245,9 +246,9 @@
                         <p>Contribuez aux projets et faites naître de nouvelles initiatives utiles à tous.</p>
                     </div>
                 </div>
-            </section>
+                </section>
 
-            <section class="zw-stats" aria-label="Le réseau ZUMRA en chiffres">
+                <section class="zw-stats" aria-label="Le réseau ZUMRA en chiffres">
                 <div class="zw-stat">
                     <strong>{{ number_format($stats['groups'], 0, ',', ' ') }}</strong>
                     <span>ZUMRA actives</span>
@@ -276,7 +277,8 @@
                     « Une ZUMRA, c’est plus qu’un collectif : c’est un espace d’apprentissage, de transmission et d’action pour bâtir notre avenir. »
                     <cite>— DG Afrique</cite>
                 </blockquote>
-            </section>
+                </section>
+            </div>
         </div>
     </x-dg.shell>
 </x-layouts.portal>
