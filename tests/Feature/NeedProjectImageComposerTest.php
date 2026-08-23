@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\Project;
 use App\Models\ProjectDraft;
@@ -13,6 +14,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
@@ -159,7 +161,13 @@ final class NeedProjectImageComposerTest extends TestCase
         $this->get(route('projects.create'))->assertRedirect();
         $draft = ProjectDraft::query()->where('actor_core_reference', $actor)->where('status', ProjectDraft::STATUS_DRAFT)->latest('created_at')->firstOrFail();
 
-        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue'])->assertRedirect();
+        $zumra = app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.Str::random(6), 'domain' => 'Numérique',
+            'founding_objective' => str_repeat('Ancrer ce projet dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ]);
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra->public_reference, '_intent' => 'continue'])->assertRedirect();
         $steps = [
             'nom' => ['name' => 'Atelier numérique communautaire'],
             'resume' => ['summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services utiles.'],

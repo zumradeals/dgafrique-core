@@ -31,7 +31,7 @@ final class ProjectNeedTest extends TestCase
     {
         $this->member('IDN-OWNER');
         $project = $this->project('IDN-OWNER');
-        $need = app(NeedService::class)->create('IDN-OWNER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration())->defaults());
+        $need = app(NeedService::class)->create('IDN-OWNER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration)->defaults());
 
         self::assertSame(Need::STATUS_OPEN, $need->status);
         self::assertSame(Need::OWNER_PROJECT, $need->owner_type);
@@ -45,7 +45,7 @@ final class ProjectNeedTest extends TestCase
         $project = $this->project('IDN-OWNER');
         ProjectTeamMember::query()->create(['project_id' => $project->id, 'core_identity_reference' => 'IDN-MEMBER', 'status' => ProjectTeamMember::STATUS_ACTIVE, 'entry_mode' => ProjectTeamMember::ENTRY_MODE_REQUEST, 'initiated_by_core_reference' => 'IDN-MEMBER', 'joined_at' => now()]);
         $needs = app(NeedService::class);
-        $need = $needs->create('IDN-MEMBER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference, 'visibility' => Need::VISIBILITY_PUBLIC]), (new NeedConfiguration())->defaults());
+        $need = $needs->create('IDN-MEMBER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference, 'visibility' => Need::VISIBILITY_PUBLIC]), (new NeedConfiguration)->defaults());
 
         self::assertSame(Need::STATUS_PROPOSED, $need->status);
         self::assertFalse($needs->canView($need, 'IDN-OUTSIDER'));
@@ -61,7 +61,7 @@ final class ProjectNeedTest extends TestCase
         $project = $this->project('IDN-OWNER');
 
         $this->expectException(HttpException::class);
-        app(NeedService::class)->create('IDN-OUTSIDER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration())->defaults());
+        app(NeedService::class)->create('IDN-OUTSIDER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration)->defaults());
     }
 
     public function test_a_group_owned_project_need_is_decided_by_the_group_leader(): void
@@ -70,10 +70,10 @@ final class ProjectNeedTest extends TestCase
         $this->member('IDN-MEMBER');
         $group = app(ZumraGroupService::class)->create('IDN-LEADER', ['name' => 'ZUMRA CAP-042', 'domain' => 'Formation', 'founding_objective' => 'Réunir des personnes pour apprendre et transmettre des capacités utiles au développement.', 'participation_mode' => 'HYBRID', 'internal_charter' => 'Respect, dignité, transmission, hiérarchie responsable et décisions conformes à la charte commune.', 'assume_primary_lead' => true]);
         ZumraGroupMembership::query()->create(['zumra_group_id' => $group->id, 'core_identity_reference' => 'IDN-MEMBER', 'status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST', 'initiated_by_core_reference' => 'IDN-MEMBER', 'joined_at' => now()]);
-        $project = app(ProjectService::class)->create('IDN-MEMBER', $this->projectPayload(['owner_type' => 'GROUP', 'group_reference' => $group->public_reference, 'property_regime' => 'ZUMRA_COLLECTIVE']), (new ProjectConfiguration())->defaults());
+        $project = app(ProjectService::class)->create('IDN-MEMBER', $this->projectPayload(['owner_type' => 'GROUP', 'group_reference' => $group->public_reference, 'property_regime' => 'ZUMRA_COLLECTIVE']), (new ProjectConfiguration)->defaults());
         $needs = app(NeedService::class);
 
-        $need = $needs->create('IDN-MEMBER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration())->defaults());
+        $need = $needs->create('IDN-MEMBER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference]), (new NeedConfiguration)->defaults());
         self::assertSame(Need::STATUS_PROPOSED, $need->status, 'un membre actif du groupe propriétaire n’est pas lui-même décideur du projet');
         self::assertFalse($needs->canDecide($need, 'IDN-MEMBER'));
         self::assertTrue($needs->canDecide($need, 'IDN-LEADER'));
@@ -85,14 +85,26 @@ final class ProjectNeedTest extends TestCase
     {
         $this->member('IDN-OWNER');
         $project = $this->project('IDN-OWNER');
-        $need = app(NeedService::class)->create('IDN-OWNER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference, 'visibility' => Need::VISIBILITY_GROUP]), (new NeedConfiguration())->defaults());
+        $need = app(NeedService::class)->create('IDN-OWNER', $this->payload(['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference, 'visibility' => Need::VISIBILITY_GROUP]), (new NeedConfiguration)->defaults());
 
         self::assertSame(Need::VISIBILITY_PRIVATE, $need->visibility);
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function project(string $owner, array $overrides = []): Project
     {
-        return app(ProjectService::class)->create($owner, $this->projectPayload($overrides), (new ProjectConfiguration())->defaults());
+        $overrides += ['zumra_group_reference' => $this->zumraFor($owner)];
+
+        return app(ProjectService::class)->create($owner, $this->projectPayload($overrides), (new ProjectConfiguration)->defaults());
     }
 
     private function projectPayload(array $overrides = []): array

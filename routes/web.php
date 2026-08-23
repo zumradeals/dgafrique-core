@@ -89,10 +89,14 @@ Route::get('/projets', [ProjectController::class, 'index'])->middleware('core.me
 // à ce parcours plutôt qu'à un formulaire unique.
 Route::get('/projets/proposer', [ProjectDraftController::class, 'entry'])->middleware('core.member')->name('projects.create');
 Route::get('/projets/proposer/{draft}/{step}', [ProjectDraftController::class, 'show'])->whereUuid('draft')->where('step', '[a-z]+')->middleware('core.member')->name('projects.draft.show');
-// Les routes nommées (abandonner/confirmer) doivent être déclarées avant le joker {step} :
-// celui-ci accepte "[a-z]+" et intercepterait sinon silencieusement ces deux mots.
+// Les routes nommées (abandonner/confirmer/zumra) doivent être déclarées avant le joker {step} :
+// celui-ci accepte "[a-z]+" et intercepterait sinon silencieusement ces mots.
 Route::post('/projets/proposer/{draft}/abandonner', [ProjectDraftController::class, 'abandon'])->whereUuid('draft')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.abandon');
 Route::post('/projets/proposer/{draft}/confirmer', [ProjectDraftController::class, 'confirm'])->whereUuid('draft')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.confirm');
+// PROJET-ZUMRA-INVARIANT-001 — naissance explicite d'une ZUMRA solo depuis le parcours Projet,
+// jamais silencieuse : un vrai formulaire, puis retour au brouillon jamais perdu.
+Route::get('/projets/proposer/{draft}/zumra/nouvelle', [ProjectDraftController::class, 'newZumra'])->whereUuid('draft')->middleware('core.member')->name('projects.draft.zumra.create');
+Route::post('/projets/proposer/{draft}/zumra/nouvelle', [ProjectDraftController::class, 'storeZumra'])->whereUuid('draft')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.zumra.store');
 Route::post('/projets/proposer/{draft}/{step}', [ProjectDraftController::class, 'update'])->whereUuid('draft')->where('step', '[a-z]+')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.update');
 Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid('project')->middleware('core.member')->name('projects.show');
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');

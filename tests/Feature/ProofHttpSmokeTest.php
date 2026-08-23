@@ -10,6 +10,7 @@ use App\Application\Projects\ProjectService;
 use App\Application\Proof\ProofWorkflow;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
 use App\Models\Proof;
@@ -59,7 +60,7 @@ final class ProofHttpSmokeTest extends TestCase
         self::assertArrayNotHasKey('PROOFS', ActivityFeedService::FILTERS, 'Il n’existe qu’un seul Fil DG Afrique — pas de filtre Preuve autonome (fiche §15).');
 
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-OWNER')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(ProofWorkflow::class);
         $proof = $workflow->submit('IDN-OWNER', [
@@ -123,6 +124,7 @@ final class ProofHttpSmokeTest extends TestCase
         $project = app(ProjectService::class)->create('IDN-OWNER-CTX', $this->projectPayload([
             'name' => 'Atelier Confidentiel Ultra Secret',
             'visibility' => 'PRIVATE',
+            'zumra_group_reference' => $this->zumraFor('IDN-OWNER-CTX'),
         ]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(ProofWorkflow::class);
@@ -185,6 +187,16 @@ final class ProofHttpSmokeTest extends TestCase
             self::assertArrayNotHasKey('score', $recommendation);
             self::assertArrayNotHasKey('_priority', $recommendation);
         }
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

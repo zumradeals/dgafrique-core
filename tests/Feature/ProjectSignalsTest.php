@@ -9,6 +9,7 @@ use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
 use App\Application\Projects\ProjectSignalsEngine;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\ContextComment;
 use App\Models\Need;
 use App\Models\Project;
@@ -56,7 +57,7 @@ final class ProjectSignalsTest extends TestCase
     {
         $this->member('IDN-OWNER');
         $project = $this->project('IDN-OWNER');
-        $need = app(NeedService::class)->create('IDN-OWNER', $this->needPayload($project), (new NeedConfiguration())->defaults());
+        $need = app(NeedService::class)->create('IDN-OWNER', $this->needPayload($project), (new NeedConfiguration)->defaults());
 
         $signals = app(ProjectSignalsEngine::class)->forProject($project);
         self::assertContains('0 besoin(s) résolu(s) sur 1 exprimés.', $signals);
@@ -116,10 +117,20 @@ final class ProjectSignalsTest extends TestCase
         return ['owner_type' => Need::OWNER_PROJECT, 'project_reference' => $project->public_reference, 'group_reference' => null, 'title' => 'Un besoin réel exprimé par le projet', 'context' => 'Le projet manque d’un accompagnement précis pour avancer sur ce point concret.', 'category' => 'SKILL', 'collaboration_mode' => 'HYBRID', 'visibility' => Need::VISIBILITY_PUBLIC];
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function project(string $owner): Project
     {
         return app(ProjectService::class)->create($owner, [
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor($owner), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire', 'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',
             'proposed_solution' => 'Mettre en place un atelier progressif avec transmission entre pairs, exercices réels et accompagnement vers des premiers services.',
@@ -127,7 +138,7 @@ final class ProjectSignalsTest extends TestCase
             'objectives' => "Former une première équipe\nProduire trois services pilotes", 'required_capabilities' => "Formation numérique\nGestion de projet",
             'required_resources' => "Ordinateurs\nConnexion internet", 'risks' => "Disponibilité irrégulière\nAccès au matériel",
             'milestones' => "Constituer l’équipe\nPréparer le lieu\nLancer le pilote", 'property_regime' => 'PERSONAL_SUPPORTED', 'visibility' => 'PUBLIC',
-        ], (new ProjectConfiguration())->defaults());
+        ], (new ProjectConfiguration)->defaults());
     }
 
     private function member(string $id): void

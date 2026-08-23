@@ -40,7 +40,7 @@ final class NotificationServiceTest extends TestCase
     public function test_mission_invitation_appears_as_actionable(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-OWNER')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
@@ -99,7 +99,7 @@ final class NotificationServiceTest extends TestCase
     public function test_resolved_actionable_item_disappears_from_a_traiter(): void
     {
         $this->activateProgram('IDN-OWNER2');
-        $project = app(ProjectService::class)->create('IDN-OWNER2', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER2', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-OWNER2')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
@@ -243,6 +243,16 @@ final class NotificationServiceTest extends TestCase
     {
         $this->get('/')->assertOk();
         self::assertSame(0, NotificationRead::query()->count(), 'Les fixtures d’exemple ne doivent jamais peupler dg_notification_reads.');
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

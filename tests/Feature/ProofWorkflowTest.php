@@ -92,7 +92,7 @@ final class ProofWorkflowTest extends TestCase
     {
         $this->activateProgram('IDN-DECIDER');
         $this->activateProgram('IDN-AUTHOR3');
-        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-DECIDER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-DECIDER')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(ProofWorkflow::class);
         $proof = $workflow->submit('IDN-AUTHOR3', [
@@ -117,7 +117,7 @@ final class ProofWorkflowTest extends TestCase
     {
         $this->activateProgram('IDN-DECIDER-PRIV');
         $this->activateProgram('IDN-OUTSIDER-PRIV');
-        $privateProject = app(ProjectService::class)->create('IDN-DECIDER-PRIV', $this->projectPayload(['visibility' => 'PRIVATE']), (new ProjectConfiguration)->defaults());
+        $privateProject = app(ProjectService::class)->create('IDN-DECIDER-PRIV', $this->projectPayload(['visibility' => 'PRIVATE', 'zumra_group_reference' => $this->zumraFor('IDN-DECIDER-PRIV')]), (new ProjectConfiguration)->defaults());
 
         $workflow = app(ProofWorkflow::class);
 
@@ -194,7 +194,7 @@ final class ProofWorkflowTest extends TestCase
         self::assertSame(Proof::STATUS_ACKNOWLEDGED, $needProof->status);
 
         // MISSION : l'officialisateur de la Mission (autorité de son propre contexte) reconnaît.
-        $project = app(ProjectService::class)->create('IDN-AUTHOR4', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-AUTHOR4', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-AUTHOR4')]), (new ProjectConfiguration)->defaults());
         $missionWorkflow = app(MissionWorkflow::class);
         $mission = $missionWorkflow->create('IDN-AUTHOR4', 'PROJECT', $project->public_reference, [
             'title' => 'Réaliser une session pratique', 'description' => 'Organiser une session pratique de terrain avec les bénéficiaires.',
@@ -243,7 +243,7 @@ final class ProofWorkflowTest extends TestCase
     {
         $this->activateProgram('IDN-DECIDER6');
         $this->activateProgram('IDN-AUTHOR6');
-        $project = app(ProjectService::class)->create('IDN-DECIDER6', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-DECIDER6', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-DECIDER6')]), (new ProjectConfiguration)->defaults());
         $witnessRef = $this->discoverableProfile('IDN-WITNESS6', 'Témoin Contestation');
 
         $workflow = app(ProofWorkflow::class);
@@ -389,6 +389,16 @@ final class ProofWorkflowTest extends TestCase
         } catch (HttpException $e) {
             self::assertSame($status, $e->getStatusCode(), $message);
         }
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

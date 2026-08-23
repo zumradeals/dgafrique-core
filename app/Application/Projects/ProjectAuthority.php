@@ -33,6 +33,13 @@ final class ProjectAuthority
         if ($project->visibility === Project::VISIBILITY_PUBLIC) {
             return true;
         }
+        // PROJET-ZUMRA-INVARIANT-001 — la visibilité GROUP désigne la ZUMRA d'ancrage
+        // (zumra_group_id), jamais seulement les Projects owner_type=GROUP : un Projet gouverné
+        // par sa Personne initiatrice mais ancré dans une ZUMRA peut aussi choisir cette
+        // visibilité. Absente sur un Projet historique (zumra_group_id nul) : jamais accordée.
+        if ($project->visibility === Project::VISIBILITY_GROUP) {
+            return $project->zumra_group_id !== null && $this->isActiveGroupMember($project->zumra_group_id, $actor);
+        }
         if ($project->visibility === Project::VISIBILITY_PROGRAM) {
             return ZumraProgramMembership::query()->where('core_identity_reference', $actor)->where('status', ZumraProgramMembership::STATUS_ACTIVE)->exists();
         }

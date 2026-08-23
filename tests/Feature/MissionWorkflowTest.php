@@ -8,10 +8,12 @@ use App\Application\Missions\MissionAssignmentService;
 use App\Application\Missions\MissionBlockerService;
 use App\Application\Missions\MissionSubmissionService;
 use App\Application\Missions\MissionWorkflow;
+use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
-use App\Models\Project;
+use App\Models\MissionSubmission;
 use App\Models\ZumraCharter;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,7 +26,7 @@ final class MissionWorkflowTest extends TestCase
     public function test_full_happy_path_on_a_project_context(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new \App\Application\Projects\ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
 
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
@@ -62,14 +64,14 @@ final class MissionWorkflowTest extends TestCase
         $mission = $submissions->accept($mission, 'IDN-OWNER', 'Bon travail.');
         self::assertSame(Mission::STATUS_COMPLETED, $mission->status);
 
-        self::assertSame(1, \App\Models\MissionSubmission::query()->where('mission_id', $mission->id)->count());
+        self::assertSame(1, MissionSubmission::query()->where('mission_id', $mission->id)->count());
         self::assertDatabaseHas('dg_mission_events', ['mission_id' => $mission->id, 'event' => 'MISSION_COMPLETED']);
     }
 
     public function test_block_and_resolve_cycle(): void
     {
         $this->activateProgram('IDN-OWNER');
-        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new \App\Application\Projects\ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-OWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
         $workflow = app(MissionWorkflow::class);
         $assignments = app(MissionAssignmentService::class);
         $blockers = app(MissionBlockerService::class);
@@ -92,10 +94,20 @@ final class MissionWorkflowTest extends TestCase
         self::assertSame(Mission::STATUS_IN_PROGRESS, $mission->status);
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function projectPayload(array $overrides = []): array
     {
         return array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor('IDN-OWNER'), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',

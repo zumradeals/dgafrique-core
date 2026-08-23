@@ -1156,3 +1156,76 @@ doit d'abord abandonner ou terminer la première ; ce choix suit la sémantique 
 Cerveau/`ProjectBrainIntent` (non modifiés), écran de financement de Projet, découverte de Mission,
 hiérarchie d'action de Mon espace au-delà de la carte de reprise ajoutée, toute règle métier de
 `ProjectService::create()` — aucun n'a été touché.
+
+**Correction (PROJET-ZUMRA-INVARIANT-001, §32 ci-dessous)** — cet addendum décrivait l'étape
+« Pour qui » comme un choix strict entre porteur personnel sans ZUMRA et porteur ZUMRA, et
+qualifiait le régime de propriété de « calculé silencieusement à partir du porteur » sans jamais
+demander de ZUMRA pour le régime personnel. Un arbitrage doctrinal ultérieur a établi qu'un Projet
+appartient toujours à une ZUMRA, y compris sous gouvernance personnelle — voir §32 pour la
+correction complète du parcours et du modèle de données.
+
+## 32. Addendum daté — PROJET-ZUMRA-INVARIANT-001, ancrage ZUMRA obligatoire (23 août 2026)
+
+**Portée : correction doctrinale portant sur l'appartenance d'un Projet à une ZUMRA, appliquée au
+parcours déterministe (#117) et au Cerveau.** Un audit ciblé, mené sans code après la livraison de
+UIUX-009B, a établi que la notion de « Projet personnel accompagné » telle qu'implémentée était
+doctrinalement incorrecte : elle traitait la gouvernance personnelle comme une alternative à
+l'appartenance ZUMRA, alors que l'invariant canonique est qu'**un Projet appartient toujours à une
+ZUMRA**, qu'il soit gouverné par une Personne seule ou collectivement.
+
+**Décisions rendues durables** :
+
+- **Modèle conceptuel à quatre axes, désormais orthogonaux.** `initiator_core_reference` (qui a
+  initié), `zumra_group_id` (dans quelle ZUMRA le Projet grandit — nouvelle colonne `dg_projects`,
+  nullable uniquement pour compatibilité historique), `owner_type`/`owner_reference` (qui décide
+  aujourd'hui — Personne ou ZUMRA collectivement) et `property_regime` (le régime du Projet, jamais
+  une preuve d'absence de ZUMRA). Pour un Projet à gouvernance `GROUP`, la ZUMRA gouvernante est
+  aussi la ZUMRA d'ancrage — un seul choix, jamais deux. Pour un Projet à gouvernance `PERSON`,
+  l'ancrage est distinct et toujours requis (`ProjectService::create()` — `abort` explicite si
+  absent, jamais de valeur par défaut fabriquée).
+- **Une ZUMRA solo est un ancrage valide, pas un cas à inventer.** `ZumraGroupService::create()`
+  démarre déjà toute ZUMRA à l'état `CONSTITUTING` avec un seul membre actif, sans exiger les cinq
+  responsabilités fondatrices pour exister (elles ne conditionnent que `READY`/`VALIDATED`) — la
+  mécanique existait déjà et sert désormais aussi de socle à l'invariant Projet.
+- **L'étape « Pour qui » du parcours déterministe devient « Dans quelle ZUMRA ce Projet va-t-il
+  grandir ? ».** Le membre choisit une ZUMRA dont il est membre actif (obligatoire, quelle que soit
+  la gouvernance choisie ensuite) ; « pour moi-même » sans ZUMRA n'est plus une réponse possible, au
+  niveau serveur et non seulement au niveau de la copie. Sans ZUMRA existante, un module dédié
+  (`projects.draft.zumra.create`/`store`, réutilisant `ZumraGroupService::create()` sans logique
+  dupliquée) permet de démarrer une ZUMRA solo explicitement, jamais silencieusement, puis revient
+  automatiquement au brouillon — jamais perdu pendant ce détour.
+- **Le Cerveau converge vers le même invariant, sans jamais créer de ZUMRA automatiquement.**
+  `ProjectBrainProjectBirthService` distingue désormais `contentReady()` (le récit narratif est
+  structuré par l'IA) de `ready()` (contenu structuré ET ZUMRA choisie par la personne) —
+  `context['zumra_group_reference']` vit hors de `project_state`, donc hors de portée de l'IA
+  conversationnelle. Tant qu'aucune ZUMRA n'est choisie, l'interface présente explicitement cette
+  décision humaine plutôt que le bouton de confirmation.
+- **Besoin d'origine restauré, resté facultatif.** L'ancien formulaire unique permettait de
+  rattacher un Projet à un `source_need_reference` ; #117 avait perdu cette possibilité en la
+  forçant à `null`. Elle réapparaît à l'étape « Votre idée » (nom du Projet), présentée seulement si
+  la personne a déjà des Besoins ouverts/en cours, jamais imposée.
+- **`ProjectAuthority::canView()` reconnaît désormais la visibilité `GROUP` via l'ancrage ZUMRA** —
+  gap déjà présent avant cette mission (la visibilité `GROUP` n'était honorée que pour les Projects
+  à gouvernance `GROUP`, jamais pour un ancrage ZUMRA sur gouvernance personnelle). Le repliement
+  préexistant `owner_type=PERSON` + visibilité `GROUP` → `PRIVATE` dans `ProjectService::create()`
+  reste inchangé : cette mission ne l'a pas retouché, n'ayant reçu mandat que d'ancrer, jamais
+  d'étendre une capacité de visibilité au-delà de ce qui existait.
+- **Missions, Matching, financement et Partnerships n'ont reçu aucune logique parallèle** — tous
+  délèguent déjà à `ProjectAuthority::canView()`/`canDecide()`, qui absorbe l'invariant sans
+  modification de leur côté.
+
+**Compatibilité** : les Projects nés avant cette évolution conservent `zumra_group_id = null` et
+restent intégralement lisibles et fonctionnels (`ProjectAuthority`, Fil, Missions, financement,
+Partnerships) — aucun backfill automatique, aucune ZUMRA fabriquée pour eux, aucune donnée
+supprimée.
+
+**Doctrine amendée** : `docs/capacites/specs/CAP-014-projet.md` (suppression de la fausse
+disjonction « personnel accompagné ou porté par une ZUMRA ») et `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`
+(clarification d'interprétation ajoutée au préambule, art. 15.1 non réécrit — même patron que la
+clarification solo-ZUMRA déjà présente, suivant la procédure de gouvernance §26 du canon).
+
+**Hors périmètre** : migration des Projects historiques (stratégies proposées à l'audit, aucune
+exécutée), gouvernance collective (`GROUP`) au-delà de sa forme déjà existante, notification des
+responsables ZUMRA à la proposition d'un Projet personnel ancré (lacune déjà présente avant cette
+mission, non aggravée, non résolue), toute évolution de `Need`/`Proof` vers un ancrage ZUMRA
+analogue.

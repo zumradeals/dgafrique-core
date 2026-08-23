@@ -10,6 +10,7 @@ use App\Models\Project;
 use App\Models\ProjectBrainIntent;
 use App\Models\ProjectDraft;
 use App\Models\ZumraCharter;
+use App\Models\ZumraGroup;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -21,7 +22,8 @@ use Tests\TestCase;
  * vérifie une garantie explicitement demandée par le mandat de Phase B : sauvegarde/reprise,
  * isolation du propriétaire, création finale, idempotence, gates Programme/quota expliqués tôt,
  * porteur PERSON/ZUMRA, champs différables, absence de toute dépendance au Cerveau, et
- * non-régression du parcours Cerveau existant.
+ * non-régression du parcours Cerveau existant. Mécanique de la ZUMRA d'ancrage obligatoire
+ * (PROJET-ZUMRA-INVARIANT-001) couverte séparément par ProjectZumraInvariantTest.
  */
 final class ProjectDraftJourneyTest extends TestCase
 {
@@ -42,11 +44,12 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-RESUME');
         $this->signIn('IDN-PD-RESUME');
+        $zumra = $this->zumraFor('IDN-PD-RESUME');
 
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft('IDN-PD-RESUME');
 
-        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue'])->assertRedirect();
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra, '_intent' => 'continue'])->assertRedirect();
         $this->post(route('projects.draft.update', [$draft, 'nom']), $this->ideaAnswers['nom'] + ['_intent' => 'continue'])->assertRedirect();
 
         // Un nouveau passage par l'entrée reprend le même brouillon, à l'étape où il en était.
@@ -61,9 +64,10 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-LATER');
         $this->signIn('IDN-PD-LATER');
+        $zumra = $this->zumraFor('IDN-PD-LATER');
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft('IDN-PD-LATER');
-        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue']);
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra, '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'nom']), $this->ideaAnswers['nom'] + ['_intent' => 'continue']);
 
         // "summary" est trop court pour la validation normale, mais save_later ne valide jamais.
@@ -79,9 +83,10 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-CARD');
         $this->signIn('IDN-PD-CARD');
+        $zumra = $this->zumraFor('IDN-PD-CARD');
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft('IDN-PD-CARD');
-        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue']);
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra, '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'nom']), $this->ideaAnswers['nom'] + ['_intent' => 'save_later']);
 
         $content = $this->get(route('member.space'))->assertOk()->getContent();
@@ -125,7 +130,8 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-FULL');
         $this->signIn('IDN-PD-FULL');
-        $draft = $this->walkThroughIdea('IDN-PD-FULL', 'PERSON');
+        $zumra = $this->zumraFor('IDN-PD-FULL');
+        $draft = $this->walkThroughIdea('IDN-PD-FULL', 'PERSON', $zumra);
 
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Ouvrir deux après-midis par semaine'], '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'besoins']), ['_intent' => 'continue']);
@@ -154,7 +160,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-MILESTONES');
         $this->signIn('IDN-PD-MILESTONES');
-        $draft = $this->walkThroughIdea('IDN-PD-MILESTONES', 'PERSON');
+        $draft = $this->walkThroughIdea('IDN-PD-MILESTONES', 'PERSON', $this->zumraFor('IDN-PD-MILESTONES'));
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Un objectif'], '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'besoins']), ['_intent' => 'continue']);
         $this->post(route('projects.draft.confirm', $draft));
@@ -169,7 +175,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-IDEMPOTENT');
         $this->signIn('IDN-PD-IDEMPOTENT');
-        $draft = $this->walkThroughIdea('IDN-PD-IDEMPOTENT', 'PERSON');
+        $draft = $this->walkThroughIdea('IDN-PD-IDEMPOTENT', 'PERSON', $this->zumraFor('IDN-PD-IDEMPOTENT'));
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Un objectif'], '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'besoins']), ['_intent' => 'continue']);
 
@@ -197,17 +203,19 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-QUOTA');
         $this->signIn('IDN-PD-QUOTA');
+        $zumra = $this->zumraFor('IDN-PD-QUOTA');
+        $zumraGroupId = ZumraGroup::query()->where('public_reference', $zumra)->value('id');
 
         // Sature le quota personnel (8 projets actifs par défaut) directement en base, sans passer
         // par le parcours — seul le comportement du gate nous intéresse ici.
         for ($i = 0; $i < 8; $i++) {
-            Project::query()->create($this->rawProjectAttributes('IDN-PD-QUOTA', 'Projet existant '.$i));
+            Project::query()->create($this->rawProjectAttributes('IDN-PD-QUOTA', 'Projet existant '.$i, $zumraGroupId));
         }
 
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft('IDN-PD-QUOTA');
 
-        $response = $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue']);
+        $response = $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra, '_intent' => 'continue']);
         $response->assertSessionHasErrors('owner_type');
 
         $draft->refresh();
@@ -218,12 +226,14 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-NOQUOTA');
         $this->signIn('IDN-PD-NOQUOTA');
+        $zumra = $this->zumraFor('IDN-PD-NOQUOTA');
+        $zumraGroupId = ZumraGroup::query()->where('public_reference', $zumra)->value('id');
 
         // Sept projets réels existent déjà (un de moins que le quota de 8) : un huitième doit
         // rester possible, et le simple fait de démarrer/abandonner des brouillons ne doit jamais
         // avoir réduit la marge disponible.
         for ($i = 0; $i < 7; $i++) {
-            Project::query()->create($this->rawProjectAttributes('IDN-PD-NOQUOTA', 'Projet existant '.$i));
+            Project::query()->create($this->rawProjectAttributes('IDN-PD-NOQUOTA', 'Projet existant '.$i, $zumraGroupId));
         }
 
         for ($i = 0; $i < 5; $i++) {
@@ -234,7 +244,7 @@ final class ProjectDraftJourneyTest extends TestCase
 
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft('IDN-PD-NOQUOTA');
-        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', '_intent' => 'continue'])
+        $this->post(route('projects.draft.update', [$draft, 'audience']), ['owner_type' => 'PERSON', 'zumra_group_reference' => $zumra, '_intent' => 'continue'])
             ->assertSessionDoesntHaveErrors('owner_type');
     }
 
@@ -259,6 +269,7 @@ final class ProjectDraftJourneyTest extends TestCase
         $project = Project::query()->where('name', 'Bibliothèque solidaire')->firstOrFail();
         self::assertSame(Project::OWNER_GROUP, $project->owner_type);
         self::assertSame($group->id, $project->owner_reference);
+        self::assertSame($group->id, $project->zumra_group_id);
         self::assertSame('ZUMRA_COLLECTIVE', $project->property_regime);
     }
 
@@ -277,8 +288,8 @@ final class ProjectDraftJourneyTest extends TestCase
         $draft = $this->soleDraft('IDN-PD-OUTSIDER');
 
         $this->post(route('projects.draft.update', [$draft, 'audience']), [
-            'owner_type' => 'GROUP', 'group_reference' => $group->public_reference, '_intent' => 'continue',
-        ])->assertSessionHasErrors('group_reference');
+            'owner_type' => 'GROUP', 'zumra_group_reference' => $group->public_reference, '_intent' => 'continue',
+        ])->assertSessionHasErrors('zumra_group_reference');
     }
 
     // ===== Données différables =====
@@ -287,7 +298,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-SKIP');
         $this->signIn('IDN-PD-SKIP');
-        $draft = $this->walkThroughIdea('IDN-PD-SKIP', 'PERSON');
+        $draft = $this->walkThroughIdea('IDN-PD-SKIP', 'PERSON', $this->zumraFor('IDN-PD-SKIP'));
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Un objectif'], '_intent' => 'continue']);
 
         // « Je ne sais pas encore » = continuer sans rien renseigner, jamais bloqué.
@@ -304,7 +315,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-EMPTYOBJ');
         $this->signIn('IDN-PD-EMPTYOBJ');
-        $draft = $this->walkThroughIdea('IDN-PD-EMPTYOBJ', 'PERSON');
+        $draft = $this->walkThroughIdea('IDN-PD-EMPTYOBJ', 'PERSON', $this->zumraFor('IDN-PD-EMPTYOBJ'));
 
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['_intent' => 'continue'])
             ->assertSessionHasErrors('objectives');
@@ -319,7 +330,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-NOBRAIN');
         $this->signIn('IDN-PD-NOBRAIN');
-        $draft = $this->walkThroughIdea('IDN-PD-NOBRAIN', 'PERSON');
+        $draft = $this->walkThroughIdea('IDN-PD-NOBRAIN', 'PERSON', $this->zumraFor('IDN-PD-NOBRAIN'));
         $this->post(route('projects.draft.update', [$draft, 'objectifs']), ['objectives' => ['Un objectif'], '_intent' => 'continue']);
         $this->post(route('projects.draft.update', [$draft, 'besoins']), ['_intent' => 'continue']);
         $this->post(route('projects.draft.confirm', $draft));
@@ -333,6 +344,7 @@ final class ProjectDraftJourneyTest extends TestCase
     {
         $this->activateProgram('IDN-PD-BRAINCHECK');
         $this->signIn('IDN-PD-BRAINCHECK');
+        $zumra = $this->zumraFor('IDN-PD-BRAINCHECK');
 
         $this->get(route('projects.brain.start'))->assertOk();
 
@@ -341,6 +353,7 @@ final class ProjectDraftJourneyTest extends TestCase
             'title' => 'Idée test',
             'messages' => [],
             'context' => [
+                'zumra_group_reference' => $zumra,
                 'project_state' => [
                     'name' => 'Projet Cerveau', 'summary' => str_repeat('Résumé suffisamment long pour passer la validation minimale. ', 2),
                     'problem' => str_repeat('Problème suffisamment détaillé pour passer la validation minimale. ', 2),
@@ -382,16 +395,14 @@ final class ProjectDraftJourneyTest extends TestCase
 
     // ===== Helpers =====
 
-    private function walkThroughIdea(string $actor, string $ownerType, ?string $groupReference = null): ProjectDraft
+    private function walkThroughIdea(string $actor, string $ownerType, string $zumraReference): ProjectDraft
     {
         $this->get(route('projects.create'))->assertRedirect();
         $draft = $this->soleDraft($actor);
 
-        $audience = ['owner_type' => $ownerType, '_intent' => 'continue'];
-        if ($groupReference) {
-            $audience['group_reference'] = $groupReference;
-        }
-        $this->post(route('projects.draft.update', [$draft, 'audience']), $audience)->assertRedirect();
+        $this->post(route('projects.draft.update', [$draft, 'audience']), [
+            'owner_type' => $ownerType, 'zumra_group_reference' => $zumraReference, '_intent' => 'continue',
+        ])->assertRedirect();
 
         foreach (['nom', 'resume', 'probleme', 'solution', 'beneficiaires', 'logistique'] as $step) {
             $this->post(route('projects.draft.update', [$draft, $step]), $this->ideaAnswers[$step] + ['_intent' => 'continue'])->assertRedirect();
@@ -405,11 +416,22 @@ final class ProjectDraftJourneyTest extends TestCase
         return ProjectDraft::query()->where('actor_core_reference', $actor)->where('status', ProjectDraft::STATUS_DRAFT)->latest('created_at')->firstOrFail();
     }
 
-    private function rawProjectAttributes(string $actor, string $name): array
+    /** ZUMRA solo (assume_primary_lead) pour ancrer les Projects de test — jamais fabriquée silencieusement côté produit, seulement un raccourci de scénario ici. */
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.Str::random(6), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de cette personne dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
+    private function rawProjectAttributes(string $actor, string $name, ?string $zumraGroupId = null): array
     {
         return [
             'public_reference' => (string) Str::uuid(), 'owner_type' => Project::OWNER_PERSON, 'owner_reference' => $actor,
-            'initiator_core_reference' => $actor, 'name' => $name,
+            'zumra_group_id' => $zumraGroupId, 'initiator_core_reference' => $actor, 'name' => $name,
             'summary' => str_repeat('Résumé suffisant pour la contrainte de longueur. ', 2),
             'problem' => str_repeat('Problème suffisant pour la contrainte de longueur. ', 2),
             'proposed_solution' => str_repeat('Solution suffisante pour la contrainte de longueur. ', 2),

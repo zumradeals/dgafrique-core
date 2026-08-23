@@ -6,6 +6,7 @@ namespace Tests\Feature;
 
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Need;
 use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
@@ -227,9 +228,16 @@ final class DesignInvariantsPhase2Test extends TestCase
     public function test_project_maturity_stagewalk_shows_all_eight_stages_not_a_percentage(): void
     {
         $this->activateProgramMembership('IDN-P2-PROJECT-OWNER');
+        $zumra = app(ZumraGroupService::class)->create('IDN-P2-PROJECT-OWNER', [
+            'name' => 'ZUMRA IDN-P2-PROJECT-OWNER', 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ]);
         $project = app(ProjectService::class)->create('IDN-P2-PROJECT-OWNER', [
             'owner_type' => 'PERSON',
             'group_reference' => null,
+            'zumra_group_reference' => $zumra->public_reference,
             'source_need_reference' => null,
             'name' => 'Projet pour audit de maturité',
             'summary' => 'Un résumé suffisamment long pour ce projet destiné à vérifier le chemin de maturité.',

@@ -4,7 +4,8 @@
 --}}
 @php
     $modeLabels = ['PHYSICAL' => 'Sur place', 'DIGITAL' => 'En ligne', 'HYBRID' => 'Les deux'];
-    $group = ($payload['owner_type'] ?? null) === 'GROUP' ? $groups->firstWhere('public_reference', $payload['group_reference'] ?? null) : null;
+    $zumraGroup = $groups->firstWhere('public_reference', $payload['zumra_group_reference'] ?? null);
+    $sourceNeed = $needs->firstWhere('public_reference', $payload['source_need_reference'] ?? null);
 @endphp
 <x-layouts.portal title="Relire mon projet — DG Afrique">
     <x-dg.shell current="projets" :identity="$identity" :is-administrator="$isAdministrator">
@@ -17,10 +18,13 @@
             <div style="margin-top:26px;display:flex;flex-direction:column;gap:14px">
                 <x-dg.card tight>
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px">
-                        <x-dg.label>Pour qui</x-dg.label>
+                        <x-dg.label>Votre ZUMRA</x-dg.label>
                         <a href="{{ route('projects.draft.show', [$draft, 'audience']) }}" class="dg-meta" style="color:var(--dg-copper)">Modifier →</a>
                     </div>
-                    <p class="dg-body" style="margin-top:6px">{{ $group ? 'Pour la ZUMRA « '.$group->name.' »' : 'Pour vous, personnellement' }}</p>
+                    <p class="dg-body" style="margin-top:6px">
+                        {{ $zumraGroup ? '« '.$zumraGroup->name.' »' : '—' }}
+                        · {{ ($payload['owner_type'] ?? null) === 'GROUP' ? 'décidé collectivement' : 'décidé par vous, comme initiateur·rice' }}
+                    </p>
                 </x-dg.card>
 
                 <x-dg.card tight>
@@ -29,6 +33,9 @@
                         <a href="{{ route('projects.draft.show', [$draft, 'nom']) }}" class="dg-meta" style="color:var(--dg-copper)">Modifier →</a>
                     </div>
                     <p class="dg-display" style="font-size:22px;margin-top:6px">{{ $payload['name'] ?? '' }}</p>
+                    @if($sourceNeed)
+                        <p class="dg-meta" style="margin-top:4px">Issu du besoin « {{ $sourceNeed->title }} »</p>
+                    @endif
                     <p class="dg-body" style="margin-top:8px">{{ $payload['summary'] ?? '' }}</p>
                     <p class="dg-body" style="margin-top:10px"><strong>Problème :</strong> {{ $payload['problem'] ?? '' }}</p>
                     <p class="dg-body" style="margin-top:6px"><strong>Solution envisagée :</strong> {{ $payload['proposed_solution'] ?? '' }}</p>

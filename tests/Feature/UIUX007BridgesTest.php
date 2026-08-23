@@ -255,7 +255,7 @@ final class UIUX007BridgesTest extends TestCase
     public function test_an_eligible_active_member_sees_the_mission_bridge_on_a_project(): void
     {
         $this->activateProgram('IDN-U7-PROJOWNER');
-        $project = app(ProjectService::class)->create('IDN-U7-PROJOWNER', $this->projectPayload(), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-U7-PROJOWNER', $this->projectPayload(['zumra_group_reference' => $this->zumraFor('IDN-U7-PROJOWNER')]), (new ProjectConfiguration)->defaults());
         $this->activateProgram('IDN-U7-PROJHELPER');
 
         $this->signIn('IDN-U7-PROJHELPER');
@@ -268,7 +268,7 @@ final class UIUX007BridgesTest extends TestCase
     public function test_a_member_without_active_program_membership_never_sees_the_project_mission_bridge(): void
     {
         $this->activateProgram('IDN-U7-PROJOWNER2');
-        $project = app(ProjectService::class)->create('IDN-U7-PROJOWNER2', $this->projectPayload(['name' => 'Second projet '.uniqid()]), (new ProjectConfiguration)->defaults());
+        $project = app(ProjectService::class)->create('IDN-U7-PROJOWNER2', $this->projectPayload(['name' => 'Second projet '.uniqid(), 'zumra_group_reference' => $this->zumraFor('IDN-U7-PROJOWNER2')]), (new ProjectConfiguration)->defaults());
 
         $this->signIn('IDN-U7-PROJNOPROGRAM');
         $content = $this->get(route('projects.show', $project))->assertOk()->getContent();
@@ -309,6 +309,16 @@ final class UIUX007BridgesTest extends TestCase
             'category' => 'TRAINING', 'capability_label' => 'Comptabilité', 'collaboration_mode' => 'HYBRID',
             'location' => 'Abidjan', 'visibility' => Need::VISIBILITY_PUBLIC,
         ], $overrides);
+    }
+
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
     }
 
     private function projectPayload(array $overrides = []): array

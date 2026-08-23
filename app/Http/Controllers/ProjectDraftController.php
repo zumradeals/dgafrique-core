@@ -8,7 +8,10 @@ use App\Application\Projects\ProjectAuthority;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectDraftService;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupConfiguration;
+use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\Need;
 use App\Models\PortalAdministrator;
 use App\Models\Project;
 use App\Models\ProjectDraft;
@@ -42,11 +45,12 @@ final class ProjectDraftController
         $draft = $drafts->findOrStart($identity->reference);
 
         // Préselection depuis une fiche ZUMRA ou Mon espace (?group=...) — seulement sur un
-        // brouillon tout juste démarré, jamais en écrasant une réponse déjà donnée.
+        // brouillon tout juste démarré, jamais en écrasant une réponse déjà donnée. La ZUMRA
+        // choisie devient à la fois l'ancrage (toujours requis) et la gouvernance proposée.
         if ($request->filled('group') && $draft->status === ProjectDraft::STATUS_DRAFT && empty($draft->payload)) {
             $group = ZumraGroup::query()->where('public_reference', $request->query('group'))->first();
             if ($group && app(ProjectAuthority::class)->isActiveGroupMember($group->id, $identity->reference)) {
-                $drafts->saveStep($draft, 'audience', ['owner_type' => Project::OWNER_GROUP, 'group_reference' => $group->public_reference], false);
+                $drafts->saveStep($draft, 'audience', ['owner_type' => Project::OWNER_GROUP, 'zumra_group_reference' => $group->public_reference], false);
             }
         }
 
@@ -71,10 +75,14 @@ final class ProjectDraftController
         $groups = ZumraGroup::query()
             ->whereIn('id', ZumraGroupMembership::query()->where('core_identity_reference', $identity->reference)->where('status', ZumraGroupMembership::STATUS_ACTIVE)->pluck('zumra_group_id'))
             ->orderBy('name')->get();
+        // Besoin d'origine facultatif (restauré depuis l'ancien formulaire unique, §'nom') — jamais
+        // une obligation, seulement une possibilité de rattachement offerte si elle existe déjà.
+        $needs = Need::query()->where('owner_type', Need::OWNER_PERSON)->where('owner_reference', $identity->reference)
+            ->whereIn('status', [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS])->orderBy('title')->get();
         $config = $configuration->get();
         $previousStep = ProjectDraftService::nextStep('audience') === $step ? null : ProjectDraftService::previousStep($step);
 
-        return view('projects.draft.step-'.$step, compact('identity', 'isAdministrator', 'draft', 'payload', 'groups', 'config', 'previousStep'));
+        return view('projects.draft.step-'.$step, compact('identity', 'isAdministrator', 'draft', 'payload', 'groups', 'needs', 'config', 'previousStep'));
     }
 
     public function update(Request $request, ProjectDraft $draft, string $step, ProjectDraftService $drafts, ProjectService $projects, ProjectConfiguration $configuration): RedirectResponse
@@ -110,6 +118,45 @@ final class ProjectDraftController
         return redirect()->route('projects.draft.show', [$draft, $draft->fresh()->current_step]);
     }
 
+    /**
+     * PROJET-ZUMRA-INVARIANT-001 — naissance explicite d'une ZUMRA solo depuis le parcours Projet,
+     * jamais silencieuse. Réutilise ZumraGroupService::create() à l'identique de
+     * ZumraGroupController::store() (mêmes champs, même autorité) : aucune logique dupliquée,
+     * seulement un point d'entrée dédié qui revient au brouillon plutôt qu'à la fiche ZUMRA.
+     */
+    public function newZumra(Request $request, ProjectDraft $draft, ProjectDraftService $drafts): View
+    {
+        $identity = $this->identity($request);
+        $drafts->assertOwner($draft, $identity->reference);
+        abort_if($draft->status !== ProjectDraft::STATUS_DRAFT, 409);
+        $isAdministrator = $this->isAdministrator($identity);
+
+        return view('projects.draft.zumra-nouvelle', compact('identity', 'isAdministrator', 'draft'));
+    }
+
+    public function storeZumra(Request $request, ProjectDraft $draft, ProjectDraftService $drafts, ZumraGroupService $groups, ZumraGroupConfiguration $configuration): RedirectResponse
+    {
+        $identity = $this->identity($request);
+        $drafts->assertOwner($draft, $identity->reference);
+        abort_if($draft->status !== ProjectDraft::STATUS_DRAFT, 409);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'min:3', 'max:140', Rule::unique('dg_zumra_groups', 'name')],
+            'domain' => ['required', 'string', 'min:3', 'max:140'],
+            'founding_objective' => ['required', 'string', 'min:40', 'max:1800'],
+            'participation_mode' => ['required', Rule::in(['PHYSICAL', 'DIGITAL', 'HYBRID'])],
+            'internal_charter' => ['required', 'string', 'min:80', 'max:6000'],
+        ]);
+        $data['assume_primary_lead'] = true;
+        $group = $groups->create($identity->reference, $data, (int) $configuration->get()['max_simultaneous_founder_roles']);
+
+        // Retour naturel au brouillon, jamais perdu : la ZUMRA est présélectionnée, la gouvernance
+        // (owner_type) reste à préciser — le parcours ne fait jamais avancer l'étape ici.
+        $drafts->saveStep($draft, 'audience', ['zumra_group_reference' => $group->public_reference], false);
+
+        return redirect()->route('projects.draft.show', [$draft, 'audience'])->with('status', 'Votre ZUMRA « '.$group->name.' » est créée. Vous pouvez maintenant y ancrer votre projet.');
+    }
+
     public function abandon(Request $request, ProjectDraft $draft, ProjectDraftService $drafts): RedirectResponse
     {
         $identity = $this->identity($request);
@@ -138,7 +185,7 @@ final class ProjectDraftController
     {
         return match ($step) {
             'audience' => $this->validateAudience($request, $draft, $projects, $config),
-            'nom' => $request->validate(['name' => ['required', 'string', 'min:5', 'max:180']]),
+            'nom' => $this->validateNom($request),
             'resume' => $request->validate(['summary' => ['required', 'string', 'min:40', 'max:1200']]),
             'probleme' => $request->validate(['problem' => ['required', 'string', 'min:40', 'max:2400']]),
             'solution' => $request->validate(['proposed_solution' => ['required', 'string', 'min:40', 'max:2400']]),
@@ -154,27 +201,37 @@ final class ProjectDraftController
     }
 
     /** @return array<string,mixed> */
+    private function validateNom(Request $request): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'min:5', 'max:180'],
+            'source_need_reference' => ['nullable', 'string'],
+        ]);
+    }
+
+    /**
+     * PROJET-ZUMRA-INVARIANT-001 — un Projet appartient toujours à une ZUMRA : zumra_group_reference
+     * est requis quelle que soit la gouvernance choisie, jamais seulement pour owner_type=GROUP.
+     *
+     * @return array<string,mixed>
+     */
     private function validateAudience(Request $request, ProjectDraft $draft, ProjectService $projects, array $config): array
     {
         $data = $request->validate([
             'owner_type' => ['required', Rule::in([Project::OWNER_PERSON, Project::OWNER_GROUP])],
-            'group_reference' => ['nullable', 'required_if:owner_type,GROUP'],
+            'zumra_group_reference' => ['required', 'string'],
         ]);
 
         $identity = $this->identity($request);
-        $ownerReference = $identity->reference;
-
-        if ($data['owner_type'] === Project::OWNER_GROUP) {
-            $group = ZumraGroup::query()->where('public_reference', $data['group_reference'])->first();
-            $isActiveMember = $group && app(ProjectAuthority::class)->isActiveGroupMember($group->id, $identity->reference);
-            if (! $isActiveMember) {
-                throw ValidationException::withMessages([
-                    'group_reference' => 'Choisissez une ZUMRA dont vous êtes membre actif — les autres ne sont pas proposées ici.',
-                ]);
-            }
-            $ownerReference = $group->id;
+        $group = ZumraGroup::query()->where('public_reference', $data['zumra_group_reference'])->first();
+        $isActiveMember = $group && app(ProjectAuthority::class)->isActiveGroupMember($group->id, $identity->reference);
+        if (! $isActiveMember) {
+            throw ValidationException::withMessages([
+                'zumra_group_reference' => 'Choisissez une ZUMRA dont vous êtes membre actif — les autres ne sont pas proposées ici.',
+            ]);
         }
 
+        $ownerReference = $data['owner_type'] === Project::OWNER_GROUP ? $group->id : $identity->reference;
         if ($projects->activeProjectQuotaExceeded($data['owner_type'], $ownerReference, $config)) {
             throw ValidationException::withMessages([
                 'owner_type' => 'Ce porteur a déjà atteint le nombre maximal de projets actifs. Terminez ou archivez-en un avant d’en proposer un nouveau.',
@@ -237,8 +294,8 @@ final class ProjectDraftController
     private function rawAnswers(Request $request, string $step): array
     {
         return match ($step) {
-            'audience' => $request->only(['owner_type', 'group_reference']),
-            'nom' => $request->only(['name']),
+            'audience' => $request->only(['owner_type', 'zumra_group_reference']),
+            'nom' => $request->only(['name', 'source_need_reference']),
             'resume' => $request->only(['summary']),
             'probleme' => $request->only(['problem']),
             'solution' => $request->only(['proposed_solution']),

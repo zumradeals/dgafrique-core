@@ -25,7 +25,7 @@ final class ProjectDraftService
 
     /** Repère court affiché dans l'indicateur de progression (jamais un pourcentage). */
     public const STEP_LABELS = [
-        'audience' => 'Pour qui',
+        'audience' => 'Votre ZUMRA',
         'nom' => 'Votre idée',
         'resume' => 'Votre idée',
         'probleme' => 'Votre idée',
@@ -124,15 +124,21 @@ final class ProjectDraftService
      * (voir audit Phase A) : ils sont calculés silencieusement à partir du porteur, sans jamais
      * devenir une question. Les jalons restent hors de la naissance du Projet — `ProjectList::fromText`
      * accepte déjà une chaîne vide et ne crée alors aucun jalon (comportement inchangé).
+     *
+     * PROJET-ZUMRA-INVARIANT-001 — group_reference (gouvernance GROUP) et zumra_group_reference
+     * (ancrage, toujours requis par ProjectService::create() pour owner_type=PERSON) partagent la
+     * même ZUMRA choisie à l'étape « audience » : jamais deux choix distincts dans ce parcours.
      */
     private function toProjectPayload(array $payload, ?string $imagePath = null): array
     {
         $ownerType = $payload['owner_type'] ?? Project::OWNER_PERSON;
+        $zumraGroupReference = $payload['zumra_group_reference'] ?? null;
 
         return [
             'owner_type' => $ownerType,
-            'group_reference' => $payload['group_reference'] ?? null,
-            'source_need_reference' => null,
+            'group_reference' => $ownerType === Project::OWNER_GROUP ? $zumraGroupReference : null,
+            'zumra_group_reference' => $zumraGroupReference,
+            'source_need_reference' => $payload['source_need_reference'] ?? null,
             'name' => (string) ($payload['name'] ?? ''),
             'summary' => (string) ($payload['summary'] ?? ''),
             'problem' => (string) ($payload['problem'] ?? ''),

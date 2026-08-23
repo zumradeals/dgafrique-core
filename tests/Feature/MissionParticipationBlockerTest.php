@@ -12,12 +12,15 @@ use App\Application\Missions\MissionWorkflow;
 use App\Application\Needs\NeedConfiguration;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
+use App\Application\Zumra\ZumraGroupService;
 use App\Models\Mission;
 use App\Models\MissionAssignment;
 use App\Models\MissionBlocker;
 use App\Models\MissionSubmission;
 use App\Models\Need;
 use App\Models\PersonProfile;
+use App\Models\ZumraCharter;
+use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -34,7 +37,7 @@ final class MissionParticipationBlockerTest extends TestCase
 
     public function test_invalid_transitions_are_rejected(): void
     {
-        [$mission, ] = $this->openMission();
+        [$mission] = $this->openMission();
         $workflow = app(MissionWorkflow::class);
 
         // Une Mission OPEN ne peut pas être officialisée à nouveau (déjà passée cet état).
@@ -227,10 +230,20 @@ final class MissionParticipationBlockerTest extends TestCase
         ], $overrides);
     }
 
+    private function zumraFor(string $actor): string
+    {
+        return app(ZumraGroupService::class)->create($actor, [
+            'name' => 'ZUMRA '.$actor.' '.uniqid(), 'domain' => 'Général',
+            'founding_objective' => str_repeat('Ancrer les projets de test dans une ZUMRA réelle. ', 2),
+            'participation_mode' => 'HYBRID', 'internal_charter' => str_repeat('Respect, transmission et responsabilité partagée. ', 4),
+            'assume_primary_lead' => true,
+        ])->public_reference;
+    }
+
     private function projectPayload(array $overrides = []): array
     {
         return array_replace([
-            'owner_type' => 'PERSON', 'group_reference' => null, 'source_need_reference' => null,
+            'owner_type' => 'PERSON', 'group_reference' => null, 'zumra_group_reference' => $this->zumraFor('IDN-OWNER'), 'source_need_reference' => null,
             'name' => 'Atelier numérique communautaire',
             'summary' => 'Créer un espace pratique où des jeunes peuvent apprendre ensemble et produire des services numériques utiles.',
             'problem' => 'Des jeunes motivés disposent de peu de cadres pratiques pour apprendre, expérimenter et transformer leurs acquis en activités utiles.',
@@ -265,13 +278,13 @@ final class MissionParticipationBlockerTest extends TestCase
     private function activateProgram(string $reference): void
     {
         $body = str_repeat('Respect et transmission. ', 5);
-        $charter = \App\Models\ZumraCharter::query()->firstOrCreate(
+        $charter = ZumraCharter::query()->firstOrCreate(
             ['version' => '2026.1'],
-            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => \App\Models\ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
+            ['title' => 'Charte ZUMRA', 'body' => $body, 'content_hash' => hash('sha256', $body), 'status' => ZumraCharter::STATUS_PUBLISHED, 'published_at' => now()]
         );
-        \App\Models\ZumraProgramMembership::query()->create([
+        ZumraProgramMembership::query()->create([
             'core_identity_reference' => $reference,
-            'status' => \App\Models\ZumraProgramMembership::STATUS_ACTIVE,
+            'status' => ZumraProgramMembership::STATUS_ACTIVE,
             'accepted_charter_id' => $charter->id,
             'accepted_charter_version' => $charter->version,
             'accepted_charter_hash' => $charter->content_hash,
