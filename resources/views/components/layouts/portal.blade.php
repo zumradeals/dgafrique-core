@@ -30,6 +30,9 @@
     if (request()->routeIs('projects.index')) {
         $pageStyles[] = 'resources/css/projects-directory.css';
     }
+    if (request()->routeIs('projects.draft.*')) {
+        $pageStyles[] = 'resources/css/zumra-project-birth.css';
+    }
     if (request()->routeIs('needs.index')) {
         $pageStyles[] = 'resources/css/needs-directory.css';
     }

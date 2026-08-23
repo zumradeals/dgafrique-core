@@ -40,6 +40,41 @@ final class ProjectDraftJourneyTest extends TestCase
 
     // ===== Sauvegarde / reprise =====
 
+    public function test_an_active_member_enters_the_project_birth_journey_from_its_zumra_without_silent_side_effects(): void
+    {
+        $actor = 'IDN-PD-ZUMRA-UI';
+        $this->activateProgram($actor);
+        $this->signIn($actor);
+        $groupReference = $this->zumraFor($actor);
+        $group = ZumraGroup::query()->where('public_reference', $groupReference)->sole();
+        $membershipCount = $group->memberships()->count();
+        $roleCount = $group->roles()->count();
+
+        $this->get(route('projects.create', ['group' => $groupReference]))->assertRedirect();
+        $draft = $this->soleDraft($actor);
+
+        self::assertSame('audience', $draft->current_step);
+        self::assertTrue($draft->payload['zumra_context']);
+        self::assertSame($groupReference, $draft->payload['zumra_group_reference']);
+        self::assertSame(Project::OWNER_GROUP, $draft->payload['owner_type']);
+
+        $this->get(route('projects.draft.show', [$draft, 'audience']))->assertOk()
+            ->assertSee('Créer un projet dans votre ZUMRA')
+            ->assertSee('Ce projet naît dans '.$group->name)
+            ->assertSee('Le besoin & l’impact', false)
+            ->assertSee(route('zumra.groups.show', $group), false);
+
+        self::assertSame(0, Project::query()->count());
+        self::assertSame($membershipCount, $group->memberships()->count());
+        self::assertSame($roleCount, $group->roles()->count());
+
+        $this->post(route('projects.draft.update', [$draft, 'audience']), [
+            'owner_type' => Project::OWNER_GROUP,
+            'zumra_group_reference' => $groupReference,
+            '_intent' => 'continue',
+        ])->assertRedirect(route('projects.draft.show', [$draft, 'nom']));
+    }
+
     public function test_a_started_draft_is_resumed_at_its_current_step(): void
     {
         $this->activateProgram('IDN-PD-RESUME');

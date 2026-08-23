@@ -50,7 +50,11 @@ final class ProjectDraftController
         if ($request->filled('group') && $draft->status === ProjectDraft::STATUS_DRAFT && empty($draft->payload)) {
             $group = ZumraGroup::query()->where('public_reference', $request->query('group'))->first();
             if ($group && app(ProjectAuthority::class)->isActiveGroupMember($group->id, $identity->reference)) {
-                $drafts->saveStep($draft, 'audience', ['owner_type' => Project::OWNER_GROUP, 'zumra_group_reference' => $group->public_reference], false);
+                $drafts->saveStep($draft, 'audience', [
+                    'owner_type' => Project::OWNER_GROUP,
+                    'zumra_group_reference' => $group->public_reference,
+                    'zumra_context' => true,
+                ], false);
             }
         }
 
@@ -81,6 +85,18 @@ final class ProjectDraftController
             ->whereIn('status', [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS])->orderBy('title')->get();
         $config = $configuration->get();
         $previousStep = ProjectDraftService::nextStep('audience') === $step ? null : ProjectDraftService::previousStep($step);
+
+        if (($payload['zumra_context'] ?? false) === true) {
+            $zumraGroup = $groups->firstWhere('public_reference', $payload['zumra_group_reference'] ?? null);
+            abort_unless($zumraGroup, 404);
+            $zumraRoles = $zumraGroup->roles()->get();
+            $zumraActivities = $zumraGroup->activities()->latest('created_at')->get();
+
+            return view('projects.draft.zumra-step', compact(
+                'identity', 'isAdministrator', 'draft', 'payload', 'groups', 'needs', 'config',
+                'previousStep', 'step', 'zumraGroup', 'zumraRoles', 'zumraActivities',
+            ));
+        }
 
         return view('projects.draft.step-'.$step, compact('identity', 'isAdministrator', 'draft', 'payload', 'groups', 'needs', 'config', 'previousStep'));
     }

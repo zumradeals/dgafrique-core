@@ -66,7 +66,7 @@
                         <div>
                             <a href="{{ route('comments.zumra-activity', $group) }}"><i>✎</i><span>Publier<br>sur le fil</span></a>
                             <a href="#conversation"><i>□</i><span>Lancer une<br>discussion</span></a>
-                            <a href="{{ route('projects.create', ['zumra_group' => $group->public_reference]) }}"><i>◇</i><span>Créer un<br>projet</span></a>
+                            <a href="{{ route('projects.create', ['group' => $group->public_reference]) }}"><i>◇</i><span>Créer un<br>projet</span></a>
                             <a href="{{ route('needs.create', ['zumra_group' => $group->public_reference]) }}"><i>♧</i><span>Déclarer un<br>besoin</span></a>
                             @if($membership?->status === 'ACTIVE')
                                 <a href="{{ route('shares.group', $group) }}"><i>▱</i><span>Partager une<br>ressource</span></a>
