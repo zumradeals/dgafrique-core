@@ -30,7 +30,7 @@ return new class extends Migration
 
         if (DB::connection()->getDriverName() === 'pgsql') {
             DB::statement(
-                "ALTER TABLE dg_zahab_wallets ADD CONSTRAINT dg_zahab_wallets_subject_type_check "
+                'ALTER TABLE dg_zahab_wallets ADD CONSTRAINT dg_zahab_wallets_subject_type_check '
                 ."CHECK (subject_type IN ('PERSON', 'ZUMRA_GROUP', 'ORGANIZATION'))"
             );
         }

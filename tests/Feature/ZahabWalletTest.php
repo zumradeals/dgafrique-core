@@ -4,19 +4,21 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\Ledger\LedgerService;
 use App\Application\Organizations\OrganizationService;
 use App\Application\Zahab\ZahabWalletService;
 use App\Application\Zumra\ZumraGroupService;
+use App\Http\Controllers\WalletController;
 use App\Models\LedgerEntry;
 use App\Models\Organization;
 use App\Models\PortalAdministrator;
 use App\Models\ZahabWallet;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 use TypeError;
@@ -64,7 +66,7 @@ final class ZahabWalletTest extends TestCase
         // dg_contributions) : une tentative directe d'INSERT en doublon échoue toujours.
         app(ZahabWalletService::class)->walletFor(ZahabWallet::SUBJECT_PERSON, 'IDN-MEMBER', 'IDN-MEMBER');
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         ZahabWallet::query()->create([
             'subject_type' => ZahabWallet::SUBJECT_PERSON,
             'subject_reference' => 'IDN-MEMBER',
@@ -316,7 +318,7 @@ final class ZahabWalletTest extends TestCase
 
     public function test_no_controller_exposes_a_public_credit_or_debit_action(): void
     {
-        foreach ([\App\Http\Controllers\WalletController::class, \App\Http\Controllers\Administration\WalletController::class] as $controller) {
+        foreach ([WalletController::class, \App\Http\Controllers\Administration\WalletController::class] as $controller) {
             $reflection = new \ReflectionClass($controller);
             $methodNames = array_map(static fn (\ReflectionMethod $m): string => $m->getName(), $reflection->getMethods(\ReflectionMethod::IS_PUBLIC));
             foreach (['credit', 'debit', 'reverse', 'store', 'update'] as $forbidden) {
@@ -329,7 +331,7 @@ final class ZahabWalletTest extends TestCase
     {
         // Seul ZahabWalletService porte les invariants (verrou, solde, idempotence) : LedgerService
         // ne doit jamais offrir un raccourci qui les contournerait.
-        $reflection = new \ReflectionClass(\App\Application\Ledger\LedgerService::class);
+        $reflection = new \ReflectionClass(LedgerService::class);
         $methodNames = array_map(static fn (\ReflectionMethod $m): string => $m->getName(), $reflection->getMethods(\ReflectionMethod::IS_PUBLIC));
         self::assertNotContains('credit', $methodNames);
         self::assertNotContains('debit', $methodNames);
