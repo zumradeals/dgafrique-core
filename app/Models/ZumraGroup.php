@@ -36,9 +36,21 @@ final class ZumraGroup extends Model
 
     protected $keyType = 'string';
 
+    public const WELCOME_ALREADY_CAPABLE = 'ALREADY_CAPABLE';
+
+    public const WELCOME_PROGRESSIVELY = 'PROGRESSIVELY';
+
+    public const WELCOME_NEEDS_TRANSMITTERS = 'NEEDS_TRANSMITTERS';
+
+    public const WELCOME_CAPACITIES = [
+        self::WELCOME_ALREADY_CAPABLE => 'Nous pouvons déjà accueillir et former.',
+        self::WELCOME_PROGRESSIVELY => 'Nous pourrons le faire progressivement.',
+        self::WELCOME_NEEDS_TRANSMITTERS => 'Nous devons d’abord trouver des personnes capables de transmettre.',
+    ];
+
     protected $fillable = [
         'public_reference', 'name', 'slug', 'domain', 'founding_objective',
-        'participation_mode', 'internal_charter', 'state', 'maturity',
+        'participation_mode', 'welcome_capacity', 'location', 'internal_charter', 'state', 'maturity',
         'proposer_core_reference', 'active_member_count', 'ready_at',
         'validated_at', 'suspended_at', 'activated_at', 'warned_at', 'rehabilitating_at',
     ];
@@ -68,5 +80,10 @@ final class ZumraGroup extends Model
     public function roles(): HasMany
     {
         return $this->hasMany(ZumraGroupRole::class, 'zumra_group_id');
+    }
+
+    public function activities(): HasMany
+    {
+        return $this->hasMany(ZumraGroupActivity::class, 'zumra_group_id');
     }
 }

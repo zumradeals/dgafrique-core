@@ -22,8 +22,14 @@
                         <p style="margin:0;font-size:15px;line-height:1.7;color:var(--dg-on-deep-text)">{{ $group->founding_objective }}</p>
                         <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
                             <x-dg.badge tone="on-deep">{{ match($group->participation_mode) { 'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride' } }}</x-dg.badge>
+                            @if(filled($group->location))
+                                <x-dg.badge tone="on-deep">{{ $group->location }}</x-dg.badge>
+                            @endif
                             <x-dg.badge tone="on-deep">{{ match($group->state) { 'CONSTITUTING' => 'En constitution', 'READY' => 'Prête à valider', 'VALIDATED' => 'Validée', 'ACTIVE' => 'Active', 'WARNED' => 'Avertie', 'SUSPENDED' => 'Suspendue', 'REHABILITATING' => 'En réhabilitation', default => $group->state } }}</x-dg.badge>
                         </div>
+                        @if(filled($group->welcome_capacity))
+                            <p style="margin:6px 0 0;font-size:13px;color:var(--dg-on-deep-muted)">{{ \App\Models\ZumraGroup::WELCOME_CAPACITIES[$group->welcome_capacity] ?? $group->welcome_capacity }}</p>
+                        @endif
                     </div>
                     <div style="text-align:right;flex:none">
                         <div style="font-family:var(--dg-font-display);font-size:26px;color:var(--dg-on-deep-title)">{{ $group->active_member_count }}</div>
@@ -149,14 +155,49 @@
                             @endif
                         </x-dg.card>
 
+                        <x-dg.card id="charte">
+                            <x-dg.label>Charte interne</x-dg.label>
+                            @if(filled($group->internal_charter))
+                                <p class="dg-body" style="margin-top:10px">{{ \Illuminate\Support\Str::limit($group->internal_charter, 220) }}</p>
+                                @if(mb_strlen($group->internal_charter) > 220)
+                                    <details style="margin-top:8px">
+                                        <summary style="cursor:pointer;font-size:12px;color:var(--dg-faint);font-weight:600">Lecture intégrale ⌄</summary>
+                                        <div class="dg-body" style="margin-top:10px;white-space:pre-line">{{ $group->internal_charter }}</div>
+                                    </details>
+                                @endif
+                            @elseif($canSetCharter)
+                                <p class="dg-hint" style="margin-top:8px">Pas encore requise pour naître — nécessaire pour rendre cette ZUMRA prête à valider.</p>
+                                <form method="POST" action="{{ route('zumra.groups.charter.set', $group) }}" style="margin-top:12px">
+                                    @csrf
+                                    <textarea name="internal_charter" class="dg-textarea" rows="6" minlength="80" maxlength="6000" placeholder="Précisez la mission, le respect mutuel, la hiérarchie, les décisions, l’admission, le départ et l’exclusion." required></textarea>
+                                    <button type="submit" class="dg-btn dg-btn--saffron" style="margin-top:10px">Enregistrer la charte</button>
+                                </form>
+                            @else
+                                <p class="dg-hint" style="margin-top:8px">Pas encore rédigée.</p>
+                            @endif
+                        </x-dg.card>
+
                         <x-dg.card>
-                            <x-dg.label>Charte interne · extrait</x-dg.label>
-                            <p class="dg-body" style="margin-top:10px">{{ \Illuminate\Support\Str::limit($group->internal_charter, 220) }}</p>
-                            @if(mb_strlen($group->internal_charter) > 220)
-                                <details style="margin-top:8px">
-                                    <summary style="cursor:pointer;font-size:12px;color:var(--dg-faint);font-weight:600">Lecture intégrale ⌄</summary>
-                                    <div class="dg-body" style="margin-top:10px;white-space:pre-line">{{ $group->internal_charter }}</div>
-                                </details>
+                            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px">
+                                <x-dg.label>Activités dérivées</x-dg.label>
+                                <span class="dg-meta">Activité principale : {{ $group->domain }}</span>
+                            </div>
+                            <p class="dg-hint" style="margin-top:8px">Des activités secondaires ou sous-activités, toujours rattachées à « {{ $group->domain }} ».</p>
+                            @forelse($activities as $activity)
+                                <div style="padding:10px 0;border-top:1px solid var(--dg-line-inner)">
+                                    <strong style="font-size:14px;color:var(--dg-forest)">{{ $activity->label }}</strong>
+                                    <p class="dg-body" style="margin-top:4px">{{ $activity->relation_to_principal }}</p>
+                                </div>
+                            @empty
+                                <p class="dg-body" style="margin-top:8px">Aucune activité dérivée pour l’instant.</p>
+                            @endforelse
+                            @if($isLeader)
+                                <form method="POST" action="{{ route('zumra.groups.activities.add', $group) }}" style="margin-top:14px;display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--dg-line-inner);padding-top:14px">
+                                    @csrf
+                                    <input type="text" name="label" class="dg-input" maxlength="140" placeholder="Nom de l’activité dérivée" required>
+                                    <textarea name="relation_to_principal" class="dg-textarea" rows="3" maxlength="600" placeholder="Comment dérive-t-elle de « {{ $group->domain }} » ?" required></textarea>
+                                    <button type="submit" class="dg-btn dg-btn--quiet" style="align-self:flex-start">+ Ajouter une activité dérivée</button>
+                                </form>
                             @endif
                         </x-dg.card>
                     </div>

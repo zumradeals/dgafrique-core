@@ -69,9 +69,9 @@
                         <x-dg.label>Charte interne</x-dg.label>
                     </legend>
                     <div class="dg-field">
-                        <label for="internal_charter">Règles fondatrices</label>
-                        <textarea id="internal_charter" name="internal_charter" class="dg-textarea" rows="8" minlength="80" maxlength="6000" required>{{ old('internal_charter') }}</textarea>
-                        <span class="dg-hint">Précisez la mission, le respect mutuel, les décisions, l’admission, le départ et l’exclusion — même provisoire, elle doit exister.</span>
+                        <label for="internal_charter">Règles fondatrices (facultatif pour l’instant)</label>
+                        <textarea id="internal_charter" name="internal_charter" class="dg-textarea" rows="6" minlength="80" maxlength="6000">{{ old('internal_charter') }}</textarea>
+                        <span class="dg-hint">Vous pourrez la rédiger plus tard, depuis la fiche de votre ZUMRA — elle n’est pas requise pour naître.</span>
                     </div>
                 </x-dg.fieldset>
 

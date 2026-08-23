@@ -162,6 +162,10 @@ Route::post('/zumra/groupes/{group}/contribution', [ContributionController::clas
     ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.propose');
 Route::post('/zumra/groupes/{group}/contribution/approbation', [ContributionController::class, 'approveCollective'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:contribution-write'])->name('zumra.groups.contribution.approve');
+Route::post('/zumra/groupes/{group}/charte', [ZumraGroupController::class, 'setCharter'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.charter.set');
+Route::post('/zumra/groupes/{group}/activites', [ZumraGroupController::class, 'addActivity'])
+    ->whereUuid('group')->middleware(['core.member', 'throttle:zumra-group-write'])->name('zumra.groups.activities.add');
 
 Route::get('/contributions', [ContributionController::class, 'index'])
     ->middleware('core.member')->name('contributions.index');

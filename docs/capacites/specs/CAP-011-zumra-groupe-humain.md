@@ -7,17 +7,31 @@
 
 ## Finalité
 
-Permettre à des adhérents actifs de constituer une unité humaine organisée autour d’un domaine, d’un objectif fondateur, d’une charte et d’une gouvernance réelle.
+Une ZUMRA est un centre d’incubation humain spécialisé autour d’une activité (ZUMRA-HUMAN-BIRTH-001) : pas d’activité, pas de ZUMRA. Elle permet à des adhérents actifs de constituer une unité humaine organisée autour de cette activité, avec une gouvernance réelle qui se construit progressivement — jamais une condition de naissance.
 
 Une ZUMRA est une unité particulière du réseau. Elle ne doit jamais être confondue avec le Programme ZUMRA dans son ensemble.
 
-## Constitution
+## Naissance (ZUMRA-HUMAN-BIRTH-001)
 
-Tout adhérent actif peut proposer une ZUMRA. Le dossier contient un nom, un domaine principal, un objectif fondateur, un mode physique, numérique ou hybride et une charte interne conforme à la Charte générale.
+La naissance d’une ZUMRA reste bien plus légère que sa structuration ultérieure. Tout adhérent actif peut la proposer, seul, en quatre moments humains : son activité principale, ce qu’il veut changer (l’objectif fondateur), comment il commence (mode de présence, lieu si présentiel/hybride, capacité d’accueil/formation) et le nom de la ZUMRA.
 
-Le proposant devient membre fondateur. Il choisit explicitement s’il accepte le rôle de premier responsable ; ce rôle ne lui est pas attribué silencieusement.
+Seuls le nom, le domaine (activité principale), l’objectif fondateur et le mode de présence sont exigés à la naissance. La charte interne, la localisation, la capacité d’accueil/formation et les activités dérivées sont tous différables — nullable en base, jamais rétro-remplis pour les ZUMRA nées avant ce chantier (toutes déjà pourvues d’une charte, aucune n’est affectée).
+
+Le proposant devient membre fondateur. Il choisit explicitement s’il accepte le rôle de premier responsable ; ce rôle ne lui est pas attribué silencieusement, et son absence ne bloque jamais la naissance — les cinq responsabilités relèvent de la structuration, jamais de l’existence (`DOCTRINE-GAMAD.md` §6.4).
 
 La création ouvre l’état `CONSTITUTING`. Elle ne vaut ni validation, ni financement, ni reconnaissance officielle.
+
+### Charte interne différable (mini-audit Phase B)
+
+La charte devient obligatoire seulement au passage `READY` (`evaluateStructuralReadiness()`), jamais à la naissance — la doctrine elle-même ne l’exigeait qu’à cette étape (`ZUMRA-DOCTRINE-INVARIANTE.md` §10), pas à la création (§7). Un responsable la rédige quand il le souhaite via `ZumraGroupService::setCharter()`, réservé aux responsables et à la seule phase `CONSTITUTING` — elle ne se réécrit jamais silencieusement une fois la ZUMRA sortie de constitution. Le gate de contribution collective (art. 6.3, `ContributionService`, exige `VALIDATED`) reste inchangé : une ZUMRA sans charte ne peut jamais dépasser `CONSTITUTING`.
+
+### Activités dérivées
+
+Une ZUMRA peut développer des activités secondaires et sous-activités, toujours rattachées à son activité principale — jamais un moyen d’étendre arbitrairement son périmètre vers un secteur sans rapport (ex. une ZUMRA technologique appliquant ses compétences à l’agriculture reste technologique, elle ne devient pas une ZUMRA agricole). `ZumraGroupActivity` (`dg_zumra_group_activities`) porte cette filiation par un texte humain obligatoire (`relation_to_principal`) — jamais une validation automatique de cohérence, jamais une taxonomie globale rigide. Déclarables dès la naissance ou après coup, réservées aux responsables (`ZumraGroupService::addActivity()`).
+
+### Capacité d’accueil/formation
+
+`welcome_capacity` (nullable) porte la réponse humaine à « comment votre ZUMRA pourra-t-elle accueillir des personnes qui souhaitent apprendre cette activité ? » — déjà capable d’accueillir et former, progressivement, ou doit d’abord trouver des transmetteurs. Un signal, jamais une promesse ni un critère de readiness ; potentiellement exploitable par un futur matching humain, non construit dans ce chantier.
 
 ## Gouvernance fondatrice
 
@@ -76,4 +90,9 @@ Une ZUMRA suspendue devient invisible de l’annuaire, sans suppression de son h
 - VALIDATED/ACTIVE/WARNED/SUSPENDED/REHABILITATING/réactivation réservés à l’autorité DG Afrique/GAMAD ;
 - CONSTITUTING reste opérationnel pour Messagerie/Partage/Commentaire/Mission ; seul SUSPENDED bloque ;
 - aucune Organisation, aucun Projet, aucun Satellite créé automatiquement par le cycle de vie ;
+- naissance réelle avec seulement activité, objectif, mode et nom — charte, localisation, capacité d’accueil et activités dérivées absentes et non requises ;
+- ZUMRA sans charte jamais `READY`, gate de contribution collective inchangé ;
+- charte complétée après coup par un responsable, jamais par un non-responsable, jamais après `CONSTITUTING` ;
+- activité dérivée exigeant une filiation explicite non vide, réservée aux responsables ;
+- ZUMRA historique (charte déjà renseignée avant ce chantier) inchangée ;
 - migration, tests ciblés, non-régression et build verts sur VPS.

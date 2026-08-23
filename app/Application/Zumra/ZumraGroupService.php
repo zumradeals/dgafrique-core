@@ -6,6 +6,7 @@ namespace App\Application\Zumra;
 
 use App\Models\PortalAdministrator;
 use App\Models\ZumraGroup;
+use App\Models\ZumraGroupActivity;
 use App\Models\ZumraGroupEvent;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
@@ -39,12 +40,24 @@ final class ZumraGroupService
                 'domain' => $data['domain'],
                 'founding_objective' => $data['founding_objective'],
                 'participation_mode' => $data['participation_mode'],
-                'internal_charter' => $data['internal_charter'],
+                'welcome_capacity' => $data['welcome_capacity'] ?? null,
+                'location' => $data['location'] ?? null,
+                'internal_charter' => $data['internal_charter'] ?? null,
                 'state' => ZumraGroup::STATE_CONSTITUTING,
                 'maturity' => ZumraGroup::MATURITY_EMERGING,
                 'proposer_core_reference' => $actor,
                 'active_member_count' => 1,
             ]);
+
+            foreach ($data['activities'] ?? [] as $activity) {
+                ZumraGroupActivity::query()->create([
+                    'zumra_group_id' => $group->id,
+                    'label' => $activity['label'],
+                    'normalized_label' => mb_strtolower(trim((string) $activity['label'])),
+                    'relation_to_principal' => $activity['relation_to_principal'],
+                    'added_by_core_reference' => $actor,
+                ]);
+            }
 
             ZumraGroupMembership::query()->create([
                 'zumra_group_id' => $group->id,
@@ -433,6 +446,54 @@ final class ZumraGroupService
             $subject = $roleRow->core_identity_reference;
             $roleRow->update(['core_identity_reference' => null, 'status' => ZumraGroupRole::STATUS_VACANT, 'proposed_by_core_reference' => null, 'proposed_at' => null, 'accepted_at' => null]);
             $this->event($group, 'ROLE_REVOKED', $actor, ['role' => $role, 'subject' => $subject]);
+        });
+    }
+
+    /**
+     * ZUMRA-HUMAN-BIRTH-001 — une activité dérivée (secondaire ou sous-activité) réservée à un
+     * responsable, jamais un membre quelconque : c'est une décision qui touche l'identité de la
+     * ZUMRA. `relation_to_principal` porte la filiation explicite exigée par le mandat — un texte
+     * humain obligatoire, jamais une validation automatique de cohérence, jamais une taxonomie
+     * globale fabriquée ici.
+     */
+    public function addActivity(ZumraGroup $group, string $actor, string $label, string $relationToPrincipal): ZumraGroupActivity
+    {
+        $this->assertLeader($group, $actor);
+        abort_if(trim($label) === '', 422, 'Le nom de l’activité est requis.');
+        abort_if(trim($relationToPrincipal) === '', 422, 'Précisez comment cette activité dérive de votre activité principale.');
+
+        return DB::transaction(function () use ($group, $actor, $label, $relationToPrincipal): ZumraGroupActivity {
+            $activity = ZumraGroupActivity::query()->create([
+                'zumra_group_id' => $group->id,
+                'label' => $label,
+                'normalized_label' => mb_strtolower(trim($label)),
+                'relation_to_principal' => $relationToPrincipal,
+                'added_by_core_reference' => $actor,
+            ]);
+            $this->event($group, 'ACTIVITY_ADDED', $actor, ['label' => $label]);
+
+            return $activity;
+        });
+    }
+
+    /**
+     * ZUMRA-HUMAN-BIRTH-001 — complète la charte différée à la naissance (mini-audit Phase B :
+     * la doctrine ne l'exige qu'au passage READY, jamais à la création). Réservée à un
+     * responsable et à la phase de constitution : une charte déjà validée ne se réécrit pas
+     * silencieusement une fois la ZUMRA sortie de CONSTITUTING.
+     */
+    public function setCharter(ZumraGroup $group, string $actor, string $internalCharter): ZumraGroup
+    {
+        $this->assertLeader($group, $actor);
+        abort_unless($group->state === ZumraGroup::STATE_CONSTITUTING, 409, 'La charte ne peut être complétée que pendant la constitution.');
+
+        return DB::transaction(function () use ($group, $actor, $internalCharter): ZumraGroup {
+            $fresh = ZumraGroup::query()->whereKey($group->id)->lockForUpdate()->firstOrFail();
+            abort_unless($fresh->state === ZumraGroup::STATE_CONSTITUTING, 409, 'La charte ne peut être complétée que pendant la constitution.');
+            $fresh->update(['internal_charter' => $internalCharter]);
+            $this->event($fresh, 'CHARTER_SET', $actor);
+
+            return $fresh;
         });
     }
 

@@ -145,7 +145,7 @@ final class ProjectDraftController
             'domain' => ['required', 'string', 'min:3', 'max:140'],
             'founding_objective' => ['required', 'string', 'min:40', 'max:1800'],
             'participation_mode' => ['required', Rule::in(['PHYSICAL', 'DIGITAL', 'HYBRID'])],
-            'internal_charter' => ['required', 'string', 'min:80', 'max:6000'],
+            'internal_charter' => ['nullable', 'string', 'min:80', 'max:6000'],
         ]);
         $data['assume_primary_lead'] = true;
         $group = $groups->create($identity->reference, $data, (int) $configuration->get()['max_simultaneous_founder_roles']);
