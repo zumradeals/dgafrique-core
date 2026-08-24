@@ -50,7 +50,13 @@
         </header>
     </div>
 
-    <div style="padding-bottom:88px" class="lg:pb-0">
+    {{-- BETA-READY-002 — 88px couvrait la tabbar mobile (~74px) avec une marge de 14px, mais
+         ignorait env(safe-area-inset-bottom) : sur un appareil à zone de sécurité (encoche/barre
+         d'accueil), la tabbar grandit de ce même montant (voir .dg-tabbar dans dg.css) alors que
+         ce padding restait figé — le dernier contenu de chaque écran devenait inatteignable au
+         défilement sur ces appareils. Même marge de 14px conservée, désormais indexée sur le même
+         env() que la tabbar plutôt que sur une valeur fixe. --}}
+    <div style="padding-bottom:calc(88px + env(safe-area-inset-bottom, 0px))" class="lg:pb-0">
         {{ $slot }}
     </div>
 
