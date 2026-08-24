@@ -36,6 +36,7 @@ use App\Http\Controllers\ProjectMatchingController;
 use App\Http\Controllers\QuickCapabilityController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\WalletController;
+use App\Http\Controllers\ZahabAcquisitionController;
 use App\Http\Controllers\ZumraCardController;
 use App\Http\Controllers\ZumraCollectiveCapabilityController;
 use App\Http\Controllers\ZumraGroupController;
@@ -200,6 +201,12 @@ Route::get('/finances/ledger/{entry}', [LedgerController::class, 'show'])
 // ZAHAB-001 — lecture uniquement (art. 28 du mandat) : aucune route n'expose credit()/debit().
 Route::get('/finances/zahab', [WalletController::class, 'person'])
     ->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.person');
+Route::get('/finances/zahab/tableau', [WalletController::class, 'dashboard'])
+    ->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.dashboard');
+Route::post('/finances/zahab/acquisitions', [ZahabAcquisitionController::class, 'store'])
+    ->middleware(['core.member', 'throttle:zahab-acquisition'])->name('zahab.acquisitions.store');
+Route::get('/finances/zahab/acquisitions/retour', [ZahabAcquisitionController::class, 'returned'])
+    ->middleware(['core.member', 'throttle:zahab-acquisition-status'])->name('zahab.acquisitions.return');
 Route::get('/zumra/groupes/{group}/zahab', [WalletController::class, 'zumraGroup'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.zumra-group');
 Route::get('/organisations/{organization}/zahab', [WalletController::class, 'organization'])

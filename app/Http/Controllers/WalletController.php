@@ -10,10 +10,13 @@ use App\Application\Zumra\ZumraGroupService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\LedgerEntry;
 use App\Models\Organization;
+use App\Models\PortalAdministrator;
+use App\Models\ZahabAcquisition;
 use App\Models\ZahabWallet;
 use App\Models\ZumraGroup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /**
  * ZAHAB-001 — surface de lecture uniquement (art. 28 du mandat : « pas de grande maquette Wallet »).
@@ -31,6 +34,29 @@ final class WalletController
         $wallet = $wallets->walletFor(ZahabWallet::SUBJECT_PERSON, $actor, $actor);
 
         return $this->present($wallet, $wallets);
+    }
+
+    /**
+     * ZAHAB-002, art. 8 du mandat — surface minimale, jamais un redesign : solde, montant à
+     * acquérir, bouton, historique. L'historique EST la preuve du crédit (« ne jamais afficher
+     * "ZAHAB acquis" simplement parce que l'utilisateur revient de la page GeniusPay ») : cette
+     * page ne montre jamais un état optimiste, uniquement ce que `reconcile()` a réellement acté.
+     */
+    public function dashboard(Request $request, ZahabWalletService $wallets): View
+    {
+        $actor = $this->actor($request);
+        $wallet = $wallets->walletFor(ZahabWallet::SUBJECT_PERSON, $actor, $actor);
+        $movements = LedgerEntry::query()->where('wallet_id', $wallet->id)->orderByDesc('occurred_at')->get();
+        $acquisitions = ZahabAcquisition::query()->where('person_core_reference', $actor)->orderByDesc('created_at')->get();
+        $isAdministrator = PortalAdministrator::query()->whereKey($actor)->exists();
+
+        return view('wallet.dashboard', [
+            'identity' => $request->attributes->get('dg_identity'),
+            'isAdministrator' => $isAdministrator,
+            'balance' => $wallets->balance($wallet),
+            'movements' => $movements,
+            'acquisitions' => $acquisitions,
+        ]);
     }
 
     public function zumraGroup(Request $request, ZumraGroup $group, ZumraGroupService $zumraGroups, ZahabWalletService $wallets): JsonResponse
