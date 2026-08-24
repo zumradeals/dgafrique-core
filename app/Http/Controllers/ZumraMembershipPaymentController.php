@@ -30,10 +30,28 @@ final class ZumraMembershipPaymentController
             );
         } catch (Throwable $exception) {
             report($exception);
+
             return back()->withErrors(['payment' => 'Le service de paiement est momentanément indisponible. Aucun débit n’a été déclenché.']);
         }
 
         return redirect()->away((string) $payment->checkout_url);
+    }
+
+    /**
+     * ADHESION-ZAHAB-001 — même déclencheur métier que `store()`, réglé immédiatement par le
+     * Wallet ZAHAB du membre plutôt qu'un checkout externe : jamais de redirection navigateur,
+     * aucune route générique de mutation Wallet (`payWithZahabWallet()` porte elle-même la
+     * légitimité du débit).
+     */
+    public function payWithZahab(Request $request, MembershipPaymentService $payments): RedirectResponse
+    {
+        /** @var CoreIdentity $identity */
+        $identity = $request->attributes->get('dg_identity');
+        $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->firstOrFail();
+
+        $payments->payWithZahabWallet($membership, $identity->reference);
+
+        return redirect()->route('zumra.membership.show')->with('status', 'Adhésion réglée avec votre Wallet ZAHAB.');
     }
 
     public function returned(Request $request, MembershipPaymentService $payments): View

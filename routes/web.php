@@ -128,6 +128,8 @@ Route::post('/zumra/adhesion', [ZumraProgramMembershipController::class, 'store'
     ->middleware(['core.member', 'throttle:zumra-membership'])->name('zumra.membership.store');
 Route::post('/zumra/adhesion/paiement', [ZumraMembershipPaymentController::class, 'store'])
     ->middleware(['core.member', 'throttle:zumra-payment'])->name('zumra.payment.store');
+Route::post('/zumra/adhesion/paiement-zahab', [ZumraMembershipPaymentController::class, 'payWithZahab'])
+    ->middleware(['core.member', 'throttle:zumra-payment'])->name('zumra.payment.zahab.store');
 Route::get('/zumra/adhesion/paiement/retour', [ZumraMembershipPaymentController::class, 'returned'])
     ->middleware(['core.member', 'throttle:zumra-payment-status'])->name('zumra.payment.return');
 Route::get('/zumra/adhesion/recus/{receipt}', [ZumraMembershipPaymentController::class, 'receipt'])
