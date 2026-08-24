@@ -46,6 +46,9 @@ final class ZahabWalletService
 
     public const REASON_AID = 'AID';
 
+    /** ZAHAB-002 — crédit issu d'une acquisition GeniusPay confirmée (`ZahabAcquisitionService::reconcile()`). */
+    public const REASON_ZAHAB_ACQUISITION = 'ZAHAB_ACQUISITION';
+
     public const REASON_PROJECT_FUNDING = 'PROJECT_FUNDING';
 
     public const REASON_SERVICE_PURCHASE = 'SERVICE_PURCHASE';
@@ -60,6 +63,7 @@ final class ZahabWalletService
         self::REASON_INDIVIDUAL_CONTRIBUTION,
         self::REASON_COLLECTIVE_CONTRIBUTION,
         self::REASON_AID,
+        self::REASON_ZAHAB_ACQUISITION,
         self::REASON_PROJECT_FUNDING,
         self::REASON_SERVICE_PURCHASE,
         self::REASON_SPONSORSHIP,
