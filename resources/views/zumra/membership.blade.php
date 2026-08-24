@@ -42,7 +42,15 @@
                         </div>
                         <div>
                             <dt>Paiement</dt>
-                            <dd>{{ $membership->status === 'PENDING_PAYMENT' ? 'Non effectué' : 'Voir preuve' }}</dd>
+                            <dd>
+                                @if($membership->status === 'PENDING_PAYMENT')
+                                    Non effectué
+                                @elseif($receipt)
+                                    <a href="{{ route('zumra.payment.receipt', $receipt) }}">Voir preuve</a>
+                                @else
+                                    Voir preuve
+                                @endif
+                            </dd>
                         </div>
                     </dl>
                 </x-dg.card>
@@ -52,10 +60,21 @@
                         @if($configuration['payment_enabled'])
                             <x-dg.label tone="saffron">Paiement sécurisé · 500 FCFA</x-dg.label>
                             <p style="margin:10px 0 16px;font-size:15px;line-height:1.65;color:var(--dg-on-deep-text)">L’activation intervient uniquement après vérification directe du paiement par DG Afrique. Un retour navigateur ne vaut jamais confirmation.</p>
-                            <form method="POST" action="{{ route('zumra.payment.store') }}">
+                            <form method="POST" action="{{ route('zumra.payment.store') }}" style="margin-bottom:16px">
                                 @csrf
                                 <button type="submit" class="dg-btn dg-btn--saffron">Payer mon adhésion</button>
                             </form>
+
+                            <p style="margin:16px 0 8px;font-size:13px;color:var(--dg-on-deep-text)">Ou réglez directement avec votre Wallet ZAHAB — solde disponible : {{ number_format($zahabBalance, 0, ',', ' ') }} ZAHAB.</p>
+                            <form method="POST" action="{{ route('zumra.payment.zahab.store') }}">
+                                @csrf
+                                <button type="submit" class="dg-btn dg-btn--on-deep" @if($zahabBalance < $membershipAmount) disabled title="Solde ZAHAB insuffisant" @endif>
+                                    Payer {{ number_format($membershipAmount, 0, ',', ' ') }} ZAHAB avec mon Wallet
+                                </button>
+                            </form>
+                            @if($zahabBalance < $membershipAmount)
+                                <p style="margin-top:8px;font-size:13px;color:var(--dg-on-deep-text)">Solde ZAHAB insuffisant pour régler avec votre Wallet.</p>
+                            @endif
                         @else
                             <x-dg.label tone="saffron">Aucun débit en attente</x-dg.label>
                             <p style="margin:10px 0 16px;font-size:15px;line-height:1.65;color:var(--dg-on-deep-text)">{{ $configuration['payment_unavailable_notice'] }}</p>

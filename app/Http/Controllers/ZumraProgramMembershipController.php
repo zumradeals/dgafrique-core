@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Zahab\ZahabWalletService;
 use App\Application\Zumra\ZumraProgramConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\PortalAdministrator;
+use App\Models\ZahabWallet;
 use App\Models\ZumraCharter;
+use App\Models\ZumraPaymentReceipt;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProgramMembershipEvent;
 use Illuminate\Http\RedirectResponse;
@@ -17,15 +20,21 @@ use Illuminate\View\View;
 
 final class ZumraProgramMembershipController
 {
-    public function show(Request $request, ZumraProgramConfiguration $configuration): View
+    public function show(Request $request, ZumraProgramConfiguration $configuration, ZahabWalletService $wallets): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $charter = ZumraCharter::query()->where('status', ZumraCharter::STATUS_PUBLISHED)->latest('published_at')->first();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+        $zahabWallet = $wallets->walletFor(ZahabWallet::SUBJECT_PERSON, $identity->reference, $identity->reference);
+        $zahabBalance = $wallets->balance($zahabWallet);
+        $receipt = $membership && $membership->status !== ZumraProgramMembership::STATUS_PENDING_PAYMENT
+            ? ZumraPaymentReceipt::query()->where('membership_id', $membership->id)->latest('issued_at')->first()
+            : null;
+        $membershipAmount = (int) config('payments.membership.amount');
 
-        return view('zumra.membership', compact('identity', 'membership', 'charter', 'isAdministrator') + ['configuration' => $configuration->get()]);
+        return view('zumra.membership', compact('identity', 'membership', 'charter', 'isAdministrator', 'zahabBalance', 'receipt', 'membershipAmount') + ['configuration' => $configuration->get()]);
     }
 
     public function store(Request $request): RedirectResponse

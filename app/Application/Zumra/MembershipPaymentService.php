@@ -5,18 +5,25 @@ declare(strict_types=1);
 namespace App\Application\Zumra;
 
 use App\Application\Ledger\LedgerService;
+use App\Application\Zahab\ZahabWalletService;
 use App\Infrastructure\Payments\GeniusPayClient;
+use App\Models\ZahabWallet;
 use App\Models\ZumraPayment;
 use App\Models\ZumraPaymentReceipt;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProgramMembershipEvent;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
 
 final class MembershipPaymentService
 {
-    public function __construct(private readonly GeniusPayClient $provider, private readonly LedgerService $ledger) {}
+    public function __construct(
+        private readonly GeniusPayClient $provider,
+        private readonly LedgerService $ledger,
+        private readonly ZahabWalletService $wallets,
+    ) {}
 
     public function start(ZumraProgramMembership $membership, string $successUrl, string $errorUrl): ZumraPayment
     {
@@ -36,6 +43,86 @@ final class MembershipPaymentService
             'environment' => $configuredEnvironment, 'status' => $remote['status'], 'checkout_url' => $remote['checkout_url'],
             'provider_snapshot' => $remote['snapshot'], 'provider_snapshot_hash' => $this->snapshotHash($remote['snapshot']),
         ]);
+    }
+
+    /**
+     * ADHESION-ZAHAB-001 — même déclenchement que `start()` (adhésion `PENDING_PAYMENT`, seule la
+     * personne concernée), réglé immédiatement par son Wallet ZAHAB au lieu d'un checkout GeniusPay
+     * externe : aucune étape PENDING/PROCESSING, aucune réconciliation à part — le débit ZAHAB EST
+     * la confirmation, synchrone et atomique. GeniusPay reste intact et inchangé (`start()`/
+     * `reconcile()` ci-dessus) : ce sont désormais deux moyens de paiement distincts pour la même
+     * adhésion, jamais fusionnés.
+     *
+     * CAP-007B/`ZumraProgramMembership` ne porte AUCUNE référence à une ZUMRA précise — l'adhésion
+     * est au Programme, pas à une communauté — confirmé en lisant le modèle (aucune colonne
+     * `zumra_group_id`) : aucun bénéficiaire Wallet ZUMRA ne peut donc être établi. V1 n'enregistre
+     * qu'UN mouvement : le DEBIT du Wallet Personne. Aucun Wallet ZUMRA/DG Afrique fabriqué pour
+     * équilibrer.
+     *
+     * `payments.membership.enabled` reste le SEUL interrupteur canonique gouvernant si un paiement
+     * d'adhésion (quel que soit le moyen) est ouvert — le raccordement ZAHAB le respecte à
+     * l'identique plutôt que de créer une deuxième bascule qui contournerait un admin ayant
+     * délibérément maintenu l'adhésion payante fermée.
+     *
+     * `payments.membership.amount`/`currency` restent l'unique source canonique du montant —
+     * jamais un `500` dupliqué en dur ici.
+     */
+    public function payWithZahabWallet(ZumraProgramMembership $membership, string $actor): ZumraPayment
+    {
+        abort_unless($membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT, 409, 'Cette adhésion n’attend pas de paiement.');
+        abort_unless(hash_equals($membership->core_identity_reference, $actor), 403, 'Seule la personne concernée peut payer sa propre adhésion.');
+        abort_unless((bool) config('payments.membership.enabled'), 409, 'Le paiement d’adhésion n’est pas encore ouvert.');
+
+        $amount = (int) config('payments.membership.amount');
+        $currency = (string) config('payments.membership.currency');
+        abort_unless($currency === ZahabWalletService::CURRENCY, 422, 'L’adhésion réglée en ZAHAB n’est possible qu’en XOF.');
+
+        // Déterministe (une adhésion = un seul paiement possible, jamais périodique) : jamais un
+        // UUID aléatoire. UNIQUE(reference) est le premier rempart anti-double-débit ; un rejeu
+        // après succès percute cette contrainte avant même d'atteindre le Wallet.
+        $reference = 'ZAHAB-MEMBERSHIP-'.$membership->id;
+        $operationReference = 'zumra-membership:'.$membership->id;
+        $movementKey = $operationReference.':payer-debit';
+
+        try {
+            return DB::transaction(function () use ($membership, $actor, $amount, $currency, $reference, $operationReference, $movementKey): ZumraPayment {
+                $wallet = $this->wallets->walletFor(ZahabWallet::SUBJECT_PERSON, $actor, $actor);
+
+                $payment = ZumraPayment::query()->create([
+                    'membership_id' => $membership->id,
+                    'provider' => 'ZAHAB',
+                    'purpose' => ZumraPayment::PURPOSE_MEMBERSHIP,
+                    'reference' => $reference,
+                    'provider_id' => null,
+                    'amount' => $amount,
+                    'currency' => $currency,
+                    'environment' => 'zahab',
+                    'status' => ZumraPayment::STATUS_COMPLETED,
+                    'checkout_url' => null,
+                    'completed_at' => now(),
+                ]);
+
+                $this->wallets->debit($wallet, $amount, ZahabWalletService::REASON_MEMBERSHIP_PAYMENT, $movementKey, $actor, $operationReference);
+
+                $locked = ZumraProgramMembership::query()->whereKey($membership->id)->lockForUpdate()->firstOrFail();
+                abort_unless($locked->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT, 409, 'Cette adhésion n’attend plus de paiement.');
+                $locked->update(['status' => ZumraProgramMembership::STATUS_ACTIVE, 'activated_at' => now()]);
+                ZumraProgramMembershipEvent::query()->create([
+                    'membership_id' => $locked->id, 'event' => 'PAYMENT_CONFIRMED',
+                    'from_status' => ZumraProgramMembership::STATUS_PENDING_PAYMENT, 'to_status' => ZumraProgramMembership::STATUS_ACTIVE,
+                    'actor_core_reference' => $actor, 'context' => ['payment_reference' => $payment->reference, 'provider' => 'ZAHAB'], 'occurred_at' => now(),
+                ]);
+
+                $this->issueReceipt($payment, $locked);
+
+                return $payment;
+            });
+        } catch (QueryException $exception) {
+            if ((string) $exception->getCode() === '23505') {
+                abort(409, 'Un paiement existe déjà pour cette adhésion.');
+            }
+            throw $exception;
+        }
     }
 
     public function reconcile(ZumraPayment $payment): ZumraPayment
@@ -86,11 +173,15 @@ final class MembershipPaymentService
         }
         $issuedAt = now();
         $number = 'DGZ-'.$issuedAt->format('Y').'-'.strtoupper(Str::random(12));
-        $canonical = implode('|', [$number, $payment->reference, $membership->core_identity_reference, '500', 'XOF', $issuedAt->toIso8601String()]);
+        // Lit désormais le montant/devise du paiement réel plutôt qu'un « 500 »/« XOF » supposé
+        // (ADHESION-ZAHAB-001) : sans effet observable sur le flux GeniusPay existant (`$payment->
+        // amount`/`currency` y valent déjà 500/XOF), mais indispensable pour rester correct si le
+        // montant canonique (`payments.membership.amount`) est un jour reconfiguré.
+        $canonical = implode('|', [$number, $payment->reference, $membership->core_identity_reference, (string) $payment->amount, $payment->currency, $issuedAt->toIso8601String()]);
         ZumraPaymentReceipt::query()->create([
             'payment_id' => $payment->id, 'membership_id' => $membership->id, 'number' => $number,
             'core_identity_reference' => $membership->core_identity_reference, 'provider' => $payment->provider,
-            'provider_reference' => $payment->reference, 'amount' => 500, 'currency' => 'XOF',
+            'provider_reference' => $payment->reference, 'amount' => $payment->amount, 'currency' => $payment->currency,
             'purpose' => ZumraPayment::PURPOSE_MEMBERSHIP, 'issued_at' => $issuedAt, 'integrity_hash' => hash('sha256', $canonical),
         ]);
     }
