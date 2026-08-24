@@ -4,17 +4,23 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Application\Contributions\ContributionConfiguration;
 use App\Application\Contributions\ContributionService;
+use App\Application\Zahab\ZahabWalletService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Contribution;
 use App\Models\ContributionPayment;
+use App\Models\ContributionPurpose;
 use App\Models\ContributionReceipt;
+use App\Models\PortalAdministrator;
+use App\Models\ZahabWallet;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupRole;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use Throwable;
 
 /**
@@ -33,6 +39,69 @@ final class ContributionController
         return response()->json([
             'individual' => $individual ? $this->present($individual) : null,
             'collectives' => $collectives->map(fn (Contribution $c): array => $this->present($c))->values(),
+        ]);
+    }
+
+    /**
+     * CONTRIBUTION-ZAHAB-001, art. 13 du mandat — surface minimale, jamais un chantier esthétique :
+     * CAP-061 était un backend réel mais totalement injoignable (audit CORE-COMPLETION-001). Cette
+     * page rend le flux réellement utilisable (montant, finalité, Wallet ZAHAB utilisé, solde
+     * disponible, bouton, confirmation, reçu) sans dupliquer `index()` (JSON, inchangé).
+     */
+    public function dashboard(Request $request, ZahabWalletService $wallets, ContributionConfiguration $configuration): View
+    {
+        $actor = $this->actor($request);
+        $isAdministrator = PortalAdministrator::query()->whereKey($actor)->exists();
+        $currentPeriod = now()->format('Y-m');
+        $settings = $configuration->get();
+        $purposes = ContributionPurpose::query()->where('status', ContributionPurpose::STATUS_ACTIVE)->orderBy('label')->get();
+
+        $individual = Contribution::query()->where('type', Contribution::TYPE_INDIVIDUAL)->where('subject_reference', $actor)->first();
+        $individualWallet = $wallets->walletFor(ZahabWallet::SUBJECT_PERSON, $actor, $actor);
+        $individualBalance = $wallets->balance($individualWallet);
+        $individualPaidThisPeriod = $individual !== null && ContributionPayment::query()
+            ->where('contribution_id', $individual->id)->where('period', $currentPeriod)
+            ->whereIn('status', [ContributionPayment::STATUS_PENDING, ContributionPayment::STATUS_PROCESSING, ContributionPayment::STATUS_COMPLETED])
+            ->exists();
+
+        $leaderRoles = ZumraGroupRole::query()
+            ->where('core_identity_reference', $actor)->where('status', ZumraGroupRole::STATUS_ACCEPTED)
+            ->get(['zumra_group_id', 'role'])->groupBy('zumra_group_id');
+        $groups = ZumraGroup::query()->whereIn('id', $leaderRoles->keys())->get()->keyBy('id');
+        $collectiveContributions = Contribution::query()
+            ->where('type', Contribution::TYPE_COLLECTIVE)->whereIn('subject_reference', $leaderRoles->keys())->get()->keyBy('subject_reference');
+
+        $collectives = $leaderRoles->map(function ($roles, string $groupId) use ($groups, $collectiveContributions, $wallets, $currentPeriod): ?array {
+            $group = $groups->get($groupId);
+            if ($group === null) {
+                return null;
+            }
+            $roleNames = $roles->pluck('role')->all();
+            $contribution = $collectiveContributions->get($groupId);
+            $wallet = $wallets->walletFor(ZahabWallet::SUBJECT_ZUMRA_GROUP, $groupId, $roleNames[0] ?? '');
+
+            return [
+                'group' => $group,
+                'contribution' => $contribution,
+                'can_propose_or_approve' => count(array_intersect($roleNames, ['PRIMARY_LEAD', 'FINANCE_LEAD'])) > 0,
+                'balance' => $wallets->balance($wallet),
+                'paid_this_period' => $contribution !== null && ContributionPayment::query()
+                    ->where('contribution_id', $contribution->id)->where('period', $currentPeriod)
+                    ->whereIn('status', [ContributionPayment::STATUS_PENDING, ContributionPayment::STATUS_PROCESSING, ContributionPayment::STATUS_COMPLETED])
+                    ->exists(),
+            ];
+        })->filter()->values();
+
+        return view('contributions.dashboard', [
+            'identity' => $request->attributes->get('dg_identity'),
+            'isAdministrator' => $isAdministrator,
+            'currentPeriod' => $currentPeriod,
+            'settings' => $settings,
+            'purposes' => $purposes,
+            'individual' => $individual,
+            'individualBalance' => $individualBalance,
+            'individualPaidThisPeriod' => $individualPaidThisPeriod,
+            'collectives' => $collectives,
         ]);
     }
 
@@ -99,6 +168,24 @@ final class ContributionController
         );
 
         return redirect()->away((string) $payment->checkout_url);
+    }
+
+    /**
+     * CONTRIBUTION-ZAHAB-001 — même déclencheur métier que `pay()`, réglé immédiatement par le
+     * Wallet ZAHAB du sujet plutôt qu'un checkout externe : jamais de redirection navigateur,
+     * aucune route générique de mutation Wallet (`payPeriodWithZahabWallet()` porte lui-même la
+     * légitimité du débit).
+     */
+    public function payWithZahab(Request $request, Contribution $contribution, ContributionService $service): RedirectResponse
+    {
+        $data = $request->validate([
+            'period' => ['required', 'string', 'regex:/^\d{4}-(0[1-9]|1[0-2])$/'],
+            'purpose_code' => ['required', 'string', Rule::exists('dg_contribution_purposes', 'code')],
+        ]);
+
+        $payment = $service->payPeriodWithZahabWallet($contribution, $this->actor($request), $data['period'], $data['purpose_code']);
+
+        return back()->with('status', 'Contribution réglée avec votre Wallet ZAHAB.')->with('contribution_payment', $payment->reference);
     }
 
     public function returned(Request $request, Contribution $contribution, ContributionService $service): JsonResponse

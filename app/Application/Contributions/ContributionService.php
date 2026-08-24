@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Contributions;
 
 use App\Application\Ledger\LedgerService;
+use App\Application\Zahab\ZahabWalletService;
 use App\Application\Zumra\ZumraGroupService;
 use App\Infrastructure\Payments\GeniusPayClient;
 use App\Models\Contribution;
@@ -12,6 +13,7 @@ use App\Models\ContributionEvent;
 use App\Models\ContributionPayment;
 use App\Models\ContributionPurpose;
 use App\Models\ContributionReceipt;
+use App\Models\ZahabWallet;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
@@ -43,6 +45,7 @@ final class ContributionService
         private readonly GeniusPayClient $provider,
         private readonly ContributionConfiguration $configuration,
         private readonly LedgerService $ledger,
+        private readonly ZahabWalletService $wallets,
     ) {}
 
     /** Contribution individuelle (art. 6.2) : sujet = payeur = la personne elle-même. */
@@ -243,6 +246,110 @@ final class ContributionService
         } catch (QueryException $exception) {
             // Filet de sécurité de l'index unique partiel (concurrence réelle échappant à la
             // vérification applicative ci-dessus) — jamais un 500 sur une simple course bénigne.
+            if ((string) $exception->getCode() === '23505') {
+                abort(409, 'Un paiement actif ou confirmé existe déjà pour cette période.');
+            }
+            throw $exception;
+        }
+    }
+
+    /**
+     * CONTRIBUTION-ZAHAB-001 — même déclenchement que `payPeriod()` (mêmes vérifications
+     * d'autorité, de période, d'engagement ACTIF, de finalité active, du même interrupteur
+     * `individual_enabled`/`collective_enabled`), mais réglé immédiatement par le Wallet ZAHAB du
+     * sujet au lieu d'un checkout GeniusPay externe : aucune étape PENDING/PROCESSING, aucune
+     * réconciliation à part — le débit ZAHAB EST la confirmation, synchrone et atomique.
+     *
+     * CAP-061 ne modélise actuellement AUCUN bénéficiaire Wallet-éligible pour une contribution
+     * (`purpose_code` reste un code doctrinal de destination — TRAINING, SOLIDARITY... — jamais un
+     * Projet ou une Organisation financés réellement, confirmé par l'audit CORE-COMPLETION-001).
+     * V1 n'enregistre donc qu'UN mouvement : le DEBIT du Wallet du contributeur (Personne pour une
+     * contribution individuelle, ZUMRA pour une collective). Aucun Wallet DG Afrique/Projet n'est
+     * fabriqué pour équilibrer visuellement l'opération.
+     *
+     * `zahab_operation_reference`/la clé de mouvement sont dérivées déterministiquement de
+     * `(contribution, période)` — jamais un UUID aléatoire — afin qu'un double clic, un retry HTTP
+     * ou un rejeu métier retombe sur la même identité et ne débite jamais deux fois : la contrainte
+     * UNIQUE(reference) et l'index partiel actif-par-période de `dg_contribution_payments`
+     * (inchangés, réutilisés tels quels) protègent le côté Contribution ; l'idempotence de
+     * `ZahabWalletService::debit()` protège le côté Wallet/Ledger, indépendamment.
+     */
+    public function payPeriodWithZahabWallet(Contribution $contribution, string $actor, string $period, string $purposeCode): ContributionPayment
+    {
+        abort_unless((bool) preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $period), 422, 'Période invalide (format AAAA-MM attendu).');
+        abort_unless($contribution->status === Contribution::STATUS_ACTIVE, 409, 'Seul un engagement actif peut recevoir un paiement.');
+
+        $isIndividual = $contribution->type === Contribution::TYPE_INDIVIDUAL;
+        if ($isIndividual) {
+            abort_unless(hash_equals($contribution->subject_reference, $actor), 403, 'Seule la personne titulaire peut initier son paiement.');
+            $walletSubjectType = ZahabWallet::SUBJECT_PERSON;
+        } else {
+            $group = ZumraGroup::query()->findOrFail($contribution->subject_reference);
+            abort_if($group->state === ZumraGroup::STATE_SUSPENDED, 409, 'Une ZUMRA suspendue ne peut pas initier un nouveau paiement collectif.');
+            abort_unless($this->zumraGroups->isLeader($group, $actor), 403, 'Seul un responsable habilité de la ZUMRA peut initier le paiement du mois.');
+            $walletSubjectType = ZahabWallet::SUBJECT_ZUMRA_GROUP;
+        }
+
+        $purpose = ContributionPurpose::query()->where('code', $purposeCode)->where('status', ContributionPurpose::STATUS_ACTIVE)->first();
+        abort_if($purpose === null, 422, 'Finalité inconnue ou désactivée.');
+
+        abort_if(
+            ContributionPayment::query()->where('contribution_id', $contribution->id)->where('period', $period)
+                ->whereIn('status', [ContributionPayment::STATUS_PENDING, ContributionPayment::STATUS_PROCESSING, ContributionPayment::STATUS_COMPLETED])
+                ->exists(),
+            409,
+            'Un paiement actif ou confirmé existe déjà pour cette période.'
+        );
+
+        $settings = $this->configuration->get();
+        abort_unless((bool) $settings[$isIndividual ? 'individual_enabled' : 'collective_enabled'], 409, 'Les paiements de contribution ne sont pas encore ouverts.');
+        $amount = $isIndividual ? (int) $settings['individual_amount'] : (int) $settings['collective_amount'];
+        $currency = (string) $settings['currency'];
+        abort_unless($currency === ZahabWalletService::CURRENCY, 422, 'Les contributions réglées en ZAHAB ne sont possibles qu’en XOF.');
+
+        // Déterministe : jamais un UUID aléatoire (art. 8 du mandat) — un rejeu retombe toujours
+        // sur la même référence, protégé par UNIQUE(reference) ci-dessous et par l'idempotence
+        // propre de ZahabWalletService::debit() côté Wallet/Ledger.
+        $reference = 'ZAHAB-'.$contribution->id.'-'.$period;
+        $operationReference = 'contribution:'.$contribution->public_reference.':'.$period;
+        $movementKey = $operationReference.':contributor-debit';
+
+        try {
+            return DB::transaction(function () use ($contribution, $actor, $period, $purpose, $amount, $currency, $reference, $walletSubjectType, $operationReference, $movementKey, $isIndividual): ContributionPayment {
+                $wallet = $this->wallets->walletFor($walletSubjectType, $contribution->subject_reference, $actor);
+
+                $payment = ContributionPayment::query()->create([
+                    'contribution_id' => $contribution->id,
+                    'period' => $period,
+                    'purpose_id' => $purpose->id,
+                    'initiated_by_core_reference' => $actor,
+                    'provider' => 'ZAHAB',
+                    'reference' => $reference,
+                    'provider_id' => null,
+                    'amount' => $amount,
+                    'currency' => $currency,
+                    'environment' => 'zahab',
+                    'status' => ContributionPayment::STATUS_COMPLETED,
+                    'checkout_url' => null,
+                    'completed_at' => now(),
+                ]);
+                $this->event($contribution, 'PAYMENT_STARTED', $actor, ['period' => $period, 'reference' => $payment->reference, 'provider' => 'ZAHAB']);
+
+                $this->wallets->debit(
+                    $wallet,
+                    $amount,
+                    $isIndividual ? ZahabWalletService::REASON_INDIVIDUAL_CONTRIBUTION : ZahabWalletService::REASON_COLLECTIVE_CONTRIBUTION,
+                    $movementKey,
+                    $actor,
+                    $operationReference,
+                );
+
+                $this->issueReceipt($payment, $contribution);
+                $this->event($contribution, 'PAYMENT_CONFIRMED', $actor, ['period' => $period, 'reference' => $payment->reference, 'provider' => 'ZAHAB']);
+
+                return $payment;
+            });
+        } catch (QueryException $exception) {
             if ((string) $exception->getCode() === '23505') {
                 abort(409, 'Un paiement actif ou confirmé existe déjà pour cette période.');
             }
