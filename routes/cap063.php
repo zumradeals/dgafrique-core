@@ -30,4 +30,11 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('project')
         ->middleware(['core.member', 'throttle:project-funding-write'])
         ->name('projects.funding.cancel');
+
+    // PROJECT-FUNDING-002 — seule route qui déplace réellement du ZAHAB, strictement scopée à
+    // ce contexte (jamais une route générique `wallet/transfer`, art. 17 du mandat).
+    Route::post('/projets/{project}/financement/contribuer', [ProjectFundingController::class, 'contribute'])
+        ->whereUuid('project')
+        ->middleware(['core.member', 'throttle:project-funding-contribution'])
+        ->name('projects.funding.contribute');
 });

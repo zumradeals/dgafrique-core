@@ -131,8 +131,11 @@ final class NeedProjectImageComposerTest extends TestCase
 
         $show = $this->get('/projets/'.$project->public_reference);
         $show->assertOk();
-        $show->assertSee('Aucun financement n’est ouvert ici.', false);
-        $show->assertSee('ne constitue ni une collecte, ni une promesse d’accompagnement', false);
+        // PROJECT-FUNDING-002 — le texte a évolué pour refléter le nouvel onglet Financement
+        // (déclaration CAP-063 + contributions ZAHAB réelles), sans changer la doctrine : toujours
+        // aucune collecte externe, aucune promesse d’accompagnement fabriquée.
+        $show->assertSee('géré dans l’onglet', false);
+        $show->assertSee('ne constitue ni une collecte externe, ni une promesse d’accompagnement', false);
 
         $accompaniment = $this->get('/projets/'.$project->public_reference.'/accompagnement');
         $accompaniment->assertOk();

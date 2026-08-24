@@ -23,6 +23,14 @@ final class ProjectFunding extends Model
 
     public const STATUS_CANCELLED = 'CANCELLED';
 
+    /**
+     * PROJECT-FUNDING-002 — extension MINIMALE : atteinte exacte de la cible (jamais de
+     * dépassement possible, cf. ProjectFundingContributionService::contribute()). Statut
+     * terminal au même titre que CLOSED/CANCELLED — libère l'index unique partiel « OPEN »,
+     * une nouvelle déclaration reste possible ensuite comme après une clôture normale.
+     */
+    public const STATUS_FUNDED = 'FUNDED';
+
     protected $table = 'dg_project_fundings';
 
     public $incrementing = false;

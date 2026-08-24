@@ -30,6 +30,8 @@ final class ProjectEvent extends Model
         'FUNDING_DECLARATION_UPDATED' => 'Déclaration financière mise à jour',
         'FUNDING_DECLARATION_CLOSED' => 'Déclaration financière clôturée',
         'FUNDING_DECLARATION_CANCELLED' => 'Déclaration financière annulée',
+        'FUNDING_CONTRIBUTION_RECEIVED' => 'Contribution ZAHAB reçue',
+        'FUNDING_DECLARATION_FUNDED' => 'Cible financière atteinte',
         'ACCOMPANIMENT_ACTIVATED' => 'Accompagnement DG Afrique activé',
         'ACCOMPANIMENT_ENDED' => 'Accompagnement DG Afrique terminé',
         'ACCOMPANIMENT_ACTION_RECORDED' => 'Action d’accompagnement enregistrée',
