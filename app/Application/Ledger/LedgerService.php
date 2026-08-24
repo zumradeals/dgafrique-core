@@ -12,6 +12,8 @@ use App\Models\ZahabWallet;
 use App\Models\ZumraPayment;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Str;
+use Ramsey\Uuid\Uuid;
 use RuntimeException;
 
 /**
@@ -105,7 +107,8 @@ final class LedgerService
         string $actorCoreReference,
         ?string $operationReference = null,
     ): LedgerEntry {
-        $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
+        $sourceId = $this->normalizeWalletMovementKey($idempotencyKey);
+        $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $sourceId);
         if ($existing !== null) {
             $this->assertMovementMatches($existing, $wallet, $direction, $amount, $currency, $businessReason);
 
@@ -115,7 +118,7 @@ final class LedgerService
         try {
             return LedgerEntry::query()->create([
                 'source_type' => LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT,
-                'source_id' => $idempotencyKey,
+                'source_id' => $sourceId,
                 'entry_type' => LedgerEntry::TYPE_PAYMENT,
                 'amount' => $amount,
                 'currency' => $currency,
@@ -132,13 +135,41 @@ final class LedgerService
             ]);
         } catch (QueryException $exception) {
             if ((string) $exception->getCode() === '23505') {
-                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey) ?? throw $exception;
+                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $sourceId) ?? throw $exception;
                 $this->assertMovementMatches($existing, $wallet, $direction, $amount, $currency, $businessReason);
 
                 return $existing;
             }
             throw $exception;
         }
+    }
+
+    /**
+     * ZAHAB-001, correction post-contre-validation (CONTRIBUTION-ZAHAB-001) — `dg_ledger_entries.
+     * source_id` est une colonne `uuid` STRICTE (déjà le cas depuis CAP-062 : `$payment->id`, un
+     * vrai UUID, y est toujours passé tel quel pour CONTRIBUTION_PAYMENT/MEMBERSHIP_PAYMENT). Une
+     * clé d'idempotence lisible par un humain — exactement la convention que le mandat
+     * CONTRIBUTION-ZAHAB-001 demande lui-même (`contribution:123:contributor-debit`) — fait
+     * échouer Postgres avec « invalid input syntax for type uuid », un bug réel de ZAHAB-001/#130
+     * resté invisible tant qu'aucun appelant n'utilisait autre chose qu'un UUID généré aléatoirement.
+     *
+     * Toute clé d'idempotence ZAHAB passe désormais par cette normalisation DÉTERMINISTE (UUID v5,
+     * jamais aléatoire) avant de devenir `source_id` : la même chaîne produit toujours le même UUID,
+     * l'idempotence reste donc intacte, et un appelant peut choisir une clé lisible sans jamais
+     * connaître cette contrainte de colonne. Un appelant qui passe déjà un UUID (ex. les tests
+     * ZAHAB-001 existants) le voit traverser inchangé.
+     */
+    public function normalizeWalletMovementKey(string $idempotencyKey): string
+    {
+        return Str::isUuid($idempotencyKey)
+            ? $idempotencyKey
+            : Uuid::uuid5(Uuid::NAMESPACE_URL, 'dgafrique-zahab-movement:'.$idempotencyKey)->toString();
+    }
+
+    /** Retrouve un mouvement de Wallet déjà posté par sa clé d'idempotence (normalisation incluse). */
+    public function findWalletMovement(string $idempotencyKey): ?LedgerEntry
+    {
+        return $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $this->normalizeWalletMovementKey($idempotencyKey));
     }
 
     /**
@@ -163,7 +194,8 @@ final class LedgerService
             throw new RuntimeException('LEDGER_ENTRY_ALREADY_A_REVERSAL');
         }
 
-        $existingByKey = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
+        $sourceId = $this->normalizeWalletMovementKey($idempotencyKey);
+        $existingByKey = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $sourceId);
         if ($existingByKey !== null) {
             abort_unless($existingByKey->reverses_entry_id === $movement->id, 409, 'ZAHAB_IDEMPOTENCY_CONFLICT');
 
@@ -183,7 +215,7 @@ final class LedgerService
         try {
             return LedgerEntry::query()->create([
                 'source_type' => LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT,
-                'source_id' => $idempotencyKey,
+                'source_id' => $sourceId,
                 'entry_type' => LedgerEntry::TYPE_REVERSAL,
                 'reverses_entry_id' => $movement->id,
                 'amount' => $movement->amount,
@@ -201,7 +233,7 @@ final class LedgerService
             ]);
         } catch (QueryException $exception) {
             if ((string) $exception->getCode() === '23505') {
-                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $idempotencyKey);
+                $existing = $this->find(LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT, $sourceId);
                 if ($existing !== null) {
                     return $existing;
                 }

@@ -159,10 +159,11 @@ final class ZahabWalletService
         return DB::transaction(function () use ($wallet, $amount, $businessReason, $idempotencyKey, $actorCoreReference, $operationReference): LedgerEntry {
             $locked = ZahabWallet::query()->whereKey($wallet->id)->lockForUpdate()->firstOrFail();
 
-            $existing = LedgerEntry::query()
-                ->where('source_type', LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT)
-                ->where('source_id', $idempotencyKey)
-                ->first();
+            // Même normalisation de clé que LedgerService::postWalletMovement() (art. correction
+            // CONTRIBUTION-ZAHAB-001) : sans elle, cette pré-vérification chercherait la clé brute
+            // (ex. "contribution:123:...") alors que l'écriture existante est indexée sous son UUID
+            // dérivé — un rejeu légitime recalculerait alors le solde à tort.
+            $existing = $this->ledger->findWalletMovement($idempotencyKey);
             if ($existing === null) {
                 abort_if($this->balance($locked) < $amount, 409, 'Solde ZAHAB insuffisant.');
             }
@@ -196,10 +197,7 @@ final class ZahabWalletService
 
             // Idempotence : rejouer la même clé retrouve toujours la même compensation, sans
             // revérifier le solde (elle a déjà eu lieu par le passé).
-            $existingByKey = LedgerEntry::query()
-                ->where('source_type', LedgerEntry::SOURCE_ZAHAB_WALLET_MOVEMENT)
-                ->where('source_id', $idempotencyKey)
-                ->first();
+            $existingByKey = $this->ledger->findWalletMovement($idempotencyKey);
             if ($existingByKey !== null) {
                 abort_unless($existingByKey->reverses_entry_id === $movement->id, 409, 'ZAHAB_IDEMPOTENCY_CONFLICT');
 

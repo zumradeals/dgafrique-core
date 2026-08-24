@@ -171,6 +171,8 @@ Route::post('/zumra/groupes/{group}/activites', [ZumraGroupController::class, 'a
 
 Route::get('/contributions', [ContributionController::class, 'index'])
     ->middleware('core.member')->name('contributions.index');
+Route::get('/contributions/tableau', [ContributionController::class, 'dashboard'])
+    ->middleware('core.member')->name('contributions.dashboard');
 Route::post('/contributions/individuelle', [ContributionController::class, 'startIndividual'])
     ->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.individual.start');
 Route::post('/contributions/{contribution}/pause', [ContributionController::class, 'pause'])
@@ -181,6 +183,8 @@ Route::post('/contributions/{contribution}/arret', [ContributionController::clas
     ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-write'])->name('contributions.stop');
 Route::post('/contributions/{contribution}/paiement', [ContributionController::class, 'pay'])
     ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment'])->name('contributions.pay');
+Route::post('/contributions/{contribution}/paiement-zahab', [ContributionController::class, 'payWithZahab'])
+    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment'])->name('contributions.pay.zahab');
 Route::get('/contributions/{contribution}/paiements/retour', [ContributionController::class, 'returned'])
     ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment-status'])->name('contributions.payment.return');
 Route::get('/contributions/recus/{receipt}', [ContributionController::class, 'receipt'])
