@@ -8,8 +8,10 @@ use App\Application\Proof\ProofContextService;
 use App\Application\Proof\ProofService;
 use App\Application\Proof\ProofWorkflow;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\Mission;
 use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
+use App\Models\Project;
 use App\Models\Proof;
 use App\Models\ProofReference;
 use App\Models\ProofWitness;
@@ -119,7 +121,7 @@ final class ProofController
         ] + $flags);
     }
 
-    public function create(Request $request): View
+    public function create(Request $request, ProofContextService $contexts): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -143,10 +145,31 @@ final class ProofController
             $prefillTransmission = $wasParticipant ? $transmission : null;
         }
 
+        // BETA-READY-004 (LOT 3) — même discipline pour Mission/Projet : le contexte n'est
+        // prérempli que si l'acteur peut réellement le voir (ProofContextService::canView(),
+        // strictement la même visibilité que le moteur de preuve applique déjà à la soumission)
+        // ET que ce contexte est dans un état où produire une preuve est pertinent — jamais une
+        // confiance accordée au seul paramètre d'URL.
+        $prefillMission = null;
+        if ($request->query('origin_type') === Proof::ORIGIN_MISSION && $request->query('origin_reference')) {
+            $mission = Mission::query()->where('public_reference', $request->query('origin_reference'))->first();
+            $isPertinent = $mission !== null && in_array($mission->status, [Mission::STATUS_IN_PROGRESS, Mission::STATUS_SUBMITTED, Mission::STATUS_COMPLETED], true);
+            $prefillMission = $isPertinent && $contexts->canView(Proof::ORIGIN_MISSION, $mission, $identity->reference) ? $mission : null;
+        }
+
+        $prefillProject = null;
+        if ($request->query('origin_type') === Proof::ORIGIN_PROJECT && $request->query('origin_reference')) {
+            $project = Project::query()->where('public_reference', $request->query('origin_reference'))->first();
+            $isPertinent = $project !== null && in_array($project->status, [Project::STATUS_IN_PROGRESS, Project::STATUS_COMPLETED], true);
+            $prefillProject = $isPertinent && $contexts->canView(Proof::ORIGIN_PROJECT, $project, $identity->reference) ? $project : null;
+        }
+
         return view('proofs.create', [
             'identity' => $identity,
             'isAdministrator' => $isAdministrator,
             'prefillTransmission' => $prefillTransmission,
+            'prefillMission' => $prefillMission,
+            'prefillProject' => $prefillProject,
         ]);
     }
 

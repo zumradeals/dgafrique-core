@@ -103,6 +103,7 @@ Route::post('/projets/proposer/{draft}/zumra/nouvelle', [ProjectDraftController:
 Route::post('/projets/proposer/{draft}/{step}', [ProjectDraftController::class, 'update'])->whereUuid('draft')->where('step', '[a-z]+')->middleware(['core.member', 'throttle:project-draft-write'])->name('projects.draft.update');
 Route::get('/projets/{project}', [ProjectController::class, 'show'])->whereUuid('project')->middleware('core.member')->name('projects.show');
 Route::put('/projets/{project}/etat', [ProjectController::class, 'transition'])->whereUuid('project')->middleware(['core.member', 'throttle:project-transition'])->name('projects.transition');
+Route::put('/projets/{project}/jalons/{milestone}', [ProjectController::class, 'completeMilestone'])->whereUuid('project')->whereUuid('milestone')->middleware(['core.member', 'throttle:project-transition'])->name('projects.milestones.complete');
 Route::get('/projets/{project}/correspondances', [ProjectMatchingController::class, 'index'])->whereUuid('project')->middleware(['core.member', 'throttle:project-matching'])->name('projects.matching');
 Route::post('/projets/{project}/correspondances/{profile}/masquer', [ProjectMatchingController::class, 'hide'])->whereUuid('project')->whereUuid('profile')->middleware(['core.member', 'throttle:project-match-decisions'])->name('projects.matching.hide');
 Route::get('/organisations', [OrganizationController::class, 'index'])->middleware('core.member')->name('organizations.index');

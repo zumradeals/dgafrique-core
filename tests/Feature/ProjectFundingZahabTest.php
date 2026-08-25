@@ -355,6 +355,29 @@ final class ProjectFundingZahabTest extends TestCase
             ->assertSee('7 000', false);
     }
 
+    /**
+     * BETA-READY-004 (LOT 3) — la ligne d'historique de financement doit rester lisible dans la
+     * colonne latérale étroite : contributeur, montant et date/statut structurés séparément
+     * (ps-funding-row), jamais une phrase unique illisible à 10px.
+     */
+    public function test_the_funding_history_row_renders_contributor_amount_and_status_separately(): void
+    {
+        $group = $this->group('IDN-LEADER');
+        $project = $this->groupProject($group, Project::STATUS_ADOPTED);
+        $funding = $this->openFunding($project, 'IDN-LEADER', 10000);
+        $this->creditPersonalWallet('IDN-CONTRIBUTOR', 5000);
+        app(ProjectFundingContributionService::class)->contribute($funding, $project, 'IDN-CONTRIBUTOR', 4000, 'token-readability-001');
+
+        $this->signIn('IDN-LEADER');
+        $content = $this->get(route('projects.show', $project))->assertOk()->getContent();
+
+        self::assertStringContainsString('ps-funding-row', $content);
+        self::assertStringContainsString('ps-funding-row__amount', $content);
+        self::assertStringContainsString('4 000 ZAHAB', $content);
+        self::assertStringContainsString('Confirmé', $content);
+        self::assertStringNotContainsString('a financé', $content, 'La phrase unique d’origine ne doit plus être générée.');
+    }
+
     // ===== Helpers =====
 
     private function assertAborts(int $status, callable $fn): void
