@@ -23,6 +23,7 @@ export default defineConfig({
                 'resources/css/project-detail.css',
                 'resources/css/project-space.css',
                 'resources/css/project-brain.css',
+                'resources/css/admin-console.css',
                 'resources/js/app.js',
             ],
             refresh: true,

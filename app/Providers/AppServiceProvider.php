@@ -102,6 +102,15 @@ final class AppServiceProvider extends ServiceProvider
         RateLimiter::for('community-event-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
         RateLimiter::for('community-event-participation', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
         RateLimiter::for('impact-metrics-read', static fn (Request $request): Limit => Limit::perMinute(20)->by($request->ip()));
+        // ADMIN-CONTROL-002 — un seul limiteur pour toutes les nouvelles pages de lecture de la
+        // tour de contrôle (jamais une écriture) : cohérent avec le rythme déjà accordé à
+        // ledger-read/zahab-read (30/min), légèrement plus large car ce sont des vues de tableau
+        // de bord consultées plus fréquemment qu'un flux de paiement.
+        RateLimiter::for('admin-read', static fn (Request $request): Limit => Limit::perMinute(60)->by($request->ip()));
+        // ADMIN-CONTROL-002 — écriture des deux configurations nouvellement exposées (Modération,
+        // Notifications) : même rythme que les configurations existantes comparables (ex.
+        // contribution-configuration, 10/min).
+        RateLimiter::for('admin-configuration-write', static fn (Request $request): Limit => Limit::perMinute(10)->by($request->ip()));
 
         $this->loadRoutesFrom(base_path('routes/cap016.php'));
         $this->loadRoutesFrom(base_path('routes/cap017.php'));
@@ -115,5 +124,6 @@ final class AppServiceProvider extends ServiceProvider
         $this->loadRoutesFrom(base_path('routes/moderation.php'));
         $this->loadRoutesFrom(base_path('routes/cap068.php'));
         $this->loadRoutesFrom(base_path('routes/cap080.php'));
+        $this->loadRoutesFrom(base_path('routes/admin-dashboard.php'));
     }
 }

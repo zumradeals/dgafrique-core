@@ -21,12 +21,13 @@ final class PortalAdministrationTest extends TestCase
         $this->get('/administration')->assertForbidden();
 
         PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-PER-000000004']);
-        $this->get('/administration')->assertOk()->assertSee('Configurer le profil de capacités');
+        $this->get('/administration')->assertOk()->assertSee('Vue d’ensemble');
+        $this->get('/administration/profil-capacites')->assertOk()->assertSee('Configurer le profil de capacités');
     }
 
     public function test_an_administrator_configures_member_profile_without_a_deployment(): void
     {
-        $defaults = (new ProfileConfiguration())->defaults();
+        $defaults = (new ProfileConfiguration)->defaults();
         PortalAdministrator::query()->create(['core_identity_reference' => 'IDN-PER-000000003']);
         $this->signIn('IDN-PER-000000003');
 
@@ -66,7 +67,7 @@ final class PortalAdministrationTest extends TestCase
             ],
         ]);
 
-        $configuration = (new ProfileConfiguration())->get();
+        $configuration = (new ProfileConfiguration)->get();
 
         self::assertSame('Titre historique', $configuration['title']);
         self::assertSame('Talents historiques', $configuration['sections']['skills']['title']);

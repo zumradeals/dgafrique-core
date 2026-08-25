@@ -1,4 +1,4 @@
-<x-layouts.portal title="Satellites — Administration DG Afrique">
+<x-layouts.admin title="Satellites — Administration DG Afrique" current="configuration">
     @include('projects.partials.accompaniment-styles')
     <main class="admin-content"><div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique · CAP‑048</p><h1>Registre des satellites</h1><p>Les satellites officiellement raccordés à DG Afrique. Aucun identifiant interne n’est présenté aux membres — seul le nom d’affichage l’est.</p></div><div class="admin-links"><a href="{{ route('member.space') }}">Mon espace</a></div></div>
         @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
@@ -31,4 +31,4 @@
             @empty<div class="accompaniment-empty"><strong>Aucun satellite déclaré.</strong></div>@endforelse
         </section>
     </main>
-</x-layouts.portal>
+</x-layouts.admin>

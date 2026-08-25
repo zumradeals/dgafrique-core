@@ -9,10 +9,10 @@ use App\Application\Moderation\ModerationReportService;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\ModerationDecision;
 use App\Models\ModerationReport;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 /**
  * MODERATION-COMP-001 — autorité niveau 3 (art. 19 : « DG Afrique ou GAMAD, pour la Charte générale
@@ -23,11 +23,15 @@ use Illuminate\Validation\Rule;
  */
 final class ModerationController
 {
-    public function index(Request $request, ModerationReportService $reports): JsonResponse
+    public function index(Request $request, ModerationReportService $reports): View
     {
         $presented = $reports->forAdministrator()->map(fn (ModerationReport $report): array => $reports->presentForAdministrator($report))->values();
+        $pendingAppeals = ModerationDecision::query()->whereNotNull('appeal_requested_at')->whereNull('appeal_decided_at')->orderBy('appeal_requested_at')->get();
 
-        return response()->json(['reports' => $presented]);
+        return view('administration.moderation.index', [
+            'reports' => $presented,
+            'pendingAppeals' => $pendingAppeals,
+        ]);
     }
 
     public function decide(Request $request, ModerationReport $report, ModerationDecisionService $decisions): RedirectResponse
