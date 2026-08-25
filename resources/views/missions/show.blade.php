@@ -443,6 +443,18 @@
                         </dl>
                     </x-dg.card>
 
+                    {{-- BETA-READY-004 (LOT 3) — lien contextuel vers le formulaire de preuve existant,
+                         visible uniquement une fois qu'un résultat réel a pu être produit ; le formulaire
+                         lui-même ne préremplit ce contexte que si ProofContextService confirme la
+                         visibilité (ProofController::create()), jamais une confiance au seul lien. --}}
+                    @if(in_array($mission->status, ['IN_PROGRESS', 'SUBMITTED', 'COMPLETED'], true) && ($myAssignment?->status === 'ACCEPTED' || $canOfficialize))
+                        <x-dg.card tight>
+                            <x-dg.label>Preuve</x-dg.label>
+                            <p class="dg-hint" style="margin-top:6px">Ce que vous avez réellement produit ici peut devenir une preuve dans votre Carnet.</p>
+                            <a href="{{ route('proofs.create', ['origin_type' => 'MISSION', 'origin_reference' => $mission->public_reference]) }}" class="dg-btn dg-btn--quiet" style="margin-top:10px;display:inline-block">Publier une preuve →</a>
+                        </x-dg.card>
+                    @endif
+
                     @if($mission->dependencies->isNotEmpty() || $canManageAssignments)
                         <x-dg.card tight>
                             <x-dg.label>Dépendances</x-dg.label>

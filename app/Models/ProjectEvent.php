@@ -21,6 +21,7 @@ final class ProjectEvent extends Model
         'PROJECT_COMPLETED' => 'Projet marqué réalisé',
         'PROJECT_ARCHIVED' => 'Projet archivé',
         'PROJECT_MATURITY_CHANGED' => 'Repère de maturité mis à jour',
+        'PROJECT_MILESTONE_COMPLETED' => 'Jalon accompli',
         'TEAM_MEMBER_REQUESTED' => 'Demande pour rejoindre l’équipe',
         'TEAM_MEMBER_INVITED' => 'Invitation envoyée à rejoindre l’équipe',
         'TEAM_MEMBER_JOINED' => 'Nouveau membre dans l’équipe',
