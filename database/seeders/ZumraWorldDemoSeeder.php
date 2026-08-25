@@ -195,7 +195,10 @@ final class ZumraWorldDemoSeeder extends Seeder
 
     private function demoPerson(string $reference, ZumraCharter $charter, bool $joinsFeed = true): void
     {
-        if (ZumraProgramMembership::query()->whereKey($reference)->exists()) {
+        // BETA-READY-003 — $reference est une référence d'identité (ex. "DEMO-IDN-F001"), jamais
+        // la clé primaire UUID de la ligne : whereKey() ici plantait sur PostgreSQL
+        // (SQLSTATE[22P02]), SQLite laissant passer la comparaison par accident.
+        if (ZumraProgramMembership::query()->where('core_identity_reference', $reference)->exists()) {
             return;
         }
 
