@@ -234,7 +234,11 @@
                                             <h4><a href="{{ $item['action_url'] }}">{{ $item['title'] }}</a></h4>
                                             <span class="dg-space-item__badge">{{ $item['event_label'] }}</span>
                                         </div>
-                                        @if($item['kind'] === 'PROJECTS' && $item['maturity'])
+                                        {{-- BETA-READY-003 — un item « Cette semaine » peut être un Projet réel (clé 'maturity'
+                                             toujours présente) ou une Mission dont le contexte est un Projet (kind coercé à
+                                             'PROJECTS' par ActivityFeedService::MISSION_CONTEXT_FILTER, sans jamais porter de
+                                             maturité de Projet) : accès protégé, jamais un plantage sur ce second cas réel. --}}
+                                        @if($item['kind'] === 'PROJECTS' && ($item['maturity'] ?? null))
                                             <x-dg.maturity :stages="array_slice(\App\Application\Projects\ProjectMaturityService::STAGES, 0, 6, true)" :current="$item['maturity']" />
                                         @endif
                                         <span class="dg-space-item__meta">{{ $item['summary'] }}</span>
