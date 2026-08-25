@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/css/zumra-project-birth.css',
                 'resources/css/needs-directory.css',
                 'resources/css/project-detail.css',
+                'resources/css/project-space.css',
                 'resources/css/project-brain.css',
                 'resources/js/app.js',
             ],
