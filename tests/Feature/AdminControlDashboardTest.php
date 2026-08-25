@@ -226,6 +226,53 @@ final class AdminControlDashboardTest extends TestCase
         self::assertFalse($setting->value['mission_fyi_enabled']);
     }
 
+    /**
+     * Un <form method="PUT"> est invalide en HTML (les navigateurs l'envoient en GET, sans corps) :
+     * seul le spoofing Laravel (method="POST" + @method('PUT') → champ caché _method=PUT) fonctionne
+     * réellement. Ce test échoue si method="PUT" littéral revient sur un de ces trois formulaires, et
+     * prouve que le spoofing atteint effectivement la route PUT en simulant l'exacte requête qu'un
+     * navigateur envoie (POST + _method=PUT dans le corps, sans passer par le helper ->put() de test
+     * qui contourne ce mécanisme).
+     */
+    public function test_the_three_configuration_forms_use_post_with_method_spoofing_not_a_literal_put(): void
+    {
+        $this->admin();
+
+        $pages = [
+            ['/administration/contributions', 'administration.contributions.update'],
+            ['/administration/configuration/moderation', 'administration.configuration.moderation.update'],
+            ['/administration/configuration/notifications', 'administration.configuration.notifications.update'],
+        ];
+
+        foreach ($pages as [$path, $routeName]) {
+            $html = $this->get($path)->assertOk()->getContent();
+            $action = route($routeName);
+
+            self::assertMatchesRegularExpression(
+                '/<form\s+method="POST"\s+action="'.preg_quote($action, '/').'"/',
+                $html,
+                "Le formulaire de {$path} doit être method=\"POST\" (jamais method=\"PUT\", invalide en HTML).",
+            );
+            self::assertMatchesRegularExpression(
+                '/<input type="hidden" name="_method" value="PUT">/',
+                $html,
+                "Le formulaire de {$path} doit spoofer PUT via @method('PUT').",
+            );
+            self::assertStringNotContainsString('method="PUT"', $html);
+        }
+
+        // Preuve bout-en-bout : exactement ce qu'un navigateur envoie pour un <form method="POST">
+        // avec @method('PUT') — un POST classique portant _method=PUT dans le corps du formulaire.
+        $this->post('/administration/configuration/moderation', [
+            '_method' => 'PUT',
+            'warning_default_duration_days' => 21,
+            'suspension_default_duration_days' => 45,
+        ])->assertRedirect();
+
+        $setting = PortalSetting::query()->findOrFail(ModerationConfiguration::KEY);
+        self::assertSame(21, $setting->value['warning_default_duration_days']);
+    }
+
     public function test_moderation_page_lists_pending_reports_and_appeals(): void
     {
         $group = $this->group('IDN-LEADER-7', ZumraGroup::STATE_ACTIVE);

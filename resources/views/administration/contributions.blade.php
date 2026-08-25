@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <form method="PUT" action="{{ route('administration.contributions.update') }}" class="admin-form">
+    <form method="POST" action="{{ route('administration.contributions.update') }}" class="admin-form">
         @csrf @method('PUT')
         <section>
             <h2>Contribution individuelle</h2>

@@ -10,7 +10,7 @@
         </div>
     </div>
 
-    <form method="PUT" action="{{ route('administration.configuration.moderation.update') }}" class="admin-form">
+    <form method="POST" action="{{ route('administration.configuration.moderation.update') }}" class="admin-form">
         @csrf @method('PUT')
         <section>
             <h2>Durées par défaut</h2>

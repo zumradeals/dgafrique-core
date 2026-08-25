@@ -7,7 +7,7 @@
         </div>
     </div>
 
-    <form method="PUT" action="{{ route('administration.configuration.notifications.update') }}" class="admin-form">
+    <form method="POST" action="{{ route('administration.configuration.notifications.update') }}" class="admin-form">
         @csrf @method('PUT')
         <section>
             <h2>Fenêtres et limites</h2>
