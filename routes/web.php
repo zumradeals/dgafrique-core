@@ -214,7 +214,10 @@ Route::get('/organisations/{organization}/zahab', [WalletController::class, 'org
     ->whereUuid('organization')->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.organization');
 
 Route::prefix('administration')->middleware(['core.member', 'portal.admin'])->group(function (): void {
-    Route::get('/', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
+    // ADMIN-CONTROL-002 — « / » (racine du préfixe administration) devient la porte d'entrée du
+    // Dashboard (routes/admin-dashboard.php, administration.dashboard) : cet écran de configuration
+    // déménage sur son propre chemin, son nom de route ne change pas.
+    Route::get('/profil-capacites', [ProfileConfigurationController::class, 'edit'])->name('administration.profile.edit');
     Route::put('/profil-capacites', [ProfileConfigurationController::class, 'update'])
         ->middleware('throttle:profile-configuration')->name('administration.profile.update');
     Route::get('/decouverte-personnes', [PeopleDiscoveryConfigurationController::class, 'edit'])

@@ -188,6 +188,10 @@
 .dg-badge--decision { background: var(--dg-tint-decision); color: var(--dg-saffron-ink); }
 .dg-badge--neutral { background: var(--dg-sand); color: var(--dg-muted); }
 .dg-badge--on-deep { background: rgba(217, 160, 43, .18); color: var(--dg-saffron); }
+/* ADMIN-CONTROL-002 — tons d'état supplémentaires nécessaires à la tour de contrôle (alerte/succès
+   francs), token --dg-tint-danger déjà défini mais jusqu'ici jamais consommé par un badge. */
+.dg-badge--danger { background: var(--dg-tint-danger); color: var(--dg-danger); }
+.dg-badge--success { background: var(--dg-tint-success); color: var(--dg-success); }
 
 /* Intention de contribution (CAP-021) */
 .dg-intent { padding: 3px 9px; border-radius: 7px; background: var(--dg-card);

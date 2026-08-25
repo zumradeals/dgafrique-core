@@ -1,4 +1,4 @@
-<x-layouts.portal title="Parcours d’autonomie — Administration DG Afrique">
+<x-layouts.admin title="Parcours d’autonomie — Administration DG Afrique" current="accompaniment">
 <main class="admin-content">
     <div class="admin-heading">
         <div>
@@ -50,4 +50,4 @@
         @endforelse
     </section>
 </main>
-</x-layouts.portal>
+</x-layouts.admin>

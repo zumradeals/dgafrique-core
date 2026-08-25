@@ -8,18 +8,18 @@ use App\Application\Contributions\ContributionConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\ContributionPurpose;
 use App\Models\PortalSetting;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 /** CAP-061 — administration minimale : montants/activation et gestion des finalités. */
 final class ContributionConfigurationController
 {
-    public function edit(ContributionConfiguration $configuration): JsonResponse
+    public function edit(ContributionConfiguration $configuration): View
     {
-        return response()->json([
+        return view('administration.contributions', [
             'configuration' => $configuration->get(),
-            'purposes' => ContributionPurpose::query()->orderBy('code')->get(['code', 'label', 'status'])->toArray(),
+            'purposes' => ContributionPurpose::query()->orderBy('code')->get(['id', 'code', 'label', 'status']),
         ]);
     }
 

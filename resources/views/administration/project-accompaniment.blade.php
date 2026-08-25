@@ -1,4 +1,4 @@
-<x-layouts.portal title="Accompagnement projets — Administration DG Afrique">
+<x-layouts.admin title="Accompagnement projets — Administration DG Afrique" current="accompaniment">
     @include('projects.partials.accompaniment-styles')
     <main class="admin-content"><div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique · CAP‑016</p><h1>Piloter l’accompagnement des projets</h1><p>Configurer les formes d’appui disponibles et tracer les interventions réelles. Aucun réglage ici ne transfère la propriété ou le contrôle d’un projet.</p></div><div class="admin-links"><a href="{{ route('administration.projects.edit') }}">Configuration projets</a><a href="{{ route('projects.index') }}">Voir les projets</a><a href="{{ route('member.space') }}">Mon espace</a></div></div>
         @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
@@ -28,4 +28,4 @@
             @empty<div class="accompaniment-empty"><strong>Aucun accompagnement actif.</strong><p>Les projets apparaissent ici après activation volontaire par leur porteur autorisé.</p></div>@endforelse
         </section>
     </main>
-</x-layouts.portal>
+</x-layouts.admin>

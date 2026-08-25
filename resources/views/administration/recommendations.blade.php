@@ -1,4 +1,4 @@
-<x-layouts.portal title="Administration des recommandations — DG Afrique">
+<x-layouts.admin title="Administration des recommandations — DG Afrique" current="engines">
     <main class="admin-content">
         <div class="admin-heading"><div><p class="eyebrow dark">Administration DG Afrique</p><h1>Configurer les recommandations</h1><p>Les règles activables déterminent les rapprochements permis, jamais une valeur humaine.</p></div><div class="admin-links"><a href="{{ route('administration.discovery.edit') }}">Découverte</a><a href="{{ route('recommendations.index') }}">Voir les recommandations</a><a href="{{ route('member.space') }}">Mon espace</a></div></div>
         @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
@@ -10,4 +10,4 @@
             <button class="primary-button" type="submit">Enregistrer la configuration</button>
         </form>
     </main>
-</x-layouts.portal>
+</x-layouts.admin>
