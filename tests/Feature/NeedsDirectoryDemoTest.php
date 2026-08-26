@@ -68,8 +68,8 @@ final class NeedsDirectoryDemoTest extends TestCase
 
         $content = $this->get('/besoins')->assertOk()->getContent();
 
-        self::assertMatchesRegularExpression('/<span class="dg-needs-stat__value">1<\/span>\s*<div class="dg-needs-stat__label">Besoins ouverts/', $content);
-        self::assertMatchesRegularExpression('/<span class="dg-needs-stat__value">1<\/span>\s*<div class="dg-needs-stat__label">Pourvus/', $content);
+        self::assertMatchesRegularExpression('/<b>Tous les besoins<\/b><strong>2<\/strong>/', $content);
+        self::assertMatchesRegularExpression('/<b>Besoins satisfaits<\/b><strong>1<\/strong>/', $content);
     }
 
     public function test_a_need_linked_to_a_real_project_shows_the_projects_name(): void

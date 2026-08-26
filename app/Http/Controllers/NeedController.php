@@ -29,6 +29,15 @@ final class NeedController
 {
     use PresentsPartnerships;
 
+    /**
+     * UX-HARMONY-BESOINS-001 — la définition « besoin urgent » n'est stockée nulle part dans le
+     * domaine Need (aucune colonne de priorité/urgence n'existe) : c'est un calcul de présentation,
+     * jamais une règle métier persistée. On reprend exactement le même seuil que celui déjà établi
+     * pour les besoins « stagnants » côté admin (AdminCommunityController::needs(), 30 jours) afin de
+     * garder une seule définition dans tout le produit.
+     */
+    private const URGENT_AFTER_DAYS = 30;
+
     public function index(Request $request, NeedConfiguration $configuration, NeedService $service, NeedDirectoryDemoContent $demoContent): View
     {
         /** @var CoreIdentity $identity */
@@ -36,6 +45,11 @@ final class NeedController
         $settings = $configuration->get();
         $categoryFilter = $request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories']) ? (string) $request->query('category') : null;
         $statusFilter = $request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true) ? (string) $request->query('status') : null;
+        $urgentOnly = $request->boolean('urgent');
+        $mineOnly = $request->boolean('mine');
+        $searchTerm = trim((string) $request->query('q', ''));
+        $urgentSince = now()->subDays(self::URGENT_AFTER_DAYS);
+
         $query = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->latest('created_at')->limit(300);
         if ($categoryFilter !== null) {
             $query->where('category', $categoryFilter);
@@ -43,25 +57,52 @@ final class NeedController
         if ($statusFilter !== null) {
             $query->where('status', $statusFilter);
         }
+        if ($searchTerm !== '') {
+            $query->where(fn ($sub) => $sub->where('title', 'like', '%'.$searchTerm.'%')->orWhere('context', 'like', '%'.$searchTerm.'%')->orWhere('location', 'like', '%'.$searchTerm.'%'));
+        }
+        if ($urgentOnly) {
+            $query->whereIn('status', [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS])->where('created_at', '<=', $urgentSince);
+        }
+        if ($mineOnly) {
+            $query->where('author_core_reference', $identity->reference);
+        }
         $visible = $query->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference))->values();
         $page = max(1, (int) $request->query('page', 1));
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
-        $demoCards = $demoContent->demoCards($visible, $page, $categoryFilter);
+        $demoCards = ($urgentOnly || $mineOnly) ? collect() : $demoContent->demoCards($visible, $page, $categoryFilter);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
         $projects = Project::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_PROJECT)->pluck('owner_reference'))->get()->keyBy('id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        // « Aperçu des besoins » : un calcul réel sur l'ensemble des besoins accessibles à l'identité
-        // (indépendant des filtres appliqués à la liste), jamais une projection — le modèle le permet.
+        // Bandeau, colonne droite, onglets : un calcul réel sur l'ensemble des besoins accessibles à
+        // l'identité (indépendant des filtres appliqués à la liste ci-dessus), jamais une projection.
         $allVisible = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->limit(300)->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference));
+        $urgentNeeds = $allVisible->filter(fn (Need $need): bool => in_array($need->status, [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS], true) && $need->created_at->lte($urgentSince))->sortBy('created_at')->values();
         $overview = [
             'open' => $allVisible->where('status', Need::STATUS_OPEN)->count(),
             'pending' => $allVisible->where('status', Need::STATUS_PROPOSED)->count(),
             'resolved' => $allVisible->where('status', Need::STATUS_RESOLVED)->count(),
         ];
+        $bandeau = [
+            'total' => $allVisible->count(),
+            'urgent' => $urgentNeeds->count(),
+            'resolved' => $overview['resolved'],
+        ];
+        $byCategory = collect($settings['categories'])->map(fn (string $label, string $code): array => [
+            'label' => $label,
+            'count' => $allVisible->where('category', $code)->count(),
+        ])->sortByDesc('count')->values();
+        $byLocation = $allVisible->filter(fn (Need $need): bool => filled($need->location))
+            ->groupBy(fn (Need $need): string => trim((string) $need->location))
+            ->map(fn ($group, string $location): array => ['label' => $location, 'count' => $group->count()])
+            ->sortByDesc('count')->take(6)->values();
+        $mineCount = $allVisible->where('author_core_reference', $identity->reference)->count();
 
-        return view('needs.index', compact('identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview') + ['configuration' => $settings]);
+        return view('needs.index', compact(
+            'identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview',
+            'bandeau', 'byCategory', 'byLocation', 'urgentNeeds', 'mineCount', 'categoryFilter', 'statusFilter', 'urgentOnly', 'mineOnly', 'searchTerm',
+        ) + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View
