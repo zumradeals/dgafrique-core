@@ -8,7 +8,7 @@
         $initial = mb_strtoupper(mb_substr($identity->label, 0, 1));
     @endphp
     <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:1100px">
+        <div class="dg-page zd-page zd-card-page" style="max-width:1480px">
             <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
 
             <div class="dg-page-header">

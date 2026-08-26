@@ -1,6 +1,6 @@
 <x-layouts.portal title="Vérification Carte ZUMRA — DG Afrique">
     @php $valid = $state === 'ACTIVE'; $labels = ['ACTIVE' => 'Carte active', 'SUSPENDED' => 'Carte suspendue', 'CLOSED' => 'Carte fermée', 'REVOKED' => 'Carte révoquée']; @endphp
-    <main class="card-verification-page">
+    <main class="card-verification-page zd-verification">
         <a class="brand verification-brand" href="/"><span class="brand-mark">G</span><span>DG Afrique</span></a>
         <section class="verification-result {{ $valid ? 'valid' : 'invalid' }}">
             <span class="verification-symbol">{{ $valid ? '✓' : '!' }}</span>

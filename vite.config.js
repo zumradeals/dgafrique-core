@@ -13,6 +13,7 @@ export default defineConfig({
                 'resources/css/zumra-hub.css',
                 'resources/css/zumra-birth.css',
                 'resources/css/zumra-space.css',
+                'resources/css/zumra-deep.css',
                 'resources/css/member-space-v2.css',
                 'resources/css/auth-v2.css',
                 'resources/css/fil-v2.css',

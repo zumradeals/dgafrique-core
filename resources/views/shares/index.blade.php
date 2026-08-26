@@ -1,6 +1,6 @@
 <x-layouts.portal title="{{ $title }} — DG Afrique">
-    <main class="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-5xl">
+    <main class="min-h-screen bg-slate-50 px-4 py-8 sm:px-6 lg:px-8 {{ request()->routeIs('shares.group') ? 'zd-context' : '' }}">
+        <div class="mx-auto max-w-5xl {{ request()->routeIs('shares.group') ? 'zd-context__inner' : '' }}">
             <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <a class="text-sm font-black text-sky-700 no-underline" href="{{ $backUrl }}">← {{ $backLabel }}</a>
                 <a class="text-sm font-black text-slate-600 no-underline" href="{{ route('activity.index') }}">Activité utile</a>

@@ -38,3 +38,13 @@
 @media(max-width:1240px) and (min-width:761px){.zs-layout{grid-template-columns:210px minmax(0,1fr)}.zs-right{grid-column:2}.zs-path,.zs-governance{margin-left:234px}.zs-hero{padding-left:126px}.zs-avatar{width:82px;height:82px;font-size:42px}}
 @media(max-width:760px){.dg-page:has(.zs-layout){padding:12px 12px 86px!important}.zs-nav a{min-height:44px;padding:9px 13px}.zs-hero{padding:26px 20px 24px}.zs-hero-copy>p{font-size:15px}.zs-quick{padding:14px}.zs-quick a,.zs-quick .is-disabled{flex-basis:148px}}
 @media(max-width:430px){.zs-hero-state span{max-width:72px}.zs-meta{gap:6px}.zs-meta span{font-size:11px}.zs-panel{padding:17px}.zs-path li{flex-basis:220px}}
+
+/* LOT C — la gouvernance profonde reste dans la famille de l'accueil de l'espace. */
+.zs-governance>summary{min-height:72px;padding:20px 24px}.zs-governance>summary span{font-size:16px}.zs-governance>summary small{font-size:13px;line-height:1.5}.zs-governance>summary b{font-size:13px}
+.zs-governance-body{padding:0 clamp(14px,2vw,28px) 28px}
+.zs-governance-body .dg-deep{max-width:none!important;padding:clamp(22px,3vw,38px)!important;border-radius:18px!important}
+.zs-governance-body .dg-card{border-radius:16px;padding:clamp(18px,2vw,26px)}
+.zs-governance-body .dg-body,.zs-governance-body .dg-hint,.zs-governance-body .dg-meta{font-size:14px!important;line-height:1.6}
+.zs-governance-body .dg-btn{min-height:44px}.zs-governance-body .dg-input,.zs-governance-body .dg-textarea{font-size:16px}
+.zs-role-seat{min-width:0}.zs-role-proposal{display:flex;flex-direction:column;gap:8px;margin-top:8px;padding:12px;border:1px solid var(--dg-line-inner);border-radius:12px;background:#f8faf7}.zs-role-proposal label{display:grid;gap:6px}.zs-role-proposal label span,.zs-role-pending{font-size:12px;line-height:1.45;color:var(--dg-faint)}.zs-role-proposal .dg-btn{width:100%;font-size:12px}.zs-role-pending{margin:8px 2px 0;padding:10px;border-radius:10px;background:#fff8da;color:#725d10}
+@media(max-width:760px){.zs-governance-body{padding:0 10px 18px}.zs-governance-body .dg-deep{padding:18px 12px!important}.zs-governance-body .dg-card{padding:18px!important}.zs-governance-body [style*="display:flex"]{flex-wrap:wrap}.zs-governance-body [style*="white-space:nowrap"]{white-space:normal!important}.zs-governance-body .dg-btn{width:100%}}

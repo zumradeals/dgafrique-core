@@ -4,7 +4,7 @@
 --}}
 <x-layouts.portal title="Adhésion ZUMRA — DG Afrique">
     <x-dg.shell current="zumra" :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:1000px">
+        <div class="dg-page zd-page zd-membership" style="max-width:1480px">
             <a href="{{ route('zumra.index') }}" class="dg-crumb">← ZUMRA</a>
 
             @if(session('status'))
