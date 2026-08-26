@@ -49,6 +49,42 @@ final class ProjectHubTest extends TestCase
         $this->get(route('projects.index', ['country' => 'Mali']))->assertOk()->assertSee('Installation solaire')->assertDontSee('Centre de formation couture');
     }
 
+    public function test_harmony_hub_keeps_readable_cards_across_project_breakpoints(): void
+    {
+        $css = file_get_contents(resource_path('css/projects-directory.css'));
+        self::assertNotFalse($css);
+
+        self::assertStringContainsString('.ph-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}', $css);
+        self::assertStringContainsString('@media(max-width:1050px)', $css);
+        self::assertStringContainsString('.ph-grid{grid-template-columns:repeat(2,minmax(0,1fr))}', $css);
+        self::assertStringContainsString('@media(max-width:640px)', $css);
+        self::assertStringContainsString('.ph-grid{grid-template-columns:1fr}', $css);
+        self::assertStringContainsString('.ph-card h2{margin-bottom:12px;font-size:20px', $css);
+    }
+
+    public function test_harmony_project_detail_exposes_existing_actions_in_the_primary_hierarchy(): void
+    {
+        $this->seed(ProjectHubDemoSeeder::class);
+        $this->signIn('IDN-PH-ACTIONS');
+        $project = Project::query()->firstOrFail();
+
+        $content = $this->get(route('projects.show', $project))->assertOk()->getContent();
+
+        self::assertStringContainsString('class="ps-hero-actions"', $content);
+        self::assertStringContainsString(route('comments.project', $project), $content);
+    }
+
+    public function test_harmony_project_detail_switches_to_a_real_mobile_composition(): void
+    {
+        $css = file_get_contents(resource_path('css/project-space.css'));
+        self::assertNotFalse($css);
+
+        self::assertStringContainsString('@media(max-width:760px)', $css);
+        self::assertStringContainsString('.ps-hero{display:flex;flex-direction:column;align-items:stretch', $css);
+        self::assertStringContainsString('.ps-cover{width:100%;height:190px}', $css);
+        self::assertStringContainsString('.ps-hero-actions a{min-height:48px', $css);
+    }
+
     private function signIn(string $reference): void
     {
         Http::fake([
