@@ -7,6 +7,8 @@ namespace App\Http\Controllers;
 use App\Application\Discovery\PeopleDiscoveryConfiguration;
 use App\Application\Profile\CapabilityStatementSynchronizer;
 use App\Application\Profile\ProfileConfiguration;
+use App\Application\Recommendation\PersonRecommendationEngine;
+use App\Application\Recommendation\RecommendationConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\CapabilityStatement;
 use App\Models\PersonProfile;
@@ -18,7 +20,7 @@ use Illuminate\View\View;
 
 final class PeopleDiscoveryController
 {
-    public function index(Request $request, PeopleDiscoveryConfiguration $configuration, ProfileConfiguration $profileConfiguration): View
+    public function index(Request $request, PeopleDiscoveryConfiguration $configuration, ProfileConfiguration $profileConfiguration, PersonRecommendationEngine $recommendationEngine, RecommendationConfiguration $recommendationConfiguration): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -32,12 +34,28 @@ final class PeopleDiscoveryController
         ]);
         $term = CapabilityStatementSynchronizer::normalize((string) ($data['q'] ?? ''));
 
-        $query = PersonProfile::query()
+        $discoverable = PersonProfile::query()
             ->where('core_identity_reference', '!=', $identity->reference)
             ->where('orientation_consent', true)
             ->where('discovery_consent', true)
             ->whereNotNull('discovery_reference')
-            ->whereNotNull('discovery_display_name')
+            ->whereNotNull('discovery_display_name');
+        $metrics = [
+            'people' => (clone $discoverable)->count(),
+            'available' => (clone $discoverable)->where('availability_status', PersonProfile::AVAILABILITY_OPEN)->count(),
+            'capabilities' => CapabilityStatement::query()->whereIn('core_identity_reference', (clone $discoverable)->select('core_identity_reference'))->whereNull('archived_at')->where('matching_consent', true)->where('visibility', CapabilityStatement::VISIBILITY_DISCOVERABLE)->distinct('normalized_label')->count('normalized_label'),
+            'recent' => (clone $discoverable)->where('discovery_consented_at', '>=', now()->subMonth())->count(),
+        ];
+        $popularCapabilities = CapabilityStatement::query()
+            ->selectRaw('label, normalized_label, COUNT(*) as people_count')
+            ->whereIn('core_identity_reference', (clone $discoverable)->select('core_identity_reference'))
+            ->whereNull('archived_at')->where('matching_consent', true)
+            ->where('visibility', CapabilityStatement::VISIBILITY_DISCOVERABLE)
+            ->groupBy('label', 'normalized_label')->orderByDesc('people_count')->orderBy('label')->limit(5)->get();
+        $recentProfiles = (clone $discoverable)->orderByDesc('discovery_consented_at')->limit(5)->get();
+        $recommendations = $recommendationEngine->forIdentity($identity->reference, $recommendationConfiguration->get())['recommendations'];
+
+        $query = (clone $discoverable)
             ->with(['capabilityStatements' => static fn ($query) => $query
                 ->whereNull('archived_at')
                 ->where('matching_consent', true)
@@ -65,7 +83,7 @@ final class PeopleDiscoveryController
             ->paginate((int) $settings['page_size'])->withQueryString();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term', 'isAdministrator'));
+        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term', 'isAdministrator', 'metrics', 'popularCapabilities', 'recentProfiles', 'recommendations'));
     }
 
     public function show(Request $request, string $reference, PeopleDiscoveryConfiguration $configuration): View
