@@ -10,6 +10,7 @@ use App\Models\ZumraCharter;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupActivity;
 use App\Models\ZumraGroupMembership;
+use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use App\Models\ZumraProximityShowcase;
 use Database\Seeders\ZumraWorldDemoSeeder;
@@ -79,5 +80,18 @@ final class ZumraWorldSeederSmokeTest extends TestCase
         (new ZumraWorldDemoSeeder)->run();
 
         self::assertSame(1, ZumraProgramMembership::query()->where('core_identity_reference', 'DEMO-IDN-F001')->count());
+    }
+
+    public function test_seeder_is_idempotent_and_exposes_the_five_real_governance_roles(): void
+    {
+        (new ZumraWorldDemoSeeder)->run();
+        $counts = [ZumraGroup::query()->count(), ZumraGroupMembership::query()->count(), CommunityEvent::query()->count()];
+
+        (new ZumraWorldDemoSeeder)->run();
+
+        self::assertSame($counts, [ZumraGroup::query()->count(), ZumraGroupMembership::query()->count(), CommunityEvent::query()->count()]);
+        $rahman = ZumraGroup::query()->where('name', 'RAHMAN Technology')->sole();
+        self::assertSame(5, $rahman->roles()->where('status', ZumraGroupRole::STATUS_ACCEPTED)->count());
+        self::assertSame(5, $rahman->roles()->whereNotNull('core_identity_reference')->distinct('core_identity_reference')->count('core_identity_reference'));
     }
 }

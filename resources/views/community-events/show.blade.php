@@ -19,7 +19,7 @@
 @endphp
 <x-layouts.portal title="{{ $event->title }} — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:820px">
+        <div class="dg-page zd-page zd-event-page" style="max-width:1360px">
             @if($organizerUrl)
                 <a href="{{ $organizerUrl }}" class="dg-crumb">← {{ $organizerLabel }}</a>
             @else

@@ -200,11 +200,25 @@
                         <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">
                             @foreach($roles as $role)
                                 @php($profile = $roleProfiles->get($role->core_identity_reference))
-                                <x-dg.seat
-                                    :label="\App\Models\ZumraGroupRole::LABELS[$role->role]"
-                                    :filled="$role->status === 'ACCEPTED'"
-                                    :holder="$profile?->discovery_display_name ?: ($role->status === 'ACCEPTED' ? 'Membre attesté' : null)"
-                                />
+                                <div class="zs-role-seat">
+                                    <x-dg.seat
+                                        :label="\App\Models\ZumraGroupRole::LABELS[$role->role]"
+                                        :filled="$role->status === 'ACCEPTED'"
+                                        :holder="$profile?->discovery_display_name ?: ($role->status === 'ACCEPTED' ? 'Membre attesté' : null)"
+                                    />
+                                    @if($isLeader && $role->status === \App\Models\ZumraGroupRole::STATUS_VACANT)
+                                        <form class="zs-role-proposal" method="POST" action="{{ route('zumra.groups.roles.propose', [$group, $role->role]) }}">
+                                            @csrf
+                                            <label>
+                                                <span>Proposer cette responsabilité</span>
+                                                <input class="dg-input" name="person_reference" placeholder="Référence publique de la personne" required>
+                                            </label>
+                                            <button class="dg-btn dg-btn--quiet" type="submit">Envoyer la proposition</button>
+                                        </form>
+                                    @elseif($role->status === \App\Models\ZumraGroupRole::STATUS_PROPOSED)
+                                        <p class="zs-role-pending">Proposition envoyée — acceptation de la personne attendue.</p>
+                                    @endif
+                                </div>
                             @endforeach
                         </div>
                     </x-dg.card>

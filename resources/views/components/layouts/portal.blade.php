@@ -13,6 +13,15 @@
     if (request()->routeIs('zumra.groups.show')) {
         $pageStyles[] = 'resources/css/zumra-space.css';
     }
+    if (request()->routeIs('zumra.membership.*')
+        || request()->routeIs('zumra.payment.*')
+        || request()->routeIs('zumra.card.*')
+        || request()->routeIs('community-events.zumra.create')
+        || request()->routeIs('community-events.show')
+        || request()->routeIs('comments.zumra-activity')
+        || request()->routeIs('shares.group')) {
+        $pageStyles[] = 'resources/css/zumra-deep.css';
+    }
     if (request()->routeIs('member.space')) {
         $pageStyles[] = 'resources/css/member-space-v2.css';
     }

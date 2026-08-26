@@ -7,7 +7,7 @@
 --}}
 <x-layouts.portal title="Organiser un événement — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:720px">
+        <div class="dg-page zd-page zd-event-page" style="max-width:1280px">
             <a href="{{ $backUrl }}" class="dg-crumb">← {{ $organizerLabel }}</a>
 
             <div class="dg-page-header">

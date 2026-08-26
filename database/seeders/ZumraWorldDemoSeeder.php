@@ -61,7 +61,7 @@ final class ZumraWorldDemoSeeder extends Seeder
 
         $flagship = $this->flagshipGroups($service, $charter);
         $this->populateDomains($service, $charter, $flagship);
-        $this->flagshipSpaceDecor($flagship);
+        $this->flagshipSpaceDecor($flagship, $service, $charter);
         $this->proximityShowcase();
         $this->demoViewerPersonalState($flagship);
 
@@ -109,7 +109,7 @@ final class ZumraWorldDemoSeeder extends Seeder
         $groups = [];
         foreach ($specs as $spec) {
             $this->demoPerson($spec['founder'], $charter);
-            $group = $service->create($spec['founder'], [
+            $group = ZumraGroup::query()->where('name', $spec['name'])->first() ?? $service->create($spec['founder'], [
                 'name' => $spec['name'],
                 'domain' => $spec['domain'],
                 'founding_objective' => $spec['objective'],
@@ -119,7 +119,9 @@ final class ZumraWorldDemoSeeder extends Seeder
                 'activities' => $spec['activities'],
                 'assume_primary_lead' => true,
             ], 99);
-            $this->addDemoMembers($group, $charter, $spec['members'] - 1);
+            if ($group->memberships()->count() === 1) {
+                $this->addDemoMembers($group, $charter, $spec['members'] - 1);
+            }
             $groups[$spec['name']] = $group->fresh();
         }
 
@@ -152,7 +154,7 @@ final class ZumraWorldDemoSeeder extends Seeder
                     $activities[] = ['label' => $label, 'relation_to_principal' => 'Application concrète de l’activité « '.$domain.' » portée par cette ZUMRA.'];
                 }
 
-                $group = $service->create($founder, [
+                $group = ZumraGroup::query()->where('name', $name)->first() ?? $service->create($founder, [
                     'name' => $name,
                     'domain' => $domain,
                     'founding_objective' => 'Une équipe qui apprend, transmet et agit autour de '.mb_strtolower($domain).', au service de sa communauté.',
@@ -162,7 +164,9 @@ final class ZumraWorldDemoSeeder extends Seeder
                     'activities' => $activities,
                     'assume_primary_lead' => true,
                 ], 99);
-                $this->addDemoMembers($group, $charter, random_int(2, 22));
+                if ($group->memberships()->count() === 1) {
+                    $this->addDemoMembers($group, $charter, random_int(2, 22));
+                }
             }
         }
     }
@@ -198,20 +202,18 @@ final class ZumraWorldDemoSeeder extends Seeder
         // BETA-READY-003 — $reference est une référence d'identité (ex. "DEMO-IDN-F001"), jamais
         // la clé primaire UUID de la ligne : whereKey() ici plantait sur PostgreSQL
         // (SQLSTATE[22P02]), SQLite laissant passer la comparaison par accident.
-        if (ZumraProgramMembership::query()->where('core_identity_reference', $reference)->exists()) {
-            return;
+        if (! ZumraProgramMembership::query()->where('core_identity_reference', $reference)->exists()) {
+            ZumraProgramMembership::query()->create([
+                'core_identity_reference' => $reference,
+                'status' => ZumraProgramMembership::STATUS_ACTIVE,
+                'accepted_charter_id' => $charter->id,
+                'accepted_charter_version' => $charter->version,
+                'accepted_charter_hash' => $charter->content_hash,
+                'charter_accepted_at' => now(),
+                'submitted_at' => now(),
+                'activated_at' => now(),
+            ]);
         }
-
-        ZumraProgramMembership::query()->create([
-            'core_identity_reference' => $reference,
-            'status' => ZumraProgramMembership::STATUS_ACTIVE,
-            'accepted_charter_id' => $charter->id,
-            'accepted_charter_version' => $charter->version,
-            'accepted_charter_hash' => $charter->content_hash,
-            'charter_accepted_at' => now(),
-            'submitted_at' => now(),
-            'activated_at' => now(),
-        ]);
 
         if ($joinsFeed) {
             PersonProfile::query()->firstOrCreate(['core_identity_reference' => $reference], [
@@ -260,11 +262,34 @@ final class ZumraWorldDemoSeeder extends Seeder
      * ZUMRA-SPACE-002 — décor strictement opt-in de l’espace RAHMAN : objets métier réels,
      * reconnaissables par leurs références DEMO et créés seulement par ce seeder de staging.
      */
-    private function flagshipSpaceDecor(array $flagship): void
+    private function flagshipSpaceDecor(array $flagship, ZumraGroupService $service, ZumraCharter $charter): void
     {
         $rahman = $flagship['RAHMAN Technology'] ?? null;
         if (! $rahman) {
             return;
+        }
+
+        // LOT C — une gouvernance complète obtenue par les transitions réelles : demande,
+        // approbation, proposition de responsabilité, puis acceptation explicite par la personne.
+        $roleCandidates = $rahman->memberships()
+            ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+            ->where('core_identity_reference', '!=', $rahman->proposer_core_reference)
+            ->orderBy('created_at')
+            ->limit(4)
+            ->pluck('core_identity_reference')
+            ->values();
+        foreach (array_combine([
+            'FIRST_DEPUTY', 'SECOND_DEPUTY', 'FINANCE_LEAD', 'SOCIAL_RELATIONS_LEAD',
+        ], $roleCandidates->all()) ?: [] as $role => $reference) {
+            $this->demoPerson($reference, $charter);
+            $roleRow = $rahman->roles()->where('role', $role)->sole();
+            if ($roleRow->status === 'VACANT') {
+                $service->proposeRole($rahman, $rahman->proposer_core_reference, $role, $reference);
+                $roleRow->refresh();
+            }
+            if ($roleRow->status === 'PROPOSED') {
+                $service->acceptRole($rahman, $reference, $role, 99, false);
+            }
         }
 
         $project = Project::query()->firstOrCreate(
@@ -353,11 +378,13 @@ final class ZumraWorldDemoSeeder extends Seeder
         }
 
         if ($agri) {
-            ZumraGroupMembership::query()->firstOrCreate(
+            $membership = ZumraGroupMembership::query()->firstOrCreate(
                 ['zumra_group_id' => $agri->id, 'core_identity_reference' => $viewer],
                 ['status' => ZumraGroupMembership::STATUS_ACTIVE, 'entry_mode' => 'REQUEST', 'initiated_by_core_reference' => $viewer, 'joined_at' => now()->subDays(10)],
             );
-            $agri->increment('active_member_count');
+            if ($membership->wasRecentlyCreated) {
+                $agri->increment('active_member_count');
+            }
         }
 
         if ($edu) {

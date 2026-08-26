@@ -1,6 +1,6 @@
 <x-layouts.portal title="Commentaires — DG Afrique">
-    <main class="min-h-screen bg-slate-50">
-        <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:py-12">
+    <main class="min-h-screen bg-slate-50 {{ request()->routeIs('comments.zumra-activity') ? 'zd-context' : '' }}">
+        <div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 lg:py-12 {{ request()->routeIs('comments.zumra-activity') ? 'zd-context__inner' : '' }}">
             <nav class="mb-6 text-sm font-bold">
                 <a class="text-sky-700 hover:text-sky-900" href="{{ $context['back_url'] }}">← {{ $context['back_label'] }}</a>
             </nav>
