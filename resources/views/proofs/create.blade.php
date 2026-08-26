@@ -1,39 +1,49 @@
 {{--
-    Enregistrer une preuve — fiche CARNET DE PREUVES §6/§7. Toujours valide de manière
-    autonome (origine NONE/INTERACTION) ; un rattachement à un contexte reste facultatif et
-    ne fabrique jamais d'accès à ce contexte.
+    Enregistrer une preuve — fiche CARNET DE PREUVES §6/§7, harmonisée UX-HARMONY-TRANSMISSIONS-
+    PROOFS-001. Toujours valide de manière autonome (origine NONE/INTERACTION) ; un rattachement à
+    un contexte reste facultatif et ne fabrique jamais d'accès à ce contexte.
 --}}
 <x-layouts.portal title="Enregistrer une preuve — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:820px">
-            <a href="{{ route('proofs.index') }}" class="dg-crumb">← Mon Carnet de preuves</a>
+        <div class="pf-page" style="max-width:820px">
+            <a href="{{ route('proofs.index') }}" class="pf-crumb">← Mon Carnet de preuves</a>
 
-            <div class="dg-page-header">
-                <div>
-                    <x-dg.label tone="saffron">Carnet de preuves</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">Enregistrer une preuve</h1>
-                    <p>Décrivez une chose réelle qui s’est produite. Enregistrer une preuve ne certifie rien : un témoin ou une autorité de contexte peuvent la corroborer, jamais la garantir.</p>
+            <section class="pf-hero">
+                <div class="pf-hero-top"><div class="pf-tags"><span>Carnet de preuves</span></div></div>
+                <h1>Enregistrer une preuve</h1>
+                <p>Décrivez une chose réelle qui s’est produite. Enregistrer une preuve ne certifie rien : un témoin ou une autorité de contexte peuvent la corroborer, jamais la garantir.</p>
+                <div class="pf-facts">
+                    <span>Après enregistrement<strong>Soumise → témoin/reconnaissance facultatifs</strong></span>
+                    @if($prefillTransmission)
+                        <span>Origine<strong>Transmission « {{ \Illuminate\Support\Str::limit($prefillTransmission->capability_label, 30) }} »</strong></span>
+                    @elseif($prefillMission)
+                        <span>Origine<strong>Mission « {{ \Illuminate\Support\Str::limit($prefillMission->title, 30) }} »</strong></span>
+                    @elseif($prefillProject)
+                        <span>Origine<strong>Projet « {{ \Illuminate\Support\Str::limit($prefillProject->name, 30) }} »</strong></span>
+                    @else
+                        <span>Origine<strong>Enregistrement autonome</strong></span>
+                    @endif
                 </div>
-            </div>
+            </section>
 
             @if($errors->any())
-                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
+                <div class="dg-band" style="margin:16px 0;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
             @if($prefillTransmission)
                 {{-- UIUX-007 — contexte conservé depuis une Transmission réellement terminée à
                      laquelle vous avez réellement participé. Citer ce contexte ne certifie rien :
                      un témoin ou une autorité de contexte peuvent seulement le corroborer. --}}
-                <div class="dg-band" style="margin-bottom:20px">Vous enregistrez cette preuve depuis la Transmission « {{ $prefillTransmission->capability_label }} », terminée.</div>
+                <div class="dg-band" style="margin:16px 0">Vous enregistrez cette preuve depuis la Transmission « {{ $prefillTransmission->capability_label }} », terminée.</div>
             @elseif($prefillMission)
                 {{-- BETA-READY-004 (LOT 3) — même discipline : contexte conservé uniquement si
                      la Mission est réellement visible et dans un état pertinent. --}}
-                <div class="dg-band" style="margin-bottom:20px">Vous enregistrez cette preuve depuis la Mission « {{ $prefillMission->title }} ».</div>
+                <div class="dg-band" style="margin:16px 0">Vous enregistrez cette preuve depuis la Mission « {{ $prefillMission->title }} ».</div>
             @elseif($prefillProject)
-                <div class="dg-band" style="margin-bottom:20px">Vous enregistrez cette preuve depuis le Projet « {{ $prefillProject->name }} ».</div>
+                <div class="dg-band" style="margin:16px 0">Vous enregistrez cette preuve depuis le Projet « {{ $prefillProject->name }} ».</div>
             @endif
 
-            <form method="POST" action="{{ route('proofs.store') }}" style="display:flex;flex-direction:column;gap:20px">
+            <form method="POST" action="{{ route('proofs.store') }}" style="display:flex;flex-direction:column;gap:20px;margin-top:16px">
                 @csrf
 
                 <x-dg.fieldset>
