@@ -22,19 +22,22 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 /**
- * UX-HARMONY-MISSIONS-001 — installation opt-in : php artisan db:seed --class=Database\\Seeders\\MissionsDirectoryDemoSeeder
+ * UX-HARMONY-MISSIONS-001/002 — installation opt-in : php artisan db:seed --class=Database\\Seeders\\MissionsDirectoryDemoSeeder
  *
  * Peuple /missions avec des Mission réelles créées exclusivement via les services métier
  * existants (MissionWorkflow, MissionAssignmentService, MissionSubmissionService,
  * MissionBlockerService, MissionService) — aucune ligne SQL brute, aucun statut forcé sans passer
  * par la machine d'états réelle. Couvre : 2 Projets de domaines différents (Éducation, Santé) + 1
  * ZUMRA (domaine « Agriculture », texte libre) + 1 Besoin (sans domaine, pour éprouver le bucket
- * honnête « Sans domaine identifié ») ; les 4 statuts affichés dans l'annuaire (OPEN, IN_PROGRESS,
- * BLOCKED, COMPLETED) ; des échéances passées/proches/lointaines ; des Missions avec plusieurs
- * contributeurs acceptés et d'autres sans aucun ; une checklist partiellement complétée pour tester
- * la barre de progression et une Mission sans aucune checklist pour tester son état honnête « — ».
- * Idempotent : chaque Mission est retrouvée par son titre + son contexte, aucune duplication au
- * second lancement.
+ * honnête « Sans domaine identifié ») ; 7 statuts réels (DRAFT, PROPOSED, OPEN, IN_PROGRESS,
+ * BLOCKED, SUBMITTED, COMPLETED — les deux premiers hors de l'annuaire public par construction,
+ * uniquement accessibles à leur créateur ou via ?scope=mine, exactement comme en production) ;
+ * des échéances passées/proches/lointaines ; des Missions avec plusieurs contributeurs acceptés,
+ * une offre de participation encore en attente (jamais acceptée, pour éprouver le panneau
+ * Participation) et d'autres sans aucun contributeur ; une checklist partiellement complétée pour
+ * tester la barre de progression et une Mission sans aucune checklist pour tester son état honnête
+ * « — ». Idempotent : chaque Mission est retrouvée par son titre + son contexte, aucune
+ * duplication au second lancement.
  */
 final class MissionsDirectoryDemoSeeder extends Seeder
 {
@@ -72,14 +75,33 @@ final class MissionsDirectoryDemoSeeder extends Seeder
         $blockers = app(MissionBlockerService::class);
         $missions = app(MissionService::class);
 
-        // ===== Contexte Projet Éducation — OPEN, sans contributeur, échéance lointaine =====
+        // ===== Contexte Projet Éducation — OPEN, une offre de participation en attente (jamais
+        // acceptée), pour éprouver réellement le panneau Participation (accepter/décliner) =====
         $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectEducation->public_reference, [
             'title' => 'Recenser les écoles partenaires de Kayes',
             'description' => 'Identifier et contacter les écoles primaires susceptibles d’accueillir le centre de lecture itinérant.',
             'expected_result' => 'Une liste vérifiée d’écoles partenaires avec un point de contact par établissement.',
             'location' => 'Kayes, Mali',
             'due_at' => now()->addDays(45),
-        ], target: 'OPEN', checklist: [], contributors: []);
+        ], target: 'OPEN', checklist: [], contributors: [], pendingOffers: [self::CONTRIBUTORS[2]]);
+
+        // ===== Contexte Projet Éducation — DRAFT, jamais proposée =====
+        $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectEducation->public_reference, [
+            'title' => 'Cartographier les besoins de formation continue',
+            'description' => 'Identifier les besoins de formation continue des bénévoles du centre de lecture avant de structurer une offre.',
+            'expected_result' => 'Une cartographie des besoins de formation validée par l’équipe.',
+            'location' => 'Kayes, Mali',
+            'due_at' => now()->addDays(60),
+        ], target: 'DRAFT', checklist: [], contributors: []);
+
+        // ===== Contexte Projet Éducation — PROPOSED, en attente de décision =====
+        $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectEducation->public_reference, [
+            'title' => 'Organiser une collecte de fournitures scolaires',
+            'description' => 'Organiser une collecte de fournitures scolaires auprès des familles du quartier pour compléter le fonds du centre.',
+            'expected_result' => 'Une collecte organisée avec un lieu, une date et un objectif quantifié.',
+            'location' => 'Kayes, Mali',
+            'due_at' => now()->addDays(30),
+        ], target: 'PROPOSED', checklist: [], contributors: []);
 
         // ===== Contexte Projet Éducation — IN_PROGRESS, checklist partielle, échéance proche =====
         $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectEducation->public_reference, [
@@ -103,6 +125,17 @@ final class MissionsDirectoryDemoSeeder extends Seeder
         ], target: 'BLOCKED', checklist: [
             ['Réunir le matériel de base', true], ['Valider avec l’équipe sanitaire', false],
         ], contributors: [self::CONTRIBUTORS[2]]);
+
+        // ===== Contexte Projet Santé — SUBMITTED, résultat en attente de validation =====
+        $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectHealth->public_reference, [
+            'title' => 'Livrer le rapport de la première tournée sanitaire',
+            'description' => 'Consolider le rapport de la première tournée sanitaire mobile pour transmission à l’équipe de coordination.',
+            'expected_result' => 'Un rapport consolidé avec le nombre de personnes vues et les besoins identifiés.',
+            'location' => 'Kolda, Sénégal',
+            'due_at' => now()->subDays(1),
+        ], target: 'SUBMITTED', checklist: [
+            ['Collecter les données de terrain', true], ['Rédiger le rapport', true],
+        ], contributors: [self::CONTRIBUTORS[3]]);
 
         // ===== Contexte Projet Santé — COMPLETED, plusieurs contributeurs =====
         $this->mission($workflow, $missions, self::LEADER, 'PROJECT', $projectHealth->public_reference, [
@@ -154,8 +187,8 @@ final class MissionsDirectoryDemoSeeder extends Seeder
         ], contributors: [self::CONTRIBUTORS[4]]);
 
         $this->command?->info(sprintf(
-            '%d missions de démonstration : 4 contextes (2 Projets de domaines différents, 1 ZUMRA, 1 Besoin), statuts OPEN/IN_PROGRESS/BLOCKED/COMPLETED.',
-            Mission::query()->where('title', 'like', '%')->whereIn('created_by_core_reference', [self::LEADER, self::ZUMRA_LEADER, self::NEED_LEADER])->count()
+            '%d missions de démonstration : 4 contextes (2 Projets de domaines différents, 1 ZUMRA, 1 Besoin), statuts DRAFT/PROPOSED/OPEN/IN_PROGRESS/BLOCKED/SUBMITTED/COMPLETED.',
+            Mission::query()->whereIn('created_by_core_reference', [self::LEADER, self::ZUMRA_LEADER, self::NEED_LEADER])->count()
         ));
     }
 
@@ -163,8 +196,12 @@ final class MissionsDirectoryDemoSeeder extends Seeder
      * Fait naître une Mission exclusivement via les services métier réels (MissionWorkflow,
      * MissionAssignmentService, MissionSubmissionService, MissionBlockerService), jamais par
      * une écriture directe de statut. Idempotent : retrouvée par (context, title).
+     *
+     * UX-HARMONY-MISSIONS-002 — $pendingOffers laisse volontairement des offres à l'état OFFERED
+     * (jamais acceptées) pour éprouver réellement le panneau Participation de la Fiche Mission
+     * (accepter/décliner), au lieu de ne tester que des affectations déjà ACCEPTED.
      */
-    private function mission(MissionWorkflow $workflow, MissionService $missionsService, string $officializer, string $contextType, string $contextReference, array $data, string $target, array $checklist, array $contributors): Mission
+    private function mission(MissionWorkflow $workflow, MissionService $missionsService, string $officializer, string $contextType, string $contextReference, array $data, string $target, array $checklist, array $contributors, array $pendingOffers = []): Mission
     {
         $existing = Mission::query()
             ->where('context_type', $contextType)->where('context_reference', $contextReference)
@@ -174,10 +211,25 @@ final class MissionsDirectoryDemoSeeder extends Seeder
         }
 
         $mission = $workflow->create($officializer, $contextType, $contextReference, $data);
-        $mission = $workflow->propose($mission, $officializer);
-        $mission = $workflow->officialize($mission, $officializer, ['expected_result' => $data['expected_result']]);
 
         $assignmentService = app(MissionAssignmentService::class);
+
+        if ($target === 'DRAFT') {
+            return $mission->fresh();
+        }
+
+        $mission = $workflow->propose($mission, $officializer);
+
+        if ($target === 'PROPOSED') {
+            return $mission->fresh();
+        }
+
+        $mission = $workflow->officialize($mission, $officializer, ['expected_result' => $data['expected_result']]);
+
+        foreach ($pendingOffers as $offerer) {
+            $assignmentService->offer($mission, $offerer, 'EXECUTOR');
+        }
+
         $acceptedAssignments = [];
         foreach ($contributors as $i => $contributor) {
             $role = $i === 0 && $target !== 'OPEN' ? 'COORDINATOR' : 'EXECUTOR';
@@ -209,10 +261,16 @@ final class MissionsDirectoryDemoSeeder extends Seeder
             return $blockerService->block($mission, $officializer, MissionBlocker::TYPE_MISSING_RESOURCE, 'Ressource manquante dans le scénario de démonstration.')->fresh();
         }
 
-        // COMPLETED : le coordinateur/exécutant accepté soumet, l'officialisateur valide.
+        // SUBMITTED / COMPLETED : le coordinateur/exécutant accepté soumet un résultat réel.
         $submissionService = app(MissionSubmissionService::class);
         $submitter = $acceptedAssignments[0]?->core_identity_reference ?? $officializer;
         $submissionService->submit($mission, $submitter, 'Résultat produit dans le scénario de démonstration, conforme au résultat attendu.');
+
+        if ($target === 'SUBMITTED') {
+            return $mission->fresh();
+        }
+
+        // COMPLETED : l'officialisateur valide le résultat soumis.
         $mission = $submissionService->accept($mission->fresh(), $officializer, 'Résultat conforme, validé dans le scénario de démonstration.');
 
         return $mission->fresh();

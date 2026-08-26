@@ -239,7 +239,7 @@ final class MissionController
 
     public function createForProject(Request $request, Project $project): View
     {
-        return $this->createView($request, 'PROJECT', $project->public_reference, route('projects.missions.store', $project), route('projects.show', $project));
+        return $this->createView($request, 'PROJECT', $project->public_reference, route('projects.missions.store', $project), route('projects.show', $project), null, $project->name);
     }
 
     public function storeForProject(Request $request, Project $project, MissionWorkflow $workflow): RedirectResponse
@@ -249,7 +249,7 @@ final class MissionController
 
     public function createForZumraGroup(Request $request, ZumraGroup $group): View
     {
-        return $this->createView($request, 'ZUMRA', $group->public_reference, route('zumra.groups.missions.store', $group), route('zumra.groups.show', $group));
+        return $this->createView($request, 'ZUMRA', $group->public_reference, route('zumra.groups.missions.store', $group), route('zumra.groups.show', $group), null, $group->name);
     }
 
     public function storeForZumraGroup(Request $request, ZumraGroup $group, MissionWorkflow $workflow): RedirectResponse
@@ -259,7 +259,7 @@ final class MissionController
 
     public function createForNeed(Request $request, Need $need): View
     {
-        return $this->createView($request, 'NEED', $need->public_reference, route('needs.missions.store', $need), route('needs.show', $need));
+        return $this->createView($request, 'NEED', $need->public_reference, route('needs.missions.store', $need), route('needs.show', $need), null, $need->title);
     }
 
     public function storeForNeed(Request $request, Need $need, MissionWorkflow $workflow): RedirectResponse
@@ -267,16 +267,19 @@ final class MissionController
         return $this->store($request, 'NEED', $need->public_reference, $workflow, route('needs.show', $need));
     }
 
-    public function createChild(Request $request, Mission $mission, MissionService $missions): View
+    public function createChild(Request $request, Mission $mission, MissionService $missions, MissionContextRegistry $registry): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $mission = $missions->find($mission->public_reference, $identity->reference);
         abort_if(in_array($mission->status, Mission::TERMINAL_STATUSES, true), 409, 'Cette Mission est terminée.');
 
+        $adapter = $registry->for($mission->context_type);
+        $contextLabel = $adapter->label($adapter->resolve($mission->context_reference));
+
         return $this->createView(
             $request, $mission->context_type, $mission->context_reference,
-            route('missions.children.store', $mission), route('missions.show', $mission), $mission
+            route('missions.children.store', $mission), route('missions.show', $mission), $mission, $contextLabel
         );
     }
 
@@ -292,7 +295,7 @@ final class MissionController
         );
     }
 
-    private function createView(Request $request, string $contextType, string $contextReference, string $storeUrl, string $backUrl, ?Mission $parent = null): View
+    private function createView(Request $request, string $contextType, string $contextReference, string $storeUrl, string $backUrl, ?Mission $parent = null, ?string $contextLabel = null): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -303,6 +306,7 @@ final class MissionController
             'isAdministrator' => $isAdministrator,
             'contextType' => $contextType,
             'contextReference' => $contextReference,
+            'contextLabel' => $contextLabel,
             'storeUrl' => $storeUrl,
             'backUrl' => $backUrl,
             'parent' => $parent,

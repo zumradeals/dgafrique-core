@@ -34,6 +34,15 @@
     if (request()->routeIs('missions.index')) {
         $pageStyles[] = 'resources/css/missions-directory.css';
     }
+    if (request()->routeIs('missions.show')
+        || request()->routeIs('projects.missions.create')
+        || request()->routeIs('zumra.groups.missions.create')
+        || request()->routeIs('needs.missions.create')
+        || request()->routeIs('missions.children.create')
+        || request()->routeIs('missions.matching')
+        || request()->routeIs('missions.blockers.express-need.create')) {
+        $pageStyles[] = 'resources/css/mission-detail.css';
+    }
     if (request()->routeIs('people.index')) {
         $pageStyles[] = 'resources/css/people-directory.css';
     }

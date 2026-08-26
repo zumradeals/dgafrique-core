@@ -1,0 +1,50 @@
+/* UX-HARMONY-MISSIONS-002 — Fiche Mission, déclinaison de la famille visuelle DG Afrique
+   (même doctrine que project-space.css : état/progression > action > matière métier), adaptée
+   à la structure réelle d'une Mission (pas de ZUMRA-left-nav : le contexte peut être un Projet,
+   une ZUMRA ou un Besoin). Additif à dg.css : ne redéfinit aucun token, n'affecte aucune autre page. */
+.portal-body{background:#f6f4ef;color:#18231f}
+.md-page{width:100%;max-width:1400px;margin:auto;padding:18px clamp(16px,2vw,32px) 56px}
+.md-crumb{display:inline-flex;align-items:center;gap:6px;margin-bottom:14px;color:#067044;font-size:13px;font-weight:800;text-decoration:none}
+
+.md-hero{position:relative;overflow:hidden;padding:28px 32px;border-radius:22px;color:#fff;background:radial-gradient(circle at 82% 20%,rgba(175,220,79,.16),transparent 26%),linear-gradient(115deg,#004732,#00603f 60%,#023c2f);box-shadow:0 12px 28px rgba(1,51,37,.14)}
+.md-hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.md-tags{display:flex;flex-wrap:wrap;gap:8px}
+.md-tags span{padding:5px 10px;border-radius:8px;background:rgba(255,255,255,.12);font:700 10px/1 var(--dg-font-mono);letter-spacing:.04em;text-transform:uppercase}
+.md-hero h1{margin:12px 0 0;font:500 clamp(28px,3vw,42px)/1.06 var(--dg-font-display);color:#fff}
+.md-hero>p{max-width:72ch;margin:10px 0 0;color:#e6f0eb;font-size:14px;line-height:1.6}
+.md-facts{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:18px}
+.md-facts span{display:flex;flex-direction:column;gap:3px;color:#cadbd3;font-size:10px}
+.md-facts strong{color:#fff;font-size:13px;font-weight:700}
+
+.md-stepper{display:flex;align-items:center;gap:0;margin-top:22px;overflow-x:auto}
+.md-stepper i{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);color:#cadbd3;font-style:normal;font-size:11px;font-weight:800}
+.md-stepper em{flex:1;min-width:18px;height:2px;background:rgba(255,255,255,.14)}
+.md-stepper span{flex:none;padding:0 9px;color:#cadbd3;font-size:10.5px;white-space:nowrap}
+.md-stepper .is-done i{background:#94db73;color:#0d2b20}
+.md-stepper .is-done em{background:#94db73}
+.md-stepper .is-current i{background:#ffd400;color:#0d2b20;box-shadow:0 0 0 4px rgba(255,212,0,.22)}
+.md-stepper .is-current span{color:#fff;font-weight:800}
+.md-hero .dg-badge{background:rgba(255,255,255,.16)!important;color:#fff!important}
+
+.md-action-zone{margin-top:16px}
+.md-action-zone .dg-fieldset,.md-action-zone .dg-card{border-color:#dfe8e1}
+
+.md-tabs{display:flex;overflow-x:auto;margin-top:16px;padding:0 6px;border:1px solid #e5e3dc;border-radius:14px;background:#fff;box-shadow:0 5px 18px rgba(12,47,35,.045)}
+.md-tabs a{flex:none;padding:13px 16px;color:#26332d;text-decoration:none;font-size:12.5px;font-weight:700;white-space:nowrap;border-bottom:2px solid transparent}
+.md-tabs a:hover{color:#067044}
+
+.md-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;margin-top:16px;align-items:start}
+.md-stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+.md-panel{padding:20px;border:1px solid #e5e3dc;border-radius:16px;background:#fff;box-shadow:0 5px 18px rgba(12,47,35,.045)}
+.md-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.md-panel-head h2{margin:0;font-size:16px}
+
+.md-quick-actions{background:linear-gradient(135deg,#fff,#fff4ce)}
+.md-quick-actions a,.md-quick-actions button{display:block;width:100%;padding:9px 0;border:0;background:none;color:#304039;text-align:left;text-decoration:none;font:inherit;font-size:12.5px;cursor:pointer}
+
+.md-deep{margin-top:16px;border:1px solid #dfdfd8;border-radius:14px;background:#fff}
+.md-deep>summary{display:flex;justify-content:space-between;padding:16px 20px;cursor:pointer;font-weight:700;font-size:13px}
+.md-deep-body{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:18px 20px;border-top:1px solid #eee}
+
+@media(max-width:980px){.md-body{grid-template-columns:1fr}.md-hero{padding:22px}.md-deep-body{grid-template-columns:1fr}}
+@media(max-width:760px){.md-page{padding:12px 12px calc(28px + env(safe-area-inset-bottom,0px));overflow:clip}.md-hero{padding:18px;border-radius:18px}.md-hero h1{font-size:26px}.md-facts{gap:8px 16px}.md-stepper span{display:none}.md-stepper .is-current span{display:inline}.md-tabs a{padding:14px 14px;min-height:44px}.md-panel{padding:16px}.md-deep>summary{padding:15px}.md-deep-body{padding:14px}}

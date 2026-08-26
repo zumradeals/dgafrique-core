@@ -24,7 +24,7 @@ final class MissionsDirectoryHarmonyTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_demo_seeder_is_idempotent_and_covers_four_statuses_and_three_context_types(): void
+    public function test_demo_seeder_is_idempotent_and_covers_seven_statuses_and_three_context_types(): void
     {
         $this->seed(MissionsDirectoryDemoSeeder::class);
         $actors = ['DEMO-MISSION-LEADER-01', 'DEMO-MISSION-LEADER-02', 'DEMO-MISSION-LEADER-03'];
@@ -34,10 +34,10 @@ final class MissionsDirectoryHarmonyTest extends TestCase
         $secondRunCount = Mission::query()->whereIn('created_by_core_reference', $actors)->count();
 
         self::assertSame($firstRunCount, $secondRunCount, 'Le second lancement du seeder ne doit créer aucune Mission supplémentaire.');
-        self::assertSame(8, $firstRunCount);
+        self::assertSame(11, $firstRunCount);
 
         $statuses = Mission::query()->whereIn('created_by_core_reference', $actors)->pluck('status')->unique()->sort()->values();
-        self::assertEqualsCanonicalizing(['OPEN', 'IN_PROGRESS', 'BLOCKED', 'COMPLETED'], $statuses->all());
+        self::assertEqualsCanonicalizing(['DRAFT', 'PROPOSED', 'OPEN', 'IN_PROGRESS', 'BLOCKED', 'SUBMITTED', 'COMPLETED'], $statuses->all());
 
         $contextTypes = Mission::query()->whereIn('created_by_core_reference', $actors)->pluck('context_type')->unique()->sort()->values();
         self::assertEqualsCanonicalizing(['PROJECT', 'ZUMRA', 'NEED'], $contextTypes->all());
