@@ -1,10 +1,8 @@
 <x-layouts.portal title="Autonomie — {{ $project->name }} — DG Afrique">
+<x-dg.shell current="projets" :identity="$identity" :is-administrator="$isAdministrator">
 <main class="project-page">
     <div class="project-detail">
-        <nav>
-            <a href="{{ route('projects.show',$project) }}">← {{ $project->name }}</a>
-            <a href="{{ route('member.space') }}">Mon espace</a>
-        </nav>
+        <a href="{{ route('projects.show',$project) }}" class="dg-crumb">← {{ $project->name }}</a>
 
         @if(session('status'))<div class="alert success">{{ session('status') }}</div>@endif
         @if($errors->any())<div class="alert danger">{{ $errors->first() }}</div>@endif
@@ -85,4 +83,5 @@
         @endif
     </div>
 </main>
+</x-dg.shell>
 </x-layouts.portal>
