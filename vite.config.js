@@ -20,6 +20,7 @@ export default defineConfig({
                 'resources/css/zumra-project-birth.css',
                 'resources/css/needs-directory.css',
                 'resources/css/missions-directory.css',
+                'resources/css/mission-detail.css',
                 'resources/css/people-directory.css',
                 'resources/css/project-detail.css',
                 'resources/css/project-space.css',
