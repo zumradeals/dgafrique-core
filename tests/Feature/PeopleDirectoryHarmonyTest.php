@@ -20,7 +20,7 @@ final class PeopleDirectoryHarmonyTest extends TestCase
         $this->seed(PeopleDirectoryDemoSeeder::class);$this->seed(PeopleDirectoryDemoSeeder::class);
         self::assertSame(24,PersonProfile::query()->where('core_identity_reference','like','DEMO-PEOPLE-%')->count());
         self::assertGreaterThan(20,CapabilityStatement::query()->where('core_identity_reference','like','DEMO-PEOPLE-%')->whereNull('archived_at')->count());
-        $this->signIn();$this->get('/personnes')->assertOk()->assertSee('Les bonnes personnes')->assertSee('24')->assertSee('Personnes recommandées pour vous')->assertDontSee('1 842');
+        $this->signIn();$this->get('/personnes')->assertOk()->assertSee('Les bonnes personnes')->assertSee('24')->assertSee('Personnes recommandées pour vous')->assertSee('Mon réseau')->assertSee('Mes connexions')->assertSee('Invitations')->assertSee('Se connecter')->assertSee('UX présente — moteur métier à construire')->assertDontSee('1 842');
     }
 
     public function test_private_profiles_stay_out_of_metrics_and_cards(): void
