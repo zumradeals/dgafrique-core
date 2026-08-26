@@ -8,8 +8,11 @@ use App\Application\Missions\MissionContextRegistry;
 use App\Application\Missions\MissionService;
 use App\Application\Missions\MissionVisibilityService;
 use App\Application\Missions\MissionWorkflow;
+use App\Application\Projects\ProjectConfiguration;
 use App\Domain\Identity\CoreIdentity;
 use App\Models\Mission;
+use App\Models\MissionAssignment;
+use App\Models\MissionChecklistItem;
 use App\Models\MissionRecurrence;
 use App\Models\Need;
 use App\Models\PersonProfile;
@@ -18,19 +21,150 @@ use App\Models\Project;
 use App\Models\ZumraGroup;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 final class MissionController
 {
-    public function index(Request $request, MissionService $missions): View
+    private const DISCOVERY_STATUSES = [
+        Mission::STATUS_OPEN, Mission::STATUS_IN_PROGRESS, Mission::STATUS_BLOCKED,
+        Mission::STATUS_SUBMITTED, Mission::STATUS_COMPLETED,
+    ];
+
+    private const DISCOVERY_PAGE_SIZE = 10;
+
+    private const DUE_SOON_DAYS = 7;
+
+    public function index(Request $request, MissionService $missions, MissionVisibilityService $visibility, ProjectConfiguration $projectConfiguration): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
-        $sections = $missions->myMissionsSections($identity->reference);
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('missions.index', compact('identity', 'sections', 'isAdministrator'));
+        if ($request->query('scope') === 'mine') {
+            $sections = $missions->myMissionsSections($identity->reference);
+
+            return view('missions.mine', compact('identity', 'sections', 'isAdministrator'));
+        }
+
+        // UX-HARMONY-MISSIONS-001 — annuaire public des Missions, même doctrine de visibilité que
+        // MissionService::forContext() : chaque Mission candidate est revalidée avec
+        // MissionVisibilityService::canViewMission(), jamais un simple filtre de statut. Le domaine
+        // n'existe pas comme colonne Mission : il est dérivé honnêtement du contexte porteur
+        // (Project::domain / ZumraGroup::domain) ; un contexte Besoin n'a pas d'équivalent et
+        // rejoint « Sans domaine identifié » plutôt qu'une valeur inventée.
+        $statusFilter = (string) $request->query('status', '');
+        $domainFilter = (string) $request->query('domain', '');
+        $locationFilter = (string) $request->query('location', '');
+        $searchTerm = trim((string) $request->query('q', ''));
+        $page = max(1, (int) $request->query('page', 1));
+
+        $candidates = Mission::query()
+            ->whereIn('status', self::DISCOVERY_STATUSES)
+            ->whereNull('parent_mission_id')
+            ->latest('created_at')
+            ->limit(300)
+            ->get()
+            ->filter(fn (Mission $mission): bool => $visibility->canViewMission($mission, $identity->reference))
+            ->values();
+
+        $domainLabels = $projectConfiguration->get()['domains'];
+        $projectDomains = Project::query()
+            ->whereIn('public_reference', $candidates->where('context_type', 'PROJECT')->pluck('context_reference'))
+            ->pluck('domain', 'public_reference');
+        $zumraDomains = ZumraGroup::query()
+            ->whereIn('public_reference', $candidates->where('context_type', 'ZUMRA')->pluck('context_reference'))
+            ->pluck('domain', 'public_reference');
+
+        $domainOf = function (Mission $mission) use ($projectDomains, $zumraDomains, $domainLabels): string {
+            return match ($mission->context_type) {
+                'PROJECT' => $domainLabels[$projectDomains[$mission->context_reference] ?? ''] ?? 'Sans domaine identifié',
+                'ZUMRA' => $zumraDomains[$mission->context_reference] ?? 'Sans domaine identifié',
+                default => 'Sans domaine identifié',
+            };
+        };
+
+        $bandeau = [
+            'total' => $candidates->count(),
+            'open' => $candidates->where('status', Mission::STATUS_OPEN)->count(),
+            'in_progress' => $candidates->where('status', Mission::STATUS_IN_PROGRESS)->count(),
+            'completed' => $candidates->where('status', Mission::STATUS_COMPLETED)->count(),
+            'blocked' => $candidates->where('status', Mission::STATUS_BLOCKED)->count(),
+        ];
+
+        $contributorsThisMonth = MissionAssignment::query()
+            ->where('status', MissionAssignment::STATUS_ACCEPTED)
+            ->whereIn('mission_id', $candidates->pluck('id'))
+            ->where('accepted_at', '>=', now()->startOfMonth())
+            ->distinct('core_identity_reference')
+            ->count('core_identity_reference');
+
+        $byDomain = $candidates->groupBy($domainOf)->map->count()->sortDesc();
+        $byLocation = $candidates->filter(fn (Mission $m): bool => filled($m->location))->groupBy('location')->map->count()->sortDesc();
+
+        $dueSoon = $candidates
+            ->filter(fn (Mission $m): bool => $m->due_at !== null && $m->due_at->isFuture() && $m->due_at->diffInDays(now()) <= self::DUE_SOON_DAYS)
+            ->sortBy(fn (Mission $m) => $m->due_at)
+            ->values();
+
+        $filtered = $candidates
+            ->when($statusFilter !== '', fn (Collection $c) => $c->where('status', $statusFilter))
+            ->when($domainFilter !== '', fn (Collection $c) => $c->filter(fn (Mission $m): bool => $domainOf($m) === $domainFilter))
+            ->when($locationFilter !== '', fn (Collection $c) => $c->where('location', $locationFilter))
+            ->when($searchTerm !== '', fn (Collection $c) => $c->filter(fn (Mission $m): bool => str_contains(mb_strtolower($m->title), mb_strtolower($searchTerm))
+                || str_contains(mb_strtolower($m->description), mb_strtolower($searchTerm))))
+            ->values();
+
+        $pageItems = $filtered->forPage($page, self::DISCOVERY_PAGE_SIZE)->values();
+        $checklistStats = MissionChecklistItem::query()
+            ->whereIn('mission_id', $pageItems->pluck('id'))
+            ->get()
+            ->groupBy('mission_id')
+            ->map(fn (Collection $items): array => ['total' => $items->count(), 'completed' => $items->whereNotNull('completed_at')->count()]);
+        $contributorCounts = MissionAssignment::query()
+            ->where('status', MissionAssignment::STATUS_ACCEPTED)
+            ->whereIn('mission_id', $pageItems->pluck('id'))
+            ->get()
+            ->groupBy('mission_id')
+            ->map->count();
+
+        $missionsPage = new LengthAwarePaginator($pageItems, $filtered->count(), self::DISCOVERY_PAGE_SIZE, $page, [
+            'path' => $request->url(),
+            'query' => $request->except('page'),
+        ]);
+
+        $mineAssignedCount = MissionAssignment::query()
+            ->where('core_identity_reference', $identity->reference)
+            ->distinct('mission_id')
+            ->count('mission_id');
+        $mineEngagedCount = MissionAssignment::query()
+            ->where('core_identity_reference', $identity->reference)
+            ->where('status', MissionAssignment::STATUS_ACCEPTED)
+            ->whereHas('mission', fn ($q) => $q->whereIn('status', [Mission::STATUS_OPEN, Mission::STATUS_IN_PROGRESS, Mission::STATUS_SUBMITTED]))
+            ->distinct('mission_id')
+            ->count('mission_id');
+
+        return view('missions.index', [
+            'identity' => $identity,
+            'isAdministrator' => $isAdministrator,
+            'missionsPage' => $missionsPage,
+            'bandeau' => $bandeau,
+            'contributorsThisMonth' => $contributorsThisMonth,
+            'byDomain' => $byDomain,
+            'byLocation' => $byLocation,
+            'dueSoon' => $dueSoon,
+            'statusFilter' => $statusFilter,
+            'domainFilter' => $domainFilter,
+            'locationFilter' => $locationFilter,
+            'searchTerm' => $searchTerm,
+            'domainOf' => $domainOf,
+            'checklistStats' => $checklistStats,
+            'contributorCounts' => $contributorCounts,
+            'mineAssignedCount' => $mineAssignedCount,
+            'mineEngagedCount' => $mineEngagedCount,
+        ]);
     }
 
     public function show(Request $request, Mission $mission, MissionService $missions, MissionContextRegistry $registry, MissionVisibilityService $visibility): View
@@ -73,6 +207,7 @@ final class MissionController
             $reference = $assignment->core_identity_reference;
             if (hash_equals($reference, $identity->reference)) {
                 $participantLabels[$assignment->id] = 'Vous';
+
                 continue;
             }
             $exposed = $visibility->canExposeParticipantIdentity($mission, $identity->reference, $assignment);
