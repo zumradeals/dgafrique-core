@@ -34,6 +34,8 @@ final class NeedController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $settings = $configuration->get();
+        $search = trim((string) $request->query('q', ''));
+        $locationFilter = trim((string) $request->query('location', ''));
         $categoryFilter = $request->filled('category') && array_key_exists((string) $request->query('category'), $settings['categories']) ? (string) $request->query('category') : null;
         $statusFilter = $request->filled('status') && in_array($request->query('status'), [Need::STATUS_OPEN, Need::STATUS_IN_PROGRESS, Need::STATUS_RESOLVED], true) ? (string) $request->query('status') : null;
         $query = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->latest('created_at')->limit(300);
@@ -42,6 +44,12 @@ final class NeedController
         }
         if ($statusFilter !== null) {
             $query->where('status', $statusFilter);
+        }
+        if ($search !== '') {
+            $query->where(fn ($query) => $query->whereRaw('LOWER(title) LIKE ?', ['%'.mb_strtolower($search).'%'])->orWhereRaw('LOWER(context) LIKE ?', ['%'.mb_strtolower($search).'%'])->orWhereRaw('LOWER(capability_label) LIKE ?', ['%'.mb_strtolower($search).'%']));
+        }
+        if ($locationFilter !== '') {
+            $query->whereRaw('LOWER(location) LIKE ?', ['%'.mb_strtolower($locationFilter).'%']);
         }
         $visible = $query->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference))->values();
         $page = max(1, (int) $request->query('page', 1));
@@ -56,12 +64,23 @@ final class NeedController
         // (indépendant des filtres appliqués à la liste), jamais une projection — le modèle le permet.
         $allVisible = Need::query()->whereNotIn('status', [Need::STATUS_ARCHIVED])->limit(300)->get()->filter(fn (Need $need): bool => $service->canView($need, $identity->reference));
         $overview = [
+            'total' => $allVisible->count(),
             'open' => $allVisible->where('status', Need::STATUS_OPEN)->count(),
             'pending' => $allVisible->where('status', Need::STATUS_PROPOSED)->count(),
+            'in_progress' => $allVisible->where('status', Need::STATUS_IN_PROGRESS)->count(),
             'resolved' => $allVisible->where('status', Need::STATUS_RESOLVED)->count(),
         ];
+        $categoryOverview = $allVisible->groupBy('category')->map->count()->sortDesc();
+        $locationOverview = $allVisible->filter(fn (Need $need): bool => filled($need->location))->groupBy('location')->map->count()->sortDesc()->take(6);
+        $demoNeeds = $allVisible->filter(fn (Need $need): bool => str_starts_with($need->author_core_reference, 'DEMO-NEED-'));
+        $uxPreview = [
+            'is_demo' => $demoNeeds->isNotEmpty(),
+            'urgent' => $demoNeeds->where('status', Need::STATUS_OPEN)->take(4),
+            'financed' => 0,
+            'amount' => 0,
+        ];
 
-        return view('needs.index', compact('identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview') + ['configuration' => $settings]);
+        return view('needs.index', compact('identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview', 'categoryOverview', 'locationOverview', 'uxPreview') + ['configuration' => $settings]);
     }
 
     public function create(Request $request, NeedConfiguration $configuration): View
