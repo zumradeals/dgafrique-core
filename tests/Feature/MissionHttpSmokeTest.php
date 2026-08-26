@@ -29,7 +29,8 @@ final class MissionHttpSmokeTest extends TestCase
 
         $this->signIn('IDN-OWNER');
 
-        $this->get('/missions')->assertOk()->assertSee('Mes Missions');
+        $this->get('/missions')->assertOk()->assertSee('Des missions concrètes pour un impact réel.');
+        $this->get('/missions?scope=mine')->assertOk()->assertSee('Mes Missions');
         $this->get('/missions/'.$mission->public_reference)->assertOk()->assertSee('Préparer le lancement pilote');
         $this->get('/projets/'.$project->public_reference.'/missions/creer')->assertOk()->assertSee('Proposer une Mission');
         $this->get('/missions/'.$mission->public_reference.'/correspondances')->assertOk();

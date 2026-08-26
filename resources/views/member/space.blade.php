@@ -402,7 +402,7 @@
                         <div class="dg-space-rail-row">
                             <span class="dg-space-rail-row__mark">M</span>
                             <div>
-                                <strong><a href="{{ route('missions.index') }}">Mes Missions</a></strong>
+                                <strong><a href="{{ route('missions.index', ['scope' => 'mine']) }}">Mes Missions</a></strong>
                                 <span>À décider, invitations, engagements, à valider et terminées.</span>
                             </div>
                         </div>
