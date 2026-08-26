@@ -751,3 +751,30 @@ La mise en œuvre reste locale à `resources/css/fil-v2.css`. Les variables `--n
 prototype de densité pour validation ; elles ne deviennent des tokens globaux qu’après validation
 visuelle du couple ZUMRA / Fil et une mission de propagation distincte. Aucun service, contrôleur,
 route, permission ou objet métier n’est modifié par cet addendum.
+
+## 29. UX-HARMONY-002 — Harmonisation du monde Projet (26 août 2026)
+
+Le Carrefour `/projets` et la fiche `/projets/{project}` adoptent la norme de présence validée par
+ZUMRA, le Fil harmonisé et Mon espace, sans uniformiser leurs compositions. Le Carrefour reste une
+surface de découverte ; la fiche reste une surface d’exécution et de preuve du Projet réel.
+
+Sur le Carrefour, la grille est limitée à trois cartes confortables sur grand écran, deux sur
+laptop/tablette et une sur mobile. Une carte rend lisibles dans cet ordre : image et état, nom du
+Projet, ZUMRA porteuse, résumé, progression et contexte. Le panneau contextuel passe sous le flux
+avant que les cartes ne soient comprimées. Aucun compteur ni objet supplémentaire n’est introduit.
+
+Sur la fiche, le hero porte la hiérarchie primaire : identité du Projet, état, contexte/ZUMRA,
+progression, puis actions existantes. Le contenu métier central demeure dominant ; équipe,
+missions, besoins et ressources conservent leurs données et permissions ; le financement ZAHAB
+reste identifiable dans sa section dédiée sans devenir le signal visuel principal. Jalons,
+activité, preuves, chemin et gouvernance restent accessibles sans suppression.
+
+Repères adoptés : conteneur borné à `1760px`, texte courant `13–15px`, titres de cartes/panneaux
+`18–20px`, actions d’au moins `44px` (`48px` sur mobile), cartes autour de `18–24px` de rayon et
+espacement structurel `18–24px`. À `~390px`, la fiche devient réellement verticale : visuel pleine
+largeur, titre `34px`, actions empilées, navigation locale défilable et panneaux sans réduction de
+la typographie.
+
+La portée CSS reste limitée à `projects-directory.css` et `project-space.css`. Seule la vue Projet
+ajoute dans son hero des liens vers les routes de commentaire et de Mission déjà autorisées ; elle
+ne crée aucun droit, service, financement, écriture Ledger ou transition métier.
