@@ -129,6 +129,30 @@ final class FilV2Test extends TestCase
         self::assertSame(2, substr_count($content, 'class="hidden lg:flex dg-fil-rail"'));
     }
 
+    public function test_harmony_layout_keeps_the_feed_dominant_and_stops_compressing_before_mobile(): void
+    {
+        $css = file_get_contents(resource_path('css/fil-v2.css'));
+        self::assertNotFalse($css);
+
+        self::assertStringContainsString('minmax(210px,248px) minmax(620px,1fr) minmax(260px,304px)', $css);
+        self::assertStringContainsString('@media(max-width:1399px)', $css);
+        self::assertStringContainsString('.nf-right{display:none!important}', $css);
+        self::assertStringContainsString('@media(max-width:1023px)', $css);
+        self::assertStringContainsString('.nf-grid{grid-template-columns:1fr}', $css);
+    }
+
+    public function test_harmony_mobile_is_a_vertical_reading_state_with_local_scrollers_only(): void
+    {
+        $css = file_get_contents(resource_path('css/fil-v2.css'));
+        self::assertNotFalse($css);
+
+        self::assertStringContainsString('@media(max-width:640px)', $css);
+        self::assertStringContainsString('.nf-card-content{display:flex;flex-direction:column', $css);
+        self::assertStringContainsString('.nf-card footer{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))', $css);
+        self::assertStringContainsString('.nf-compose{display:flex;', $css);
+        self::assertStringContainsString('.nf-toolbar nav{margin-inline:-.75rem;', $css);
+    }
+
     public function test_fil_v2_css_never_forces_display_on_elements_hidden_by_tailwind_outside_a_media_query(): void
     {
         // Régression réelle observée sur mobile : `.dg-fil-rail { display: flex }` déclaré

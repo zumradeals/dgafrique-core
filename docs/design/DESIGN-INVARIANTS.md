@@ -713,3 +713,41 @@ sondage et événements sans moteur canonique sont des surfaces préparatoires s
 Sur mobile, les deux rails sont retirés du flux principal, le compositeur arrive en premier et
 les groupes d’actions défilent dans leurs propres conteneurs. Aucun signal de popularité n’est
 introduit : contribuer, transmettre, répondre et faire avancer restent prioritaires.
+
+## 28. UX-HARMONY-001 — Première norme de présence visuelle (26 août 2026)
+
+Le Monde ZUMRA (`/zumra`) devient la référence d’**échelle et de présence**, jamais un gabarit à
+copier. Le Fil (`/activite`) est la première transposition : il conserve son identité de flux,
+ses données, ses filtres et ses actions, tout en adoptant une lecture plus ample et une colonne
+centrale nettement dominante.
+
+Cette première norme fixe les repères réutilisables suivants, sans les propager encore aux autres
+écrans :
+
+- conteneur large borné entre `1600px` et `1760px`, avec marges fluides plutôt qu’un contenu
+  compact centré dans une petite colonne ;
+- sur grand écran, grille à trois zones avec rails bornés autour de `210–304px` et centre flexible
+  d’au moins `620px` ; sous `1400px`, retrait du panneau contextuel droit avant toute compression
+  du flux ; sous `1024px`, lecture en une colonne ;
+- texte courant visé entre `13px` et `16px`, métadonnées au moins `11px`, titres de cartes autour
+  de `19–30px` selon le composant et la largeur ; les tailles de `6–10px` sont exclues pour les
+  informations utiles ;
+- rythme de carte de `16–25px`, rayon autour de `18–22px`, espace vertical d’environ `16px` entre
+  blocs ; une carte doit rester lisible avec peu de données et s’allonger naturellement quand la
+  donnée est abondante ;
+- action principale d’au moins `40px` de haut sur desktop et mobile, contrôles secondaires
+  regroupés sans masquer une information utile ;
+- densité maximale : si les deux rails concurrencent le centre, le rail droit disparaît au
+  breakpoint intermédiaire ; ils ne sont jamais injectés avant le contenu sur mobile ;
+- tablette : colonne unique centrée et largeur de lecture bornée ; mobile : composeur en premier,
+  cartes empilées, médias pleine largeur, actions sur deux colonnes et groupes horizontaux
+  explicitement défilables ;
+- aucun débordement horizontal du document : seuls les filtres, raccourcis du composeur et appels
+  d’action groupés peuvent défiler dans leur propre conteneur ;
+- états pauvres : conserver une surface digne et explicative ; états riches : laisser les cartes
+  croître verticalement, sans réduire la typographie ni réintroduire une grille miniature.
+
+La mise en œuvre reste locale à `resources/css/fil-v2.css`. Les variables `--nf-*` servent de
+prototype de densité pour validation ; elles ne deviennent des tokens globaux qu’après validation
+visuelle du couple ZUMRA / Fil et une mission de propagation distincte. Aucun service, contrôleur,
+route, permission ou objet métier n’est modifié par cet addendum.
