@@ -54,6 +54,16 @@ final class PeopleDiscoveryController
             ->groupBy('label', 'normalized_label')->orderByDesc('people_count')->orderBy('label')->limit(5)->get();
         $recentProfiles = (clone $discoverable)->orderByDesc('discovery_consented_at')->limit(5)->get();
         $recommendations = $recommendationEngine->forIdentity($identity->reference, $recommendationConfiguration->get())['recommendations'];
+        // Aperçu UX du futur réseau personnel : uniquement alimenté par le décor opt-in DEMO.
+        // Aucun moteur de connexion ni aucune persistance de production n'est créé ici.
+        $demoProfiles = PersonProfile::query()->where('core_identity_reference', 'like', 'DEMO-PEOPLE-%');
+        $demoProfileCount = (clone $demoProfiles)->count();
+        $networkPreview = [
+            'is_demo' => $demoProfileCount > 0,
+            'connections' => intdiv($demoProfileCount, 2),
+            'weekly_connections' => (clone $demoProfiles)->where('discovery_consented_at', '>=', now()->subDays(7))->count(),
+            'invitations' => (clone $demoProfiles)->where('availability_status', PersonProfile::AVAILABILITY_LIMITED)->count(),
+        ];
 
         $query = (clone $discoverable)
             ->with(['capabilityStatements' => static fn ($query) => $query
@@ -83,7 +93,7 @@ final class PeopleDiscoveryController
             ->paginate((int) $settings['page_size'])->withQueryString();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term', 'isAdministrator', 'metrics', 'popularCapabilities', 'recentProfiles', 'recommendations'));
+        return view('discovery.index', compact('identity', 'settings', 'profiles', 'modes', 'term', 'isAdministrator', 'metrics', 'popularCapabilities', 'recentProfiles', 'recommendations', 'networkPreview'));
     }
 
     public function show(Request $request, string $reference, PeopleDiscoveryConfiguration $configuration): View
