@@ -36,6 +36,9 @@
     if (request()->routeIs('needs.index')) {
         $pageStyles[] = 'resources/css/needs-directory.css';
     }
+    if (request()->routeIs('people.index')) {
+        $pageStyles[] = 'resources/css/people-directory.css';
+    }
     if (request()->routeIs('projects.show')) {
         $pageStyles[] = 'resources/css/project-space.css';
     }
