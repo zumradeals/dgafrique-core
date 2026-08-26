@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Projects\ProjectAutonomyPathwayService;
 use App\Application\Projects\ProjectService;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\PortalAdministrator;
 use App\Models\Project;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -28,7 +29,11 @@ final class ProjectAutonomyController
 
         $project->load(['autonomyPathway', 'accompaniment']);
 
+        $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+
         return view('projects.autonomy', [
+            'identity' => $identity,
+            'isAdministrator' => $isAdministrator,
             'project' => $project,
             'pathway' => $project->autonomyPathway,
             'eligible' => $pathways->isEligible($project),
