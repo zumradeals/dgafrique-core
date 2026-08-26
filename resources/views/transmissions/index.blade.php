@@ -1,21 +1,23 @@
 {{--
-    Mes Transmissions — fiche TRANSMISSION §20. Cinq sections honnêtes, jamais un mur de
-    statistiques ni un score de productivité pédagogique.
+    Mes Transmissions — fiche TRANSMISSION §20, harmonisée UX-HARMONY-TRANSMISSIONS-PROOFS-001.
+    Reste le tableau de bord personnel réel (myTransmissionsSections) — aucune découverte
+    publique n'existe pour ce domaine, aucune inventée ici. Cinq sections honnêtes, jamais un
+    mur de statistiques ni un score de productivité pédagogique.
 --}}
 <x-layouts.portal title="Mes Transmissions — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page">
-            <div class="dg-page-header">
-                <div>
-                    <x-dg.label tone="saffron">Transmission</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">Mes Transmissions</h1>
-                    <p>Une Transmission organise une rencontre humaine autour d’une capacité. Proposer n’est pas être accepté, déclarer sa part terminée n’est pas valider la Transmission.</p>
+        <div class="tr-page">
+            <section class="tr-dash-hero">
+                <div class="tr-tags"><span>Transmission</span></div>
+                <h1>Mes Transmissions</h1>
+                <p>Une Transmission organise une rencontre humaine autour d’une capacité. Proposer n’est pas être accepté, déclarer sa part terminée n’est pas valider la Transmission.</p>
+                <div class="tr-dash-actions">
+                    <a href="{{ route('transmissions.create') }}" class="dg-btn dg-btn--saffron">Proposer une Transmission</a>
                 </div>
-                <a href="{{ route('transmissions.create') }}" class="dg-btn dg-btn--saffron">Proposer une Transmission</a>
-            </div>
+            </section>
 
             @if(session('status'))
-                <div class="dg-band" style="margin-bottom:24px">{{ session('status') }}</div>
+                <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
             @endif
 
             @php
@@ -31,9 +33,9 @@
             <div class="dg-grid">
                 @foreach($sectionsMeta as $key => $meta)
                     @php($items = $sections[$key] ?? collect())
-                    <x-dg.card>
+                    <div class="tr-section-card">
                         <div class="flex items-center justify-between gap-3">
-                            <x-dg.label>{{ $meta['title'] }}</x-dg.label>
+                            <h2>{{ $meta['title'] }}</h2>
                             <span class="dg-meta">{{ $items->count() }}</span>
                         </div>
                         <div style="margin-top:12px">
@@ -48,7 +50,7 @@
                                 </x-dg.empty>
                             @endforelse
                         </div>
-                    </x-dg.card>
+                    </div>
                 @endforeach
             </div>
         </div>

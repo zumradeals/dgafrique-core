@@ -1,32 +1,40 @@
 {{--
-    Proposer une Transmission — fiche TRANSMISSION §5/§6. Aucune déclaration CAP-005/006
-    préalable n'est exigée (§5.C) : la Transmission porte son propre libellé de capacité.
+    Proposer une Transmission — fiche TRANSMISSION §5/§6, harmonisée UX-HARMONY-TRANSMISSIONS-
+    PROOFS-001. Aucune déclaration CAP-005/006 préalable n'est exigée (§5.C) : la Transmission
+    porte son propre libellé de capacité. Champs, validations et action de formulaire inchangés.
 --}}
 <x-layouts.portal title="Proposer une Transmission — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:820px">
-            <a href="{{ route('transmissions.index') }}" class="dg-crumb">← Mes Transmissions</a>
+        <div class="tr-page" style="max-width:820px">
+            <a href="{{ route('transmissions.index') }}" class="tr-crumb">← Mes Transmissions</a>
 
-            <div class="dg-page-header">
-                <div>
-                    <x-dg.label tone="saffron">Transmission</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">Proposer une Transmission</h1>
-                    <p>Une Transmission reste une proposition tant que les autres participants ne l’ont pas explicitement acceptée.</p>
+            <section class="tr-hero">
+                <div class="tr-hero-top"><div class="tr-tags"><span>Transmission</span></div></div>
+                <h1>Proposer une Transmission</h1>
+                <p>Une Transmission reste une proposition tant que les autres participants ne l’ont pas explicitement acceptée.</p>
+                <div class="tr-facts">
+                    <span>Après enregistrement<strong>Proposée → en attente d’acceptation</strong></span>
+                    <span>Votre rôle<strong>Transmetteur ou apprenant, au choix</strong></span>
                 </div>
-            </div>
+            </section>
 
             @if($errors->any())
-                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
+                <div class="dg-band" style="margin:16px 0;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
             @if($prefillInvite)
                 {{-- UIUX-007 — contexte conservé depuis un profil découvert. Le consentement et
                      l'acceptation explicite restent entièrement ceux du moteur Transmission :
                      cette invitation n'est qu'une proposition de plus, jamais garantie. --}}
-                <div class="dg-band" style="margin-bottom:20px">Vous proposez cette Transmission en pensant à <strong>{{ $prefillInvite->discovery_display_name }}</strong>, qui recevra une invitation à y participer une fois la Transmission créée.</div>
+                <div class="dg-band" style="margin:16px 0">Vous proposez cette Transmission en pensant à <strong>{{ $prefillInvite->discovery_display_name }}</strong>, qui recevra une invitation à y participer une fois la Transmission créée.</div>
             @endif
 
-            <form method="POST" action="{{ route('transmissions.store') }}" style="display:flex;flex-direction:column;gap:20px">
+            <div class="tr-panel" style="margin-top:16px">
+                <x-dg.label>Ce qui se passera ensuite</x-dg.label>
+                <p class="dg-body" style="margin-top:8px">Cet enregistrement crée une proposition. Elle attend l’acceptation explicite d’au moins un transmetteur et un apprenant avant de démarrer réellement.</p>
+            </div>
+
+            <form method="POST" action="{{ route('transmissions.store') }}" style="display:flex;flex-direction:column;gap:20px;margin-top:16px">
                 @csrf
                 @if($prefillInvite)
                     <input type="hidden" name="invite_discovery_reference" value="{{ $prefillInvite->discovery_reference }}">

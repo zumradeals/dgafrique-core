@@ -21,6 +21,8 @@ export default defineConfig({
                 'resources/css/needs-directory.css',
                 'resources/css/missions-directory.css',
                 'resources/css/mission-detail.css',
+                'resources/css/transmission-detail.css',
+                'resources/css/proof-detail.css',
                 'resources/css/people-directory.css',
                 'resources/css/project-detail.css',
                 'resources/css/project-space.css',

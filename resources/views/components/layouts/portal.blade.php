@@ -43,6 +43,19 @@
         || request()->routeIs('missions.blockers.express-need.create')) {
         $pageStyles[] = 'resources/css/mission-detail.css';
     }
+    if (request()->routeIs('transmissions.index')
+        || request()->routeIs('transmissions.create')
+        || request()->routeIs('transmissions.show')
+        || request()->routeIs('transmissions.matching')) {
+        $pageStyles[] = 'resources/css/transmission-detail.css';
+    }
+    if (request()->routeIs('proofs.index')
+        || request()->routeIs('proofs.create')
+        || request()->routeIs('proofs.show')
+        || request()->routeIs('proofs.memory.self')
+        || request()->routeIs('proofs.memory')) {
+        $pageStyles[] = 'resources/css/proof-detail.css';
+    }
     if (request()->routeIs('people.index')) {
         $pageStyles[] = 'resources/css/people-directory.css';
     }

@@ -1,96 +1,132 @@
 {{--
-    Fiche Transmission — CAP-006. Chaque décision sensible passe par un formulaire réel et
-    distinct (démarrer ≠ déclarer terminé ≠ confirmer la clôture ≠ valider par le contexte).
-    Aucune certification automatique, aucun rôle ZUMRA/Projet créé ici, aucune finance.
+    Fiche Transmission — CAP-006, harmonisée UX-HARMONY-TRANSMISSIONS-PROOFS-001 (famille .tr-*,
+    déclinaison de la famille visuelle DG Afrique déjà validée sur Missions/Projets/Besoins).
+    Chaque décision sensible passe par un formulaire réel et distinct (démarrer ≠ déclarer
+    terminé ≠ confirmer la clôture ≠ valider par le contexte). Aucune certification automatique,
+    aucun rôle ZUMRA/Projet créé ici, aucune finance. Chaque @if/formulaire/route ci-dessous est
+    repris tel quel de la version précédente — seule la présentation change.
 --}}
+@php
+    $stepDefs = [
+        ['key' => 'PROPOSED', 'label' => 'Proposée', 'done' => true],
+        ['key' => 'ACCEPTED', 'label' => 'Acceptée', 'done' => $transmission->accepted_at !== null],
+        ['key' => 'IN_PROGRESS', 'label' => 'En cours', 'done' => $transmission->started_at !== null],
+        ['key' => 'COMPLETED', 'label' => 'Terminée', 'done' => $transmission->completed_at !== null],
+    ];
+@endphp
 <x-layouts.portal title="{{ $transmission->capability_label }} — DG Afrique">
     <x-dg.shell :identity="$identity" :is-administrator="$isAdministrator">
-        <div class="dg-page" style="max-width:1200px">
-            <a href="{{ $contextUrl ?? route('transmissions.index') }}" class="dg-crumb">← {{ $contextLabel ?? 'Mes Transmissions' }}</a>
+        <div class="tr-page">
+            <a href="{{ $contextUrl ?? route('transmissions.index') }}" class="tr-crumb">← {{ $contextLabel ?? 'Mes Transmissions' }}</a>
 
             @if(session('status'))
-                <div class="dg-band" style="margin-bottom:20px">{{ session('status') }}</div>
+                <div class="dg-band" style="margin-bottom:16px">{{ session('status') }}</div>
             @endif
             @if($errors->any())
-                <div class="dg-band" style="margin-bottom:20px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
+                <div class="dg-band" style="margin-bottom:16px;border-color:var(--dg-copper);color:var(--dg-copper)">{{ $errors->first() }}</div>
             @endif
 
-            <div class="dg-page-header">
-                <div>
-                    <x-dg.label tone="saffron">{{ $contextLabel ?? 'Transmission privée' }}</x-dg.label>
-                    <h1 class="dg-display dg-display--screen" style="margin-top:6px">{{ $transmission->capability_label }}</h1>
-                    <p>{{ $transmission->learning_objective }}</p>
+            <section class="tr-hero">
+                <div class="tr-hero-top">
+                    <div class="tr-tags"><span>{{ $contextLabel ?? 'Transmission privée' }}</span></div>
+                    <x-dg.badge :tone="\App\Models\Transmission::STATUS_BADGE_TONES[$transmission->status] ?? 'neutral'">{{ \App\Models\Transmission::STATUS_LABELS[$transmission->status] ?? $transmission->status }}</x-dg.badge>
                 </div>
-                <x-dg.badge :tone="\App\Models\Transmission::STATUS_BADGE_TONES[$transmission->status] ?? 'neutral'">{{ \App\Models\Transmission::STATUS_LABELS[$transmission->status] ?? $transmission->status }}</x-dg.badge>
+                <h1>{{ $transmission->capability_label }}</h1>
+                <p>{{ $transmission->learning_objective }}</p>
+                <div class="tr-facts">
+                    <span>Contexte<strong>{{ $contextLabel ?? 'Aucun — privée' }}</strong></span>
+                    <span>Visibilité<strong>{{ \App\Models\Transmission::VISIBILITY_LABELS[$transmission->visibility] ?? $transmission->visibility }}</strong></span>
+                    @if($transmission->availability_note)<span>Disponibilité<strong>{{ $transmission->availability_note }}</strong></span>@endif
+                    <span>Origine<strong>{{ \App\Models\Transmission::ORIGIN_LABELS[$transmission->origin_type] ?? $transmission->origin_type }}</strong></span>
+                </div>
+
+                @if(! in_array($transmission->status, ['ENDED', 'CANCELLED'], true))
+                    <div class="tr-stepper">
+                        @foreach($stepDefs as $i => $step)
+                            @php($isCurrent = $step['done'] && (! isset($stepDefs[$i + 1]) || ! $stepDefs[$i + 1]['done']))
+                            @if($i > 0)<em class="{{ $step['done'] ? 'is-done' : '' }}"></em>@endif
+                            <div class="{{ $step['done'] ? 'is-done' : '' }} {{ $isCurrent ? 'is-current' : '' }}" style="display:flex;align-items:center">
+                                <i>{{ $i + 1 }}</i><span>{{ $step['label'] }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+
+            <div class="tr-action-zone">
+                @if($canOfficializeContext && $transmission->context_officialized_at === null)
+                    <x-dg.fieldset>
+                        <legend><x-dg.label>Officialiser le rattachement contextuel</x-dg.label></legend>
+                        <p class="dg-hint">Officialiser rend cette Transmission reconnue comme activité du contexte. Cela n’accepte jamais une participation à la place d’un participant.</p>
+                        <form method="POST" action="{{ route('transmissions.officialize-context', $transmission) }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                            @csrf
+                            <select name="visibility" class="dg-select" style="max-width:260px">
+                                <option value="">Garder la visibilité actuelle</option>
+                                <option value="CONTEXT">Élargir au contexte</option>
+                                <option value="PROGRAM">Élargir au Programme ZUMRA</option>
+                            </select>
+                            <button type="submit" class="dg-btn dg-btn--quiet">Officialiser</button>
+                        </form>
+                    </x-dg.fieldset>
+                @endif
+
+                @if($canStart)
+                    <x-dg.fieldset>
+                        <legend><x-dg.label>Démarrage</x-dg.label></legend>
+                        <p class="dg-hint">Un participant accepté peut démarrer la Transmission. Accepter une participation n’entraîne jamais automatiquement le démarrage.</p>
+                        <form method="POST" action="{{ route('transmissions.start', $transmission) }}">
+                            @csrf
+                            <button type="submit" class="dg-btn dg-btn--primary">Démarrer la Transmission</button>
+                        </form>
+                    </x-dg.fieldset>
+                @endif
+
+                @if($canDeclareDone || $canConfirmCompletion)
+                    <x-dg.fieldset>
+                        <legend><x-dg.label>Clôture</x-dg.label></legend>
+                        <p class="dg-hint">Déclarer votre part terminée ne valide jamais seul la Transmission : la confirmation reste une décision distincte, une fois qu’un transmetteur et un apprenant ont chacun déclaré leur part.</p>
+                        @if($canDeclareDone)
+                            <form method="POST" action="{{ route('transmissions.declare-done', $transmission) }}" style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+                                @csrf
+                                <input type="text" name="note" class="dg-input" placeholder="Note facultative" style="flex:1;min-width:200px">
+                                <button type="submit" class="dg-btn dg-btn--quiet">Déclarer ma part terminée</button>
+                            </form>
+                        @endif
+                        @if($canConfirmCompletion)
+                            <form method="POST" action="{{ route('transmissions.confirm-completion', $transmission) }}" style="display:flex;flex-direction:column;gap:10px">
+                                @csrf
+                                <textarea name="summary" class="dg-textarea" rows="3" minlength="5" placeholder="Résumé court de ce qui a été transmis" required></textarea>
+                                <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Confirmer la clôture</button>
+                            </form>
+                        @endif
+                    </x-dg.fieldset>
+                @endif
+
+                @if($canValidateByContext)
+                    <x-dg.fieldset>
+                        <legend><x-dg.label>Validation par le contexte</x-dg.label></legend>
+                        <p class="dg-hint">L’autorité de {{ $contextLabel }} peut valider la réalisation de cette Transmission.</p>
+                        <form method="POST" action="{{ route('transmissions.validate-by-context', $transmission) }}" style="display:flex;flex-direction:column;gap:10px">
+                            @csrf
+                            <textarea name="note" class="dg-textarea" rows="3" placeholder="Note de validation (facultatif)"></textarea>
+                            <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Valider la réalisation</button>
+                        </form>
+                    </x-dg.fieldset>
+                @endif
             </div>
 
-            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-                <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+            <nav class="tr-tabs">
+                <a href="#participation">Participation</a>
+                <a href="#etapes">Étapes</a>
+                <a href="#traces">Traces</a>
+            </nav>
 
-                    @if($canOfficializeContext && $transmission->context_officialized_at === null)
-                        <x-dg.fieldset>
-                            <legend><x-dg.label>Officialiser le rattachement contextuel</x-dg.label></legend>
-                            <p class="dg-hint">Officialiser rend cette Transmission reconnue comme activité du contexte. Cela n’accepte jamais une participation à la place d’un participant.</p>
-                            <form method="POST" action="{{ route('transmissions.officialize-context', $transmission) }}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-                                @csrf
-                                <select name="visibility" class="dg-select" style="max-width:260px">
-                                    <option value="">Garder la visibilité actuelle</option>
-                                    <option value="CONTEXT">Élargir au contexte</option>
-                                    <option value="PROGRAM">Élargir au Programme ZUMRA</option>
-                                </select>
-                                <button type="submit" class="dg-btn dg-btn--quiet">Officialiser</button>
-                            </form>
-                        </x-dg.fieldset>
-                    @endif
-
-                    @if($canStart)
-                        <x-dg.fieldset>
-                            <legend><x-dg.label>Démarrage</x-dg.label></legend>
-                            <p class="dg-hint">Un participant accepté peut démarrer la Transmission. Accepter une participation n’entraîne jamais automatiquement le démarrage.</p>
-                            <form method="POST" action="{{ route('transmissions.start', $transmission) }}">
-                                @csrf
-                                <button type="submit" class="dg-btn dg-btn--primary">Démarrer la Transmission</button>
-                            </form>
-                        </x-dg.fieldset>
-                    @endif
-
-                    @if($canDeclareDone || $canConfirmCompletion)
-                        <x-dg.fieldset>
-                            <legend><x-dg.label>Clôture</x-dg.label></legend>
-                            <p class="dg-hint">Déclarer votre part terminée ne valide jamais seul la Transmission : la confirmation reste une décision distincte, une fois qu’un transmetteur et un apprenant ont chacun déclaré leur part.</p>
-                            @if($canDeclareDone)
-                                <form method="POST" action="{{ route('transmissions.declare-done', $transmission) }}" style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
-                                    @csrf
-                                    <input type="text" name="note" class="dg-input" placeholder="Note facultative" style="flex:1;min-width:200px">
-                                    <button type="submit" class="dg-btn dg-btn--quiet">Déclarer ma part terminée</button>
-                                </form>
-                            @endif
-                            @if($canConfirmCompletion)
-                                <form method="POST" action="{{ route('transmissions.confirm-completion', $transmission) }}" style="display:flex;flex-direction:column;gap:10px">
-                                    @csrf
-                                    <textarea name="summary" class="dg-textarea" rows="3" minlength="5" placeholder="Résumé court de ce qui a été transmis" required></textarea>
-                                    <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Confirmer la clôture</button>
-                                </form>
-                            @endif
-                        </x-dg.fieldset>
-                    @endif
-
-                    @if($canValidateByContext)
-                        <x-dg.fieldset>
-                            <legend><x-dg.label>Validation par le contexte</x-dg.label></legend>
-                            <p class="dg-hint">L’autorité de {{ $contextLabel }} peut valider la réalisation de cette Transmission.</p>
-                            <form method="POST" action="{{ route('transmissions.validate-by-context', $transmission) }}" style="display:flex;flex-direction:column;gap:10px">
-                                @csrf
-                                <textarea name="note" class="dg-textarea" rows="3" placeholder="Note de validation (facultatif)"></textarea>
-                                <button type="submit" class="dg-btn dg-btn--primary" style="align-self:flex-start">Valider la réalisation</button>
-                            </form>
-                        </x-dg.fieldset>
-                    @endif
-
+            <div class="tr-body">
+                <div class="tr-stack">
                     {{-- ===== Participation ===== --}}
-                    <x-dg.card>
-                        <x-dg.label>Participants</x-dg.label>
-                        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+                    <div class="tr-panel" id="participation">
+                        <div class="tr-panel-head"><h2>Participants</h2></div>
+                        <div style="display:flex;flex-direction:column;gap:10px">
                             @forelse($transmission->participants->whereIn('status', ['OFFERED','INVITED','ACCEPTED']) as $participant)
                                 <div class="dg-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
                                     <div>
@@ -161,12 +197,12 @@
                                 <a href="{{ route('transmissions.matching', ['transmission' => $transmission, 'role' => 'TRANSMITTER']) }}" class="dg-btn dg-btn--quiet">Trouver des transmetteurs →</a>
                             </div>
                         @endif
-                    </x-dg.card>
+                    </div>
 
                     {{-- ===== Jalons ===== --}}
-                    <x-dg.card>
-                        <x-dg.label>Étapes</x-dg.label>
-                        <p class="dg-hint" style="margin-top:6px">Les étapes sont facultatives et ne clôturent jamais automatiquement la Transmission, même complétées à 100 %.</p>
+                    <div class="tr-panel" id="etapes">
+                        <div class="tr-panel-head"><h2>Étapes</h2></div>
+                        <p class="dg-hint" style="margin-top:-4px">Les étapes sont facultatives et ne clôturent jamais automatiquement la Transmission, même complétées à 100 %.</p>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
                             @forelse($transmission->milestones->sortBy('position') as $milestone)
                                 <div style="display:flex;align-items:center;gap:10px">
@@ -192,12 +228,12 @@
                                 <button type="submit" class="dg-btn dg-btn--quiet">Ajouter</button>
                             </form>
                         @endif
-                    </x-dg.card>
+                    </div>
 
                     {{-- ===== Contributions / traces ===== --}}
-                    <x-dg.card>
-                        <x-dg.label>Traces de la Transmission</x-dg.label>
-                        <p class="dg-hint" style="margin-top:6px">Ces notes constituent une trace d’expérience contextualisée — jamais une preuve certifiée automatiquement.</p>
+                    <div class="tr-panel" id="traces">
+                        <div class="tr-panel-head"><h2>Traces de la Transmission</h2></div>
+                        <p class="dg-hint" style="margin-top:-4px">Ces notes constituent une trace d’expérience contextualisée — jamais une preuve certifiée automatiquement.</p>
                         <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
                             @forelse($transmission->contributions->sortByDesc('occurred_at') as $contribution)
                                 <div class="dg-note"><p style="margin:0">{{ $contribution->note }}</p></div>
@@ -212,45 +248,14 @@
                                 <button type="submit" class="dg-btn dg-btn--quiet">Ajouter</button>
                             </form>
                         @endif
-                    </x-dg.card>
+                    </div>
 
                     @if($transmission->completion_summary)
-                        <x-dg.card>
+                        <div class="tr-panel">
                             <x-dg.label tone="copper">Résumé de clôture</x-dg.label>
                             <p class="dg-body" style="margin-top:10px">{{ $transmission->completion_summary }}</p>
-                        </x-dg.card>
+                        </div>
                     @endif
-
-                    @if($myParticipant?->status === \App\Models\TransmissionParticipant::STATUS_ACCEPTED && in_array($transmission->status, [\App\Models\Transmission::STATUS_COMPLETED_CONFIRMED, \App\Models\Transmission::STATUS_COMPLETED_BY_CONTEXT], true))
-                        {{-- UIUX-007 — Transmission → Preuve : une Transmission réellement
-                             terminée ouvre une porte facultative vers le Carnet de preuves.
-                             Jamais de preuve créée automatiquement ; jamais une certification de
-                             compétence — les règles de témoin/reconnaissance/contestation restent
-                             entièrement celles du Carnet de preuves. --}}
-                        <x-dg.card>
-                            <x-dg.label>Garder une trace</x-dg.label>
-                            <p class="dg-hint" style="margin-top:6px">Cette Transmission est terminée. Vous pouvez, si vous le souhaitez, en garder une trace dans votre Carnet de preuves — cela ne certifie rien automatiquement.</p>
-                            <x-dg.actions flush>
-                                <x-dg.btn variant="quiet" :href="route('proofs.create', ['origin_type' => 'TRANSMISSION', 'origin_reference' => $transmission->public_reference])">Enregistrer une preuve →</x-dg.btn>
-                            </x-dg.actions>
-                        </x-dg.card>
-                    @endif
-
-                    {{-- ===== Coordination (CAP-020/021/022) ===== --}}
-                    <x-dg.card>
-                        <x-dg.label>Coordination et circulation</x-dg.label>
-                        <p class="dg-body" style="margin-top:8px">Questions, précisions et partage avec contexte restent attachés à cette Transmission. La conversation coordonne ; elle ne remplace jamais une décision.</p>
-                        <x-dg.actions flush>
-                            @if($myParticipant?->status === 'ACCEPTED' && ! in_array($transmission->status, \App\Models\Transmission::TERMINAL_STATUSES, true))
-                                <form method="POST" action="{{ route('messages.transmission', $transmission) }}" class="contents">
-                                    @csrf
-                                    <button type="submit" class="dg-btn dg-btn--quiet">Ouvrir la conversation →</button>
-                                </form>
-                            @endif
-                            <x-dg.btn variant="quiet" :href="route('comments.transmission', $transmission)">Ouvrir les commentaires →</x-dg.btn>
-                            <x-dg.btn variant="quiet" :href="route('shares.transmission', $transmission)">Partager avec contexte →</x-dg.btn>
-                        </x-dg.actions>
-                    </x-dg.card>
 
                     {{-- ===== Fin ===== --}}
                     @if($canEnd || $canCancel)
@@ -276,15 +281,34 @@
                     @endif
                 </div>
 
-                <aside style="display:flex;flex-direction:column;gap:16px">
-                    <x-dg.card tight>
-                        <dl class="dg-dl">
-                            <div><dt>Contexte</dt><dd>{{ $contextLabel ?? 'Aucun — privée' }}</dd></div>
-                            <div><dt>Visibilité</dt><dd>{{ \App\Models\Transmission::VISIBILITY_LABELS[$transmission->visibility] ?? $transmission->visibility }}</dd></div>
-                            @if($transmission->availability_note)<div><dt>Disponibilité</dt><dd>{{ $transmission->availability_note }}</dd></div>@endif
-                            <div><dt>Origine</dt><dd>{{ \App\Models\Transmission::ORIGIN_LABELS[$transmission->origin_type] ?? $transmission->origin_type }}</dd></div>
-                        </dl>
-                    </x-dg.card>
+                <aside class="tr-stack">
+                    @if($myParticipant?->status === \App\Models\TransmissionParticipant::STATUS_ACCEPTED && in_array($transmission->status, [\App\Models\Transmission::STATUS_COMPLETED_CONFIRMED, \App\Models\Transmission::STATUS_COMPLETED_BY_CONTEXT], true))
+                        {{-- UIUX-007 — Transmission → Preuve : une Transmission réellement
+                             terminée ouvre une porte facultative vers le Carnet de preuves.
+                             Jamais de preuve créée automatiquement ; jamais une certification de
+                             compétence — les règles de témoin/reconnaissance/contestation restent
+                             entièrement celles du Carnet de preuves. --}}
+                        <div class="tr-panel">
+                            <div class="tr-panel-head"><h2>Garder une trace</h2></div>
+                            <p class="dg-hint">Cette Transmission est terminée. Vous pouvez, si vous le souhaitez, en garder une trace dans votre Carnet de preuves — cela ne certifie rien automatiquement.</p>
+                            <x-dg.actions flush>
+                                <x-dg.btn variant="quiet" :href="route('proofs.create', ['origin_type' => 'TRANSMISSION', 'origin_reference' => $transmission->public_reference])">Enregistrer une preuve →</x-dg.btn>
+                            </x-dg.actions>
+                        </div>
+                    @endif
+
+                    <div class="tr-panel tr-quick-actions">
+                        <div class="tr-panel-head"><h2>Coordination</h2></div>
+                        <p class="dg-hint" style="margin-top:-4px;margin-bottom:8px">Questions, précisions et partage restent attachés à cette Transmission.</p>
+                        @if($myParticipant?->status === 'ACCEPTED' && ! in_array($transmission->status, \App\Models\Transmission::TERMINAL_STATUSES, true))
+                            <form method="POST" action="{{ route('messages.transmission', $transmission) }}">
+                                @csrf
+                                <button type="submit">Ouvrir la conversation →</button>
+                            </form>
+                        @endif
+                        <a href="{{ route('comments.transmission', $transmission) }}">Ouvrir les commentaires →</a>
+                        <a href="{{ route('shares.transmission', $transmission) }}">Partager avec contexte →</a>
+                    </div>
                 </aside>
             </div>
         </div>
