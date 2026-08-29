@@ -41,9 +41,10 @@ construire la nouvelle interface sur les contrats métier existants.**
 5. `docs/roadmap/FRONTEND-REBUILD-001.md` ;
 6. `docs/roadmap/USER-JOURNEY-001.md` ;
 7. `docs/roadmap/USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` ;
-8. `docs/brand/BRAND-DOCTRINE-001.md` ;
-9. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
-10. `docs/production/FUNCTIONAL-COVERAGE-001.md` pour la surface concernée.
+8. `docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md` ;
+9. `docs/brand/BRAND-DOCTRINE-001.md` ;
+10. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
+11. `docs/production/FUNCTIONAL-COVERAGE-001.md` pour la surface concernée.
 
 Pour une capacité métier, lire également la spec CAP active et
 `docs/capacites/CAPABILITY-COVERAGE.md`. Pour ZUMRA, lire
@@ -65,3 +66,8 @@ factice n'est pas considérée comme livrée.
 L'avancement des parcours est enregistré uniquement dans `docs/roadmap/USER-JOURNEY-001.md`. Ne
 pas créer une nouvelle roadmap pour reprendre le chantier ; mettre à jour le lot permanent
 concerné et ses preuves.
+
+La navigation est verrouillée par `docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md`. Sur
+mobile : **Fil · Découvrir · Agir · ZUMRA · Espace**, dans cet ordre, avec `Agir` au centre et
+aucun menu générique « Plus ». Ne pas renommer, réordonner, remplacer ou élargir ces contrôles sans
+décision explicite du dépositaire produit et mise à jour atomique du contrat et de ses tests.

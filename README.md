@@ -22,6 +22,9 @@ Lire [`AGENTS.md`](AGENTS.md) avant toute intervention automatisée. Les preuves
 [`FRONTEND-EXCISION-001`](docs/production/FRONTEND-EXCISION-001.md).
 La reprise du chantier frontend se fait exclusivement par
 [`USER-JOURNEY-001 — Opération Parcours de l'Utilisateur`](docs/roadmap/USER-JOURNEY-001.md).
+Sa navigation mobile est déjà verrouillée par le
+[`contrat canonique de navigation`](docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md) :
+**Fil · Découvrir · Agir · ZUMRA · Espace**, sans menu « Plus ».
 
 ## Stack canonique
 
@@ -43,8 +46,9 @@ La reprise du chantier frontend se fait exclusivement par
 4. `docs/capacites/CAPABILITY-INDEX.md` et `docs/capacites/OVERRIDES.md` : référentiel CAP-001 à
    CAP-084 et décisions métier prioritaires ;
 5. `docs/brand/BRAND-DOCTRINE-001.md`, `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et
-   `docs/roadmap/USER-JOURNEY-001.md` : autorité de marque, d'expérience et d'exécution du
-   frontend neuf ;
+   `docs/roadmap/USER-JOURNEY-001.md`, complétés par
+   `docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md` : autorité de marque, d'expérience,
+   d'exécution et de navigation du frontend neuf ;
 6. `docs/architecture/ADR-001-stack-canonique.md` : architecture technique.
 
 Le dossier `Design/` est une mémoire de handoff, pas une autorité permettant de restaurer

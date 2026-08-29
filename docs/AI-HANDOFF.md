@@ -24,8 +24,10 @@ Pour toute capacité ZUMRA, respecter `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`.
 
 Pour toute construction d'interface, navigation ou design, lire
 `docs/brand/BRAND-DOCTRINE-001.md`, `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et
-`docs/roadmap/USER-JOURNEY-001.md`. `docs/design/DESIGN-INVARIANTS.md` est une archive de
-l'interface supprimée, pas l'autorité visuelle du frontend neuf.
+`docs/roadmap/USER-JOURNEY-001.md`, puis
+`docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md`. Ce dernier verrouille sur mobile
+**Fil · Découvrir · Agir · ZUMRA · Espace**, sans menu « Plus ». `docs/design/DESIGN-INVARIANTS.md`
+est une archive de l'interface supprimée, pas l'autorité visuelle du frontend neuf.
 
 ## Projet canonique
 

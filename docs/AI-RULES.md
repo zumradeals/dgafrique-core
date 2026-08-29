@@ -53,7 +53,8 @@ Ne pas conserver un fichier « au cas où ». Si son contenu utile existe déjà
 - lire la spec active concernée si elle existe ;
 - pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
 - pour le frontend neuf, lire `docs/brand/BRAND-DOCTRINE-001.md`,
-  `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et `docs/roadmap/USER-JOURNEY-001.md` ;
+  `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md`, `docs/roadmap/USER-JOURNEY-001.md` et
+  `docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md` ;
 - traiter `docs/design/DESIGN-INVARIANTS.md` uniquement comme archive de l'interface supprimée.
 
 ## Roadmap métier
@@ -68,6 +69,11 @@ Le frontend neuf suit `docs/roadmap/FRONTEND-REBUILD-001.md`. Son unique registr
 `docs/roadmap/USER-JOURNEY-001.md` : reprendre le premier lot `IN_PROGRESS`, sinon le premier lot
 `READY`, et mettre à jour ses preuves dans le même changement. Ne jamais créer une roadmap
 frontend concurrente pour poursuivre le chantier.
+
+Le contrat de navigation est non négociable pendant l'implémentation : mobile affiche dans cet
+ordre **Fil · Découvrir · Agir · ZUMRA · Espace**, `Agir` reste au centre, `Découvrir` regroupe
+Personnes/Besoins/Projets et aucun menu générique « Plus » n'est ajouté. Une IA ne peut modifier ce
+contrat sans décision produit humaine explicite.
 
 ## Après une modification qui change la couverture
 

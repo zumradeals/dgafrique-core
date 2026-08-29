@@ -260,9 +260,18 @@ Chaque surface doit prévoir `chargement`, `vide`, `contenu`, `interdit`, `intro
 
 ## 8. Architecture de navigation déduite des contrats
 
-La navigation principale reste limitée à :
+Les six centres fonctionnels restent limités à :
 
 `Fil · Mon espace · Personnes · Besoins · Projets · ZUMRA`
+
+Leur composition responsive est verrouillée par
+`USER-JOURNEY-001-NAVIGATION-CONTRACT.md`. Sur mobile, ils deviennent exactement :
+
+`Fil · Découvrir · Agir · ZUMRA · Espace`
+
+`Découvrir` regroupe uniquement Personnes, Besoins et Projets. `Agir`, au centre, ouvre des
+actions réelles et autorisées ; ce n'est ni un septième centre métier, ni une page vide. Aucun
+menu générique « Plus » n'est autorisé dans la barre inférieure.
 
 Les autres surfaces s'ouvrent depuis le contexte réel :
 

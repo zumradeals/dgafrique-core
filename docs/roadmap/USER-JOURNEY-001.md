@@ -60,6 +60,9 @@ Les quatre centres gardent des rôles distincts :
   contraintes de conception, pas une finition tardive.
 - Les outils spécialisés et surfaces d'administration restent contextuels ; ils ne transforment
   pas la navigation principale en catalogue de modules.
+- La navigation responsive respecte le contrat verrouillé
+  `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` : sur mobile **Fil · Découvrir · Agir · ZUMRA ·
+  Espace**, avec `Agir` au centre et aucun menu « Plus ».
 
 ## Contrat obligatoire d'une étape
 
@@ -189,7 +192,7 @@ prochaine étape.
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d'état et pipeline frontend | UJ-00 | **READY** | portes F1 et marque validées |
+| `UJ-01` | socle visuel, composants d'état, navigation canonique et pipeline frontend | UJ-00 | **READY** | portes F1, marque et contrat de navigation validés |
 | `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | PENDING | parcours public et compte automatisés |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
@@ -238,6 +241,7 @@ Un lot n'est `PASS` que si :
 |---|---|---|---|
 | 2026-08-29 | Initialisation | Roadmap canonique créée ; prochain lot `UJ-00` | présent changement documentaire |
 | 2026-08-29 | `UJ-00` | 346 routes affectées à S01-S54 ; états, autorités, erreurs et gaps G01-G12 cartographiés | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
+| 2026-08-29 | `UJ-01` préparation | Navigation mobile verrouillée : Fil · Découvrir · Agir · ZUMRA · Espace ; desktop conserve les six centres | `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` |
 
 La prochaine action officielle est **UJ-01 — construire le socle visuel, les composants d'état et
 le pipeline frontend, sans encore créer de page métier**.

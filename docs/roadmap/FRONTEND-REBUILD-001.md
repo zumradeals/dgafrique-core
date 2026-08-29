@@ -29,6 +29,8 @@ Le frontend présente et orchestre le moteur existant ; il ne duplique pas ses r
 - vérité moteur : `docs/production/ENGINE-TRUTH-FINAL-001.md` ;
 - vérité des capacités : `docs/capacites/CAPABILITY-COVERAGE.md` ;
 - parcours et reprise du chantier : `docs/roadmap/USER-JOURNEY-001.md`.
+- navigation responsive verrouillée :
+  `docs/roadmap/USER-JOURNEY-001-NAVIGATION-CONTRACT.md`.
 
 Les anciennes vues supprimées et les maquettes historiques ne sont pas des sources d'implémentation.
 `docs/design/DESIGN-INVARIANTS.md` décrit l'interface supprimée et reste une archive historique,
@@ -54,7 +56,7 @@ pas une autorité visuelle du frontend neuf.
 - recréer volontairement le pipeline Blade/Livewire, Tailwind CSS et Alpine.js ;
 - traduire la doctrine de marque en tokens, composants et règles responsive ;
 - construire les primitives : typographie, couleurs, espacements, boutons, formulaires, cartes,
-  dialogues, notifications et états système ;
+  dialogues, notifications, états système, barre mobile et feuille d'actions `Agir` ;
 - mettre en place les tests de composants et contrôles d'accessibilité de base.
 
 **Porte F1 :** aucune page métier avant validation du socle commun desktop et mobile.
@@ -62,7 +64,8 @@ pas une autorité visuelle du frontend neuf.
 ### F2 — Coquille applicative
 
 - accès public, inscription, connexion et récupération de compte ;
-- navigation globale, recherche utile, notifications et espace personnel ;
+- navigation globale conforme au contrat verrouillé, recherche utile, notifications et espace
+  personnel ;
 - layouts public, membre et administration ;
 - états chargement, vide, interdit, introuvable et erreur.
 
