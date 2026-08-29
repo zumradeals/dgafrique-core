@@ -19,7 +19,7 @@
                     <x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button>
                     <x-dg.button :href="route('landing')" variant="secondary">Découvrir d’abord</x-dg.button>
                 </div>
-                <p class="mt-4 text-sm leading-6 text-[var(--color-muted)]">Créer un compte DG Afrique ne vous inscrit pas automatiquement à une ZUMRA.</p>
+                <p class="mt-4 text-sm leading-6 text-[var(--color-muted)]">La création d’un compte DG Afrique est distincte de toute adhésion à une ZUMRA.</p>
             </div>
 
             <aside class="rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_22px_70px_rgba(8,59,86,.10)] sm:p-8" aria-label="Ce que vous pouvez faire sur DG Afrique">
