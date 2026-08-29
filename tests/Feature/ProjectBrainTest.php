@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Application\ProjectBrain\ProjectBrainAiProvider;
+use App\Application\ProjectBrain\ProjectBrainNeedDraftService;
 use App\Application\Projects\ProjectConfiguration;
 use App\Application\Projects\ProjectService;
 use App\Application\Zumra\ZumraGroupService;
@@ -30,6 +32,12 @@ final class ProjectBrainTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Http::preventStrayRequests();
+    }
+
     public function test_an_outsider_cannot_view_a_private_projects_brain(): void
     {
         $this->member('IDN-BRAIN-OWNER');
@@ -37,6 +45,47 @@ final class ProjectBrainTest extends TestCase
         $this->signIn('IDN-BRAIN-OUTSIDER');
 
         $this->get(route('projects.brain.show', $project))->assertNotFound();
+    }
+
+    public function test_an_ai_proposal_remains_a_private_draft_until_explicit_human_confirmation(): void
+    {
+        $actor = 'IDN-BRAIN-CONFIRM';
+        $this->member($actor);
+        $project = $this->project($actor);
+        app()->instance(ProjectBrainAiProvider::class, new class implements ProjectBrainAiProvider
+        {
+            public function respond(array $messages, array $currentContext = []): array
+            {
+                return [
+                    'reply' => 'Je peux préparer ce besoin, à vous de décider.',
+                    'project_state' => [],
+                    'suggested_next_action' => null,
+                    'confidence' => 0.9,
+                    'proposed_actions' => [[
+                        'type' => 'NEED_CREATE',
+                        'title' => 'Trouver une salle locale',
+                        'context' => 'Le projet a besoin d’un lieu accessible pour ses ateliers hebdomadaires.',
+                        'category' => 'RESOURCE',
+                        'capability_label' => null,
+                        'collaboration_mode' => 'LOCAL',
+                        'location' => 'Abidjan',
+                        'reason' => 'Le lieu manque réellement au lancement.',
+                    ]],
+                ];
+            }
+        });
+
+        $service = app(ProjectBrainNeedDraftService::class);
+        $draft = $service->prepare($project, $actor, 'Nous n’avons pas encore de salle.');
+
+        self::assertNotNull($draft);
+        self::assertSame(ProjectBrainDraft::STATUS_PENDING, $draft->status);
+        self::assertSame(0, Need::query()->count(), 'Une proposition IA ne doit jamais muter le Core automatiquement.');
+
+        $need = $service->confirm($project, $draft, $actor);
+        self::assertSame(1, Need::query()->count());
+        self::assertSame($need->public_reference, $draft->refresh()->result_reference);
+        self::assertSame(ProjectBrainDraft::STATUS_CONFIRMED, $draft->status);
     }
 
     public function test_the_brain_shares_the_real_global_navigation(): void
@@ -77,21 +126,6 @@ final class ProjectBrainTest extends TestCase
         // Aucune mutation Core silencieuse : un simple GET ne confirme jamais le brouillon.
         self::assertSame(ProjectBrainDraft::STATUS_PENDING, $draft->fresh()->status);
         self::assertSame(0, Need::query()->count());
-    }
-
-    public function test_the_illustrative_pending_action_example_is_visually_disabled_not_a_real_mutation(): void
-    {
-        $this->member('IDN-BRAIN-EMPTY');
-        $project = $this->project('IDN-BRAIN-EMPTY');
-        $this->signIn('IDN-BRAIN-EMPTY');
-
-        $content = $this->get(route('projects.brain.show', $project))->assertOk()->getContent();
-
-        self::assertStringContainsString('Créer une équipe projet (minimum 3 personnes)', $content);
-        self::assertMatchesRegularExpression(
-            '/<span[^>]*class="dg-btn dg-btn--project"[^>]*aria-disabled="true"[^>]*>Valider<\/span>/',
-            $content
-        );
     }
 
     public function test_real_needs_and_team_members_render_honestly_when_present_and_empty_when_absent(): void

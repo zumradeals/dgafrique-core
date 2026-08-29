@@ -1,0 +1,14 @@
+[Unit]
+Description=DG Afrique Laravel scheduler
+After=network.target postgresql.service redis-server.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/dgafrique/current
+ExecStart=/usr/bin/php artisan schedule:run --no-interaction --no-ansi
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

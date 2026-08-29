@@ -91,6 +91,8 @@ final readonly class FederationContinuationController
         $displayName = trim($satellite->display_name);
         $callbackUrl = trim((string) $satellite->callback_url);
         $parts = parse_url($callbackUrl);
+        $trustedProducts = config('federation.trusted_products', []);
+        $trustedCallback = is_array($trustedProducts) ? ($trustedProducts[$productReference] ?? null) : null;
 
         if (
             $productReference === ''
@@ -102,6 +104,8 @@ final readonly class FederationContinuationController
             || $parts['host'] === ''
             || isset($parts['user'])
             || isset($parts['pass'])
+            || ! is_string($trustedCallback)
+            || ! hash_equals(rtrim($trustedCallback, '/'), rtrim($callbackUrl, '/'))
         ) {
             return null;
         }

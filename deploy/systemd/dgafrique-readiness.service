@@ -1,0 +1,11 @@
+[Unit]
+Description=DG Afrique operational readiness probe
+After=network.target postgresql.service redis-server.service dgafrique-scheduler.service
+
+[Service]
+Type=oneshot
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/dgafrique/current
+ExecStart=/usr/bin/php artisan ops:readiness --json --no-ansi
+UMask=0027

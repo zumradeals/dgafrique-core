@@ -76,14 +76,16 @@ test ! -d docs/capacites/legacy
 test ! -d docs/design/reference
 test ! -d docs/design/handoffs
 test "$(grep '^| CAP-' docs/capacites/CAPABILITY-INDEX.md | wc -l)" -eq 84
-test "$(grep '^## CAP-' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
-test "$(grep '^Status:' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
+test "$(grep '^| CAP-' docs/capacites/CAPABILITY-COVERAGE.md | wc -l)" -eq 84
 awk '/^\| CAP-/ && ($0 ~ /\[PLUS TARD\]/ || $0 ~ /\[FAIT\]/ || $0 ~ /\[CLOSED\]/ || $0 ~ /\[PARTIAL\]/ || $0 ~ /\[NOT_IMPLEMENTED\]/ || $0 ~ /\[DOC_ONLY\]/ || $0 ~ /\[DEPENDENCY_BLOCKED\]/) { bad=1 } END { exit bad }' docs/capacites/CAPABILITY-INDEX.md
-awk '/^Status:/ { if ($2 != "CLOSED" && $2 != "PARTIAL" && $2 != "NOT_IMPLEMENTED" && $2 != "DOC_ONLY" && $2 != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
-awk '/^## CAP-/ { if (seen && statuses != 1) bad=1; seen=1; statuses=0; next } /^Status:/ { statuses++ } END { if (seen && statuses != 1) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
+awk -F'|' '/^\| CAP-/ { status=$4; gsub(/^[[:space:]]+|[[:space:]]+$/, "", status); if (status != "CLOSED" && status != "PARTIAL" && status != "NOT_IMPLEMENTED" && status != "DOC_ONLY" && status != "DEPENDENCY_BLOCKED") bad=1 } END { exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
+awk -F'|' '/^\| CAP-/ { id=$2; gsub(/^[[:space:]]+|[[:space:]]+$/, "", id); count++; if (id != sprintf("CAP-%03d", count) || seen[id]++) bad=1 } END { if (count != 84) bad=1; exit bad }' docs/capacites/CAPABILITY-COVERAGE.md
 ```
 
-En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une seule fois chacun, dans l'index et la couverture.
+En revue, vérifier également que les identifiants vont exactement de `CAP-001` à `CAP-084`, une
+seule fois chacun, dans l'index et la couverture. Le registre de couverture est une table ; les
+sections détaillées placées après cette table sont des preuves complémentaires et ne sont pas
+requises une fois par capacité.
 
 Ce garde-fou est actuellement une règle de revue reproductible, pas un job automatisé. Toute automatisation future doit être ajoutée explicitement au dépôt avant d'être présentée comme active.
 

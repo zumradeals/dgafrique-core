@@ -20,6 +20,7 @@ use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
 use RuntimeException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -42,9 +43,12 @@ final class ZahabAcquisitionTest extends TestCase
 
     private int $paymentCounter = 0;
 
+    private string $paymentReturnUrl;
+
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
         config()->set('payments.geniuspay.environment', 'live');
         config()->set('payments.geniuspay.api_key', 'pk_live_test');
         config()->set('payments.geniuspay.api_secret', 'sk_live_test');
@@ -272,10 +276,50 @@ final class ZahabAcquisitionTest extends TestCase
         $this->post(route('zahab.acquisitions.store'), ['amount' => 3000]);
 
         $this->fakeGeniusPayReconcile('completed', amount: 3000, actor: 'IDN-MEMBER');
-        $this->get(route('zahab.acquisitions.return', ['outcome' => 'success']))
+        $this->get($this->paymentReturnUrl)
             ->assertRedirect(route('zahab.wallet.dashboard'));
 
         self::assertSame(3000, app(ZahabWalletService::class)->balance($this->personalWallet('IDN-MEMBER')));
+    }
+
+    public function test_a_return_token_reconciles_its_exact_attempt_never_the_latest_one(): void
+    {
+        $this->signIn('IDN-MEMBER');
+        $this->fakeGeniusPay('pending', amount: 3000, actor: 'IDN-MEMBER');
+        $this->post(route('zahab.acquisitions.store'), ['amount' => 3000])->assertRedirect();
+        $firstReturnUrl = $this->paymentReturnUrl;
+        $first = ZahabAcquisition::query()->sole();
+
+        $this->post(route('zahab.acquisitions.store'), ['amount' => 3000])->assertRedirect();
+        $secondReturnUrl = $this->paymentReturnUrl;
+        $second = ZahabAcquisition::query()->where('id', '!=', $first->id)->sole();
+        self::assertNotSame($firstReturnUrl, $secondReturnUrl);
+        self::assertNotSame($first->id, $second->id);
+
+        $this->fakeGeniusPayReconcile('completed', amount: 3000, actor: 'IDN-MEMBER');
+        $this->get($firstReturnUrl)->assertRedirect(route('zahab.wallet.dashboard'));
+
+        self::assertSame(ZahabAcquisition::STATUS_COMPLETED, $first->refresh()->status);
+        self::assertSame(ZahabAcquisition::STATUS_PENDING, $second->refresh()->status);
+        self::assertSame(3000, app(ZahabWalletService::class)->balance($this->personalWallet('IDN-MEMBER')));
+    }
+
+    public function test_a_missing_or_unknown_return_token_is_rejected_without_reconciliation(): void
+    {
+        $this->signIn('IDN-MEMBER');
+        $this->fakeGeniusPay('pending', amount: 3000, actor: 'IDN-MEMBER');
+        $this->post(route('zahab.acquisitions.store'), ['amount' => 3000]);
+
+        $this->get(route('zahab.acquisitions.return'))->assertForbidden();
+        $unknownReturnUrl = URL::temporarySignedRoute(
+            'zahab.acquisitions.return',
+            now()->addHour(),
+            ['attempt' => str_repeat('A', 64), 'outcome' => 'success'],
+        );
+        $this->get($unknownReturnUrl)->assertNotFound();
+
+        self::assertSame(ZahabAcquisition::STATUS_PENDING, ZahabAcquisition::query()->sole()->status);
+        self::assertSame(0, LedgerEntry::query()->count());
     }
 
     // ===== Boucle métier complète (art. 12 du mandat) =====
@@ -406,6 +450,7 @@ final class ZahabAcquisitionTest extends TestCase
             if ($method === 'POST' && str_ends_with(rtrim($url, '/'), '/payments')) {
                 $this->paymentCounter++;
                 $reference = 'ACQ-REF-'.$this->paymentCounter;
+                $this->paymentReturnUrl = (string) $request['success_url'];
 
                 return Http::response(['success' => true, 'data' => $this->providerPayload($reference)]);
             }

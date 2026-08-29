@@ -82,11 +82,24 @@ final class Project extends Model
         return $this->belongsTo(ZumraGroup::class);
     }
 
-    // « Progression globale » (fiche V2, Cerveau) : projection d'affichage déterministe, jamais un
-    // calcul métier réel ni une écriture Core — voir docs/design/DESIGN-INVARIANTS.md §19/§20.
-    // Ne jamais confondre avec la maturité (CAP-017, jamais un pourcentage).
-    public function progressionSeed(): int
+    /**
+     * Progression factuelle des jalons. L'absence de jalon ne produit jamais un pourcentage
+     * arbitraire : elle est exposée par null et présentée comme « non mesurée » dans l'interface.
+     */
+    public function milestoneProgressPercentage(): ?int
     {
-        return 20 + (crc32($this->id) % 56);
+        $milestones = $this->relationLoaded('milestones')
+            ? $this->getRelation('milestones')
+            : $this->milestones()->get();
+
+        if ($milestones->isEmpty()) {
+            return null;
+        }
+
+        return (int) round(
+            $milestones->where('status', ProjectMilestone::STATUS_COMPLETED)->count()
+            / $milestones->count()
+            * 100,
+        );
     }
 }

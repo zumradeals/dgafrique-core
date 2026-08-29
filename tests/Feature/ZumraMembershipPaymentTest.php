@@ -25,10 +25,12 @@ final class ZumraMembershipPaymentTest extends TestCase
     private string $coreReference = 'IDN-PER-000000008';
     private bool $httpIsFaked = false;
     private bool $providerStatusMissing = false;
+    private string $paymentReturnUrl;
 
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
         config()->set('payments.membership.enabled', true);
         config()->set('payments.membership.amount', 500);
         config()->set('payments.geniuspay.environment', 'live');
@@ -58,13 +60,13 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->post('/zumra/adhesion/paiement')->assertRedirect();
         $this->fakeRequests(providerStatus: 'completed');
 
-        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk()->assertSee('Votre adhésion est active');
+        $this->get($this->paymentReturnUrl)->assertOk()->assertSee('Votre adhésion est active');
         self::assertSame(ZumraProgramMembership::STATUS_ACTIVE, $membership->refresh()->status);
         self::assertNotNull($membership->activated_at);
         self::assertSame(1, ZumraPaymentReceipt::query()->count());
         self::assertSame(1, ZumraProgramMembershipEvent::query()->where('event', 'PAYMENT_CONFIRMED')->count());
 
-        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk();
+        $this->get($this->paymentReturnUrl)->assertOk();
         self::assertSame(1, ZumraPaymentReceipt::query()->count());
         self::assertSame(1, ZumraProgramMembershipEvent::query()->where('event', 'PAYMENT_CONFIRMED')->count());
     }
@@ -75,7 +77,7 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->signIn(providerStatus: 'pending');
         $this->post('/zumra/adhesion/paiement')->assertRedirect();
 
-        $this->get('/zumra/adhesion/paiement/retour?outcome=success&status=completed')->assertOk()->assertSee('Paiement non confirmé');
+        $this->get($this->paymentReturnUrl.'&status=completed')->assertForbidden();
         self::assertSame(ZumraProgramMembership::STATUS_PENDING_PAYMENT, $membership->refresh()->status);
         self::assertSame(0, ZumraPaymentReceipt::query()->count());
     }
@@ -86,7 +88,7 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->signIn(providerStatus: 'pending');
         $this->post('/zumra/adhesion/paiement');
         $this->fakeRequests(providerStatus: 'completed');
-        $this->get('/zumra/adhesion/paiement/retour');
+        $this->get($this->paymentReturnUrl);
         $receipt = ZumraPaymentReceipt::query()->sole();
 
         $this->get(route('zumra.payment.receipt', $receipt))->assertOk()->assertSee($receipt->number);
@@ -120,7 +122,7 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->post('/zumra/adhesion/paiement');
         $this->fakeRequests(providerStatus: 'completed');
 
-        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk();
+        $this->get($this->paymentReturnUrl)->assertOk();
         self::assertSame(ZumraProgramMembership::STATUS_PENDING_PAYMENT, $membership->refresh()->status, 'Off par défaut : un paiement sandbox ne doit jamais activer une adhésion.');
         self::assertSame(0, ZumraPaymentReceipt::query()->count());
     }
@@ -137,7 +139,7 @@ final class ZumraMembershipPaymentTest extends TestCase
         $this->post('/zumra/adhesion/paiement');
         $this->fakeRequests(providerStatus: 'completed');
 
-        $this->get('/zumra/adhesion/paiement/retour?outcome=success')->assertOk()->assertSee('Votre adhésion est active');
+        $this->get($this->paymentReturnUrl)->assertOk()->assertSee('Votre adhésion est active');
         self::assertSame(ZumraProgramMembership::STATUS_ACTIVE, $membership->refresh()->status);
         self::assertSame('sandbox', ZumraPayment::query()->sole()->environment);
         self::assertSame(1, ZumraPaymentReceipt::query()->count());
@@ -289,6 +291,9 @@ final class ZumraMembershipPaymentTest extends TestCase
             }
             if (str_contains($url, '/identites/')) {
                 return Http::response(['reference' => $this->coreReference, 'type' => 'personne', 'libelle' => 'Membre ZUMRA', 'etat' => 'ACTIF', 'source' => 'CORE', 'regime' => 'INSCRIT_AU_REGISTRE']);
+            }
+            if ($request->method() === 'POST' && str_ends_with(rtrim($url, '/'), '/payments')) {
+                $this->paymentReturnUrl = (string) $request['success_url'];
             }
             if (str_contains($url, '/payments')) {
                 return Http::response(['success' => true, 'data' => $this->providerPayload($this->providerStatus)]);

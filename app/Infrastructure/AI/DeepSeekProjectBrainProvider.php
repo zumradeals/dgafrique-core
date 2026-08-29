@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\AI;
 
 use App\Application\ProjectBrain\ProjectBrainAiProvider;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -13,8 +14,17 @@ final class DeepSeekProjectBrainProvider implements ProjectBrainAiProvider
 {
     public function respond(array $messages, array $currentContext = []): array
     {
+        if (! (bool) config('services.deepseek.enabled', false)) {
+            throw new RuntimeException('DEEPSEEK_DISABLED');
+        }
+        $dataPolicyVersion = trim((string) config('services.deepseek.data_policy_version'));
+        if ($dataPolicyVersion === '') {
+            throw new RuntimeException('DEEPSEEK_DATA_POLICY_NOT_CONFIGURED');
+        }
         $apiKey = (string) config('services.deepseek.api_key');
-        if ($apiKey === '') throw new RuntimeException('DeepSeek API key is not configured.');
+        if ($apiKey === '') {
+            throw new RuntimeException('DeepSeek API key is not configured.');
+        }
 
         $system = <<<'PROMPT'
 Vous êtes le Cerveau Projet permanent de DG Afrique. Vous accompagnez un projet vivant par conversation naturelle.
@@ -52,12 +62,19 @@ PROMPT;
             if (in_array($role, ['user','assistant'], true)) $conversation[] = ['role'=>$role,'content'=>(string)($message['content'] ?? '')];
         }
 
-        $response = Http::baseUrl((string) config('services.deepseek.base_url'))->withToken($apiKey)->acceptJson()
-            ->timeout((int) config('services.deepseek.timeout', 30))->retry(1,250)->post('/chat/completions', [
-                'model'=>(string) config('services.deepseek.model','deepseek-v4-flash'), 'messages'=>$conversation,
-                'thinking'=>['type'=>'disabled'], 'response_format'=>['type'=>'json_object'],
-                'max_tokens'=>(int) config('services.deepseek.max_tokens',2000), 'stream'=>false,
-            ]);
+        try {
+            $response = Http::baseUrl((string) config('services.deepseek.base_url'))->withToken($apiKey)->acceptJson()
+                ->withHeaders(['X-DG-Afrique-Data-Policy' => $dataPolicyVersion])
+                ->connectTimeout((int) config('services.deepseek.connect_timeout', 3))
+                ->timeout((int) config('services.deepseek.timeout', 30))->retry(1,250)->post('/chat/completions', [
+                    'model'=>(string) config('services.deepseek.model','deepseek-v4-flash'), 'messages'=>$conversation,
+                    'thinking'=>['type'=>'disabled'], 'response_format'=>['type'=>'json_object'],
+                    'max_tokens'=>(int) config('services.deepseek.max_tokens',2000), 'stream'=>false,
+                ]);
+        } catch (ConnectionException $exception) {
+            Log::warning('DeepSeek Project Brain transport failure.', ['exception' => $exception::class]);
+            throw new RuntimeException('DeepSeek request failed at transport level.', previous: $exception);
+        }
 
         if (! $response->successful()) {
             Log::warning('DeepSeek Project Brain HTTP failure.', ['status'=>$response->status()]);

@@ -133,7 +133,7 @@ Route::post('/zumra/adhesion/paiement', [ZumraMembershipPaymentController::class
 Route::post('/zumra/adhesion/paiement-zahab', [ZumraMembershipPaymentController::class, 'payWithZahab'])
     ->middleware(['core.member', 'throttle:zumra-payment'])->name('zumra.payment.zahab.store');
 Route::get('/zumra/adhesion/paiement/retour', [ZumraMembershipPaymentController::class, 'returned'])
-    ->middleware(['core.member', 'throttle:zumra-payment-status'])->name('zumra.payment.return');
+    ->middleware(['core.member', 'signed', 'throttle:zumra-payment-status'])->name('zumra.payment.return');
 Route::get('/zumra/adhesion/recus/{receipt}', [ZumraMembershipPaymentController::class, 'receipt'])
     ->middleware('core.member')->name('zumra.payment.receipt');
 Route::get('/zumra/carte', [ZumraCardController::class, 'show'])
@@ -190,7 +190,7 @@ Route::post('/contributions/{contribution}/paiement', [ContributionController::c
 Route::post('/contributions/{contribution}/paiement-zahab', [ContributionController::class, 'payWithZahab'])
     ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment'])->name('contributions.pay.zahab');
 Route::get('/contributions/{contribution}/paiements/retour', [ContributionController::class, 'returned'])
-    ->whereUuid('contribution')->middleware(['core.member', 'throttle:contribution-payment-status'])->name('contributions.payment.return');
+    ->whereUuid('contribution')->middleware(['core.member', 'signed', 'throttle:contribution-payment-status'])->name('contributions.payment.return');
 Route::get('/contributions/recus/{receipt}', [ContributionController::class, 'receipt'])
     ->middleware('core.member')->name('contributions.receipt');
 
@@ -207,7 +207,7 @@ Route::get('/finances/zahab/tableau', [WalletController::class, 'dashboard'])
 Route::post('/finances/zahab/acquisitions', [ZahabAcquisitionController::class, 'store'])
     ->middleware(['core.member', 'throttle:zahab-acquisition'])->name('zahab.acquisitions.store');
 Route::get('/finances/zahab/acquisitions/retour', [ZahabAcquisitionController::class, 'returned'])
-    ->middleware(['core.member', 'throttle:zahab-acquisition-status'])->name('zahab.acquisitions.return');
+    ->middleware(['core.member', 'signed', 'throttle:zahab-acquisition-status'])->name('zahab.acquisitions.return');
 Route::get('/zumra/groupes/{group}/zahab', [WalletController::class, 'zumraGroup'])
     ->whereUuid('group')->middleware(['core.member', 'throttle:zahab-read'])->name('zahab.wallet.zumra-group');
 Route::get('/organisations/{organization}/zahab', [WalletController::class, 'organization'])

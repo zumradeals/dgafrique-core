@@ -23,6 +23,7 @@ final class GamadCoreClientTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
         $this->client = new GamadCoreClient('https://core.test/api/v1');
     }
 

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\ZumraCharter;
-use App\Models\ZumraGroup;
 use App\Models\ZumraProgramMembership;
-use Database\Seeders\ZumraWorldDemoSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
@@ -16,33 +14,17 @@ final class ZumraWorldSmokeTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_the_hub_renders_without_the_demo_seeder(): void
+    public function test_the_hub_renders_without_seeded_product_data(): void
     {
         $this->programMember('IDN-SMOKE-EMPTY');
         $this->signIn('IDN-SMOKE-EMPTY');
         $this->get('/zumra')->assertOk();
     }
 
-    public function test_the_hub_renders_with_the_demo_seeder(): void
+    public function test_the_legacy_directory_preserves_its_redirect_contract(): void
     {
-        (new ZumraWorldDemoSeeder)->run();
-        $this->programMember('IDN-SMOKE-FULL');
-        $this->signIn('IDN-SMOKE-FULL');
-        $group = ZumraGroup::query()->where('name', 'RAHMAN Technology')->firstOrFail();
-
-        $this->get('/zumra')->assertOk()
-            ->assertSee('Le monde ZUMRA')
-            ->assertSee('RAHMAN Technology')
-            ->assertSee(route('zumra.groups.show', $group), false);
-    }
-
-    public function test_the_world_filters_work_and_the_legacy_directory_redirects(): void
-    {
-        (new ZumraWorldDemoSeeder)->run();
-        $this->programMember('IDN-SMOKE-DIR');
-        $this->signIn('IDN-SMOKE-DIR');
-        $this->get('/zumra?mode=PHYSICAL&location=Yamoussoukro')->assertOk()->assertSee('Atelier Bois');
-        $this->get('/zumra?view=mine')->assertOk();
+        $this->programMember('IDN-SMOKE-REDIRECT');
+        $this->signIn('IDN-SMOKE-REDIRECT');
         $this->get('/zumra/groupes?mode=PHYSICAL&location=Yamoussoukro')
             ->assertRedirect(route('zumra.index', ['mode' => 'PHYSICAL', 'location' => 'Yamoussoukro']));
     }

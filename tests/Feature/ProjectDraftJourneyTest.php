@@ -61,7 +61,6 @@ final class ProjectDraftJourneyTest extends TestCase
         $this->get(route('projects.draft.show', [$draft, 'audience']))->assertOk()
             ->assertSee('Créer un projet dans votre ZUMRA')
             ->assertSee('Ce projet naît dans '.$group->name)
-            ->assertSee('Le besoin & l’impact', false)
             ->assertSee(route('zumra.groups.show', $group), false);
 
         self::assertSame(0, Project::query()->count());

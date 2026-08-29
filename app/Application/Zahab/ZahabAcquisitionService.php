@@ -31,7 +31,7 @@ final class ZahabAcquisitionService
     ) {}
 
     /** Une Personne choisit un montant et initie l'acquisition — jamais pour un tiers, jamais pour un autre sujet Wallet. */
-    public function start(string $actor, int $amount, string $successUrl, string $errorUrl): ZahabAcquisition
+    public function start(string $actor, int $amount, string $successUrl, string $errorUrl, ?string $returnTokenHash = null): ZahabAcquisition
     {
         abort_if($amount <= 0, 422, 'Le montant doit être un entier strictement positif.');
 
@@ -61,6 +61,7 @@ final class ZahabAcquisitionService
             'environment' => $environment,
             'status' => $remote['status'],
             'checkout_url' => $remote['checkout_url'],
+            'return_token_hash' => $returnTokenHash,
             'provider_snapshot' => $remote['snapshot'],
             'provider_snapshot_hash' => $this->snapshotHash($remote['snapshot']),
         ]);

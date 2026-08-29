@@ -52,6 +52,7 @@ final class ContributionTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Http::preventStrayRequests();
         config()->set('payments.membership.enabled', true);
         config()->set('payments.geniuspay.environment', 'live');
         config()->set('payments.geniuspay.api_key', 'pk_live_test');

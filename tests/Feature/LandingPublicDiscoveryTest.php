@@ -13,22 +13,22 @@ use Tests\TestCase;
 /**
  * UIUX-001 §5 « Découvrir » : un visiteur anonyme bénéficie d'une découverte publique limitée et
  * réelle sur la Landing (/decouvrir), strictement bornée à ce que Need::canView()/Project::canView()
- * autorisent déjà pour la visibilité PUBLIC — aucune règle d'autorisation nouvelle. Même règle
- * DEMO-FIRST, REAL-DATA-TAKES-OVER que le Fil V2/Projets/Besoins (DESIGN-INVARIANTS.md §17/§18/§21).
+ * autorisent déjà pour la visibilité PUBLIC — aucune règle d'autorisation nouvelle et aucune
+ * donnée de remplissage quand le portail est vide.
  */
 final class LandingPublicDiscoveryTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_demo_moments_appear_for_an_anonymous_visitor_when_no_real_public_object_exists(): void
+    public function test_honest_empty_state_appears_when_no_real_public_object_exists(): void
     {
         $content = $this->get('/decouvrir')->assertOk()->getContent();
 
-        self::assertStringContainsString('Formation en entrepreneuriat pour jeunes femmes', $content);
-        self::assertMatchesRegularExpression('/dg-badge--(need|project|neutral)">[A-Za-zÀ-ÿ]+ · Exemple/', $content);
+        self::assertStringContainsString('Le réseau public démarre ici.', $content);
+        self::assertStringNotContainsString('· Exemple', $content);
     }
 
-    public function test_a_real_public_need_replaces_the_demo_moments_for_an_anonymous_visitor(): void
+    public function test_a_real_public_need_appears_for_an_anonymous_visitor(): void
     {
         $this->need('Un vrai besoin visible sans compte', Need::VISIBILITY_PUBLIC, Need::STATUS_OPEN);
 

@@ -11,6 +11,8 @@ use App\Models\ZumraPaymentReceipt;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Throwable;
 
@@ -21,12 +23,15 @@ final class ZumraMembershipPaymentController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->firstOrFail();
+        $returnToken = Str::random(64);
+        $returnUrlExpiresAt = now()->addMinutes((int) config('payments.geniuspay.return_url_ttl_minutes', 1440));
 
         try {
             $payment = $payments->start(
                 $membership,
-                route('zumra.payment.return', ['outcome' => 'success']),
-                route('zumra.payment.return', ['outcome' => 'error']),
+                URL::temporarySignedRoute('zumra.payment.return', $returnUrlExpiresAt, ['attempt' => $returnToken, 'outcome' => 'success']),
+                URL::temporarySignedRoute('zumra.payment.return', $returnUrlExpiresAt, ['attempt' => $returnToken, 'outcome' => 'error']),
+                hash('sha256', $returnToken),
             );
         } catch (Throwable $exception) {
             report($exception);
@@ -59,9 +64,14 @@ final class ZumraMembershipPaymentController
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->firstOrFail();
-        $payment = ZumraPayment::query()->where('membership_id', $membership->id)->latest()->first();
+        $returnToken = (string) $request->query('attempt', '');
+        abort_unless((bool) preg_match('/^[A-Za-z0-9]{64}$/', $returnToken), 404);
+        $payment = ZumraPayment::query()
+            ->where('membership_id', $membership->id)
+            ->where('return_token_hash', hash('sha256', $returnToken))
+            ->firstOrFail();
         $verificationUnavailable = false;
-        if ($payment && $membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
+        if ($membership->status === ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
             try {
                 $payment = $payments->reconcile($payment);
             } catch (Throwable $exception) {
@@ -76,7 +86,7 @@ final class ZumraMembershipPaymentController
             }
             $membership->refresh();
         }
-        $receipt = $payment ? ZumraPaymentReceipt::query()->where('payment_id', $payment->id)->first() : null;
+        $receipt = ZumraPaymentReceipt::query()->where('payment_id', $payment->id)->first();
 
         return view('zumra.payment-status', compact('membership', 'payment', 'receipt', 'verificationUnavailable'));
     }

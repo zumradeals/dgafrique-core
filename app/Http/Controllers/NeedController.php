@@ -6,7 +6,6 @@ namespace App\Http\Controllers;
 
 use App\Application\Missions\MissionContextRegistry;
 use App\Application\Needs\NeedConfiguration;
-use App\Application\Needs\NeedDirectoryDemoContent;
 use App\Application\Needs\NeedService;
 use App\Application\Partnerships\PartnershipService;
 use App\Domain\Identity\CoreIdentity;
@@ -38,7 +37,7 @@ final class NeedController
      */
     private const URGENT_AFTER_DAYS = 30;
 
-    public function index(Request $request, NeedConfiguration $configuration, NeedService $service, NeedDirectoryDemoContent $demoContent): View
+    public function index(Request $request, NeedConfiguration $configuration, NeedService $service): View
     {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -70,7 +69,6 @@ final class NeedController
         $page = max(1, (int) $request->query('page', 1));
         $perPage = (int) $settings['directory_page_size'];
         $needs = new LengthAwarePaginator($visible->forPage($page, $perPage), $visible->count(), $perPage, $page, ['path' => $request->url(), 'query' => $request->query()]);
-        $demoCards = ($urgentOnly || $mineOnly) ? collect() : $demoContent->demoCards($visible, $page, $categoryFilter);
         $groups = ZumraGroup::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_GROUP)->pluck('owner_reference'))->get()->keyBy('id');
         $projects = Project::query()->whereIn('id', $visible->where('owner_type', Need::OWNER_PROJECT)->pluck('owner_reference'))->get()->keyBy('id');
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
@@ -100,7 +98,7 @@ final class NeedController
         $mineCount = $allVisible->where('author_core_reference', $identity->reference)->count();
 
         return view('needs.index', compact(
-            'identity', 'needs', 'demoCards', 'groups', 'projects', 'isAdministrator', 'overview',
+            'identity', 'needs', 'groups', 'projects', 'isAdministrator', 'overview',
             'bandeau', 'byCategory', 'byLocation', 'urgentNeeds', 'mineCount', 'categoryFilter', 'statusFilter', 'urgentOnly', 'mineOnly', 'searchTerm',
         ) + ['configuration' => $settings]);
     }

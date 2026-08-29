@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Application\Needs\NeedService;
 use App\Application\Projects\ProjectService;
 use App\Models\Need;
+use App\Models\PersonProfile;
 use App\Models\Project;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
@@ -22,24 +23,28 @@ final class LandingController
 
     public function __invoke(NeedService $needs, ProjectService $projects): View
     {
-        // Fixtures d'exemple uniquement (voir resources/design-reference/README.md) :
-        // jamais seedées, jamais affichées comme une donnée métier réelle.
-        $portalDemo = json_decode(
-            file_get_contents(resource_path('design-reference/landing-portal-demo.json')),
-            true,
-        );
-
         return view('foundation', [
-            'exampleStats' => $portalDemo['statistiques'],
-            'exampleMoments' => $portalDemo['moments'],
             'realMoments' => $this->publicMoments($needs, $projects),
+            'publicStats' => [
+                'people' => PersonProfile::query()
+                    ->where('discovery_consent', true)
+                    ->whereNotNull('discovery_reference')
+                    ->count(),
+                'projects' => Project::query()
+                    ->where('visibility', Project::VISIBILITY_PUBLIC)
+                    ->whereNotIn('status', [Project::STATUS_PROPOSED, Project::STATUS_ARCHIVED])
+                    ->count(),
+                'countries' => PersonProfile::query()
+                    ->where('discovery_consent', true)
+                    ->whereNotNull('country_code')
+                    ->distinct()
+                    ->count('country_code'),
+            ],
         ]);
     }
 
     /**
-     * Règle DEMO-FIRST, REAL-DATA-TAKES-OVER déjà établie (docs/design/DESIGN-INVARIANTS.md
-     * §17/§18/§21), appliquée ici à la Landing : dès qu'un Besoin ou Projet réellement PUBLIC
-     * existe, il remplace entièrement les cartes d'exemple — jamais mélangé avec elles.
+     * Derniers Besoins et Projets réellement publics. Une base vide produit un état vide honnête.
      */
     private function publicMoments(NeedService $needs, ProjectService $projects): Collection
     {
@@ -60,7 +65,7 @@ final class LandingController
 
         $realProjects = Project::query()
             ->where('visibility', Project::VISIBILITY_PUBLIC)
-            ->where('status', '!=', Project::STATUS_ARCHIVED)
+            ->whereNotIn('status', [Project::STATUS_PROPOSED, Project::STATUS_ARCHIVED])
             ->latest('created_at')
             ->limit(3)
             ->get()

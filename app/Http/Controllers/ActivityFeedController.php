@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Application\Activity\ActivityFeedService;
-use App\Application\Activity\FeedDemoPresentation;
 use App\Application\Needs\NeedConfiguration;
 use App\Application\Recommendation\PersonRecommendationEngine;
 use App\Application\Recommendation\RecommendationConfiguration;
 use App\Domain\Identity\CoreIdentity;
+use App\Models\Need;
+use App\Models\PersonProfile;
 use App\Models\PortalAdministrator;
+use App\Models\Project;
 use App\Models\ZumraGroup;
 use App\Models\ZumraGroupMembership;
 use Illuminate\Http\Request;
@@ -24,7 +26,6 @@ final class ActivityFeedController
         PersonRecommendationEngine $recommendationEngine,
         RecommendationConfiguration $recommendationConfiguration,
         NeedConfiguration $needConfiguration,
-        FeedDemoPresentation $presentation,
     ): View {
         /** @var CoreIdentity $identity */
         $identity = $request->attributes->get('dg_identity');
@@ -40,20 +41,6 @@ final class ActivityFeedController
 
         if ($filter !== 'ALL') {
             $feed->appends(['type' => $filter]);
-        }
-
-        // Fil V2 — règle DEMO-FIRST, REAL-DATA-TAKES-OVER (docs/design/DESIGN-INVARIANTS.md §17) :
-        // des cartes d'exemple ne s'affichent qu'en première page et seulement quand le filtre
-        // actif n'a aucune donnée réelle — jamais mélangées à de vraies cartes.
-        $demoCards = [];
-        if ($page === 1 && $feed->isEmpty()) {
-            $demo = json_decode(
-                file_get_contents(resource_path('design-reference/fil-demo.json')),
-                true,
-            );
-            $demoCards = $filter === 'ALL'
-                ? $demo['cards']
-                : array_values(array_filter($demo['cards'], static fn (array $card): bool => $card['kind'] === $filter));
         }
 
         $myGroups = ZumraGroup::query()
@@ -75,14 +62,18 @@ final class ActivityFeedController
             'identity' => $identity,
             'isAdministrator' => PortalAdministrator::query()->whereKey($identity->reference)->exists(),
             'feed' => $feed,
-            'demoCards' => $demoCards,
             'filter' => $filter,
             'filters' => ActivityFeedService::FILTERS,
             'myGroups' => $myGroups,
             'recommendedPeople' => $recommendedPeople,
             'composerCategories' => $needConfiguration->get()['categories'],
-            'showcaseCards' => $page === 1 ? $presentation->cards() : [],
-            'networkStats' => $presentation->stats(),
+            'networkStats' => [
+                'groups' => ZumraGroup::query()->where('state', '!=', ZumraGroup::STATE_SUSPENDED)->count(),
+                'projects' => Project::query()->where('status', Project::STATUS_IN_PROGRESS)->count(),
+                'needs' => Need::query()->where('status', Need::STATUS_OPEN)->count(),
+                'members' => ZumraGroupMembership::query()->where('status', ZumraGroupMembership::STATUS_ACTIVE)->distinct()->count('core_identity_reference'),
+                'countries' => PersonProfile::query()->where('discovery_consent', true)->whereNotNull('country_code')->distinct()->count('country_code'),
+            ],
         ]);
     }
 }

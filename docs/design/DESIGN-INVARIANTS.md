@@ -1,6 +1,21 @@
 # DG Afrique — Invariants de design
 
-**Statut : CANONIQUE DESIGN — ADOPTÉ**  
+> **Décision postérieure — BRAND-DOCTRINE-001 (27 août 2026).** Ce document décrit désormais
+> l'interface historique appelée à être supprimée ; il n'est plus l'autorité visuelle du futur
+> frontend. Le handoff Claude, les palettes et les prescriptions écran par écran ci-dessous sont
+> conservés uniquement comme archive. La nouvelle autorité de marque est
+> `docs/brand/BRAND-DOCTRINE-001.md`, avec ses valeurs normatives dans
+> `docs/brand/tokens.json`. Les invariants produit non contradictoires restent applicables via les
+> doctrines supérieures.
+
+> **Décision postérieure — PRODUCTION-TRUTH-001 (27 août 2026).** Toute règle historique
+> `DEMO-FIRST` décrite ci-dessous est désormais supersédée. Les fixtures JSON, cartes de
+> remplissage, métriques fictives et projections arbitraires ont été retirées. Une surface affiche
+> une donnée réelle autorisée ou un état vide honnête. Voir
+> `docs/production/PRODUCTION-TRUTH-001.md`.
+
+**Statut : ARCHIVE HISTORIQUE — SUPERSÉDÉ PAR BRAND-DOCTRINE-001**
+
 **Version : 1.0**, avec §5 (matières/couleurs/typographie) **supersédé par l’addendum daté §22
 (UIUX-009A, 22 août 2026)** — voir aussi l’addendum daté §16 pour la Landing.  
 **Date d’adoption : 16 août 2026**  

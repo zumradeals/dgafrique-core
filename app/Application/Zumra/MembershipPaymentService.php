@@ -25,7 +25,7 @@ final class MembershipPaymentService
         private readonly ZahabWalletService $wallets,
     ) {}
 
-    public function start(ZumraProgramMembership $membership, string $successUrl, string $errorUrl): ZumraPayment
+    public function start(ZumraProgramMembership $membership, string $successUrl, string $errorUrl, ?string $returnTokenHash = null): ZumraPayment
     {
         if ($membership->status !== ZumraProgramMembership::STATUS_PENDING_PAYMENT) {
             throw new RuntimeException('MEMBERSHIP_NOT_PAYABLE');
@@ -41,6 +41,7 @@ final class MembershipPaymentService
             'membership_id' => $membership->id, 'provider' => 'GENIUSPAY', 'purpose' => ZumraPayment::PURPOSE_MEMBERSHIP,
             'reference' => $remote['reference'], 'provider_id' => $remote['provider_id'], 'amount' => 500, 'currency' => 'XOF',
             'environment' => $configuredEnvironment, 'status' => $remote['status'], 'checkout_url' => $remote['checkout_url'],
+            'return_token_hash' => $returnTokenHash,
             'provider_snapshot' => $remote['snapshot'], 'provider_snapshot_hash' => $this->snapshotHash($remote['snapshot']),
         ]);
     }

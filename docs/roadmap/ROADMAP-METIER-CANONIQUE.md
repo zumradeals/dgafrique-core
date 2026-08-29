@@ -1,5 +1,9 @@
 # ROADMAP MÉTIER CANONIQUE — DG Afrique
 
+> **Périmètre V1 actif :** la classification signée par `ENGINE-TRUTH-FINAL-001` est tenue dans
+> `docs/capacites/CAPABILITY-COVERAGE.md`. Les snapshots chiffrés historiques ci-dessous restent
+> des journaux d'audit et ne remplacent pas le registre canonique courant.
+
 Statut : ACTIVE
 
 **Snapshot canonique actuel : ROADMAP-003** (voir section dédiée ci-dessous). AUDIT-CAP-002/ROADMAP-001/ROADMAP-002 restent conservés plus bas comme historique explicitement daté — ils ne portent plus la priorité active.

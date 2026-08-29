@@ -3,14 +3,26 @@
 declare(strict_types=1);
 
 use App\Console\Commands\GenerateMissionRecurringOccurrences;
+use App\Console\Commands\RecordSchedulerHeartbeat;
+use App\Console\Commands\ReconcilePendingExternalPayments;
 use App\Infrastructure\GamadCore\Exceptions\CoreException;
 use App\Infrastructure\GamadCore\GamadCoreClient;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 use Symfony\Component\Console\Command\Command;
 
+// Signal de vie durable : /ready refuse le trafic si le déclencheur système n'appelle plus
+// Laravel. Il est placé avant les traitements métier pour mesurer la chaîne de déclenchement.
+Schedule::command(RecordSchedulerHeartbeat::class)->everyMinute();
+
 // CAP-069 §8 : génération idempotente des occurrences de Missions récurrentes dues.
 Schedule::command(GenerateMissionRecurringOccurrences::class)->hourly();
+
+// Les retours navigateur ne sont pas une source d'autorité de paiement. Le serveur reprend
+// périodiquement les tentatives GeniusPay anciennes, avec un verrou anti-chevauchement.
+Schedule::command(ReconcilePendingExternalPayments::class)
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10);
 
 Artisan::command('dg:core:prouver-identite {reference?}', function (GamadCoreClient $core): int {
     $reference = trim((string) ($this->argument('reference') ?: $this->ask('Référence de l’identité Core')));

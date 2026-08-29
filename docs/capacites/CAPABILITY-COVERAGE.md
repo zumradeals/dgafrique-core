@@ -1,6 +1,6 @@
 # Couverture du référentiel — CAP-001 à CAP-084
 
-> Carte d’avancement canonique. Le code de `main` reste la vérité technique ; ce fichier est la seule synthèse documentaire autorisée des statuts CAP.
+> Carte d’avancement et périmètre V1 canoniques. Le code de `main` reste la vérité technique ; ce fichier est la seule synthèse documentaire autorisée des statuts CAP et de leur disposition V1.
 >
 > Ce fichier est le **registre de couverture** (statut de chaque CAP). Pour l'**ordre et les priorités** issus du dernier audit global, voir `docs/roadmap/ROADMAP-METIER-CANONIQUE.md` — les deux documents ne se dupliquent pas.
 >
@@ -9,6 +9,27 @@
 > Doctrine : **fonction interne → module spécialisé extractible → satellite autonome seulement lorsqu’un besoin réel d’autonomie le justifie**.
 >
 > Statuts autorisés : `CLOSED` · `PARTIAL` · `NOT_IMPLEMENTED` · `DOC_ONLY` · `DEPENDENCY_BLOCKED`.
+
+## Contrat de périmètre V1 — ENGINE-TRUTH-FINAL-001
+
+Ce contrat ne maquille aucun statut et ne crée pas un second registre. Il décide seulement ce que
+DG Afrique V1 promet. Toute capacité différée est absente de l'interface neuve : aucun bouton
+inactif, aucune section factice et aucune promesse de disponibilité.
+
+| Disposition V1 | Nombre | Capacités | Décision |
+|---|---:|---|---|
+| Implémentée | 60 | toutes les CAP au statut `CLOSED` | incluses et couvertes par le moteur certifié |
+| Doctrine exécutoire | 15 | CAP-029, CAP-032, CAP-035, CAP-052, CAP-060, CAP-071 à CAP-076, CAP-081 à CAP-084 | incluses comme règles de produit et de conception ; aucun moteur autonome attendu |
+| Contrat domaine suffisant | 4 | CAP-023, CAP-047, CAP-053, CAP-056 | incluses dans leur forme actuelle ; aucune abstraction généralisée inventée sans besoin réel |
+| Différée — contrat externe | 2 | CAP-051, CAP-070 | hors V1 au-delà de la continuité SSO et des liens documentaires déjà disponibles |
+| Différée — aucun consommateur réel | 3 | CAP-077, CAP-078, CAP-079 | hors V1 jusqu'à l'existence d'un outil ou consommateur externe signé |
+
+Total classé : **84 / 84**. Le périmètre fonctionnel V1 contient donc 79 capacités ou règles
+assumées et 5 capacités explicitement différées. Les cinq statuts `PARTIAL` ne sont pas renommés
+`CLOSED` : CAP-023 conserve ses cinq moteurs spécialisés sans `GraphEngine` artificiel ; CAP-047
+conserve les primitives d'extractibilité sans extraction anticipée ; CAP-053 conserve quatre
+consentements granulaires et révocables ; CAP-056 conserve les cycles de publication propres à
+chaque domaine ; CAP-051 reste incomplète faute de contrat d'export Core.
 
 ## Carte canonique
 

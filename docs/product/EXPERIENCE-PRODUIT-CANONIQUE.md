@@ -1,5 +1,10 @@
 # Expérience produit canonique — DG Afrique
 
+> **Règle de vérité active.** `PRODUCTION-TRUTH-002` supplante toute consigne historique
+> `DEMO-FIRST`, tout chargement de `*DemoSeeder` et toute projection fictive cités plus bas. Les
+> exemples historiques peuvent inspirer la composition visuelle, jamais fournir des faits, des
+> identités, des volumes ou des contenus au runtime et dans les tests produit.
+
 ## Statut
 
 **CANONIQUE — Couche 04 (PRODUIT / UX), adopté 21 août 2026.** Ce document occupe la couche
@@ -14,9 +19,9 @@ GAMAD), `docs/foundation/DG-AFRIQUE-DOCTRINE.md` (couches 00-01),
 (couche 03) — jamais l'inverse. Ce document ne redéfinit aucune de ces sources ; il les
 synthétise pour la couche produit/UX et cite chaque invariant qu'il rapporte.
 
-Autorité sur : oriente les futures missions d'interface (UIUX-00x) et sert de référence de
-canonisation pour `docs/design/DESIGN-INVARIANTS.md` (qui reste l'autorité visuelle/écran par
-écran — ce document ne le remplace pas, il l'inscrit dans un modèle mental plus large).
+Autorité sur : oriente les futures missions d'interface (UIUX-00x) et sert de référence produit à
+`docs/brand/BRAND-DOCTRINE-001.md`, devenue l'autorité visuelle du futur frontend le 27 août 2026.
+`docs/design/DESIGN-INVARIANTS.md` est conservé comme archive de l'interface historique.
 
 ---
 

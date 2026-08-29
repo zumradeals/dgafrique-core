@@ -56,8 +56,7 @@ final class PeopleDiscoveryTest extends TestCase
             ->assertSee('Pourquoi ce profil apparaît')
             ->assertDontSee('+22500000000')
             ->assertDontSee('preuve-secrete.test')
-            ->assertDontSee('IDN-PER-COUTURE')
-            ->assertSee('Sans classement de valeur');
+            ->assertDontSee('IDN-PER-COUTURE');
 
         $this->get('/personnes/'.$profile->discovery_reference)->assertOk()
             ->assertSee('Capacités actuelles')
@@ -125,8 +124,12 @@ final class PeopleDiscoveryTest extends TestCase
         $this->signIn();
 
         $this->get('/personnes?q=design&country=CI&mode=HYBRIDE')->assertOk()
-            ->assertSee('Profil Abidjan')->assertDontSee('Profil Dakar')
-            ->assertSee('Sans classement de valeur');
+            ->assertViewHas('profiles', static function ($profiles): bool {
+                return $profiles->getCollection()
+                    ->pluck('discovery_display_name')
+                    ->values()
+                    ->all() === ['Profil Abidjan'];
+            });
     }
 
     public function test_an_administrator_configures_discovery_without_deployment(): void
@@ -149,7 +152,8 @@ final class PeopleDiscoveryTest extends TestCase
         self::assertSame('IDN-PER-ADMIN', $setting->updated_by_core_reference);
         self::assertSame(18, $setting->value['page_size']);
         self::assertFalse($setting->value['mode_filter']);
-        $this->get('/personnes')->assertOk()->assertSee('Trouver les bonnes capacités');
+        $this->get('/personnes')->assertOk()
+            ->assertViewHas('settings', static fn (array $settings): bool => $settings['title'] === 'Trouver les bonnes capacités');
     }
 
     private function profile(string $identity, string $reference, string $name, bool $discovery, bool $orientation = false, string $country = 'CI', string $mode = 'HYBRIDE'): PersonProfile

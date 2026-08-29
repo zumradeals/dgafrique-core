@@ -30,9 +30,12 @@ return [
     ],
 
     'deepseek' => [
+        'enabled' => (bool) env('DEEPSEEK_ENABLED', false),
+        'data_policy_version' => env('DEEPSEEK_DATA_POLICY_VERSION'),
         'api_key' => env('DEEPSEEK_API_KEY'),
         'base_url' => env('DEEPSEEK_BASE_URL', 'https://api.deepseek.com'),
         'model' => env('DEEPSEEK_MODEL', 'deepseek-v4-flash'),
+        'connect_timeout' => (int) env('DEEPSEEK_CONNECT_TIMEOUT', 3),
         'timeout' => (int) env('DEEPSEEK_TIMEOUT', 30),
         'max_tokens' => (int) env('DEEPSEEK_MAX_TOKENS', 900),
     ],

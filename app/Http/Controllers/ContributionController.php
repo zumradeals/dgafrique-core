@@ -19,6 +19,8 @@ use App\Models\ZumraGroupRole;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
@@ -155,16 +157,16 @@ final class ContributionController
             'purpose_code' => ['required', 'string', Rule::exists('dg_contribution_purposes', 'code')],
         ]);
 
-        // La référence du paiement n'existe qu'après sa création chez le prestataire : comme
-        // CAP-007B, le retour navigateur identifie l'ENGAGEMENT (connu à l'avance), jamais le
-        // paiement — returned() relit ensuite la tentative la plus récente de cet engagement.
+        $returnToken = Str::random(64);
+        $returnUrlExpiresAt = now()->addMinutes((int) config('payments.geniuspay.return_url_ttl_minutes', 1440));
         $payment = $service->payPeriod(
             $contribution,
             $this->actor($request),
             $data['period'],
             $data['purpose_code'],
-            route('contributions.payment.return', ['contribution' => $contribution, 'outcome' => 'success']),
-            route('contributions.payment.return', ['contribution' => $contribution, 'outcome' => 'error']),
+            URL::temporarySignedRoute('contributions.payment.return', $returnUrlExpiresAt, ['contribution' => $contribution, 'attempt' => $returnToken, 'outcome' => 'success']),
+            URL::temporarySignedRoute('contributions.payment.return', $returnUrlExpiresAt, ['contribution' => $contribution, 'attempt' => $returnToken, 'outcome' => 'error']),
+            hash('sha256', $returnToken),
         );
 
         return redirect()->away((string) $payment->checkout_url);
@@ -193,9 +195,14 @@ final class ContributionController
         $actor = $this->actor($request);
         $this->assertCanViewContribution($contribution, $actor, $service);
 
-        $payment = ContributionPayment::query()->where('contribution_id', $contribution->id)->latest('created_at')->first();
+        $returnToken = (string) $request->query('attempt', '');
+        abort_unless((bool) preg_match('/^[A-Za-z0-9]{64}$/', $returnToken), 404);
+        $payment = ContributionPayment::query()
+            ->where('contribution_id', $contribution->id)
+            ->where('return_token_hash', hash('sha256', $returnToken))
+            ->firstOrFail();
         $verificationUnavailable = false;
-        if ($payment && in_array($payment->status, [ContributionPayment::STATUS_PENDING, ContributionPayment::STATUS_PROCESSING], true)) {
+        if (in_array($payment->status, [ContributionPayment::STATUS_PENDING, ContributionPayment::STATUS_PROCESSING], true)) {
             try {
                 $payment = $service->reconcile($payment);
             } catch (Throwable $exception) {
@@ -206,16 +213,16 @@ final class ContributionController
                 $verificationUnavailable = true;
             }
         }
-        $receipt = $payment ? ContributionReceipt::query()->where('payment_id', $payment->id)->first() : null;
+        $receipt = ContributionReceipt::query()->where('payment_id', $payment->id)->first();
 
         return response()->json([
-            'payment' => $payment ? [
+            'payment' => [
                 'reference' => $payment->reference,
                 'status' => $payment->status,
                 'period' => $payment->period,
                 'amount' => $payment->amount,
                 'currency' => $payment->currency,
-            ] : null,
+            ],
             'receipt_reference' => $receipt?->id,
             'verification_unavailable' => $verificationUnavailable,
         ]);

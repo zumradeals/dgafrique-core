@@ -12,6 +12,12 @@ final class FederationContinuationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Http::preventStrayRequests();
+    }
+
     public function test_unauthenticated_member_returns_to_login_with_local_federation_destination(): void
     {
         $this->post('/federation/continue/gamadrive')
@@ -22,12 +28,13 @@ final class FederationContinuationTest extends TestCase
     {
         $this->fakeFederationFlow();
         $this->signIn();
+        $callbackUrl = (string) config('federation.gamadrive.callback_url');
 
         $response = $this->post('/federation/continue/gamadrive');
 
         $response->assertOk()
             ->assertSee('Ouverture de GamaDrive')
-            ->assertSee('action="https://gamadrive.dgafrique.com/federation/callback"', false)
+            ->assertSee('action="'.$callbackUrl.'"', false)
             ->assertSee('name="jeton" value="FED-DEMO-TOKEN"', false)
             ->assertHeader('Referrer-Policy', 'no-referrer')
             ->assertHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
@@ -103,6 +110,25 @@ final class FederationContinuationTest extends TestCase
             ->assertStatus(503)
             ->assertSee('temporairement indisponible');
 
+        Http::assertNotSent(fn ($request): bool =>
+            $request->url() === 'https://core.test/api/v1/produits/PRD-GAMAD-002/ouverture'
+        );
+    }
+
+    public function test_https_callback_not_bound_to_the_core_product_never_receives_a_token(): void
+    {
+        $this->fakeFederationFlow();
+        $this->signIn();
+        \App\Models\Satellite::query()->where('slug', 'gamadrive')->update([
+            'callback_url' => 'https://attacker.example/federation/callback',
+        ]);
+
+        $response = $this->post('/federation/continue/gamadrive')
+            ->assertStatus(503)
+            ->assertSee('temporairement indisponible')
+            ->assertDontSee('FED-DEMO-TOKEN');
+
+        $this->assertStringNotContainsString('attacker.example', (string) $response->headers->get('Content-Security-Policy'));
         Http::assertNotSent(fn ($request): bool =>
             $request->url() === 'https://core.test/api/v1/produits/PRD-GAMAD-002/ouverture'
         );

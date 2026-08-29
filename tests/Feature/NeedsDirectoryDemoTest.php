@@ -16,27 +16,23 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
-/**
- * Portail Besoins : cartes de démonstration (addendum daté du 20 août 2026,
- * DESIGN-INVARIANTS.md §21). Même règle DEMO-FIRST, REAL-DATA-TAKES-OVER que /projets (§18),
- * appliquée ici catégorie par catégorie.
- */
+/** Portail Besoins : seules les données métier réelles sont rendues. */
 final class NeedsDirectoryDemoTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_demo_card_appears_marked_as_example_when_no_real_need_is_visible(): void
+    public function test_honest_empty_state_appears_when_no_real_need_is_visible(): void
     {
         $this->signIn('IDN-NDIR-EMPTY');
 
         $content = $this->get('/besoins')->assertOk()->getContent();
 
-        self::assertStringContainsString('Apprendre le forex', $content);
-        self::assertStringContainsString('Formation souhaitée · Exemple', $content);
-        self::assertStringContainsString('Objet de démonstration — aucune action réelle n’est rattachée.', $content);
+        self::assertStringContainsString('Aucun besoin visible ici', $content);
+        self::assertStringNotContainsString('Apprendre le forex', $content);
+        self::assertStringNotContainsString('Objet de démonstration', $content);
     }
 
-    public function test_a_real_need_hides_only_its_own_categorys_demo_card(): void
+    public function test_a_real_need_is_rendered_without_any_demo_card(): void
     {
         $this->member('IDN-NDIR-OWNER');
         $this->createNeed('IDN-NDIR-OWNER', ['category' => 'TRAINING', 'title' => 'Formation réelle en comptabilité']);
@@ -48,7 +44,7 @@ final class NeedsDirectoryDemoTest extends TestCase
         self::assertStringContainsString('Formation réelle en comptabilité', $content);
     }
 
-    public function test_demo_card_never_appears_on_a_paginated_second_page(): void
+    public function test_empty_state_appears_on_a_paginated_second_page(): void
     {
         $this->signIn('IDN-NDIR-PAGE2');
 

@@ -177,7 +177,7 @@ final class ContributionService
      * Déclenche une tentative de paiement volontaire pour une période AAAA-MM. Aucun prélèvement
      * automatique : une personne réelle initie explicitement chaque mois (art. 6.2/6.3).
      */
-    public function payPeriod(Contribution $contribution, string $actor, string $period, string $purposeCode, string $successUrl, string $errorUrl): ContributionPayment
+    public function payPeriod(Contribution $contribution, string $actor, string $period, string $purposeCode, string $successUrl, string $errorUrl, ?string $returnTokenHash = null): ContributionPayment
     {
         abort_unless((bool) preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $period), 422, 'Période invalide (format AAAA-MM attendu).');
         abort_unless($contribution->status === Contribution::STATUS_ACTIVE, 409, 'Seul un engagement actif peut recevoir un paiement.');
@@ -222,7 +222,7 @@ final class ContributionService
         }
 
         try {
-            return DB::transaction(function () use ($contribution, $actor, $period, $purpose, $amount, $currency, $environment, $remote): ContributionPayment {
+            return DB::transaction(function () use ($contribution, $actor, $period, $purpose, $amount, $currency, $environment, $remote, $returnTokenHash): ContributionPayment {
                 $payment = ContributionPayment::query()->create([
                     'contribution_id' => $contribution->id,
                     'period' => $period,
@@ -236,6 +236,7 @@ final class ContributionService
                     'environment' => $environment,
                     'status' => $remote['status'],
                     'checkout_url' => $remote['checkout_url'],
+                    'return_token_hash' => $returnTokenHash,
                     'provider_snapshot' => $remote['snapshot'],
                     'provider_snapshot_hash' => $this->snapshotHash($remote['snapshot']),
                 ]);

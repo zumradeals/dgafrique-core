@@ -51,7 +51,7 @@ final class ProofHttpSmokeTest extends TestCase
     public function test_landing_and_proof_business_tables_never_seed_demo_data(): void
     {
         $content = $this->get('/')->assertOk()->getContent();
-        self::assertStringContainsString('· Exemple', $content);
+        self::assertStringNotContainsString('· Exemple', $content);
         self::assertSame(0, Proof::query()->count(), 'Les fixtures d’exemple ne doivent jamais être présentes dans les tables métier.');
     }
 

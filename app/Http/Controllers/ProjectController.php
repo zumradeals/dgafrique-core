@@ -65,15 +65,42 @@ final class ProjectController
             $query->where('zumra_group_id', $groupId ?: '00000000-0000-0000-0000-000000000000');
         }
         $visible = $query->limit(300)->get()->filter(fn (Project $project) => $service->canView($project, $identity->reference))->values();
+        $allVisible = Project::query()
+            ->where('status', '!=', Project::STATUS_ARCHIVED)
+            ->latest()
+            ->limit(300)
+            ->get()
+            ->filter(fn (Project $project): bool => $service->canView($project, $identity->reference))
+            ->values();
         $page = max(1, (int) $request->query('page', 1));
         $projects = new LengthAwarePaginator($visible->forPage($page, 8), $visible->count(), 8, $page, ['path' => $request->url(), 'query' => $request->query()]);
         $groups = ZumraGroup::query()->whereIn('id', $visible->pluck('zumra_group_id')->filter())->get()->keyBy('id');
         $memberCounts = ProjectTeamMember::query()->whereIn('project_id', $visible->pluck('id'))->where('status', ProjectTeamMember::STATUS_ACTIVE)->selectRaw('project_id, count(*) as aggregate')->groupBy('project_id')->pluck('aggregate', 'project_id');
         $cards = $projects->getCollection()->mapWithKeys(fn (Project $project) => [$project->id => $presentation->for($project, (int) ($memberCounts[$project->id] ?? 0))]);
-        $filterGroups = ZumraGroup::query()->whereIn('id', Project::query()->whereNotNull('zumra_group_id')->pluck('zumra_group_id'))->orderBy('name')->limit(100)->get();
+        $filterGroups = ZumraGroup::query()->whereIn('id', $allVisible->pluck('zumra_group_id')->filter())->orderBy('name')->limit(100)->get();
+        $filterLocations = $allVisible->pluck('location')->filter()->map(fn (string $location): string => trim($location))->unique()->sort()->values();
+        $categoryDistribution = $allVisible->groupBy('domain')->map(fn ($projects, string $domain): array => [
+            'code' => $domain,
+            'label' => $settings['domains'][$domain] ?? $domain,
+            'count' => $projects->count(),
+        ])->sortByDesc('count')->values();
+        $recentProjects = $allVisible->take(3);
+        $recentGroups = ZumraGroup::query()->whereIn('id', $recentProjects->pluck('zumra_group_id')->filter())->get()->keyBy('id');
+        $activeProjectIds = $allVisible
+            ->whereIn('status', [Project::STATUS_ADOPTED, Project::STATUS_IN_PROGRESS])
+            ->pluck('id');
+        $networkStats = [
+            'projects' => $activeProjectIds->count(),
+            'groups' => $allVisible->pluck('zumra_group_id')->filter()->unique()->count(),
+            'members' => ProjectTeamMember::query()->whereIn('project_id', $activeProjectIds)->where('status', ProjectTeamMember::STATUS_ACTIVE)->distinct()->count('core_identity_reference'),
+            'completed' => $allVisible->where('status', Project::STATUS_COMPLETED)->count(),
+        ];
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
 
-        return view('projects.index', compact('identity', 'projects', 'groups', 'cards', 'filterGroups', 'isAdministrator') + ['configuration' => $settings, 'networkStats' => $presentation->networkStats()]);
+        return view('projects.index', compact(
+            'identity', 'projects', 'groups', 'cards', 'filterGroups', 'filterLocations',
+            'categoryDistribution', 'recentProjects', 'recentGroups', 'networkStats', 'isAdministrator',
+        ) + ['configuration' => $settings]);
     }
 
     public function show(Request $request, Project $project, ProjectConfiguration $configuration, ProjectService $service, NeedService $needs, ProjectSignalsEngine $signalsEngine, PartnershipService $partnerships, MissionContextRegistry $missionContexts, ProjectFundingContributionService $fundingContributions): View
@@ -116,9 +143,9 @@ final class ProjectController
         $recentEvents = $project->events()->latest('occurred_at')->limit(6)->get();
         $eventActorProfiles = PersonProfile::query()->whereIn('core_identity_reference', $recentEvents->pluck('actor_core_reference'))->get()->keyBy('core_identity_reference');
         $lastActivityAt = $recentEvents->first()?->occurred_at ?? $project->created_at;
-        $progressSeed = $project->progressionSeed();
+        $progressPercentage = $project->milestoneProgressPercentage();
 
-        return view('projects.show', compact('identity', 'project', 'group', 'maturityHistory', 'isAdministrator', 'teamMembers', 'myTeamMembership', 'pendingTeamRequests', 'teamProfiles', 'projectNeeds', 'canProposeNeed', 'canProposeMission', 'maturitySignals', 'accompaniment', 'recentEvents', 'eventActorProfiles', 'lastActivityAt', 'progressSeed', 'funding', 'fundingCollected', 'fundingRemaining', 'fundingHistory', 'fundingContributorProfiles', 'fundingContributionToken') + ['configuration' => $configuration->get(), 'canDecide' => $canDecide, 'maturityStages' => ProjectMaturityService::STAGES, 'projectPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations, 'manageableOrganizationCapabilities' => $manageableOrganizationCapabilities]);
+        return view('projects.show', compact('identity', 'project', 'group', 'maturityHistory', 'isAdministrator', 'teamMembers', 'myTeamMembership', 'pendingTeamRequests', 'teamProfiles', 'projectNeeds', 'canProposeNeed', 'canProposeMission', 'maturitySignals', 'accompaniment', 'recentEvents', 'eventActorProfiles', 'lastActivityAt', 'progressPercentage', 'funding', 'fundingCollected', 'fundingRemaining', 'fundingHistory', 'fundingContributorProfiles', 'fundingContributionToken') + ['configuration' => $configuration->get(), 'canDecide' => $canDecide, 'maturityStages' => ProjectMaturityService::STAGES, 'projectPartnerships' => $presentedPartnerships, 'manageableOrganizations' => $manageableOrganizations, 'manageableOrganizationCapabilities' => $manageableOrganizationCapabilities]);
     }
 
     public function transition(Request $request, Project $project, ProjectService $service): RedirectResponse

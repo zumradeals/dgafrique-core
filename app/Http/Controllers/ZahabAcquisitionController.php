@@ -9,6 +9,8 @@ use App\Domain\Identity\CoreIdentity;
 use App\Models\ZahabAcquisition;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Throwable;
 
 /**
@@ -25,13 +27,16 @@ final class ZahabAcquisitionController
             'amount' => ['required', 'integer', 'min:1'],
         ]);
         $actor = $this->actor($request);
+        $returnToken = Str::random(64);
+        $returnUrlExpiresAt = now()->addMinutes((int) config('payments.geniuspay.return_url_ttl_minutes', 1440));
 
         try {
             $acquisition = $acquisitions->start(
                 $actor,
                 (int) $data['amount'],
-                route('zahab.acquisitions.return', ['outcome' => 'success']),
-                route('zahab.acquisitions.return', ['outcome' => 'error']),
+                URL::temporarySignedRoute('zahab.acquisitions.return', $returnUrlExpiresAt, ['attempt' => $returnToken, 'outcome' => 'success']),
+                URL::temporarySignedRoute('zahab.acquisitions.return', $returnUrlExpiresAt, ['attempt' => $returnToken, 'outcome' => 'error']),
+                hash('sha256', $returnToken),
             );
         } catch (Throwable $exception) {
             report($exception);
@@ -42,16 +47,15 @@ final class ZahabAcquisitionController
         return redirect()->away((string) $acquisition->checkout_url);
     }
 
-    /**
-     * Comme `ZumraMembershipPaymentController::returned()` : aucun identifiant d'acquisition dans
-     * l'URL (elle n'existe pas encore au moment où `store()` construit l'URL de retour) — on relit
-     * la tentative la plus récente de cet acteur, jamais une preuve fournie par le navigateur.
-     */
     public function returned(Request $request, ZahabAcquisitionService $acquisitions): RedirectResponse
     {
         $actor = $this->actor($request);
-        $acquisition = ZahabAcquisition::query()->where('person_core_reference', $actor)->latest('created_at')->first();
-        abort_if($acquisition === null, 404);
+        $returnToken = (string) $request->query('attempt', '');
+        abort_unless((bool) preg_match('/^[A-Za-z0-9]{64}$/', $returnToken), 404);
+        $acquisition = ZahabAcquisition::query()
+            ->where('person_core_reference', $actor)
+            ->where('return_token_hash', hash('sha256', $returnToken))
+            ->firstOrFail();
 
         if (in_array($acquisition->status, [ZahabAcquisition::STATUS_PENDING, ZahabAcquisition::STATUS_PROCESSING], true)) {
             try {

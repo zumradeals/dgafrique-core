@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 final class IdentityAuthorityGuardTest extends TestCase
@@ -18,40 +17,4 @@ final class IdentityAuthorityGuardTest extends TestCase
         self::assertFileDoesNotExist(database_path('migrations/0001_01_01_000000_create_users_table.php'));
     }
 
-    public function test_the_social_gateway_and_discovery_landing_are_available(): void
-    {
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('Le réseau des capacités en action')
-            ->assertSee('Votre capacité peut')
-            ->assertSee('changer une réalité.')
-            ->assertSee('Je peux aider')
-            ->assertSee('J’ai un besoin')
-            ->assertSee('Je veux apprendre')
-            ->assertSee('Se connecter')
-            ->assertSee('Créer gratuitement mon compte');
-
-        $this->get('/decouvrir')
-            ->assertOk()
-            ->assertSee('Ensemble, déployons nos capacités pour')
-            ->assertSee('changer nos réalités.')
-            ->assertSee('De la capacité à l’action')
-            ->assertSee('Rejoindre')
-            ->assertSee('Impacter')
-            ->assertSee('Dans le réseau en ce moment')
-            ->assertSee('Exemple')
-            ->assertDontSee('4 250')
-            ->assertDontSee('1,2 million');
-    }
-
-    public function test_the_invisible_institution_is_never_named_in_user_interfaces(): void
-    {
-        foreach (File::allFiles(resource_path('views')) as $view) {
-            self::assertDoesNotMatchRegularExpression(
-                '/\\bGAMAD\\b/ui',
-                $view->getContents(),
-                "Le nom institutionnel réservé est exposé dans {$view->getRelativePathname()}."
-            );
-        }
-    }
 }

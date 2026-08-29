@@ -16,7 +16,6 @@ use App\Models\ZumraGroupActivity;
 use App\Models\ZumraGroupMembership;
 use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
-use App\Models\ZumraProximityShowcase;
 use App\Support\ZumraDomainPresentation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -126,12 +125,10 @@ final class ZumraSpaceController
 
         $fil = $this->filPanel();
         $stats = $this->stats();
-        $nearby = ZumraProximityShowcase::query()->orderBy('sort_order')->limit(4)->get();
-
         return view('zumra.index', compact(
             'identity', 'profile', 'membership', 'isAdministrator', 'myGroups', 'navCounts',
             'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities',
-            'discoverGroups', 'isExhaustive', 'fil', 'stats', 'nearby', 'query', 'mode', 'location', 'personalFilter',
+            'discoverGroups', 'isExhaustive', 'fil', 'stats', 'query', 'mode', 'location', 'personalFilter',
         ));
     }
 
@@ -303,8 +300,7 @@ final class ZumraSpaceController
 
     /**
      * Statistiques réelles, jamais des nombres fabriqués : elles reflètent exactement ce que
-     * contient la base au moment de l'affichage — vides sur un portail neuf, vivantes une fois
-     * `ZumraWorldDemoSeeder` exécuté sur un environnement de démonstration.
+     * contient la base au moment de l'affichage — vides sur un portail neuf.
      *
      * @return array{groups: int, groups_delta: int, members: int, members_delta: int, domains: int, actions: int}
      */

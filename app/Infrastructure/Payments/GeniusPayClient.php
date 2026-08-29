@@ -91,7 +91,9 @@ final class GeniusPayClient
         }
 
         return Http::baseUrl((string) config('payments.geniuspay.base_url'))
-            ->acceptJson()->asJson()->timeout((int) config('payments.geniuspay.timeout'))
+            ->acceptJson()->asJson()
+            ->connectTimeout((int) config('payments.geniuspay.connect_timeout'))
+            ->timeout((int) config('payments.geniuspay.timeout'))
             ->withHeaders(['X-API-Key' => $key, 'X-API-Secret' => $secret]);
     }
 
