@@ -5,9 +5,10 @@
 ## État immédiat à ne pas réinterpréter
 
 Le moteur est certifié par `docs/production/ENGINE-TRUTH-FINAL-001.md`. L'ancien frontend a été
-volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md` et aucun nouveau
-frontend n'existe encore. Cette absence ne doit jamais déclencher une restauration depuis
-l'historique. Le seul chantier autorisé est une reconstruction neuve suivant
+volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md`. Les fondations
+du nouveau frontend existent désormais sous `resources/`, mais aucune page métier n'est encore
+livrée. Cette situation ne doit jamais déclencher une restauration depuis l'historique. Le seul
+chantier autorisé reste la reconstruction neuve suivant
 `docs/roadmap/FRONTEND-REBUILD-001.md`, exécutée et suivie par
 `docs/roadmap/USER-JOURNEY-001.md`, et les règles racine de `AGENTS.md`.
 

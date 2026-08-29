@@ -2,7 +2,7 @@
 
 ## Statut
 
-`AUTORISÉ — F0 PASS — F1 READY`
+`AUTORISÉ — F0 PASS — F1 IN_PROGRESS`
 
 Le moteur est certifié. L'ancien frontend est supprimé. Cette feuille de route est l'unique chemin
 autorisé pour rendre DG Afrique de nouveau utilisable sur le web.
@@ -60,6 +60,10 @@ pas une autorité visuelle du frontend neuf.
 - mettre en place les tests de composants et contrôles d'accessibilité de base.
 
 **Porte F1 :** aucune page métier avant validation du socle commun desktop et mobile.
+
+**Résultat courant : IN_PROGRESS.** Le pipeline et les primitives communes existent désormais ;
+la compilation de production et les tests statiques du contrat passent. Les contrôles PHP/HTTP et
+navigateur mobile/desktop restent obligatoires avant de prononcer `PASS`.
 
 ### F2 — Coquille applicative
 

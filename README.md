@@ -3,9 +3,10 @@
 Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
 
 > [!IMPORTANT]
-> **État actuel : moteur certifié, frontend volontairement absent.** L'ancienne interface a été
+> **État actuel : moteur certifié, frontend neuf en construction.** L'ancienne interface a été
 > entièrement retirée de `main`. Ne pas restaurer les anciennes vues ou leurs assets depuis
-> l'historique. Le produit web restera indisponible jusqu'à la construction du frontend neuf selon
+> l'historique. Le produit web reste indisponible tant que les parcours du frontend neuf ne sont
+> pas terminés selon
 > [`docs/roadmap/FRONTEND-REBUILD-001.md`](docs/roadmap/FRONTEND-REBUILD-001.md).
 
 ## Situation du produit
@@ -13,7 +14,7 @@ Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
 - moteur Laravel/PostgreSQL/Redis : présent et certifié ;
 - données de démonstration : supprimées ;
 - ancien frontend : supprimé définitivement ;
-- nouveau frontend : pas encore construit ;
+- nouveau frontend : fondations UJ-01 en cours, aucune page métier encore livrée ;
 - mise en production publique : **NO-GO** tant que la roadmap frontend et les portes de
   préproduction ne sont pas terminées.
 
@@ -30,8 +31,8 @@ Sa navigation mobile est déjà verrouillée par le
 
 - PHP 8.4 et Laravel ;
 - PostgreSQL ;
-- Blade + Livewire, Tailwind CSS et Alpine.js constituent la cible frontend canonique, mais leur
-  nouvelle implémentation n'existe pas encore ;
+- Blade + Livewire, Tailwind CSS et Alpine.js constituent le pipeline frontend neuf en cours de
+  validation ;
 - Redis pour les files, le cache et les verrous distribués ;
 - Nginx, PHP-FPM, Supervisor et scheduler Laravel sur VPS ;
 - GAMAD Core comme autorité d'identité, de session et de fédération ;
