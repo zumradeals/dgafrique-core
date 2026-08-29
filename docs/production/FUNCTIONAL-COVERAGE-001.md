@@ -1,5 +1,12 @@
 # FUNCTIONAL-COVERAGE-001 — inventaire exhaustif des interactions et sections
 
+> **État postérieur — FRONTEND-EXCISION-001 / UJ-00.** Les vues et contrôles comptés dans ce
+> document ont été supprimés volontairement avec l'ancien frontend. Ce fichier reste la mémoire
+> des promesses et écarts détectés ; il ne décrit plus une interface présente dans `main`.
+> L'autorité actuelle pour construire les futurs écrans est
+> `docs/roadmap/USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md`. Une ancienne promesse sans moteur y est
+> conservée comme gap, jamais restaurée comme bouton mort.
+
 Statut : **INVENTAIRE TERMINÉ — IMPLÉMENTATION NON COMMENCÉE**
 
 Baseline auditée : `main @ 2361195` (`PRODUCTION-TRUTH-001` fusionné localement).

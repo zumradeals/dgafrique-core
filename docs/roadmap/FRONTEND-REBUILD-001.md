@@ -2,7 +2,7 @@
 
 ## Statut
 
-`AUTORISÉ — NON COMMENCÉ`
+`AUTORISÉ — F0 PASS — F1 READY`
 
 Le moteur est certifié. L'ancien frontend est supprimé. Cette feuille de route est l'unique chemin
 autorisé pour rendre DG Afrique de nouveau utilisable sur le web.
@@ -44,6 +44,10 @@ pas une autorité visuelle du frontend neuf.
 - fixer la matrice de couverture qui accompagnera chaque lot.
 
 **Porte F0 :** aucun écran prévu sans contrat moteur identifié.
+
+**Résultat : PASS.** Preuve :
+`docs/roadmap/USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` cartographie les 346 routes nommées en
+54 contrats, avec états, services, autorités, actions, erreurs et gaps moteur.
 
 ### F1 — Fondations visuelles et techniques
 

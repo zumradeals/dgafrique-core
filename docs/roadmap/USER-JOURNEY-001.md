@@ -2,7 +2,7 @@
 
 ## Statut et autorité
 
-`CANONIQUE — PRÊT À EXÉCUTER — UJ-00 READY`
+`CANONIQUE — UJ-00 PASS — UJ-01 READY`
 
 Ce document est le **registre d'exécution des parcours** du frontend neuf. Il est subordonné à
 `FRONTEND-REBUILD-001`, dont il détaille la dimension utilisateur. Il ne crée ni seconde roadmap
@@ -188,8 +188,8 @@ prochaine étape.
 
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
-| `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **READY** | matrice auditée, aucun contrat inventé |
-| `UJ-01` | socle visuel, composants d'état et pipeline frontend | UJ-00 | PENDING | portes F1 et marque validées |
+| `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
+| `UJ-01` | socle visuel, composants d'état et pipeline frontend | UJ-00 | **READY** | portes F1 et marque validées |
 | `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | PENDING | parcours public et compte automatisés |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
@@ -237,6 +237,7 @@ Un lot n'est `PASS` que si :
 | Date | Lot | Décision ou preuve | Commit/PR |
 |---|---|---|---|
 | 2026-08-29 | Initialisation | Roadmap canonique créée ; prochain lot `UJ-00` | présent changement documentaire |
+| 2026-08-29 | `UJ-00` | 346 routes affectées à S01-S54 ; états, autorités, erreurs et gaps G01-G12 cartographiés | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
 
-La prochaine action officielle est donc **UJ-00 — cartographier les contrats avant de dessiner ou
-coder un écran**.
+La prochaine action officielle est **UJ-01 — construire le socle visuel, les composants d'état et
+le pipeline frontend, sans encore créer de page métier**.

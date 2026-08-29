@@ -40,9 +40,10 @@ construire la nouvelle interface sur les contrats métier existants.**
 4. `docs/production/FRONTEND-EXCISION-001.md` ;
 5. `docs/roadmap/FRONTEND-REBUILD-001.md` ;
 6. `docs/roadmap/USER-JOURNEY-001.md` ;
-7. `docs/brand/BRAND-DOCTRINE-001.md` ;
-8. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
-9. `docs/production/FUNCTIONAL-COVERAGE-001.md` pour la surface concernée.
+7. `docs/roadmap/USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` ;
+8. `docs/brand/BRAND-DOCTRINE-001.md` ;
+9. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
+10. `docs/production/FUNCTIONAL-COVERAGE-001.md` pour la surface concernée.
 
 Pour une capacité métier, lire également la spec CAP active et
 `docs/capacites/CAPABILITY-COVERAGE.md`. Pour ZUMRA, lire
