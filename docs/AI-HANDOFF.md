@@ -2,6 +2,14 @@
 
 > Point d'entrée pour toute IA ou nouveau contributeur. Lire d'abord `docs/AI-RULES.md`.
 
+## État immédiat à ne pas réinterpréter
+
+Le moteur est certifié par `docs/production/ENGINE-TRUTH-FINAL-001.md`. L'ancien frontend a été
+volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md` et aucun nouveau
+frontend n'existe encore. Cette absence ne doit jamais déclencher une restauration depuis
+l'historique. Le seul chantier autorisé est une reconstruction neuve suivant
+`docs/roadmap/FRONTEND-REBUILD-001.md` et les règles racine de `AGENTS.md`.
+
 ## Hiérarchie de vérité
 
 1. le code et les tests de `main` décrivent ce qui existe réellement ;

@@ -2,16 +2,20 @@
 
 ## Statut
 
-`CANDIDAT — DÉPLOIEMENT VPS EN MAINTENANCE REQUIS`
+`APPLIQUÉ SUR MAIN — FRONTEND NEUF NON ENCORE CONSTRUIT`
 
 Baseline moteur : `cdedc4c589f037fd4b272e1e3c6bfe36389bc9d1`, certificat
 `ENGINE-TRUTH-FINAL-001`.
 
+L'arbre final de l'excision a été publié sur GitHub `main` par le commit de consolidation
+`f8d55d2812a1f994e90ff0872aeee7a72049f693`. Son arbre Git
+`58e1ef917338e18ff5a97b6c5c4e0e28ed0340e6` est identique à l'état local certifié et excisé.
+
 ## Décision
 
 Le frontend historique n'est pas conservé dans une branche comparative. Il est retiré de `main`
-après intégration fast-forward du moteur certifié. `dgafrique.com` n'étant pas encore un produit en
-production, le déploiement reste en maintenance jusqu'à la livraison du frontend neuf.
+après intégration du moteur certifié. `dgafrique.com` n'étant pas encore un produit en production,
+le déploiement reste en maintenance jusqu'à la livraison du frontend neuf.
 
 ## Suppression
 
