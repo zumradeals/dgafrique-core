@@ -20,6 +20,8 @@ Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
 Lire [`AGENTS.md`](AGENTS.md) avant toute intervention automatisée. Les preuves détaillées sont
 [`ENGINE-TRUTH-FINAL-001`](docs/production/ENGINE-TRUTH-FINAL-001.md) et
 [`FRONTEND-EXCISION-001`](docs/production/FRONTEND-EXCISION-001.md).
+La reprise du chantier frontend se fait exclusivement par
+[`USER-JOURNEY-001 — Opération Parcours de l'Utilisateur`](docs/roadmap/USER-JOURNEY-001.md).
 
 ## Stack canonique
 
@@ -41,11 +43,13 @@ Lire [`AGENTS.md`](AGENTS.md) avant toute intervention automatisée. Les preuves
 4. `docs/capacites/CAPABILITY-INDEX.md` et `docs/capacites/OVERRIDES.md` : référentiel CAP-001 à
    CAP-084 et décisions métier prioritaires ;
 5. `docs/brand/BRAND-DOCTRINE-001.md`, `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et
-   `docs/design/DESIGN-INVARIANTS.md` : autorité du frontend neuf ;
+   `docs/roadmap/USER-JOURNEY-001.md` : autorité de marque, d'expérience et d'exécution du
+   frontend neuf ;
 6. `docs/architecture/ADR-001-stack-canonique.md` : architecture technique.
 
 Le dossier `Design/` est une mémoire de handoff, pas une autorité permettant de restaurer
-l'ancienne interface.
+l'ancienne interface. `docs/design/DESIGN-INVARIANTS.md` est également une archive historique,
+explicitement supersédée par `BRAND-DOCTRINE-001` pour le futur frontend.
 
 Les anciennes réalisations Next.js/Supabase ne sont pas importées comme code. Les spécifications utiles sont conservées dans `docs/capacites/legacy/` uniquement comme matière d'audit.
 

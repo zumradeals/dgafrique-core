@@ -8,7 +8,8 @@ Le moteur est certifié par `docs/production/ENGINE-TRUTH-FINAL-001.md`. L'ancie
 volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md` et aucun nouveau
 frontend n'existe encore. Cette absence ne doit jamais déclencher une restauration depuis
 l'historique. Le seul chantier autorisé est une reconstruction neuve suivant
-`docs/roadmap/FRONTEND-REBUILD-001.md` et les règles racine de `AGENTS.md`.
+`docs/roadmap/FRONTEND-REBUILD-001.md`, exécutée et suivie par
+`docs/roadmap/USER-JOURNEY-001.md`, et les règles racine de `AGENTS.md`.
 
 ## Hiérarchie de vérité
 
@@ -21,7 +22,10 @@ Les versions précédentes du dépôt vivent dans l'historique Git. Aucun ancien
 
 Pour toute capacité ZUMRA, respecter `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`.
 
-Pour toute modification d'interface, navigation ou design, lire `docs/design/DESIGN-INVARIANTS.md`.
+Pour toute construction d'interface, navigation ou design, lire
+`docs/brand/BRAND-DOCTRINE-001.md`, `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et
+`docs/roadmap/USER-JOURNEY-001.md`. `docs/design/DESIGN-INVARIANTS.md` est une archive de
+l'interface supprimée, pas l'autorité visuelle du frontend neuf.
 
 ## Projet canonique
 

@@ -7,6 +7,11 @@
 Le moteur est certifié. L'ancien frontend est supprimé. Cette feuille de route est l'unique chemin
 autorisé pour rendre DG Afrique de nouveau utilisable sur le web.
 
+Son registre d'exécution utilisateur est
+`docs/roadmap/USER-JOURNEY-001.md`. Ce document subordonné précise l'ordre des parcours, leur
+statut et les preuves de sortie ; il doit être poursuivi au lieu de créer une nouvelle directive
+frontend.
+
 ## Finalité
 
 Construire une seule interface cohérente qui exprime DG Afrique comme **réseau social d'action** :
@@ -20,12 +25,14 @@ Le frontend présente et orchestre le moteur existant ; il ne duplique pas ses r
 
 - marque : `docs/brand/BRAND-DOCTRINE-001.md` et `docs/brand/tokens.json` ;
 - expérience : `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
-- invariants UI : `docs/design/DESIGN-INVARIANTS.md` ;
 - couverture des interactions : `docs/production/FUNCTIONAL-COVERAGE-001.md` ;
 - vérité moteur : `docs/production/ENGINE-TRUTH-FINAL-001.md` ;
-- vérité des capacités : `docs/capacites/CAPABILITY-COVERAGE.md`.
+- vérité des capacités : `docs/capacites/CAPABILITY-COVERAGE.md` ;
+- parcours et reprise du chantier : `docs/roadmap/USER-JOURNEY-001.md`.
 
 Les anciennes vues supprimées et les maquettes historiques ne sont pas des sources d'implémentation.
+`docs/design/DESIGN-INVARIANTS.md` décrit l'interface supprimée et reste une archive historique,
+pas une autorité visuelle du frontend neuf.
 
 ## Phases et portes de sortie
 
@@ -58,6 +65,8 @@ Les anciennes vues supprimées et les maquettes historiques ne sont pas des sour
 **Porte F2 :** navigation complète au clavier et sans débordement aux largeurs de référence.
 
 ### F3 — Parcours d'action prioritaires
+
+Cette phase s'exécute selon les lots permanents de `USER-JOURNEY-001`.
 
 - personnes et profils de capacités ;
 - besoins et mises en relation ;
@@ -116,4 +125,3 @@ fonctionnel.
 - documentation et tests mis à jour dans le même changement ;
 - arrêt immédiat du lot si une contradiction moteur/contrat est découverte, puis audit ciblé avant
   décision.
-

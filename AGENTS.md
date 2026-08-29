@@ -39,14 +39,17 @@ construire la nouvelle interface sur les contrats métier existants.**
 3. `docs/production/ENGINE-TRUTH-FINAL-001.md` ;
 4. `docs/production/FRONTEND-EXCISION-001.md` ;
 5. `docs/roadmap/FRONTEND-REBUILD-001.md` ;
-6. `docs/brand/BRAND-DOCTRINE-001.md` ;
-7. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
-8. `docs/design/DESIGN-INVARIANTS.md` ;
+6. `docs/roadmap/USER-JOURNEY-001.md` ;
+7. `docs/brand/BRAND-DOCTRINE-001.md` ;
+8. `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` ;
 9. `docs/production/FUNCTIONAL-COVERAGE-001.md` pour la surface concernée.
 
 Pour une capacité métier, lire également la spec CAP active et
 `docs/capacites/CAPABILITY-COVERAGE.md`. Pour ZUMRA, lire
 `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md`.
+
+`docs/design/DESIGN-INVARIANTS.md` est une archive de l'interface supprimée. Ne pas l'utiliser
+comme autorité visuelle ou comme plan de restauration du frontend neuf.
 
 ## Règle de construction du nouveau frontend
 
@@ -58,3 +61,6 @@ Chaque lot frontend doit apporter ensemble : rendu desktop et mobile, états vid
 accessibilité utile, actions réellement câblées et tests adaptés. Une page jolie mais partiellement
 factice n'est pas considérée comme livrée.
 
+L'avancement des parcours est enregistré uniquement dans `docs/roadmap/USER-JOURNEY-001.md`. Ne
+pas créer une nouvelle roadmap pour reprendre le chantier ; mettre à jour le lot permanent
+concerné et ses preuves.

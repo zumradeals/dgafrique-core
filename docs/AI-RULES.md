@@ -52,13 +52,22 @@ Ne pas conserver un fichier « au cas où ». Si son contenu utile existe déjà
 - inspecter modèles, services, contrôleurs, routes, migrations et tests concernés ;
 - lire la spec active concernée si elle existe ;
 - pour ZUMRA, lire `docs/canon/ZUMRA-DOCTRINE-INVARIANTE.md` ;
-- pour UI/navigation, lire `docs/design/DESIGN-INVARIANTS.md`.
+- pour le frontend neuf, lire `docs/brand/BRAND-DOCTRINE-001.md`,
+  `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` et `docs/roadmap/USER-JOURNEY-001.md` ;
+- traiter `docs/design/DESIGN-INVARIANTS.md` uniquement comme archive de l'interface supprimée.
 
 ## Roadmap métier
 
 Avant toute nouvelle implémentation CAP ou proposition de prochaine CAP, consulter `docs/roadmap/ROADMAP-METIER-CANONIQUE.md`.
 
 Ne jamais sélectionner une CAP à partir du seul numéro ou du seul statut de `CAPABILITY-COVERAGE.md`. Le code réel reste la vérité exécutable. Si le code et la roadmap divergent, auditer avant d'implémenter.
+
+## Roadmap frontend et parcours
+
+Le frontend neuf suit `docs/roadmap/FRONTEND-REBUILD-001.md`. Son unique registre d'exécution est
+`docs/roadmap/USER-JOURNEY-001.md` : reprendre le premier lot `IN_PROGRESS`, sinon le premier lot
+`READY`, et mettre à jour ses preuves dans le même changement. Ne jamais créer une roadmap
+frontend concurrente pour poursuivre le chantier.
 
 ## Après une modification qui change la couverture
 
