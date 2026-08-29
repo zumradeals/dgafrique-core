@@ -33,7 +33,7 @@
 
             @if ($realMoments->isEmpty())
                 <div class="mt-6 rounded-3xl border border-dashed border-black/15 bg-white/70 p-8 sm:p-10">
-                    <h3 class="text-xl font-black">Le réseau public est encore calme.</h3>
+                    <h3 class="text-xl font-black">Le réseau public démarre ici.</h3>
                     <p class="mt-2 max-w-2xl text-[var(--color-muted)]">Aucun besoin ou projet public n’est disponible pour le moment. Nous préférons vous le dire clairement plutôt que d’afficher de faux contenus.</p>
                     <div class="mt-6"><x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button></div>
                 </div>
