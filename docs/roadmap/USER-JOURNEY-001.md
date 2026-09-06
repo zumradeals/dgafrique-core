@@ -1,8 +1,16 @@
 # USER-JOURNEY-001 — Opération Parcours de l'Utilisateur
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 ## Statut et autorité
 
-`CANONIQUE — UJ-00 PASS — UJ-01 PASS — UJ-02 READY`
+`CANONIQUE — UJ-00 PASS — UJ-01 BLOCKED — UJ-02 PENDING`
 
 Ce document est le **registre d'exécution des parcours** du frontend neuf. Il est subordonné à
 `FRONTEND-REBUILD-001`, dont il détaille la dimension utilisateur. Il ne crée ni seconde roadmap
@@ -192,8 +200,8 @@ prochaine étape.
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d'état, navigation canonique et pipeline frontend | UJ-00 | **PASS** | 8/8 tests frontend ; build Vite production ; Git propre ; validation navigateur outillée avec Chromium 151 |
-| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **READY** | parcours public et compte automatisés |
+| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **BLOCKED** | tentative retirée le 6 septembre 2026 ; nouvelle instruction requise |
+| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | vues retirées ; contrats moteur conservés |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
 | `UJ-05` | P4 projet, équipe, mission et preuve | UJ-04 | PENDING | boucle projet verticale automatisée |
@@ -248,3 +256,43 @@ Un lot n'est `PASS` que si :
 La prochaine action officielle est **UJ-02 — P0 Entrer/comprendre et identité** : construire les
 premières pages publiques et de compte à partir des contrats moteur existants, sans restaurer
 l'ancien frontend et sans inventer d'état métier.
+
+
+### UJ-02 — intégration de la direction artistique approuvée, 6 septembre 2026
+
+Base de travail : `frontend/uj-02-entry-identity` à `f2a9587`, issue de `main` à `5757092`.
+Les vues d'entrée sont reconstruites à partir de la maquette approuvée par le dépositaire produit.
+La précision artistique est inscrite dans `BRAND-DOCTRINE-001.md` §20.
+
+- S01 conserve `GatewayController` et ses redirections de session ; les actions sont les routes
+  `register`, `login`, `landing`.
+- S02 conserve `LandingController`, ses permissions et sa collection `realMoments` ; le vide
+  invite à créer un compte, l'état rempli affiche uniquement les objets publics du contrôleur.
+- Les images sont des illustrations conceptuelles, sans membre ou projet simulé. Les versions
+  mobiles pèsent environ 74 Ko et 43 Ko. Les textes et actions restent du HTML accessible.
+- Les variables de couleur inexistantes des vues publiques et d'identité sont corrigées vers les
+  tokens `--dg-*`. Un contrôle statique empêche leur réintroduction.
+- Aucun changement de `app/`, `bootstrap/`, `config/`, `database/` ou `routes/`.
+
+Preuves exécutées :
+
+| Vérification | Résultat / portée |
+|---|---|
+| `npm run test:frontend` | 14/14 PASS |
+| `npm run build` | PASS, bundle Vite de production |
+| PHPUnit : `LandingPublicDiscoveryTest`, `MemberAccountRegistrationTest`, `IdentityAuthorityGuardTest` | 17 tests / 67 assertions PASS ; PHP 8.5.10, SQLite, fournisseur identité simulé |
+| Rendu Laravel des routes `/`, `/decouvrir`, `/connexion`, `/creer-un-compte` | HTTP 200 |
+| Navigateur : accueil 360 px et 1440 px, découverte 390 px et 1440 px | rendu inspecté, largeur du document égale à celle du viewport |
+| Captures | `tests/Frontend/screenshots/` |
+| `git diff --check` | PASS |
+
+Limite de la preuve navigateur : le navigateur distant a inspecté le HTML réellement rendu par
+Laravel, servi dans un aperçu temporaire avec les mêmes styles et images. Les chemins d'assets
+ont été adaptés au serveur d'aperçu, les scripts applicatifs exclus de cette copie. Cela prouve
+la composition responsive, pas un parcours navigateur connecté de bout en bout. Les soumissions
+et permissions sont couvertes séparément par PHPUnit ; les fournisseurs réels et le runtime cible
+PHP 8.4/PostgreSQL restent à vérifier en préproduction.
+
+UJ-02 reste `IN_PROGRESS` : cette intégration artistique ne ferme ni G01 (récupération de compte)
+ni les autres portes d'identité et de préproduction prévues par UJ-00. Aucun déploiement public
+et aucun passage automatique à UJ-03 ne sont décidés par ce changement.

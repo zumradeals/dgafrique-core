@@ -1,13 +1,19 @@
 # AI HANDOFF — DG Afrique Core
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 > Point d'entrée pour toute IA ou nouveau contributeur. Lire d'abord `docs/AI-RULES.md`.
 
 ## État immédiat à ne pas réinterpréter
 
 Le moteur est certifié par `docs/production/ENGINE-TRUTH-FINAL-001.md`. L'ancien frontend a été
-volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md`. Les fondations
-du nouveau frontend existent désormais sous `resources/`, mais aucune page métier n'est encore
-livrée. Cette situation ne doit jamais déclencher une restauration depuis l'historique. Le seul
+volontairement supprimé de `main` selon `docs/production/FRONTEND-EXCISION-001.md`. Le frontend neuf a également été retiré ; la reconstruction est suspendue. Cette situation ne doit jamais déclencher une restauration depuis l'historique. Le seul
 chantier autorisé reste la reconstruction neuve suivant
 `docs/roadmap/FRONTEND-REBUILD-001.md`, exécutée et suivie par
 `docs/roadmap/USER-JOURNEY-001.md`, et les règles racine de `AGENTS.md`.

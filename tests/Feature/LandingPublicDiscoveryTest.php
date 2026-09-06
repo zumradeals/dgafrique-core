@@ -24,7 +24,9 @@ final class LandingPublicDiscoveryTest extends TestCase
     {
         $content = $this->get('/decouvrir')->assertOk()->getContent();
 
-        self::assertStringContainsString('Le réseau public démarre ici.', $content);
+        self::assertStringContainsString('Le réseau commence', $content);
+        self::assertStringContainsString('Aucun besoin ou projet public', $content);
+        self::assertStringContainsString('Votre première contribution peut ouvrir la voie.', $content);
         self::assertStringNotContainsString('· Exemple', $content);
     }
 

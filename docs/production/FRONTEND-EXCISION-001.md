@@ -54,3 +54,27 @@ l'ancien code visuel ne l'est plus.
 
 Le nouveau frontend devra recréer son propre pipeline d'assets et remplacer progressivement les
 assertions HTTP liées au rendu. Aucun bouton différé, factice ou inactif ne sera réintroduit.
+
+
+## Retrait de la tentative UJ-01/UJ-02 — 6 septembre 2026
+
+Décision explicite du dépositaire : retirer la première intégration frontend et remettre le
+moteur à nu. Base : `d8407f8` (branche `frontend/uj-02-entry-identity`, incluant la PR #151).
+
+Retrait complet de `resources/`, des illustrations `public/images/entry/`, du pipeline Vite
+(`package.json`, verrou npm, configuration Vite), des tests exclusivement visuels
+(`tests/Frontend/` et `FrontendFoundationTest.php`). Les étapes npm du script Composer setup
+sont retirées. Les dépendances PHP et le verrou Composer sont conservés.
+
+Les tests métier/HTTP sont conservés, même lorsque le rendu de leurs vues est désormais
+volontairement indisponible. Ne pas recréer ces vues pour obtenir un résultat artificiellement
+vert. Les anciennes validations visuelles UJ-01/UJ-02 ne valent plus pour l’arbre courant.
+
+Preuve structurelle : aucune différence de `app/`, `bootstrap/`, `config/`, `database/`,
+`routes/`, `composer.lock` et du point d’entrée `public/index.php` par rapport à la base.
+La charte, les contrats UJ-00 et la navigation canonique sont conservés. UJ-01 est BLOCKED,
+UJ-02 PENDING ; toute nouvelle construction attend une instruction produit explicite.
+
+Le déploiement doit maintenir Laravel en maintenance et supprimer les anciens assets compilés,
+le fichier `public/hot` et les vues compilées sur le serveur. La suppression dans Git seule ne
+supprime pas ces fichiers générés sur le VPS. Aucune migration ni suppression de données requise.

@@ -1,9 +1,17 @@
 # DG Afrique Core
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
 
 > [!IMPORTANT]
-> **État actuel : moteur certifié, frontend neuf en construction.** L'ancienne interface a été
+> **État actuel : moteur certifié, frontend retiré, reconstruction suspendue.** L'ancienne interface a été
 > entièrement retirée de `main`. Ne pas restaurer les anciennes vues ou leurs assets depuis
 > l'historique. Le produit web reste indisponible tant que les parcours du frontend neuf ne sont
 > pas terminés selon
@@ -14,7 +22,7 @@ Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
 - moteur Laravel/PostgreSQL/Redis : présent et certifié ;
 - données de démonstration : supprimées ;
 - ancien frontend : supprimé définitivement ;
-- nouveau frontend : fondations UJ-01 en cours, aucune page métier encore livrée ;
+- nouveau frontend : tentative UJ-01/UJ-02 retirée, reconstruction suspendue ;
 - mise en production publique : **NO-GO** tant que la roadmap frontend et les portes de
   préproduction ne sont pas terminées.
 
