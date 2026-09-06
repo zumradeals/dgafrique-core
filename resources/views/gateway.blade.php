@@ -1,43 +1,35 @@
-<x-layouts.public title="Bienvenue" description="DG Afrique relie les personnes, les besoins et les projets pour transformer une intention en action concrète.">
-    <section class="mx-auto flex min-h-[100svh] w-full max-w-6xl flex-col justify-between px-5 py-6 sm:px-8 lg:px-12 lg:py-10">
-        <header class="flex items-center justify-between gap-4">
-            <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="DG Afrique — accueil">DG Afrique</a>
-            <a href="{{ route('login') }}" class="text-sm font-semibold text-[var(--color-primary)] underline-offset-4 hover:underline">Se connecter</a>
+<x-layouts.public title="Bienvenue" description="Des savoir-faire à partager. Des besoins à faire avancer. Des personnes avec qui agir." :full-width="true">
+    <div class="dg-entry">
+        <header class="dg-entry-header">
+            <a href="{{ route('gateway') }}" class="dg-entry-brand" aria-label="DG Afrique — accueil"><span>DG</span> Afrique</a>
+            <nav aria-label="Navigation publique" class="dg-entry-nav">
+                <a href="{{ route('landing') }}" class="dg-entry-discover-link">Découvrir</a>
+                <a href="{{ route('login') }}" class="dg-entry-login">Se connecter</a>
+            </nav>
         </header>
-
-        <div class="grid gap-10 py-12 lg:grid-cols-[1.08fr_.92fr] lg:items-center">
-            <div class="max-w-2xl">
-                <p class="mb-4 text-sm font-bold uppercase tracking-[.18em] text-[var(--color-growth)]">Réseau social d’action</p>
-                <h1 class="text-balance text-4xl font-black leading-[1.02] tracking-[-.045em] text-[var(--color-ink)] sm:text-5xl lg:text-7xl">
-                    Des personnes qui transforment des intentions en actions réelles.
-                </h1>
-                <p class="mt-6 max-w-xl text-lg leading-8 text-[var(--color-muted)]">
-                    DG Afrique vous aide à trouver des savoir-faire, exprimer un besoin, rejoindre un projet et avancer avec les bonnes personnes — sans avoir à comprendre la technologie qui relie tout cela.
-                </p>
-
-                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <section class="dg-entry-hero" aria-labelledby="entry-title">
+            <div class="dg-entry-copy">
+                <p class="dg-entry-eyebrow">Le Réseau social d’action</p>
+                <h1 id="entry-title">De vos idées.<br>À nos actions.</h1>
+                <p class="dg-entry-intro">Des savoir-faire à partager. Des besoins à faire avancer.<br class="dg-wide-break"> Des personnes avec qui agir.</p>
+                <div class="dg-entry-actions">
                     <x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button>
-                    <x-dg.button :href="route('landing')" variant="secondary">Découvrir d’abord</x-dg.button>
+                    <a href="{{ route('landing') }}" class="dg-entry-text-link">Découvrir le réseau <span aria-hidden="true">→</span></a>
                 </div>
-                <p class="mt-4 text-sm leading-6 text-[var(--color-muted)]">La création d’un compte DG Afrique est distincte de toute adhésion à une ZUMRA.</p>
+                <p class="dg-entry-account" aria-label="Compte gratuit, distinct de toute adhésion à une ZUMRA">Compte gratuit · Adhésion ZUMRA distincte</p>
             </div>
-
-            <aside class="rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_22px_70px_rgba(8,59,86,.10)] sm:p-8" aria-label="Ce que vous pouvez faire sur DG Afrique">
-                <div class="mb-7 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--color-solar)] text-[var(--color-ink)]">
-                    <x-dg.icon name="act" size="28" />
-                </div>
-                <h2 class="text-2xl font-black tracking-[-.025em]">Commencez par ce qui compte pour vous.</h2>
-                <div class="mt-6 grid gap-4">
-                    <div class="rounded-2xl bg-[var(--color-canvas)] p-4"><strong class="block">J’ai quelque chose à apporter</strong><span class="mt-1 block text-sm text-[var(--color-muted)]">Rendez vos savoir-faire et disponibilités découvrables.</span></div>
-                    <div class="rounded-2xl bg-[var(--color-canvas)] p-4"><strong class="block">J’ai un besoin concret</strong><span class="mt-1 block text-sm text-[var(--color-muted)]">Expliquez ce qui manque pour faire avancer une action.</span></div>
-                    <div class="rounded-2xl bg-[var(--color-canvas)] p-4"><strong class="block">Je veux découvrir</strong><span class="mt-1 block text-sm text-[var(--color-muted)]">Explorez uniquement ce qui est réellement public.</span></div>
-                </div>
-            </aside>
-        </div>
-
-        <footer class="flex flex-col gap-2 border-t border-black/10 pt-5 text-sm text-[var(--color-muted)] sm:flex-row sm:items-center sm:justify-between">
-            <span>DG Afrique · agir, collaborer, prouver.</span>
-            <a href="{{ route('landing') }}" class="font-semibold text-[var(--color-primary)]">Voir le réseau public</a>
-        </footer>
-    </section>
+            <figure class="dg-entry-art">
+                <picture>
+                    <source srcset="{{ asset('images/entry/agir-ensemble-768.webp') }} 768w, {{ asset('images/entry/agir-ensemble-1536.webp') }} 1536w" sizes="(min-width: 900px) 58vw, 100vw" type="image/webp">
+                    <img src="{{ asset('images/entry/agir-ensemble-1536.webp') }}" alt="Illustration de quatre personnes réunissant leurs savoir-faire autour d’un projet commun." width="1536" height="1024" fetchpriority="high">
+                </picture>
+                <figcaption class="dg-entry-handwritten">Plus loin<br>ensemble <span aria-hidden="true">—</span></figcaption>
+            </figure>
+        </section>
+        <section class="dg-entry-contribution" aria-labelledby="contribution-title">
+            <h2 id="contribution-title">Chacun peut apporter quelque chose.</h2>
+            <ul><li>Un savoir-faire</li><li>Un besoin</li><li>L’envie de participer</li></ul>
+        </section>
+        <footer class="dg-entry-footer"><span>DG Afrique · Le pouvoir d’agir ensemble</span><a href="{{ route('landing') }}">Faisons connaissance <span aria-hidden="true">↗</span></a></footer>
+    </div>
 </x-layouts.public>

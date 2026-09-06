@@ -32,7 +32,8 @@ test('public discovery stays honest when the database is empty', async () => {
   const content = await read('resources/views/foundation.blade.php');
   assert.match(content, /\$realMoments->isEmpty\(\)/);
   assert.match(content, /Aucun besoin ou projet public/);
-  assert.match(content, /faux contenus/);
+  assert.match(content, /Votre première contribution peut ouvrir la voie/);
+  assert.doesNotMatch(content, /publicStats|faux contenus/);
   assert.doesNotMatch(content, /faker|fixture|demo data/i);
 });
 
@@ -55,4 +56,16 @@ test('secrets and verification codes are never flashed back into fields', async 
   assert.doesNotMatch(login, /old\(['"]secret/);
   assert.doesNotMatch(register, /old\(['"]password/);
   assert.doesNotMatch(verify, /old\(['"]code/);
+});
+
+
+test('public and identity surfaces reference defined design tokens', async () => {
+  const css = await read('resources/css/app.css');
+  const defined = new Set([...css.matchAll(/(--[\w-]+)\s*:/g)].map(match => match[1]));
+  for (const surface of surfaces) {
+    const content = await read(surface);
+    for (const [, token] of content.matchAll(/var\((--[\w-]+)/g)) {
+      assert.ok(defined.has(token), `${surface}: undefined ${token}`);
+    }
+  }
 });

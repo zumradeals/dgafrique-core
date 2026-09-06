@@ -2,11 +2,11 @@
     <section class="mx-auto grid min-h-[100svh] w-full max-w-6xl gap-10 px-5 py-6 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-12 lg:py-10">
         <div>
             <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="DG Afrique — accueil">DG Afrique</a>
-            <p class="mt-10 text-sm font-bold uppercase tracking-[.18em] text-[var(--color-network)]">Première étape</p>
+            <p class="mt-10 text-sm font-bold uppercase tracking-[.18em] text-[var(--dg-network)]">Première étape</p>
             <h1 class="mt-3 max-w-xl text-balance text-4xl font-black leading-[1.04] tracking-[-.04em] sm:text-5xl">Créez votre espace. Le reste viendra au bon moment.</h1>
-            <p class="mt-5 max-w-lg text-lg leading-8 text-[var(--color-muted)]">Nous demandons seulement ce qui est nécessaire pour créer et vérifier votre compte. Vous pourrez ensuite préciser vos capacités, besoins et projets progressivement.</p>
-            <div class="mt-7 rounded-2xl bg-white/70 p-5 text-sm leading-6 text-[var(--color-muted)]"><strong class="text-[var(--color-ink)]">À savoir :</strong> un compte DG Afrique vous donne accès au réseau. L’adhésion à une ZUMRA est une démarche distincte, avec ses propres règles.</div>
-            <p class="mt-7 text-sm text-[var(--color-muted)]">Déjà inscrit ? <a class="font-semibold text-[var(--color-primary)] underline underline-offset-4" href="{{ route('login') }}">Se connecter</a></p>
+            <p class="mt-5 max-w-lg text-lg leading-8 text-[var(--dg-muted)]">Nous demandons seulement ce qui est nécessaire pour créer et vérifier votre compte. Vous pourrez ensuite préciser vos capacités, besoins et projets progressivement.</p>
+            <div class="mt-7 rounded-2xl bg-white/70 p-5 text-sm leading-6 text-[var(--dg-muted)]"><strong class="text-[var(--dg-ink)]">À savoir :</strong> un compte DG Afrique vous donne accès au réseau. L’adhésion à une ZUMRA est une démarche distincte, avec ses propres règles.</div>
+            <p class="mt-7 text-sm text-[var(--dg-muted)]">Déjà inscrit ? <a class="font-semibold text-[var(--dg-primary)] underline underline-offset-4" href="{{ route('login') }}">Se connecter</a></p>
         </div>
 
         <div class="rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_22px_70px_rgba(8,59,86,.10)] sm:p-8 lg:p-10">
@@ -30,7 +30,7 @@
                     <x-dg.input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" required />
                 </x-dg.field>
 
-                <label class="flex items-start gap-3 rounded-2xl bg-[var(--color-canvas)] p-4 text-sm leading-6">
+                <label class="flex items-start gap-3 rounded-2xl bg-[var(--dg-canvas)] p-4 text-sm leading-6">
                     <input class="mt-1 h-4 w-4" type="checkbox" name="terms" value="1" @checked(old('terms')) required>
                     <span>J’accepte les conditions nécessaires à la création de mon compte DG Afrique.</span>
                 </label>
