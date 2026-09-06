@@ -1,8 +1,16 @@
 # FRONTEND-REBUILD-001 — feuille de route canonique du frontend neuf
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 ## Statut
 
-`AUTORISÉ — F0 PASS — F1 IN_PROGRESS`
+`AUTORISÉ — F0 PASS — F1 BLOCKED`
 
 Le moteur est certifié. L'ancien frontend est supprimé. Cette feuille de route est l'unique chemin
 autorisé pour rendre DG Afrique de nouveau utilisable sur le web.
@@ -61,7 +69,7 @@ pas une autorité visuelle du frontend neuf.
 
 **Porte F1 :** aucune page métier avant validation du socle commun desktop et mobile.
 
-**Résultat courant : IN_PROGRESS.** Le pipeline et les primitives communes existent désormais ;
+**Résultat courant : BLOCKED — tentative retirée.** Le pipeline et les primitives communes existent désormais ;
 la compilation de production et les tests statiques du contrat passent. Les contrôles PHP/HTTP et
 navigateur mobile/desktop restent obligatoires avant de prononcer `PASS`.
 

@@ -1,8 +1,16 @@
 # USER-JOURNEY-001 — Opération Parcours de l'Utilisateur
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 ## Statut et autorité
 
-`CANONIQUE — UJ-00 PASS — UJ-01 PASS — UJ-02 IN_PROGRESS`
+`CANONIQUE — UJ-00 PASS — UJ-01 BLOCKED — UJ-02 PENDING`
 
 Ce document est le **registre d'exécution des parcours** du frontend neuf. Il est subordonné à
 `FRONTEND-REBUILD-001`, dont il détaille la dimension utilisateur. Il ne crée ni seconde roadmap
@@ -192,8 +200,8 @@ prochaine étape.
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d'état, navigation canonique et pipeline frontend | UJ-00 | **PASS** | 8/8 tests frontend ; build Vite production ; Git propre ; validation navigateur outillée avec Chromium 151 |
-| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **IN_PROGRESS** | Entrées illustrées intégrées ; 14 tests frontend, 17 tests PHP ; validation finale identité/préproduction encore requise |
+| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **BLOCKED** | tentative retirée le 6 septembre 2026 ; nouvelle instruction requise |
+| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | vues retirées ; contrats moteur conservés |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
 | `UJ-05` | P4 projet, équipe, mission et preuve | UJ-04 | PENDING | boucle projet verticale automatisée |

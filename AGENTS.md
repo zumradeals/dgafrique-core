@@ -1,5 +1,13 @@
 # AGENTS.md — consignes obligatoires pour DG Afrique
 
+> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
+> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
+> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
+> Les services, routes, données et autorités métier restent inchangés. Le site doit
+> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
+> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
+> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+
 Ce fichier s'applique à tout le dépôt. Toute IA, tout agent de code et tout contributeur doit le
 lire avant d'analyser, modifier ou générer du code.
 

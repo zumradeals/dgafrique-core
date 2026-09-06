@@ -345,7 +345,13 @@ La séquence autorisée reste :
 La marque est donc prête comme fondation. Elle n'est pas une autorisation de commencer la
 carrosserie avant la certification du moteur.
 
-## 20. Direction artistique des entrées publiques — 5 septembre 2026
+## 20. Direction artistique des entrées publiques — tentative retirée
+
+Le 6 septembre 2026, le dépositaire produit a demandé le retrait intégral du frontend.
+Les assets cités ci-dessous ont été supprimés ; cette tentative ne constitue plus une
+autorisation d’intégration ou de restauration. La charte des sections précédentes est conservée.
+
+### Décision historique du 5 septembre 2026
 
 Le dépositaire produit a approuvé la maquette « Le pouvoir d’agir ensemble » et demandé son
 intégration dans UJ-02 : accueil, découverte et adaptation mobile. Elle précise la composition
