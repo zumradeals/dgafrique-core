@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'fullWidth' => false])
 
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar'], true) ? 'rtl' : 'ltr' }}">
@@ -14,7 +14,7 @@
     </head>
     <body>
         <a class="dg-skip-link" href="#contenu-principal">Aller au contenu</a>
-        <main class="dg-public-main" id="contenu-principal" tabindex="-1">
+        <main class="{{ $fullWidth ? 'dg-public-main dg-public-main--art' : 'dg-public-main' }}" id="contenu-principal" tabindex="-1">
             {{ $slot }}
         </main>
         @livewireScriptConfig

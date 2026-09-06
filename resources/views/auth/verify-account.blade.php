@@ -2,9 +2,9 @@
     <section class="mx-auto flex min-h-[100svh] w-full max-w-3xl items-center px-5 py-8 sm:px-8">
         <div class="w-full rounded-[2rem] border border-black/5 bg-white p-6 shadow-[0_22px_70px_rgba(8,59,86,.10)] sm:p-10">
             <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="DG Afrique — accueil">DG Afrique</a>
-            <p class="mt-8 text-sm font-bold uppercase tracking-[.18em] text-[var(--color-growth)]">Vérification</p>
+            <p class="mt-8 text-sm font-bold uppercase tracking-[.18em] text-[var(--dg-growth)]">Vérification</p>
             <h1 class="mt-3 text-balance text-3xl font-black tracking-[-.035em] sm:text-4xl">Confirmez que cette adresse vous appartient.</h1>
-            <p class="mt-4 max-w-2xl leading-7 text-[var(--color-muted)]">Saisissez le code à 6 chiffres envoyé à <strong class="text-[var(--color-ink)]">{{ $pending->destination }}</strong>.</p>
+            <p class="mt-4 max-w-2xl leading-7 text-[var(--dg-muted)]">Saisissez le code à 6 chiffres envoyé à <strong class="text-[var(--dg-ink)]">{{ $pending->destination }}</strong>.</p>
 
             @if (session('status'))
                 <x-dg.notice class="mt-6" type="success" title="Information">{{ session('status') }}</x-dg.notice>
@@ -24,9 +24,9 @@
             <div class="mt-6 flex flex-col gap-4 border-t border-black/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
                 <form method="post" action="{{ route('register.verify.resend') }}">
                     @csrf
-                    <button type="submit" class="text-sm font-semibold text-[var(--color-primary)] underline underline-offset-4">Renvoyer un code</button>
+                    <button type="submit" class="text-sm font-semibold text-[var(--dg-primary)] underline underline-offset-4">Renvoyer un code</button>
                 </form>
-                <a href="{{ route('register') }}" class="text-sm text-[var(--color-muted)] underline underline-offset-4">Recommencer la création du compte</a>
+                <a href="{{ route('register') }}" class="text-sm text-[var(--dg-muted)] underline underline-offset-4">Recommencer la création du compte</a>
             </div>
         </div>
     </section>

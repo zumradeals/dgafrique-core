@@ -344,3 +344,30 @@ La séquence autorisée reste :
 
 La marque est donc prête comme fondation. Elle n'est pas une autorisation de commencer la
 carrosserie avant la certification du moteur.
+
+## 20. Direction artistique des entrées publiques — 5 septembre 2026
+
+Le dépositaire produit a approuvé la maquette « Le pouvoir d’agir ensemble » et demandé son
+intégration dans UJ-02 : accueil, découverte et adaptation mobile. Elle précise la composition
+de ces surfaces : titre « De vos idées. À nos actions. », présence humaine illustrée, canevas
+chaud, bleu profond et jaune solaire, action de création de compte dominante. Le nom DG Afrique
+reste du texte HTML, sans création d'un symbole officiel.
+
+Les illustrations conceptuelles sous `public/images/entry/` ne représentent aucun membre ni
+projet réel. Elles ont été produites avec ImageGen à partir de la maquette approuvée :
+
+- `agir-ensemble` : quatre personnes réunies autour d'un plan, femme en bleu et foulard jaune,
+  homme en vert, femme en blanc et homme en jaune ; soleil jaune, architecture bleue, végétation ;
+- `construire-ensemble` : deux personnes construisent un bac en bois, vêtements bleus et jaunes,
+  végétation, même style éditorial peint et fond ivoire.
+
+Contraintes communes de génération : illustration seule, fidèle à la référence, sans interface,
+texte, logo ni cadre. Le contenu essentiel et les actions sont intégralement en HTML. Les assets
+WebP en 768 et 1536 pixels sont sélectionnés par le navigateur ; aucune police externe n'est
+nécessaire. Les légendes manuscrites restent décoratives et non indispensables au parcours.
+
+L'état sans activité invite à contribuer et indique l'absence de besoins/projets publics. Les
+compteurs à zéro et les précautions internes (« faux contenus ») ne sont pas un discours
+commercial. En présence d'activité, les objets publics du contrôleur existant sont affichés,
+avec leurs règles de visibilité inchangées. La navigation membre canonique reste applicable
+uniquement après connexion ; aucun menu sans destination n'est ajouté à l'accueil mobile.

@@ -1,59 +1,54 @@
-<x-layouts.public title="Découvrir" description="Découvrez les besoins et projets réellement publics sur DG Afrique.">
-    <div class="mx-auto w-full max-w-6xl px-5 py-6 sm:px-8 lg:px-12 lg:py-10">
-        <header class="flex items-center justify-between gap-4">
-            <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="DG Afrique — accueil">DG Afrique</a>
-            <div class="flex items-center gap-3">
-                <a href="{{ route('login') }}" class="text-sm font-semibold text-[var(--color-primary)]">Se connecter</a>
+<x-layouts.public title="Découvrir" description="Découvrez les besoins et les projets partagés publiquement sur DG Afrique." :full-width="true">
+    <div class="dg-entry dg-discovery">
+        <header class="dg-entry-header">
+            <a href="{{ route('gateway') }}" class="dg-entry-brand" aria-label="DG Afrique — accueil"><span>DG</span> Afrique</a>
+            <nav aria-label="Navigation publique" class="dg-entry-nav">
+                <a href="{{ route('login') }}" class="dg-entry-login">Se connecter</a>
                 <x-dg.button :href="route('register')" variant="primary">Créer un compte</x-dg.button>
-            </div>
+            </nav>
         </header>
-
-        <section class="py-12 lg:py-16">
-            <p class="text-sm font-bold uppercase tracking-[.18em] text-[var(--color-network)]">Découvrir sans compte</p>
-            <div class="mt-4 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
-                <div>
-                    <h1 class="max-w-3xl text-balance text-4xl font-black leading-[1.04] tracking-[-.04em] sm:text-5xl">Voyez ce qui avance réellement autour de vous.</h1>
-                    <p class="mt-5 max-w-2xl text-lg leading-8 text-[var(--color-muted)]">Cette page ne montre que des informations rendues publiques par leurs auteurs. Rien n’est inventé pour remplir l’écran.</p>
-                </div>
-                <a href="{{ route('gateway') }}" class="text-sm font-semibold text-[var(--color-primary)]">Pourquoi DG Afrique ?</a>
-            </div>
+        <section class="dg-discovery-heading">
+            <p class="dg-entry-eyebrow">Le pouvoir d’agir ensemble</p>
+            <h1>Les rencontres font avancer les idées.</h1>
+            <p>Découvrez les besoins et les projets partagés publiquement.</p>
         </section>
-
-        <section aria-labelledby="public-stats-title" class="grid gap-4 sm:grid-cols-3">
-            <h2 class="sr-only" id="public-stats-title">Aperçu public réel</h2>
-            <div class="rounded-3xl border border-black/5 bg-white p-6"><span class="text-3xl font-black">{{ number_format($publicStats['people'], 0, ',', ' ') }}</span><span class="mt-1 block text-sm text-[var(--color-muted)]">personnes découvrables</span></div>
-            <div class="rounded-3xl border border-black/5 bg-white p-6"><span class="text-3xl font-black">{{ number_format($publicStats['projects'], 0, ',', ' ') }}</span><span class="mt-1 block text-sm text-[var(--color-muted)]">projets publics actifs</span></div>
-            <div class="rounded-3xl border border-black/5 bg-white p-6"><span class="text-3xl font-black">{{ number_format($publicStats['countries'], 0, ',', ' ') }}</span><span class="mt-1 block text-sm text-[var(--color-muted)]">pays représentés publiquement</span></div>
-        </section>
-
-        <section class="py-12" aria-labelledby="moments-title">
-            <div class="flex items-end justify-between gap-4">
-                <div><p class="text-sm font-bold uppercase tracking-[.18em] text-[var(--color-growth)]">En mouvement</p><h2 id="moments-title" class="mt-2 text-3xl font-black tracking-[-.03em]">Besoins et projets publics</h2></div>
-            </div>
-
-            @if ($realMoments->isEmpty())
-                <div class="mt-6 rounded-3xl border border-dashed border-black/15 bg-white/70 p-8 sm:p-10">
-                    <h3 class="text-xl font-black">Le réseau public démarre ici.</h3>
-                    <p class="mt-2 max-w-2xl text-[var(--color-muted)]">Aucun besoin ou projet public n’est disponible pour le moment. Nous préférons vous le dire clairement plutôt que d’afficher de faux contenus.</p>
-                    <div class="mt-6"><x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button></div>
+        @if ($realMoments->isEmpty())
+            <section class="dg-discovery-empty" aria-labelledby="network-title">
+                <figure class="dg-discovery-art">
+                    <picture>
+                        <source srcset="{{ asset('images/entry/construire-ensemble-768.webp') }} 768w, {{ asset('images/entry/construire-ensemble-1536.webp') }} 1536w" sizes="(min-width: 900px) 50vw, 100vw" type="image/webp">
+                        <img src="{{ asset('images/entry/construire-ensemble-1536.webp') }}" alt="Illustration de deux personnes construisant ensemble un bac en bois." width="1536" height="1024" fetchpriority="high">
+                    </picture>
+                    <figcaption class="dg-entry-handwritten">Des idées<br>au service<br>du réel <span aria-hidden="true">—</span></figcaption>
+                </figure>
+                <div class="dg-discovery-invitation">
+                    <h2 id="network-title">Le réseau commence<br>avec vous.</h2>
+                    <p>Aucun besoin ou projet public n’est disponible pour le moment.<br>Votre première contribution peut ouvrir la voie.</p>
+                    <x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button>
+                    <p class="dg-entry-account">Compte gratuit · Adhésion ZUMRA distincte</p>
                 </div>
-            @else
-                <div class="mt-6 grid gap-4 lg:grid-cols-3">
+            </section>
+        @else
+            <section class="dg-discovery-moments" aria-labelledby="moments-title">
+                <h2 id="moments-title">Besoins et projets publics</h2>
+                <div class="dg-moments-grid">
                     @foreach ($realMoments as $moment)
-                        <article class="rounded-3xl border border-black/5 bg-white p-6">
-                            <span class="text-xs font-bold uppercase tracking-[.16em] text-[var(--color-primary)]">{{ $moment['type'] }}</span>
-                            <h3 class="mt-3 text-xl font-black leading-tight">{{ $moment['titre'] }}</h3>
-                            @if ($moment['lieu'])<p class="mt-3 text-sm text-[var(--color-muted)]">{{ $moment['lieu'] }}</p>@endif
-                            <p class="mt-5 text-xs font-medium text-[var(--color-muted)]">{{ $moment['meta'] }}</p>
+                        <article class="dg-moment">
+                            <span class="dg-entry-eyebrow">{{ $moment['type'] }}</span>
+                            <h3>{{ $moment['titre'] }}</h3>
+                            @if ($moment['lieu'])<p>{{ $moment['lieu'] }}</p>@endif
+                            <p class="dg-moment-meta">{{ $moment['meta'] }}</p>
                         </article>
                     @endforeach
                 </div>
-            @endif
+                <div class="dg-discovery-join"><p>Une idée, un savoir-faire, l’envie de participer ?</p><x-dg.button :href="route('register')" variant="primary">Créer mon compte</x-dg.button></div>
+            </section>
+        @endif
+        <section class="dg-entry-how" aria-labelledby="how-title">
+            <h2 id="how-title">Comment ça marche ?</h2>
+            <ol><li>Partager un savoir-faire</li><li>Rencontrer</li><li>Agir ensemble</li></ol>
+            <p>Des rencontres d’aujourd’hui<br>pour des solutions de demain.</p>
         </section>
-
-        <section class="rounded-[2rem] bg-[var(--color-deep)] px-6 py-8 text-white sm:px-8 lg:flex lg:items-center lg:justify-between lg:gap-8">
-            <div><h2 class="text-2xl font-black">Vous voulez participer plutôt que regarder ?</h2><p class="mt-2 max-w-xl text-white/75">Créez un compte pour rendre votre intention actionnable et retrouver votre espace personnel.</p></div>
-            <div class="mt-6 flex flex-col gap-3 sm:flex-row lg:mt-0"><x-dg.button :href="route('register')" variant="solar">Créer mon compte</x-dg.button><a href="{{ route('login') }}" class="inline-flex min-h-12 items-center justify-center font-semibold text-white underline underline-offset-4">J’ai déjà un compte</a></div>
-        </section>
+        <footer class="dg-entry-footer"><a href="{{ route('gateway') }}">Pourquoi DG Afrique ?</a><span>Le pouvoir d’agir ensemble</span></footer>
     </div>
 </x-layouts.public>
