@@ -1,5 +1,14 @@
 # DG Afrique Core
 
+> **Reprise autorisée — version Astra `8566c4a` (7 septembre 2026).** Le dépositaire
+> produit a explicitement demandé de publier cette version distincte de la livraison
+> rejetée du 6 septembre. Cette branche de proposition réintroduit les vues, composants,
+> assets et pipeline de cette version pour revue, sans reprendre les assets de la PR #151.
+> Le moteur reste intact ; maintenance et NO-GO production restent en vigueur.
+> Les validations antérieures à cette reprise ne certifient pas cette version.
+> Le registre actif et les vérifications restantes figurent dans `docs/roadmap/USER-JOURNEY-001.md`.
+
+
 > **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
 > dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
 > Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
