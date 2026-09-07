@@ -1,4 +1,4 @@
-<x-layouts.public title="Découvrir" description="Découvrez les besoins et les projets partagés publiquement sur DG Afrique." :editorial="true">
+<x-layouts.public title="Découvrir" description="Découvrez les besoins et les projets partagés publiquement sur DG Afrique." :editorial="true" canonical="https://dgafrique.com/decouvrir">
     <div class="dg-entry dg-discovery">
         <x-dg.public-header :discovery="true" />
         <section class="dg-discovery-intro" aria-labelledby="discovery-title">
