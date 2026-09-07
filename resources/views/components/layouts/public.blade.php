@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null, 'editorial' => false])
+@props(['title' => null, 'description' => null, 'editorial' => false, 'canonical' => null])
 
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar'], true) ? 'rtl' : 'ltr' }}">
@@ -8,6 +8,12 @@
         <meta name="color-scheme" content="light">
         <meta name="theme-color" content="#F6F5F0">
         @if ($description)<meta name="description" content="{{ $description }}">@endif
+        @if ($canonical)
+            <link rel="canonical" href="{{ $canonical }}">
+            <meta name="robots" content="index, follow">
+        @else
+            <meta name="robots" content="noindex, follow">
+        @endif
         <title>{{ $title ? $title.' — ' : '' }}DG Afrique</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles

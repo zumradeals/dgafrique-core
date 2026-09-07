@@ -339,3 +339,38 @@ par cette proposition.
 Illustrations : créations conceptuelles de cette conversation, optimisées en WebP 640/1280 px
 (69/200 ko pour l’accueil, 46/132 ko pour la découverte). Aucun contenu membre simulé. Les textes,
 liens et données restent en HTML/Blade ; aucune capture de maquette n’est utilisée comme page.
+
+### Suite éditoriale S01 — landing de vision (7 septembre 2026)
+
+Le dépositaire a confirmé le rendu de l’accueil mobile déployé au commit `0553be7`, puis demandé
+une véritable landing expliquant la vision et indexable. L’accueil `/` porte ce récit ;
+`/decouvrir` conserve son rôle de lecture des besoins et projets publics.
+
+Le premier écran et sa bande collective sont conservés. Le contenu HTML ajouté présente la
+vision, les contributions possibles, le chemin vers l’action, les ZUMRA, les engagements et sept
+questions fréquentes. Le rôle des ZUMRA suit la doctrine canonique, sans divulguer l’institution
+ni l’infrastructure internes. Les capacités futures sont cadrées comme vision ; la FAQ précise
+ce qui est découvrable aujourd’hui et le développement progressif des autres parcours.
+
+Les huit champs S01 restent ceux de la reprise ci-dessus ; nouvelles interactions : ancres
+locales et éléments natifs details/summary sans mutation ni dépendance JavaScript.
+
+SEO : titres/descriptions HTML, canonicals de production pour `/` et `/decouvrir`, directives
+index/follow pour ces pages et noindex/follow par défaut pour les surfaces d’identité du layout
+public. Sitemap XML statique de deux URL, déclaré dans robots.txt ; aucune donnée privée, aucun
+profil ni faux lastmod. L’origine canonique est explicitement `https://dgafrique.com`, indépendante
+d’un en-tête Host externe. En cas de changement de domaine, modifier les deux canonicals, le
+sitemap et robots.txt ensemble. Les permissions serveur restent l’autorité de confidentialité ;
+robots.txt ne remplace pas une autorisation.
+
+Sources SEO : documentation Google Search Central « Build and submit a sitemap »
+(https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap) et
+« Introduction to robots.txt »
+(https://developers.google.com/search/docs/crawling-indexing/robots/intro).
+
+Validation locale de cette extension : 17 tests frontend PASS, build Vite PASS, diff propre ;
+aucune différence des chemins moteur protégés. PHP et navigateur Laravel non exécutés ici.
+L’accord mobile de la version précédente ne certifie pas les nouvelles sections ni le desktop.
+À vérifier après déploiement : HTTP 200 anonyme, absence de X-Robots-Tag noindex sur les pages
+publiques, canonicals, sitemap servi en XML, rendu mobile/desktop, accord éditorial et navigation
+FAQ/ancres au clavier. Aucune soumission Search Console ni indexation effective revendiquée.
