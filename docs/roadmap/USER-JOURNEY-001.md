@@ -1,5 +1,14 @@
 # USER-JOURNEY-001 — Opération Parcours de l'Utilisateur
 
+> **Reprise autorisée — version Astra `8566c4a` (7 septembre 2026).** Le dépositaire
+> produit a explicitement demandé de publier cette version distincte de la livraison
+> rejetée du 6 septembre. Cette branche de proposition réintroduit les vues, composants,
+> assets et pipeline de cette version pour revue, sans reprendre les assets de la PR #151.
+> Le moteur reste intact ; maintenance et NO-GO production restent en vigueur.
+> Les validations antérieures à cette reprise ne certifient pas cette version.
+> Le registre actif et les vérifications restantes figurent dans `docs/roadmap/USER-JOURNEY-001.md`.
+
+
 > **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
 > dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
 > Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
@@ -10,7 +19,7 @@
 
 ## Statut et autorité
 
-`CANONIQUE — UJ-00 PASS — UJ-01 BLOCKED — UJ-02 PENDING`
+`CANONIQUE — UJ-00 PASS — UJ-01 IN_PROGRESS — UJ-02 PENDING`
 
 Ce document est le **registre d'exécution des parcours** du frontend neuf. Il est subordonné à
 `FRONTEND-REBUILD-001`, dont il détaille la dimension utilisateur. Il ne crée ni seconde roadmap
@@ -200,7 +209,7 @@ prochaine étape.
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **BLOCKED** | tentative retirée le 6 septembre 2026 ; nouvelle instruction requise |
+| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **IN_PROGRESS** | tentative retirée le 6 septembre 2026 ; nouvelle instruction requise |
 | `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | vues retirées ; contrats moteur conservés |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
@@ -296,3 +305,37 @@ PHP 8.4/PostgreSQL restent à vérifier en préproduction.
 UJ-02 reste `IN_PROGRESS` : cette intégration artistique ne ferme ni G01 (récupération de compte)
 ni les autres portes d'identité et de préproduction prévues par UJ-00. Aucun déploiement public
 et aucun passage automatique à UJ-03 ne sont décidés par ce changement.
+
+## Reprise Astra demandée le 7 septembre 2026 — état courant
+
+Base : `main` au commit `496db35` (retrait moteur seul). Source explicitement demandée par
+le dépositaire : `8566c4a`, produite dans cette conversation. La branche est distincte de
+`frontend/uj-02-art-direction` et n’intègre pas la réalisation rejetée de la PR #151.
+
+La proposition contient le socle nécessaire à l’exécution de cette version : pipeline verrouillé,
+composants, layouts, navigation contractuelle, écrans d’identité, accueil et découverte. Leur
+présence dans la proposition ne vaut pas certification ni passage à UJ-03. UJ-01 revient en
+IN_PROGRESS pour revalidation du socle après retrait ; UJ-02 est préparé dans cette proposition
+sur demande explicite, mais reste PENDING jusqu’à validation de cette dépendance.
+
+Les huit champs du contrat restent : personne = visiteur ; intention = comprendre/entrer ;
+état d’entrée = accès public et collection réelle vide/peuplée ; action = navigation vers
+register/login/landing/gateway ; autorité = contrôleurs existants, PortalMemberSession,
+NeedService::canView et ProjectService::canView ; résultat = navigation ou lecture sans mutation ;
+retour = contenu public échappé ou état vide explicite ; suite = identité S03/S04.
+
+Vérifications de cette proposition : 15 tests frontend PASS, build Vite PASS, diff sans erreur.
+Le bundle utilise la distribution Livewire de la version exacte de composer.lock. Aucun fichier
+sous app/, bootstrap/, config/, database/ ou routes/ ne diffère de main.
+
+PHP/Composer sont indisponibles ici : tests Laravel et validation navigateur du rendu serveur
+non exécutés pour cette version. Les preuves de la PR #151 ne s’y appliquent pas. Avant fusion,
+exécuter sous PHP 8.4 les tests FrontendFoundationTest, LandingPublicDiscoveryTest et
+MemberAccountRegistrationTest ; vérifier accueil/découverte/identité à 360, 390, 768 et 1440 px,
+clavier, contraste, zoom 200 %, images absentes et parcours d’identité. La connexion aux
+fournisseurs réels doit être vérifiée en préproduction. Aucune fusion ou mise en ligne autorisée
+par cette proposition.
+
+Illustrations : créations conceptuelles de cette conversation, optimisées en WebP 640/1280 px
+(69/200 ko pour l’accueil, 46/132 ko pour la découverte). Aucun contenu membre simulé. Les textes,
+liens et données restent en HTML/Blade ; aucune capture de maquette n’est utilisée comme page.
