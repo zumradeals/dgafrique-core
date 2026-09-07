@@ -1,0 +1,1 @@
+<x-layouts.public title="La situation a changé."><section class="dg-space dg-space-section"><h1>La situation a changé.</h1><p>L’action ne peut plus être effectuée dans cet état. Revenez à votre espace pour retrouver les informations à jour.</p><a class="dg-space-text-link" href="{{ route('member.space') }}">Revenir à mon espace →</a></section></x-layouts.public>

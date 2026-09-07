@@ -11,6 +11,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="color-scheme" content="light">
+        <meta name="robots" content="noindex, nofollow">
         <meta name="theme-color" content="#F6F5F0">
         @if ($description)<meta name="description" content="{{ $description }}">@endif
         <title>{{ $title ? $title.' — ' : '' }}DG Afrique</title>
@@ -33,6 +34,12 @@
         <div class="dg-app-shell">
             <x-dg.navigation :active="$active" :actions="$actions" />
 
+            @if (session('status'))
+                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" role="status">
+                    <x-dg.notice type="success" title="Action confirmée">{{ session('status') }}</x-dg.notice>
+                </div>
+            @endif
+
             @if (session('success'))
                 <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" aria-live="polite">
                     <x-dg.notice type="success" title="Action confirmée">{{ session('success') }}</x-dg.notice>
@@ -42,6 +49,14 @@
             @if (session('error'))
                 <div class="mx-auto w-full max-w-[76rem] px-4 pt-4">
                     <x-dg.notice type="danger" title="Nous n’avons pas pu terminer">{{ session('error') }}</x-dg.notice>
+                </div>
+            @endif
+
+            @if ($errors->any())
+                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" role="alert">
+                    <x-dg.notice type="danger" title="Quelques informations sont à vérifier">
+                        <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+                    </x-dg.notice>
                 </div>
             @endif
 

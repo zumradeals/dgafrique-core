@@ -1,0 +1,3 @@
+<x-layouts.member title="Notifications" active="space"><div class="dg-space"><a class="dg-space-text-link" href="{{ route('member.space') }}">← Mon espace</a><h1>Ce qui vous concerne.</h1>
+@foreach (['a_traiter' => 'À traiter', 'recentes' => 'Nouvelles récentes'] as $key => $label)<section class="dg-space-section"><h2>{{ $label }}</h2>@forelse ($sections[$key] as $item)<a class="dg-space-row" href="{{ $item['action_url'] }}"><span><strong>{{ $item['title'] }}</strong><small>{{ $item['body'] }}</small></span><span aria-hidden="true">→</span></a>@empty<p>Aucun élément à afficher.</p>@endforelse</section>@endforeach
+</div></x-layouts.member>

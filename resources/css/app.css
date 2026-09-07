@@ -942,3 +942,62 @@
     .dg-story-steps { grid-template-columns: minmax(0, 1fr); }
     .dg-story-final .dg-entry-actions .dg-button { width: min(100%, 22rem); }
 }
+
+/* UJ-03 — Mon espace. Presentation only; priorities remain server-owned. */
+.dg-space { max-width: 72rem; margin-inline: auto; }
+.dg-space-heading { display:flex; align-items:center; justify-content:space-between; gap:1.5rem; margin-bottom:2rem; }
+.dg-space h1 { font-size:clamp(2rem,4vw,3.5rem); letter-spacing:-.045em; line-height:1.08; margin:.5rem 0 1rem; }
+.dg-space h2 { font-size:clamp(1.45rem,2.5vw,2rem); letter-spacing:-.035em; line-height:1.2; margin:0 0 1rem; }
+.dg-space p { line-height:1.65; }
+.dg-space-eyebrow { font-size:.75rem; font-weight:800; letter-spacing:.14em; color:var(--dg-primary); }
+.dg-space-tool-link { display:flex; align-items:center; gap:.65rem; padding:1rem; white-space:nowrap; color:var(--dg-primary); font-weight:750; }
+.dg-space-welcome { display:grid; grid-template-columns:1fr 1.1fr; overflow:hidden; border-radius:1.5rem; background:var(--dg-white); }
+.dg-space-welcome-art { background:var(--dg-canvas); display:flex; flex-direction:column; justify-content:flex-end; }
+.dg-space-welcome-art img { width:100%; height:auto; display:block; }
+.dg-space-welcome-art p { background:var(--dg-deep); color:var(--dg-white); font-size:2rem; font-weight:800; line-height:1.15; padding:2rem; margin:0; }
+.dg-space-welcome-content { padding:2rem; }
+.dg-space-row { display:flex; align-items:center; gap:1rem; padding:1rem; min-height:4rem; border:1px solid var(--dg-border); border-radius:.75rem; margin:.65rem 0; background:var(--dg-white); color:var(--dg-ink); text-decoration:none; }
+.dg-space-row > svg { flex-shrink:0; color:var(--dg-primary); }
+.dg-space-row > span:last-child:not(:first-child) { margin-inline-start:auto; }
+.dg-space-row strong,.dg-space-row small { display:block; }
+.dg-space-row small { color:var(--dg-muted); font-size:.875rem; line-height:1.5; margin-top:.2rem; }
+.dg-space-row:hover { border-color:var(--dg-primary); background:var(--dg-blue-soft); }
+.dg-space :is(a,button,input,textarea,select,summary):focus-visible { outline:3px solid var(--dg-primary); outline-offset:4px; }
+.dg-space-columns { display:grid; grid-template-columns:1.15fr 1fr; gap:2.5rem; margin-top:2rem; }
+.dg-space-section { padding-block:1.5rem; scroll-margin-top:6rem; }
+.dg-space-section form { margin-top:1.25rem; }
+.dg-space-section label { display:block; margin-bottom:.6rem; font-weight:650; }
+.dg-space-note { font-size:.875rem; color:var(--dg-muted); }
+.dg-space-error { color:var(--dg-danger); }
+.dg-space-priority { background:var(--dg-deep); color:var(--dg-white); border-radius:1.5rem; padding:clamp(1.5rem,4vw,3rem); max-width:54rem; }
+.dg-space-priority .dg-space-eyebrow { color:var(--dg-solar); }
+.dg-space-priority h2 { max-width:36rem; }
+.dg-space-priority .dg-button { margin-top:1rem; }
+.dg-space-tools { background:var(--dg-blue-soft); border-radius:1.25rem; padding:1.5rem; }
+.dg-space-tool-group { margin-top:1.5rem; }
+.dg-space-tool-group summary { min-height:3rem; cursor:pointer; color:var(--dg-deep); font-weight:750; padding-block:.75rem; }
+.dg-space-text-link { display:inline-block; color:var(--dg-primary); font-weight:700; padding-block:1rem; }
+@media(max-width: 760px) {
+ .dg-space-heading { align-items:flex-start; gap:.5rem; }
+ .dg-space-heading .dg-space-tool-link { font-size:.875rem; padding:.5rem 0; }
+ .dg-space-heading .dg-space-tool-link svg { display:none; }
+ .dg-space-welcome,.dg-space-columns { grid-template-columns:1fr; }
+ .dg-space-welcome-content { padding:1.25rem; }
+ .dg-space-welcome-art img { max-height:17rem; object-fit:cover; object-position:center; }
+ .dg-space-welcome-art p { display:none; }
+ .dg-space-columns { gap:0; }
+ .dg-space-tools { padding:1.25rem; }
+}
+.dg-profile-field { margin-block:1.25rem; }
+.dg-profile-field input[type=checkbox] { width:1.25rem; height:1.25rem; margin-inline-end:.5rem; accent-color:var(--dg-primary); }
+.dg-space fieldset { border:0; min-width:0; }
+.dg-space fieldset legend { padding-top:1.5rem; }
+.dg-space-description { white-space:pre-line; }
+.dg-space-section form + form { margin-top:1rem; }
+
+.dg-space h1,.dg-space h2 { font-weight:800; }
+.dg-space h3 { font-weight:750; }
+.dg-space form > .dg-button { margin-top:1rem; }
+.dg-space :target { scroll-margin-top:6rem; }
+.dg-space-columns > *, .dg-space-row > span { min-width:0; overflow-wrap:anywhere; }
+@media(max-width:540px) { .dg-space-heading { flex-wrap:wrap; } }

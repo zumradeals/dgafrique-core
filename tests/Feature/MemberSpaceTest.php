@@ -29,6 +29,48 @@ final class MemberSpaceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_member_entry_and_tool_destinations_render_html_for_a_new_member(): void
+    {
+        $this->signIn('IDN-SPACE-SURFACES');
+        foreach ([
+            'member.space', 'member.profile.edit', 'activity.index', 'people.index',
+            'needs.index', 'needs.create', 'projects.index', 'zumra.index',
+            'missions.index', 'transmissions.index', 'proofs.index',
+            'opportunities.index', 'contributions.dashboard', 'zahab.wallet.dashboard',
+            'notifications.index',
+        ] as $destination) {
+            $this->get(route($destination))->assertOk()->assertSee('<main', false);
+        }
+    }
+
+    public function test_space_renders_recorded_capability_feedback_without_enabling_discovery(): void
+    {
+        $this->signIn('IDN-SPACE-FEEDBACK');
+        $this->followingRedirects()->post('/espace/capacite-rapide', ['capability' => 'Réparation de vélos'])
+            ->assertOk()->assertSee('Capacité déclarée')->assertSee('Réparation de vélos');
+        $profile = PersonProfile::query()->findOrFail('IDN-SPACE-FEEDBACK');
+        self::assertFalse((bool) $profile->discovery_consent);
+        self::assertFalse((bool) $profile->orientation_consent);
+    }
+
+    public function test_tools_are_visible_to_a_new_member_and_only_active_connected_tools_are_listed(): void
+    {
+        $this->signIn('IDN-SPACE-TOOLS');
+        foreach ([true => 'Outil ouvert', false => 'Outil masqué'] as $active => $label) {
+            \App\Models\Satellite::query()->create([
+                'slug' => $active ? 'outil-ouvert' : 'outil-masque',
+                'product_reference' => $active ? 'PRD-OPEN' : 'PRD-CLOSED',
+                'display_name' => $label, 'is_active' => (bool) $active,
+                'created_by_core_reference' => 'IDN-SPACE-TOOLS',
+            ]);
+        }
+        $this->get('/espace')->assertOk()->assertSee('Mes outils')
+            ->assertSee('Outil ouvert')->assertDontSee('Outil masqué')
+            ->assertSee(route('federation.continue', 'outil-ouvert'), false)
+            ->assertSee(route('contributions.dashboard'), false)
+            ->assertSee(route('zahab.wallet.dashboard'), false);
+    }
+
     public function test_a_brand_new_member_sees_the_first_intention_router_instead_of_zumra_as_a_first_level_action(): void
     {
         $this->signIn('IDN-SPACE-NEW');

@@ -1,0 +1,6 @@
+<x-layouts.member title="Contributions" active="space"><div class="dg-space"><a class="dg-space-text-link" href="{{ route('member.space') }}#mes-outils">← Mes outils</a><h1>Mes contributions.</h1><p>Votre participation financière reste facultative.</p>
+<section class="dg-space-section"><h2>Contribution individuelle</h2>
+@if ($individual)<p>{{ ['ACTIVE' => 'Votre contribution est active.', 'PAUSED' => 'Votre contribution est en pause.', 'STOPPED' => 'Votre contribution est arrêtée.'][$individual->status] ?? 'Votre contribution est enregistrée.' }}</p><p>{{ $individualPaidThisPeriod ? 'Un paiement est enregistré ou en cours pour cette période.' : 'Aucun paiement enregistré pour cette période.' }}</p>@else<p>Vous n’avez pas ouvert de contribution individuelle.</p>@endif
+<p>Période : {{ $currentPeriod }}</p></section>
+<section class="dg-space-section"><h2>Contributions collectives</h2>@forelse ($collectives as $collective)<div class="dg-space-row"><span><strong>{{ $collective['group']->name }}</strong><small>{{ $collective['contribution'] ? 'Contribution enregistrée' : 'Aucune contribution ouverte' }}</small></span></div>@empty<p>Aucune contribution collective à gérer.</p>@endforelse</section>
+</div></x-layouts.member>

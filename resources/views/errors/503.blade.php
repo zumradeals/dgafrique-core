@@ -1,0 +1,1 @@
+<x-layouts.public title="Le service est momentanément indisponible."><section class="dg-space dg-space-section"><h1>Le service est momentanément indisponible.</h1><p>Réessayez dans quelques instants.</p><a class="dg-space-text-link" href="{{ route('member.space') }}">Revenir à mon espace →</a></section></x-layouts.public>
