@@ -5,6 +5,13 @@
     'actions' => [],
 ])
 
+@php
+    $memberActions = $actions ?: [
+        ['href' => route('needs.create'), 'label' => 'Exprimer un besoin', 'description' => 'Dire ce qui vous aiderait à avancer.', 'icon' => 'need'],
+        ['href' => route('projects.create'), 'label' => 'Lancer un projet', 'description' => 'Préparer votre idée, étape par étape.', 'icon' => 'project'],
+    ];
+@endphp
+
 <!doctype html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['ar'], true) ? 'rtl' : 'ltr' }}">
     <head>
@@ -32,7 +39,7 @@
         </div>
 
         <div class="dg-app-shell">
-            <x-dg.navigation :active="$active" :actions="$actions" />
+            <x-dg.navigation :active="$active" :actions="$memberActions" />
 
             @if (session('status'))
                 <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" role="status">

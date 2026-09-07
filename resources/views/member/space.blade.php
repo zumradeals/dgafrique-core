@@ -1,11 +1,16 @@
 <x-layouts.member title="Mon espace" active="space">
+    @php
+        // A personal decision supplied by the engine precedes first-visit guidance.
+        // The profile invitation is its sole generic fallback, not a pending decision.
+        $showFirstSteps = $isNewMember && ($priority === null || $priority['primary']['href'] === route('member.profile.edit'));
+    @endphp
     <div class="dg-space">
         <header class="dg-space-heading">
             <div><p class="dg-space-eyebrow">MON ESPACE</p><h1>{{ $isNewMember ? 'Bienvenue chez vous.' : 'Bonjour, '.$greetingName.'.' }}</h1><p>Faisons avancer ce qui compte.</p></div>
             <a class="dg-space-tool-link" href="#mes-outils"><x-dg.icon name="project" /> Mes outils</a>
         </header>
 
-        @if ($isNewMember)
+        @if ($showFirstSteps)
             <section class="dg-space-welcome" aria-labelledby="premier-pas">
                 <div class="dg-space-welcome-art"><img src="{{ asset('images/entry/ensemble-640.webp') }}" srcset="{{ asset('images/entry/ensemble-640.webp') }} 640w, {{ asset('images/entry/ensemble-1280.webp') }} 1280w" sizes="(min-width: 900px) 45vw, 100vw" alt="" width="1280" height="853"><p>Chacun peut apporter<br>quelque chose.</p></div>
                 <div class="dg-space-welcome-content">

@@ -488,3 +488,10 @@ La PR ajoute un contrôle CI isolé `Astra member space` (PHP 8.4, base SQLite d
 aucun accès ni déploiement VPS). Il compile les vues et rejoue les tests membre, fédération et
 identité avec les dépendances verrouillées. Son résultat doit être lu sur le commit exact avant
 promotion ; l'existence du workflow ne vaut pas succès.
+
+Premier contrôle PHP distant : compilation Blade PASS, fédération et identité PASS ; un test
+membre a révélé qu'une proposition de responsabilité était masquée par l'accueil débutant.
+Correction de présentation : une décision personnelle fournie par le moteur passe avant le
+routeur de première arrivée ; l'invitation générique au profil reste le seul fallback.
+Agir ouvre les deux parcours globaux actuellement construits : Besoin et Projet. Le second
+explique les prérequis existants avant de commencer. Nouveau contrôle requis sur cette correction.
