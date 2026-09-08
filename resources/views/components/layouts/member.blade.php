@@ -23,7 +23,7 @@
         <meta name="theme-color" content="#F6F5F0">
         @if ($description)<meta name="description" content="{{ $description }}">@endif
         <title>{{ $title ? $title.' — ' : '' }}GAMAD</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/app.css', 'resources/css/member.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
     <body @class(['dg-member-wide' => $wide])>
