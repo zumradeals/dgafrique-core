@@ -1,1 +1,10 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ouverture interrompue — DG Afrique</title></head><body><main><h1>Nous n’avons pas pu ouvrir cet outil.</h1><p>{{ $message }}</p><a href="{{ route('member.space') }}#mes-outils">Revenir à mes outils</a></main></body></html>
+<x-layouts.public title="Impossible de poursuivre">
+    <div class="flex min-h-[100svh] items-center justify-center px-5 py-10">
+        <x-dg.state
+            tone="danger"
+            title="Nous n’avons pas pu poursuivre vers ce service"
+            :description="$message"
+            :action="['label' => 'Revenir à GAMAD', 'href' => route('gateway')]"
+        />
+    </div>
+</x-layouts.public>
