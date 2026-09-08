@@ -1,22 +1,32 @@
-# AI RULES — DG Afrique Core
+# AI RULES — GAMAD (`dgafrique-core`)
 
 Ce fichier est le premier document à lire par toute IA ou tout contributeur automatisé intervenant sur le dépôt.
 
 ## Identité produit — invariant supérieur
 
-**DG Afrique est un réseau social d'action.** Il accompagne le développement humain et l'action collective, notamment à travers ZUMRA, les capacités, besoins, projets, missions, apprentissages, transmissions, preuves, opportunités et outils spécialisés.
+**GAMAD est un réseau social d'action.** Il accompagne le développement humain et l'action collective, notamment à travers ZUMRA, les capacités, besoins, projets, missions, apprentissages, transmissions, preuves, opportunités et outils spécialisés.
 
-DG Afrique **n'est pas** un portail web de type moteur de recherche, un catalogue d'applications, ni un « lanceur de satellites » comme finalité produit. La navigation, les recommandations et l'intelligence du produit doivent servir le passage de la capacité à l'action humaine et collective.
+Formulations publiques canoniques : **« le réseau social d'action GAMAD »**, **« le réseau social GAMAD »** et **« le réseau GAMAD »**. Le nom produit historique **« DG Afrique » est retiré** et ne doit plus apparaître dans une nouvelle surface utilisateur, un nouveau texte produit ou une nouvelle documentation normative.
 
-ZUMRA est le moteur humain et collectif de cet écosystème. Les outils spécialisés servent l'action ; ils ne deviennent jamais le centre conceptuel de DG Afrique.
+GAMAD **n'est pas** un portail web de type moteur de recherche, un catalogue d'applications, ni un « lanceur de satellites » comme finalité produit. La navigation, les recommandations et l'intelligence du produit doivent servir le passage de la capacité à l'action humaine et collective.
 
-La synthèse produit/UX de couche 04 (modèle mental, parcours utilisateur, architecture UX conceptuelle) est canonisée dans `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` — à lire avant toute mission d'interface.
+**GAMAD Core** reste le moteur invisible de confiance : identité canonique, session, fédération et contrats transversaux. Il ne devient pas le portail éditorial et ne constitue pas une seconde marque sociale. **GAMAD** porte la couche publique et sociale visible.
+
+ZUMRA est le moteur humain et collectif de cet écosystème. Les outils spécialisés servent l'action ; ils ne deviennent jamais le centre conceptuel de GAMAD.
+
+La synthèse produit/UX de couche 04 (modèle mental, parcours utilisateur, architecture UX conceptuelle) est canonisée dans `docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md` — à lire avant toute mission d'interface. Toute occurrence active de l'ancien nom produit dans ce corpus doit être régularisée vers GAMAD ; une phrase qui réserverait la couche sociale visible à « DG Afrique » est supersédée par le présent invariant.
 
 La raison d'être humaine dont cet invariant est la traduction produit — identité de GAMAD, provenance doctrinale, principe « la Personne précède la structure », sens de Formation — Travail — Adoration — est canonisée dans `docs/canon/DOCTRINE-GAMAD.md`, couche 00, antérieure à ce document : à lire avant toute mission doctrinale ou touchant à la finalité humaine de ZUMRA.
 
+### Compatibilité technique héritée
+
+Le renommage produit ne déclenche pas à lui seul une migration d'infrastructure. Le nom de dépôt `dgafrique-core`, les classes et sélecteurs internes `dg-*`, les identifiants persistés, namespaces, variables d'environnement, routes techniques et URLs historiques sous `dgafrique.com` peuvent rester temporairement inchangés lorsqu'une modification casserait la compatibilité.
+
+Ces identifiants sont **techniques et hérités**, jamais des noms de produit. Leur migration doit être traitée dans un lot explicite, avec inventaire des dépendances, stratégie de compatibilité et rollback. Un remplacement global aveugle de `dg`, `DG_AFRIQUE` ou `dgafrique` est interdit.
+
 ### Modules spécialisés et satellites
 
-Un outil spécialisé naît par défaut comme **module extractible** dans l'architecture DG Afrique lorsqu'il peut raisonnablement vivre dans le monolithe modulaire. Exemples de direction : G-POS, GamaDrive et futurs outils spécialisés du réseau.
+Un outil spécialisé naît par défaut comme **module extractible** dans l'architecture GAMAD lorsqu'il peut raisonnablement vivre dans le monolithe modulaire. Exemples de direction : G-POS, GamaDrive et futurs outils spécialisés du réseau.
 
 Un module extractible possède des frontières métier explicites et évite les couplages qui rendraient son extraction artificiellement coûteuse. Il peut rester durablement un module.
 

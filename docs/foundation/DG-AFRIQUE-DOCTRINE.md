@@ -1,11 +1,15 @@
-# Doctrine fondatrice DG Afrique
+# Doctrine fondatrice GAMAD
 ## Invariants du système
 
-**Version :** 1.0 — Fondation  
+**Version :** 1.0 — Fondation ; identité produit régularisée le 8 septembre 2026  
 **Statut :** INVARIANT PRIORITAIRE  
 **Nature :** Doctrine conceptuelle et fonctionnelle  
-**Portée :** DG Afrique / GAMAD / ZUMRA  
+**Portée :** GAMAD / GAMAD Core / ZUMRA  
 **Autorité :** supérieure aux choix d'interface, de produit et d'implémentation technique
+
+> **Compatibilité documentaire :** le chemin de fichier `docs/foundation/DG-AFRIQUE-DOCTRINE.md`
+> est un identifiant historique conservé temporairement afin de ne pas casser les références du corpus.
+> Son nom de fichier ne constitue plus une identité produit. Le contenu canonique porte exclusivement **GAMAD**.
 
 ---
 
@@ -13,13 +17,13 @@
 
 Ce document fixe les principes fondamentaux qui doivent demeurer vrais indépendamment des technologies, de l'architecture logicielle, des interfaces, des modèles d'intelligence artificielle, des choix graphiques et de l'organisation future du code.
 
-Il ne constitue ni un cahier des charges, ni une spécification technique, ni une maquette. Il constitue la **mémoire doctrinale de DG Afrique**.
+Il ne constitue ni un cahier des charges, ni une spécification technique, ni une maquette. Il constitue la **mémoire doctrinale de GAMAD**.
 
-> **Cette évolution respecte-t-elle toujours la raison d'être de DG Afrique ?**
+> **Cette évolution respecte-t-elle toujours la raison d'être de GAMAD ?**
 
 Lorsqu'une décision produit, UX ou technique entre en contradiction avec un invariant de cette doctrine, la doctrine prévaut jusqu'à décision explicite de la faire évoluer.
 
-## 1. Origine : GAMAD
+## 1. Origine et sens du nom GAMAD
 
 GAMAD signifie :
 
@@ -29,15 +33,15 @@ Cette définition exprime une dynamique fondamentale :
 
 **GLOBAL → ACTIVITÉS → MOUVEMENTS → ACTIONS → DÉVELOPPEMENT**
 
-DG Afrique constitue une traduction numérique de cette dynamique : identifier les réalités humaines, révéler les capacités, identifier les besoins, organiser les personnes, faire circuler opportunités et connaissances, transformer les intentions en actions, observer les résultats, transmettre l'expérience et renforcer les capacités futures.
+Le réseau social d'action GAMAD constitue une traduction numérique de cette dynamique : identifier les réalités humaines, révéler les capacités, identifier les besoins, organiser les personnes, faire circuler opportunités et connaissances, transformer les intentions en actions, observer les résultats, transmettre l'expérience et renforcer les capacités futures.
 
 ## 2. Partir de la réalité humaine
 
-DG Afrique ne doit pas obliger l'utilisateur à comprendre son architecture interne avant de pouvoir agir.
+GAMAD ne doit pas obliger l'utilisateur à comprendre son architecture interne avant de pouvoir agir.
 
-> **L'utilisateur parle la langue de sa vie. DG Afrique traduit cette réalité dans son modèle.**
+> **L'utilisateur parle la langue de sa vie. GAMAD traduit cette réalité dans son modèle.**
 
-La complexité du Core ne doit jamais devenir une obligation cognitive imposée à l'utilisateur.
+La complexité de GAMAD Core ne doit jamais devenir une obligation cognitive imposée à l'utilisateur.
 
 ## 3. L'intention précède la structure
 
@@ -47,7 +51,7 @@ Cette intention peut progressivement révéler :
 
 **Personne → Capacité → Besoin → Projet → Relation → ZUMRA → Action.**
 
-> **DG Afrique doit permettre de commencer avec peu d'informations et d'enrichir progressivement la compréhension par l'action.**
+> **GAMAD doit permettre de commencer avec peu d'informations et d'enrichir progressivement la compréhension par l'action.**
 
 ## 4. Le profil est vivant
 
@@ -55,7 +59,7 @@ Le profil ne doit pas être uniquement déclaratif. Une capacité peut évoluer 
 
 **Déclarée → Observée → Mobilisée → Prouvée → Reconnue**
 
-> **Le profil doit pouvoir devenir une conséquence de l'utilisation de DG Afrique, et non uniquement une condition préalable à son utilisation.**
+> **Le profil doit pouvoir devenir une conséquence de l'utilisation de GAMAD, et non uniquement une condition préalable à son utilisation.**
 
 ## 5. ZUMRA : force collective organisée
 
@@ -117,7 +121,7 @@ L'automatisation ne doit jamais détruire la traçabilité.
 
 ## 13. La conversation comme interface
 
-La conversation, la voix, le texte, les choix simples et, lorsque pertinent, les images doivent permettre à une personne de raconter sa réalité avec ses propres mots pendant que DG Afrique construit progressivement une représentation structurée et confirmable.
+La conversation, la voix, le texte, les choix simples et, lorsque pertinent, les images doivent permettre à une personne de raconter sa réalité avec ses propres mots pendant que GAMAD construit progressivement une représentation structurée et confirmable.
 
 > **La richesse de la structure doit être produite autant que possible derrière une interaction humaine simple.**
 
@@ -128,7 +132,7 @@ La conversation n'est cependant pas la vérité métier elle-même.
 Un Projet doit distinguer au minimum :
 
 - la mémoire conversationnelle : ce qui a été dit ;
-- la mémoire structurée : ce que DG Afrique sait actuellement ;
+- la mémoire structurée : ce que GAMAD sait actuellement ;
 - le journal d'action : ce qui s'est effectivement produit ;
 - les preuves : ce qui étaye les réalisations ou affirmations.
 
@@ -148,13 +152,13 @@ Les Projets d'une ZUMRA constituent une partie de sa mémoire collective et perm
 
 ## 17. Le Fil : système de circulation
 
-Le Fil ne doit pas être pensé uniquement comme un réseau social traditionnel. Il constitue le **système de circulation des mouvements de DG Afrique** : projets, avancées, besoins, capacités recherchées, opportunités, réalisations, preuves partageables, apprentissages et appels à contribution.
+Le Fil ne doit pas être pensé uniquement comme un réseau social traditionnel. Il constitue le **système de circulation des mouvements de GAMAD** : projets, avancées, besoins, capacités recherchées, opportunités, réalisations, preuves partageables, apprentissages et appels à contribution.
 
 > **Le Fil ne doit pas uniquement chercher ce qui retient l'attention ; il doit aider à révéler où l'utilisateur peut agir.**
 
 ## 18. De l'attention à l'utilité
 
-DG Afrique doit privilégier la capacité à transformer l'attention en action utile plutôt que le simple temps passé.
+GAMAD doit privilégier la capacité à transformer l'attention en action utile plutôt que le simple temps passé.
 
 > **La pertinence d'une recommandation se mesure aussi à son potentiel d'action, de contribution, d'apprentissage ou de développement.**
 
@@ -168,7 +172,7 @@ Le Fil distribue l'attention. Le Projet transforme cette attention en action.
 
 ## 20. Boucle de développement
 
-Une boucle plus profonde traverse DG Afrique :
+Une boucle plus profonde traverse GAMAD :
 
 > **INTENTION → ACTION → PROJET → PREUVE → CAPACITÉ → CONFIANCE → MISE EN RELATION → NOUVELLE ACTION**
 
@@ -196,15 +200,15 @@ L'accessibilité est architecturale : langage simple, questions courtes, convers
 
 > **Une architecture métier sophistiquée ne justifie jamais une expérience utilisateur inutilement compliquée.**
 
-## 24. Ne pas exposer le Core à l'utilisateur
+## 24. Ne pas exposer GAMAD Core à l'utilisateur
 
-> **Le Core structure la réalité ; l'interface traduit cette structure en expérience humaine compréhensible.**
+> **GAMAD Core structure la réalité ; l'interface GAMAD traduit cette structure en expérience humaine compréhensible.**
 
 Les référentiels, CAP, états techniques et relations internes appartiennent au système et ne doivent pas être une condition de compréhension pour agir.
 
 ## 25. La preuve comme pont entre action et confiance
 
-DG Afrique doit valoriser la différence entre dire et avoir fait. Les preuves peuvent prendre différentes formes selon les activités et les règles, sans devenir une bureaucratie systématique.
+GAMAD doit valoriser la différence entre dire et avoir fait. Les preuves peuvent prendre différentes formes selon les activités et les règles, sans devenir une bureaucratie systématique.
 
 ## 26. La connaissance comme patrimoine
 
@@ -214,9 +218,9 @@ Les actions produisent progressivement une mémoire collective. Les droits d'acc
 
 ## 27. Principe de souveraineté humaine
 
-DG Afrique doit favoriser compréhension, autonomie, décision éclairée, apprentissage, responsabilité et collaboration.
+GAMAD doit favoriser compréhension, autonomie, décision éclairée, apprentissage, responsabilité et collaboration.
 
-> **DG Afrique aide les humains à agir ; il n'agit pas à leur place lorsqu'une décision humaine est requise.**
+> **GAMAD aide les humains à agir ; il n'agit pas à leur place lorsqu'une décision humaine est requise.**
 
 ## 28. Principe de simplicité progressive
 
@@ -228,7 +232,7 @@ Un débutant peut commencer par « Qu'est-ce que vous voulez faire ? » tandis q
 
 1. L'humain précède le formulaire.
 2. L'intention peut précéder le profil complet.
-3. DG Afrique traduit la réalité humaine dans son modèle, et non l'inverse.
+3. GAMAD traduit la réalité humaine dans son modèle, et non l'inverse.
 4. Le profil se construit également par l'action.
 5. Une capacité déclarée n'est pas équivalente à une capacité démontrée.
 6. ZUMRA est une force collective organisée, pas un statut juridique d'entreprise.
@@ -245,12 +249,12 @@ Un débutant peut commencer par « Qu'est-ce que vous voulez faire ? » tandis q
 17. Une ZUMRA apprend de ses réalisations.
 18. Le Fil fait circuler le mouvement et l'utilité.
 19. L'attention doit pouvoir devenir contribution.
-20. La complexité du Core ne doit pas devenir celle de l'utilisateur.
+20. La complexité de GAMAD Core ne doit pas devenir celle de l'utilisateur.
 21. L'accessibilité est une exigence fondamentale.
 22. La voix et les interactions simples sont des portes d'entrée de premier rang.
 23. La connaissance issue de l'action doit pouvoir être transmise.
 24. L'humain demeure souverain dans les décisions qui l'engagent.
-25. DG Afrique doit favoriser le passage du potentiel à l'action et de l'action au développement.
+25. GAMAD doit favoriser le passage du potentiel à l'action et de l'action au développement.
 
 ## 30. Hiérarchie documentaire
 
@@ -286,7 +290,7 @@ Avant toute fonctionnalité majeure :
 
 1. Quelle réalité humaine cherchons-nous à servir ?
 2. Aide-t-elle à passer de l'intention à l'action, à la connaissance ou au développement ?
-3. Demandons-nous à l'utilisateur de comprendre une complexité que DG Afrique pourrait gérer pour lui ?
+3. Demandons-nous à l'utilisateur de comprendre une complexité que GAMAD pourrait gérer pour lui ?
 4. Respecte-t-elle la souveraineté humaine ?
 5. Produit-elle ou exploite-t-elle une information déclarée, observée ou prouvée ?
 6. Comment interagit-elle avec Personnes, Capacités, Besoins, Projet, ZUMRA et Fil ?
@@ -297,16 +301,16 @@ Si une fonctionnalité échoue fondamentalement à ces questions, elle doit êtr
 
 ## 33. Vision fondatrice
 
-DG Afrique ne doit pas devenir une accumulation de formulaires permettant de déclarer qui nous sommes, ce que nous savons faire, ce dont nous avons besoin et ce que nous voulons réaliser.
+GAMAD ne doit pas devenir une accumulation de formulaires permettant de déclarer qui nous sommes, ce que nous savons faire, ce dont nous avons besoin et ce que nous voulons réaliser.
 
-DG Afrique doit progressivement devenir un environnement capable de relier **les personnes, leurs capacités, leurs besoins, leurs organisations, leurs connaissances et leurs projets afin de faciliter l'action réelle**.
+GAMAD doit progressivement devenir un environnement capable de relier **les personnes, leurs capacités, leurs besoins, leurs organisations, leurs connaissances et leurs projets afin de faciliter l'action réelle**.
 
 Sa valeur ne réside pas seulement dans ce qu'il connaît. Elle réside dans ce que cette connaissance permet de mettre en mouvement.
 
 ## 34. Formule de clôture
 
 > **L'utilisateur apporte sa réalité.**  
-> **DG Afrique aide à la comprendre.**  
+> **GAMAD aide à la comprendre.**  
 > **ZUMRA organise la force collective.**  
 > **Projet transforme l'intention en action.**  
 > **Le Cerveau du Projet accompagne cette action.**  
@@ -317,10 +321,10 @@ Sa valeur ne réside pas seulement dans ce qu'il connaît. Elle réside dans ce 
 
 ## Principe ultime
 
-> **DG Afrique ne demande pas seulement : « Qui êtes-vous ? » Il cherche surtout à comprendre : « Que pouvons-nous mettre en action ? »**
+> **GAMAD ne demande pas seulement : « Qui êtes-vous ? » Il cherche surtout à comprendre : « Que pouvons-nous mettre en action ? »**
 
 ---
 
-**FIN — Doctrine fondatrice DG Afrique v1.0**
+**FIN — Doctrine fondatrice GAMAD v1.0**
 
 Toute modification de ses invariants doit être consciente, argumentée, documentée et distincte d'une simple décision d'implémentation.

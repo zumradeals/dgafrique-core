@@ -1,0 +1,5 @@
+<x-layouts.member title="Projets" active="projects"><div class="dg-space"><p class="dg-space-eyebrow">CONSTRUIRE ENSEMBLE</p><h1>Des idées qui prennent vie.</h1><p>Trouvez un projet auquel vous souhaitez contribuer.</p>
+<form method="GET" action="{{ route('projects.index') }}"><label for="q">Rechercher un projet</label><x-dg.input id="q" :value="request('q')" maxlength="120" /><x-dg.button type="submit">Rechercher</x-dg.button></form>
+@forelse ($projects as $project)<a class="dg-space-row" href="{{ route('projects.show', $project) }}"><x-dg.icon name="project" /><span><strong>{{ $project->name }}</strong><small>{{ $project->summary }}</small></span><span aria-hidden="true">→</span></a>@empty<section class="dg-space-section"><h2>Aucun projet à afficher pour cette recherche.</h2><p>Essayez un autre terme ou explorez les besoins du réseau.</p><a class="dg-space-text-link" href="{{ route('needs.index') }}">Découvrir les besoins →</a></section>@endforelse
+{{ $projects->links() }}
+</div></x-layouts.member>

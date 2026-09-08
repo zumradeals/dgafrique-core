@@ -1,0 +1,1 @@
+<x-layouts.public title="Votre session a expiré."><section class="dg-space dg-space-section"><h1>Votre session a expiré.</h1><p>Reconnectez-vous pour reprendre votre action.</p><a class="dg-space-text-link" href="{{ route('member.space') }}">Revenir à mon espace →</a></section></x-layouts.public>

@@ -1,4 +1,4 @@
-# DG Afrique Core
+# GAMAD — dépôt applicatif `dgafrique-core`
 
 > **Reprise autorisée — version Astra `8566c4a` (7 septembre 2026).** Le dépositaire
 > produit a explicitement demandé de publier cette version distincte de la livraison
@@ -8,7 +8,6 @@
 > Les validations antérieures à cette reprise ne certifient pas cette version.
 > Le registre actif et les vérifications restantes figurent dans `docs/roadmap/USER-JOURNEY-001.md`.
 
-
 > **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
 > dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
 > Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
@@ -17,7 +16,16 @@
 > explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
 > Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
 
-Portail applicatif de **DG Afrique**, reconstruit sur la stack familiale GAMAD.
+Portail applicatif de **GAMAD**, le réseau social d’action, construit sur le moteur de confiance GAMAD Core.
+
+## Identité produit et compatibilité technique
+
+- **GAMAD** est le nom canonique et unique du produit visible.
+- Formulation institutionnelle : **le réseau social d’action GAMAD**.
+- Formulations courantes admises : **le réseau social GAMAD** et **le réseau GAMAD**.
+- **GAMAD Core** reste l’autorité technique d’identité, de session et de fédération ; il n’est pas une seconde marque sociale.
+- **DG Afrique** est un ancien nom produit retiré. Il ne doit plus apparaître dans une nouvelle surface destinée à un utilisateur.
+- Le nom du dépôt `dgafrique-core`, les classes internes `dg-*` et les URLs sous `dgafrique.com` sont des identifiants techniques hérités conservés temporairement pour compatibilité. Leur éventuelle migration relève d’un lot d’infrastructure séparé et ne doit pas être confondue avec l’identité publique.
 
 > [!IMPORTANT]
 > **État actuel : moteur certifié, frontend retiré, reconstruction suspendue.** L'ancienne interface a été
@@ -78,7 +86,7 @@ Les anciennes réalisations Next.js/Supabase ne sont pas importées comme code. 
 ## Règles fondatrices
 
 - aucune seconde identité membre : GAMAD Core reste canonique ;
-- compte DG Afrique gratuit et distinct de l'adhésion ZUMRA ;
+- compte GAMAD gratuit et distinct de l'adhésion ZUMRA ;
 - adhésion initiale et contribution mensuelle sont deux flux différents ;
 - ZUMRA est un réseau social d'action, sans classement de valeur humaine ;
 - les satellites restent autonomes et sont ouverts par fédération ;

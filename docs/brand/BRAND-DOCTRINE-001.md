@@ -1,23 +1,28 @@
-# BRAND-DOCTRINE-001 — Doctrine de marque DG Afrique
+# BRAND-DOCTRINE-001 — Doctrine de marque GAMAD
 
 | Propriété | Valeur |
 |---|---|
 | Statut | CANONIQUE — ADOPTÉ |
 | Décision | BRAND-DOCTRINE-001 |
-| Date | 27 août 2026 |
+| Date | 27 août 2026 — identité produit mise à jour le 8 septembre 2026 |
 | Autorité visuelle source | `docs/brand/assets/gamad-logo-source.jpg` |
 | Tokens normatifs | `docs/brand/tokens.json` |
 
 ## 1. Décision
 
-DG Afrique conserve et fait certifier son moteur, retire entièrement sa présentation actuelle,
-puis construit une interface unique et neuve lorsque le backend est déclaré prêt.
+GAMAD est le nom canonique du réseau social visible. Le projet conserve son moteur certifié GAMAD Core,
+retire entièrement les présentations historiques obsolètes, puis construit une interface unique et
+neuve lorsque le backend est déclaré prêt.
 
 La future interface n'est ni un rafraîchissement, ni une correction progressive, ni une
 recomposition de l'ancien frontend. Elle est une traduction neuve du produit canonique :
 
-> DG Afrique est un réseau social d'action où des personnes, des capacités et des outils
+> GAMAD est un réseau social d'action où des personnes, des capacités et des outils
 > spécialisés transforment des besoins en actions vérifiables.
+
+Formulation institutionnelle : **le réseau social d'action GAMAD**. Formulations courantes :
+**le réseau social GAMAD** et **le réseau GAMAD**. Le nom produit historique **DG Afrique** est
+retiré et ne constitue plus une marque d'expérience active.
 
 Le logo GAMAD fourni est l'origine de la nouvelle charte. Les écrans existants, leurs feuilles de
 style, le handoff Claude et les palettes antérieures sont des archives ; ils ne constituent plus
@@ -32,7 +37,7 @@ En cas de conflit, l'ordre suivant s'applique :
 
 1. doctrine GAMAD, souveraineté humaine, sécurité, confidentialité et consentement ;
 2. doctrine métier et contrats du moteur ;
-3. expérience produit canonique de DG Afrique ;
+3. expérience produit canonique de GAMAD ;
 4. présente doctrine de marque et ses tokens ;
 5. futur design system et composants d'interface ;
 6. décisions locales d'un écran.
@@ -75,7 +80,7 @@ de stimulation artificielle.
 
 ## 5. Personnalité de marque
 
-DG Afrique doit être perçu comme :
+GAMAD doit être perçu comme :
 
 - humain avant d'être technologique ;
 - actif avant d'être spectaculaire ;
@@ -215,7 +220,7 @@ comme décoration.
 
 ## 11. Voix et microcontenu
 
-DG Afrique parle avec respect, précision et capacité d'action.
+GAMAD parle avec respect, précision et capacité d'action.
 
 Chaque écran répond clairement à trois questions :
 
@@ -276,18 +281,23 @@ Jusqu'à livraison d'un master vectoriel approuvé :
 - en dessous, aucun « petit logo » n'est improvisé : un symbole simplifié devra être conçu et
   approuvé séparément.
 
-DG Afrique ne reçoit pas automatiquement un nouveau logotype à partir du fichier GAMAD. Son futur
-wordmark et son éventuel symbole simplifié constituent une mission distincte, soumise à validation.
+Le nom GAMAD peut être composé typographiquement dans l'interface lorsque le logo complet n'est pas
+approprié. Aucun logotype « DG Afrique » ne doit être créé ou restauré. Un futur symbole simplifié
+constitue une mission distincte, soumise à validation.
 
 ## 15. Architecture de marque
 
-DG Afrique est la marque d'expérience principale. GAMAD en est la fondation doctrinale. Les moteurs
-spécialisés sont des outils au service de l'action, accessibles dans le contexte où ils deviennent
-utiles.
+**GAMAD est la marque d'expérience principale et le nom du réseau social visible. GAMAD Core est
+le moteur technique invisible de confiance.** Les moteurs spécialisés sont des outils au service
+de l'action, accessibles dans le contexte où ils deviennent utiles.
 
-Ils ne doivent pas transformer la navigation principale en catalogue de produits, ni créer chacun
-leur propre identité concurrente. Une couleur, une icône ou une page dédiée peut distinguer une
-fonction ; elle reste gouvernée par cette doctrine commune.
+Le nom historique « DG Afrique » est retiré de l'architecture de marque. Il peut subsister seulement
+comme identifiant technique hérité lorsque sa migration immédiate casserait une compatibilité ; il
+ne doit jamais être présenté à l'utilisateur comme une marque parallèle.
+
+Les outils spécialisés ne doivent pas transformer la navigation principale en catalogue de
+produits, ni créer chacun leur propre identité concurrente. Une couleur, une icône ou une page
+dédiée peut distinguer une fonction ; elle reste gouvernée par cette doctrine commune.
 
 ## 16. Ce qui est explicitement rejeté
 
@@ -356,8 +366,9 @@ autorisation d’intégration ou de restauration. La charte des sections précé
 Le dépositaire produit a approuvé la maquette « Le pouvoir d’agir ensemble » et demandé son
 intégration dans UJ-02 : accueil, découverte et adaptation mobile. Elle précise la composition
 de ces surfaces : titre « De vos idées. À nos actions. », présence humaine illustrée, canevas
-chaud, bleu profond et jaune solaire, action de création de compte dominante. Le nom DG Afrique
-reste du texte HTML, sans création d'un symbole officiel.
+chaud, bleu profond et jaune solaire, action de création de compte dominante. Dans l'identité
+courante, le nom GAMAD reste du texte HTML lorsqu'un logo complet n'est pas nécessaire ; aucun
+second symbole de marque n'est créé.
 
 Les illustrations conceptuelles sous `public/images/entry/` ne représentent aucun membre ni
 projet réel. Elles ont été produites avec ImageGen à partir de la maquette approuvée :
