@@ -13,13 +13,37 @@ test('space local entry points have unique reachable anchors without requiring J
 
 test('tool destinations use human HTML surfaces and the protected POST continuation', () => {
   const tools = read('resources/views/member/tools.blade.php');
+  const space = read('resources/views/member/space.blade.php');
   assert.match(tools, /contributions\.dashboard/);
   assert.match(tools, /zahab\.wallet\.dashboard/);
+  assert.match(space, /opportunities\.index/);
   assert.doesNotMatch(tools, /contributions\.index|zahab\.wallet\.person|callback_url/);
   assert.match(tools, /method="POST"[\s\S]*federation\.continue[\s\S]*@csrf/);
   for (const path of ['contributions/dashboard', 'wallet/dashboard', 'missions/index', 'transmissions/index', 'proofs/index', 'opportunities/index', 'federation/handoff', 'federation/error']) {
     assert.ok(existsSync(`resources/views/${path}.blade.php`), path);
   }
+});
+
+test('UJ-03 cockpit is wide, readable and exposes only real member actions', () => {
+  const space = read('resources/views/member/space.blade.php');
+  const layout = read('resources/views/components/layouts/member.blade.php');
+  const styles = read('resources/css/member-space.css');
+
+  assert.match(space, /:wide="true"/);
+  assert.match(space, /Bienvenue chez vous\./);
+  assert.match(space, /Quel sera votre premier pas \?/);
+  assert.match(space, /Votre situation/);
+  assert.match(space, /Ce que vous pouvez faire maintenant/);
+  assert.match(space, /Vos accès rapides/);
+  assert.match(space, /valeur ne se mesure pas en likes/);
+  assert.match(space, /route\('logout'\)/);
+  assert.match(space, /method="POST"[\s\S]*route\('logout'\)[\s\S]*@csrf/);
+  assert.match(layout, /'wide' => false/);
+  assert.match(layout, /dg-member-wide/);
+  assert.match(styles, /96rem/);
+  assert.match(styles, /@media \(max-width: 1180px\)/);
+  assert.match(styles, /@media \(max-width: 860px\)/);
+  assert.match(styles, /@media \(max-width: 640px\)/);
 });
 
 test('federation handoff keeps the token in a POST field with controller-provided CSP nonce', () => {
