@@ -495,3 +495,21 @@ Correction de présentation : une décision personnelle fournie par le moteur pa
 routeur de première arrivée ; l'invitation générique au profil reste le seul fallback.
 Agir ouvre les deux parcours globaux actuellement construits : Besoin et Projet. Le second
 explique les prérequis existants avant de commencer. Nouveau contrôle requis sur cette correction.
+
+### Vérification distante du 8 septembre — PR #155
+
+Sur le commit publié `9d1d7881c5b02a4a8a43a07fd2748decab5dee97` :
+- CI `Astra member space` n°3, run `34206537679` : **SUCCESS**.
+- 31 tests PHP, 210 assertions : PASS (membre, fédération, autorité d'identité).
+- 20 tests frontend : PASS ; build Vite et compilation Blade : PASS.
+- Les destinations principales ont été rendues par Laravel pour un membre neuf ; les tests
+  existants vérifient aussi des besoins, des organisations, des demandes et responsabilités réels
+  de la base de test. Ce résultat ne certifie pas toutes les actions avancées des fiches.
+- Deux rendus HTML synthétiques (première arrivée et retour calme) sont conservés dans l'artefact
+  CI `astra-rendered-states`, pendant sept jours. Ils ne contiennent pas de données de production.
+
+La tentative de revue navigateur de ces rendus a été bloquée par l'environnement navigateur
+(`ERR_BLOCKED_BY_CLIENT` à l'ouverture de l'aperçu local). Aucune capture ni vérification visuelle
+mobile/desktop n'est revendiquée. PR #155 reste en brouillon pour cette revue et la couverture
+progressive des autres opérations. Les résultats PHP distants ci-dessus remplacent le statut
+« PHP non exécuté » des notes d'intégration antérieures ; le moteur métier n'a pas été modifié.
