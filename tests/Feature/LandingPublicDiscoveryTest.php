@@ -22,7 +22,7 @@ final class LandingPublicDiscoveryTest extends TestCase
         self::assertStringContainsString('À nos actions.', $content);
         self::assertStringContainsString('Voir comment ça marche', $content);
         self::assertStringContainsString('Vous n’avez pas besoin', $content);
-        self::assertStringContainsString('La valeur ne se mesure pas en likes', $content);
+        self::assertStringContainsString('la valeur ne se mesure pas en likes', $content);
         self::assertStringContainsString('Vous pouvez utiliser GAMAD sans appartenir à une ZUMRA', $content);
     }
 
