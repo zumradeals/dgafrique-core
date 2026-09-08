@@ -1,4 +1,3 @@
-@props(['discovery' => false])
 <header class="dg-entry-header">
     <a href="{{ route('gateway') }}" class="dg-entry-brand" aria-label="GAMAD — accueil"><span>GAMAD</span></a>
     <nav class="dg-entry-header__links" aria-label="Navigation publique">
