@@ -79,14 +79,14 @@ final class FederationContinuationTest extends TestCase
             ->assertSee('Votre compte ne peut pas ouvrir GamaDrive');
     }
 
-    public function test_transient_opening_failure_preserves_dg_afrique_session(): void
+    public function test_transient_opening_failure_preserves_gamad_session(): void
     {
         $this->fakeFederationFlow([], 503);
         $this->signIn();
 
         $this->post('/federation/continue/gamadrive')
             ->assertStatus(503)
-            ->assertSee('Votre connexion DG Afrique reste active')
+            ->assertSee('Votre connexion GAMAD reste active')
             ->assertSessionHas('dg_core_member.reference', 'AUT-GAMAD-001');
     }
 

@@ -1,0 +1,5 @@
+<x-layouts.member title="Fil" active="fil"><div class="dg-space"><p class="dg-space-eyebrow">LE RÉSEAU EN MOUVEMENT</p><h1>Ce qui avance ensemble.</h1><p>Des besoins, des actions et des nouvelles des collectifs.</p>
+<form method="GET" action="{{ route('activity.index') }}"><label for="type">Que souhaitez-vous voir ?</label><select class="dg-input" id="type" name="type">@foreach ($filters as $value => $label)<option value="{{ $value }}" @selected($filter === $value)>{{ $label }}</option>@endforeach</select><x-dg.button type="submit">Afficher</x-dg.button></form>
+@forelse ($feed as $item)<article class="dg-space-section"><h2>{{ $item['title'] }}</h2><p>{{ $item['summary'] }}</p><a class="dg-space-text-link" href="{{ $item['action_url'] }}">{{ $item['action_label'] }} →</a></article>@empty<section class="dg-space-section"><h2>Le mouvement commence avec vous.</h2><p>Aucune actualité accessible à afficher pour le moment.</p><x-dg.button :href="route('member.space')">Retrouver mon espace</x-dg.button></section>@endforelse
+{{ $feed->links() }}
+</div></x-layouts.member>

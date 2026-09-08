@@ -1,32 +1,23 @@
-# USER-JOURNEY-001 — Opération Parcours de l'Utilisateur
-
-> **Reprise autorisée — version Astra `8566c4a` (7 septembre 2026).** Le dépositaire
-> produit a explicitement demandé de publier cette version distincte de la livraison
-> rejetée du 6 septembre. Cette branche de proposition réintroduit les vues, composants,
-> assets et pipeline de cette version pour revue, sans reprendre les assets de la PR #151.
-> Le moteur reste intact ; maintenance et NO-GO production restent en vigueur.
-> Les validations antérieures à cette reprise ne certifient pas cette version.
-> Le registre actif et les vérifications restantes figurent dans `docs/roadmap/USER-JOURNEY-001.md`.
-
-
-> **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
-> dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
-> Aucune vue applicative, aucun asset d’interface ni pipeline Vite ne sont livrés.
-> Les services, routes, données et autorités métier restent inchangés. Le site doit
-> rester en maintenance. La reconstruction est suspendue jusqu’à nouvelle instruction
-> explicite ; ne pas restaurer automatiquement cette tentative depuis Git.
-> Les preuves et mentions de livraison antérieures ci-dessous sont historiques.
+# USER-JOURNEY-001 — Opération Parcours de l'Utilisateur GAMAD
 
 ## Statut et autorité
 
 `CANONIQUE — UJ-00 PASS — UJ-01 IN_PROGRESS — UJ-02 PENDING`
 
-Ce document est le **registre d'exécution des parcours** du frontend neuf. Il est subordonné à
-`FRONTEND-REBUILD-001`, dont il détaille la dimension utilisateur. Il ne crée ni seconde roadmap
-frontend, ni nouvelle doctrine produit.
+Ce document est le **registre d’exécution des parcours du frontend GAMAD**. Il est subordonné à
+`FRONTEND-REBUILD-001` et aux autorités produit/métier actives. Il ne crée ni seconde roadmap,
+ni nouvelle doctrine.
 
-Toute IA qui reprend le chantier doit continuer ce document et son tableau d'avancement. Elle ne
-doit pas créer une directive concurrente `USER-JOURNEY-v2`, `final`, `new` ou équivalente.
+> **Contrat d’identité actif — 8 septembre 2026**
+>
+> GAMAD est le nom public du réseau social d’action. GAMAD Core reste le moteur invisible de
+> confiance, d’identité, de session et de fédération. « DG Afrique » est un ancien nom produit et
+> ne doit plus être exposé dans l’expérience utilisateur. Les identifiants techniques hérités
+> (`dg-*`, chemins, dépôt `dgafrique-core`, domaine `dgafrique.com`) restent hors de ce lot et ne
+> doivent pas être renommés mécaniquement.
+
+Cette migration d’identité **ne change aucun statut UJ à elle seule**. Un lot n’avance que par ses
+preuves fonctionnelles prévues ci-dessous.
 
 ## Formule directrice
 
@@ -37,7 +28,7 @@ simple. À chaque étape, la personne doit comprendre :
 
 1. où elle se trouve ;
 2. ce qui se passe réellement ;
-3. ce qu'elle peut faire maintenant ;
+3. ce qu’elle peut faire maintenant ;
 4. pourquoi elle peut ou ne peut pas le faire ;
 5. qui intervient ensuite ;
 6. ce qui a changé après son action ;
@@ -45,59 +36,57 @@ simple. À chaque étape, la personne doit comprendre :
 
 ## Résultat produit recherché
 
-Le parcours directeur est :
-
 `Personne → Intention → Besoin ou capacité → Action/Projet → Collaboration → Preuve → Progression`
 
-Il n'est pas imposé comme un tunnel rigide. Une personne peut entrer par un besoin, une capacité,
-une ZUMRA, un projet, une transmission ou une invitation. L'interface doit toujours la raccorder à
-une action compréhensible et à une prochaine étape réelle.
+Ce parcours n’est pas un tunnel rigide. Une personne peut entrer par un besoin, une capacité, une
+ZUMRA, un projet, une transmission ou une invitation. L’interface doit toujours la raccorder à une
+action compréhensible et à une prochaine étape réelle.
 
 Les quatre centres gardent des rôles distincts :
 
 | Centre | Rôle utilisateur |
 |---|---|
 | **Mon espace** | indique ma priorité et ma prochaine action ; |
-| **Projet** | transforme une intention collective en action suivie ; |
+| **Projet** | transforme une intention en action suivie ; |
 | **ZUMRA** | organise les personnes qui apprennent, travaillent et agissent ensemble ; |
 | **Fil** | fait circuler les mouvements, besoins, progrès et preuves du réseau. |
 
 ## Principes non négociables
 
 - La Personne précède la structure et le jargon interne.
-- L'utilisateur ne voit jamais les CAP, états techniques ou frontières du Core comme condition
-  pour agir.
+- Le nom visible du produit est **GAMAD**.
+- L’utilisateur ne voit jamais les CAP, états techniques ou frontières de GAMAD Core comme
+  condition pour agir.
 - `Mon espace` présente une priorité dominante et au maximum deux actions principales.
 - Une action visible possède un comportement réel, une autorisation serveur et un retour clair.
-- Une action indisponible est absente ou expliquée honnêtement ; elle n'est jamais simulée.
-- Aucun contenu, membre, chiffre, projet, paiement ou partenaire fictif n'est affiché.
-- Le frontend ne décide pas à la place de l'humain : Project Brain propose, l'humain confirme.
+- Une action indisponible est absente ou expliquée honnêtement ; elle n’est jamais simulée.
+- Aucun contenu, membre, chiffre, projet, paiement ou partenaire fictif n’est présenté comme réel.
+- Project Brain propose ; l’humain confirme les décisions engageantes.
 - Aucun like, follower, score humain, classement de personnes ou mécanique de dépendance.
 - Mobile, faible débit, lisibilité et compréhension par une personne peu technophile sont des
-  contraintes de conception, pas une finition tardive.
-- Les outils spécialisés et surfaces d'administration restent contextuels ; ils ne transforment
+  contraintes de conception.
+- Les outils spécialisés et surfaces d’administration restent contextuels ; ils ne transforment
   pas la navigation principale en catalogue de modules.
-- La navigation responsive respecte le contrat verrouillé
-  `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` : sur mobile **Fil · Découvrir · Agir · ZUMRA ·
-  Espace**, avec `Agir` au centre et aucun menu « Plus ».
+- La navigation mobile respecte `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` :
+  **Fil · Découvrir · Agir · ZUMRA · Espace**, `Agir` au centre, aucun menu « Plus ».
 
-## Contrat obligatoire d'une étape
+## Contrat obligatoire d’une étape
 
-Avant de coder un écran ou une interaction, documenter ces huit champs dans le lot concerné :
+Avant de coder un écran ou une interaction, documenter :
 
 | Champ | Question obligatoire |
 |---|---|
 | Personne | Quel rôle ou quelle relation métier agit ? |
-| Intention | Qu'essaie-t-elle d'accomplir en langage humain ? |
-| État d'entrée | Quel état réel du moteur ouvre cette étape ? |
+| Intention | Qu’essaie-t-elle d’accomplir en langage humain ? |
+| État d’entrée | Quel état réel du moteur ouvre cette étape ? |
 | Action | Quelle action principale est réellement autorisée ? |
 | Autorité | Quel service, policy ou garde serveur tranche ? |
 | Résultat | Quelle mutation ou navigation réelle se produit ? |
 | Retour | Quels succès, attente, refus et erreur sont expliqués ? |
 | Suite | Quelle prochaine étape réelle devient disponible ? |
 
-Si l'un de ces champs est inconnu, le lot reste en analyse. Une maquette ne doit pas combler le
-vide par une invention métier.
+Si l’un de ces champs est inconnu, le lot reste en analyse. Une maquette ne comble jamais un vide
+métier par invention.
 
 ## Parcours canoniques
 
@@ -105,21 +94,22 @@ vide par une invention métier.
 
 `Gateway → Découvrir si nécessaire → Créer/ouvrir un compte → Identité confirmée`
 
-- expliquer DG Afrique comme réseau social d'action ;
-- distinguer compte DG Afrique et adhésion ZUMRA ;
-- permettre d'entrer sans apprendre l'architecture GAMAD ;
-- ne montrer aucune statistique ou activité fictive.
+- expliquer **GAMAD comme réseau social d’action** ;
+- distinguer **compte GAMAD** et adhésion au Programme ZUMRA ;
+- permettre d’entrer sans apprendre l’architecture de GAMAD Core ;
+- ne montrer aucune statistique ou activité fictive ;
+- ne jamais exposer l’ancien nom produit « DG Afrique » dans une surface utilisateur.
 
-**Sortie :** la personne possède une session valide et sait pourquoi elle entre.
+**Sortie :** la personne possède une session valide et comprend pourquoi elle entre.
 
 ### P1 — Exprimer une première intention
 
-`Mon espace vide → Je peux apporter / J'ai un besoin / Je veux découvrir / Je veux participer`
+`Mon espace vide → Je peux apporter / J’ai un besoin / Je veux découvrir / Je veux participer`
 
 - commencer par une phrase ou un choix humain simple ;
 - réutiliser les capacités, besoins et routes existants ;
 - ne pas imposer un profil complet avant la première action utile ;
-- faire apparaître ensuite la prochaine étape correspondante.
+- faire apparaître ensuite une prochaine étape réelle.
 
 **Sortie :** une intention réelle est enregistrée ou conduit vers une action réelle.
 
@@ -134,61 +124,60 @@ vide par une invention métier.
 
 **Sortie :** la personne accomplit ou reporte consciemment une action qui la concerne.
 
-### P3 — Passer d'une capacité ou d'un besoin à une collaboration
+### P3 — Passer d’une capacité ou d’un besoin à une collaboration
 
 `Capacité/Besoin → Découverte explicable → Personne ou collectif pertinent → Mise en relation`
 
-- rendre les profils et disponibilités compréhensibles ;
-- expliquer les recommandations sans afficher de score humain ;
-- conserver la visibilité et les permissions du domaine source ;
+- rendre profils et disponibilités compréhensibles ;
+- expliquer les recommandations sans score humain ;
+- conserver visibilité et permissions du domaine source ;
 - offrir une transition réelle vers réponse, contact, mission, transmission ou projet.
 
-**Sortie :** une relation ou une action métier réelle existe, pas seulement une consultation.
+**Sortie :** une relation ou une action métier réelle existe.
 
-### P4 — Transformer l'intention en projet suivi
+### P4 — Transformer l’intention en projet suivi
 
 `Intention/Brouillon → Confirmation humaine → Projet → Équipe/Besoins → Mission → Preuve`
 
 - guider la naissance progressive du projet sans formulaire administratif massif ;
 - laisser Project Brain proposer sans mutation silencieuse ;
 - exposer autorité, maturité, jalons, blocages et besoins avec des mots humains ;
-- relier chaque contribution à une preuve ou à un résultat observable.
+- relier chaque contribution à un résultat observable.
 
 **Sortie :** le projet possède une prochaine action attribuable et un historique compréhensible.
 
 ### P5 — Faire naître et vivre une ZUMRA
 
-`Découvrir/Proposer → Demande ou invitation → Décision → Rôle → Charte → Action collective`
+`Découvrir/Proposer → Demande ou invitation → Décision → Rôle → Structuration → Action collective`
 
-- distinguer clairement ZUMRA, Projet et Organisation ;
-- expliquer les états de demande, invitation, responsabilité et cycle de vie ;
-- ne proposer que les transitions réellement portées par le moteur ;
-- faire de la ZUMRA un espace de Formation — Travail — Adoration orienté vers l'action.
+- distinguer ZUMRA, Projet et Organisation ;
+- expliquer demande, invitation, responsabilité et cycle de vie ;
+- ne proposer que les transitions portées par le moteur ;
+- faire de la ZUMRA un espace Formation — Travail — Adoration orienté vers l’action.
 
-**Sortie :** chaque membre comprend son appartenance, sa responsabilité et la prochaine action du
-collectif.
+**Sortie :** chaque membre comprend appartenance, responsabilité et prochaine action du collectif.
 
 ### P6 — Transmettre, réaliser et prouver
 
 `Mission/Transmission → Participation → Réalisation ou blocage → Validation → Preuve → Fil`
 
-- harmoniser les machines d'état proches sans fusionner leurs domaines ;
+- harmoniser la présentation des machines d’état proches sans fusionner leurs domaines ;
 - rendre explicites responsable, échéance, dépendance, blocage et validation ;
-- retourner le résultat réel dans le contexte d'origine et, si autorisé, dans le Fil.
+- retourner le résultat réel dans son contexte d’origine et, si autorisé, dans le Fil.
 
-**Sortie :** l'action collective produit une trace utile et une progression vérifiable.
+**Sortie :** l’action collective produit une trace utile et vérifiable.
 
 ### P7 — Contribuer ou payer sans ambiguïté
 
 `Finalité/Montant → Confirmation → Fournisseur ou ZAHAB → Attente/Retour → Reçu/Réconciliation`
 
 - distinguer adhésion, contribution, acquisition ZAHAB et financement de projet ;
-- afficher la finalité et les conséquences avant confirmation ;
+- afficher finalité et conséquences avant confirmation ;
 - empêcher double soumission et faux succès ;
-- expliquer pending, succès, échec, reprise et reçu ;
-- ne jamais contourner le ledger ni proposer crédit/débit manuel.
+- expliquer attente, succès, échec, reprise et reçu ;
+- ne jamais contourner le ledger.
 
-**Sortie :** la personne connaît l'état réel de son opération et dispose de sa trace.
+**Sortie :** la personne connaît l’état réel de son opération et dispose de sa trace.
 
 ### P8 — Administrer et modérer dans le contexte
 
@@ -197,145 +186,72 @@ collectif.
 - réserver les surfaces aux autorités prévues ;
 - afficher des métriques réelles et anti-classement ;
 - exiger une décision explicite pour les mutations sensibles ;
-- rendre l'effet et la traçabilité vérifiables.
+- rendre effet et traçabilité vérifiables.
 
-**Sortie :** aucune décision administrative n'est silencieuse ou détachée du domaine concerné.
+**Sortie :** aucune décision administrative n’est silencieuse ou détachée de son domaine.
 
-## Ordre d'exécution
+## Ordre d’exécution
 
-Les identifiants ci-dessous sont permanents. Leur statut est la seule indication autorisée de la
-prochaine étape.
+Les identifiants sont permanents. Leur statut est la seule indication autorisée de la prochaine
+étape.
 
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **IN_PROGRESS** | tentative retirée le 6 septembre 2026 ; nouvelle instruction requise |
-| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | vues retirées ; contrats moteur conservés |
+| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **IN_PROGRESS** | revalidation du socle après reprise Astra |
+| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | identité et surfaces P0 à certifier après UJ-01 |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
 | `UJ-05` | P4 projet, équipe, mission et preuve | UJ-04 | PENDING | boucle projet verticale automatisée |
 | `UJ-06` | P5 naissance et vie ZUMRA | UJ-05 | PENDING | transitions et autorités ZUMRA prouvées |
-| `UJ-07` | P6 transmission, réalisation, preuve et Fil | UJ-06 | PENDING | résultat visible sans fuite d'autorité |
+| `UJ-07` | P6 transmission, réalisation, preuve et Fil | UJ-06 | PENDING | résultat visible sans fuite d’autorité |
 | `UJ-08` | P7 contributions, ZAHAB et paiements | UJ-07 | PENDING | succès/échec/reprise/idempotence prouvés |
 | `UJ-09` | P8 administration, modération et surfaces contextuelles | UJ-08 | PENDING | décisions et journaux prouvés |
 | `UJ-10` | fermeture exhaustive et préproduction | UJ-09 | PENDING | F5/F6 signées, GO/NO-GO documenté |
 
-Valeurs de statut autorisées : `PENDING`, `READY`, `IN_PROGRESS`, `BLOCKED`, `PASS`, `DEFERRED`.
-Un seul lot peut être `IN_PROGRESS`. Après un `PASS`, le lot suivant peut devenir `READY` dans le
-même changement documentaire.
+Valeurs autorisées : `PENDING`, `READY`, `IN_PROGRESS`, `BLOCKED`, `PASS`, `DEFERRED`.
+Un seul lot peut être `IN_PROGRESS`.
 
-## Définition de terminé pour un lot
+## Définition de terminé
 
-Un lot n'est `PASS` que si :
+Un lot n’est `PASS` que si :
 
-- ses écrans utilisent exclusivement des données réelles ou des états vides honnêtes ;
+- ses écrans utilisent des données réelles ou des états vides honnêtes ;
 - toutes les actions visibles sont câblées et protégées côté serveur ;
 - succès, attente, refus, validation et erreur sont rendus ;
 - la prochaine étape est compréhensible ;
 - desktop et mobile sont vérifiés sans débordement bloquant ;
-- clavier, focus, libellés et contraste utiles sont contrôlés ;
-- les parcours critiques ont des tests HTTP et navigateur adaptés ;
-- la matrice `FUNCTIONAL-COVERAGE-001` est mise à jour si sa vérité change ;
-- aucun chemin protégé du moteur n'a changé silencieusement ;
-- les preuves et le statut du lot sont inscrits dans ce document.
+- clavier, focus, libellés et contraste sont contrôlés ;
+- les parcours critiques ont des tests adaptés ;
+- la matrice de couverture est mise à jour si sa vérité change ;
+- aucun chemin protégé du moteur n’a changé silencieusement ;
+- les preuves et le statut sont inscrits ici avant merge.
 
-## Protocole obligatoire de reprise par une IA
+## Protocole de reprise par une IA
 
-1. vérifier `main` et l'absence de modifications locales inconnues ;
-2. lire `AGENTS.md`, `FRONTEND-REBUILD-001.md` puis ce document en entier ;
-3. vérifier dans le code et les tests que le statut du tableau est toujours vrai ;
-4. reprendre le premier lot `IN_PROGRESS`, sinon le premier lot `READY` ;
-5. ne jamais démarrer un lot `PENDING` dont la dépendance n'est pas `PASS` ;
-6. limiter la branche ou PR à ce lot et à ses preuves ;
-7. mettre à jour ici le statut, les décisions et les preuves avant merge ;
-8. si le code contredit la roadmap, marquer `BLOCKED` et documenter le conflit au lieu d'inventer
-   une nouvelle directive ;
-9. ne jamais restaurer une vue ou un asset de l'ancien frontend.
+1. vérifier `main` et la branche de travail ;
+2. lire `AGENTS.md`, `FRONTEND-REBUILD-001.md`, ce document et le contrat de navigation ;
+3. vérifier dans le code/tests que le statut du tableau est toujours vrai ;
+4. reprendre le premier lot `IN_PROGRESS`, sinon le premier `READY` ;
+5. ne jamais démarrer un lot `PENDING` dont la dépendance n’est pas `PASS` ;
+6. limiter la branche/PR à son lot et à ses preuves ;
+7. mettre à jour ici statut, décisions et preuves avant merge ;
+8. si code et roadmap divergent, documenter le conflit au lieu d’inventer une directive ;
+9. ne jamais restaurer une ancienne vue ou un ancien nom produit depuis l’historique Git.
 
-## Journal de progression
+## Journal actif
 
-| Date | Lot | Décision ou preuve | Commit/PR |
+| Date | Lot | Décision ou preuve | Référence |
 |---|---|---|---|
-| 2026-08-29 | Initialisation | Roadmap canonique créée ; prochain lot `UJ-00` | présent changement documentaire |
-| 2026-08-29 | `UJ-00` | 346 routes affectées à S01-S54 ; états, autorités, erreurs et gaps G01-G12 cartographiés | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| 2026-08-29 | `UJ-01` préparation | Navigation mobile verrouillée : Fil · Découvrir · Agir · ZUMRA · Espace ; desktop conserve les six centres | `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` |
-| 2026-08-29 | `UJ-01` fondations | Pipeline Vite/Tailwind/Livewire/Alpine, layouts, primitives, états honnêtes et navigation responsive créés ; 8 tests frontend passent et le bundle de production compile avec Livewire 4.4 réel | `3ccfad8` |
-| 2026-08-29 | `UJ-01` certification | Git propre sur le VPS ; 8/8 tests frontend PASS ; build Vite production PASS ; SQLite de test disponible ; Chromium 151 installé pour les contrôles navigateur. Les échecs de la suite PHP globale proviennent de vues métier volontairement absentes et appartiennent aux lots futurs ; aucun échec n'impose de restaurer l'ancien frontend. | présent changement documentaire |
+| 2026-08-29 | `UJ-00` | matrice de contrats créée ; parcours, états, autorités et gaps cartographiés | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
+| 2026-08-29 | `UJ-01` | navigation mobile verrouillée : Fil · Découvrir · Agir · ZUMRA · Espace | `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` |
+| 2026-09-07 | Reprise Astra | version frontend Astra réintroduite pour revue sans modifier le moteur ; NO-GO production maintenu | branche de reprise Astra |
+| 2026-09-08 | Identité GAMAD | ancien nom produit retiré des surfaces ; GAMAD devient le réseau visible, GAMAD Core reste invisible ; aucune promotion de statut UJ par ce seul changement | PR d’identité GAMAD |
 
-La prochaine action officielle est **UJ-02 — P0 Entrer/comprendre et identité** : construire les
-premières pages publiques et de compte à partir des contrats moteur existants, sans restaurer
-l'ancien frontend et sans inventer d'état métier.
+Les journaux détaillés des tentatives précédentes restent dans l’historique Git. Ils ne sont pas
+une autorité parallèle et ne doivent pas être restaurés comme instructions actives.
 
+## Règle de clôture
 
-### UJ-02 — intégration de la direction artistique approuvée, 6 septembre 2026
-
-Base de travail : `frontend/uj-02-entry-identity` à `f2a9587`, issue de `main` à `5757092`.
-Les vues d'entrée sont reconstruites à partir de la maquette approuvée par le dépositaire produit.
-La précision artistique est inscrite dans `BRAND-DOCTRINE-001.md` §20.
-
-- S01 conserve `GatewayController` et ses redirections de session ; les actions sont les routes
-  `register`, `login`, `landing`.
-- S02 conserve `LandingController`, ses permissions et sa collection `realMoments` ; le vide
-  invite à créer un compte, l'état rempli affiche uniquement les objets publics du contrôleur.
-- Les images sont des illustrations conceptuelles, sans membre ou projet simulé. Les versions
-  mobiles pèsent environ 74 Ko et 43 Ko. Les textes et actions restent du HTML accessible.
-- Les variables de couleur inexistantes des vues publiques et d'identité sont corrigées vers les
-  tokens `--dg-*`. Un contrôle statique empêche leur réintroduction.
-- Aucun changement de `app/`, `bootstrap/`, `config/`, `database/` ou `routes/`.
-
-Preuves exécutées :
-
-| Vérification | Résultat / portée |
-|---|---|
-| `npm run test:frontend` | 14/14 PASS |
-| `npm run build` | PASS, bundle Vite de production |
-| PHPUnit : `LandingPublicDiscoveryTest`, `MemberAccountRegistrationTest`, `IdentityAuthorityGuardTest` | 17 tests / 67 assertions PASS ; PHP 8.5.10, SQLite, fournisseur identité simulé |
-| Rendu Laravel des routes `/`, `/decouvrir`, `/connexion`, `/creer-un-compte` | HTTP 200 |
-| Navigateur : accueil 360 px et 1440 px, découverte 390 px et 1440 px | rendu inspecté, largeur du document égale à celle du viewport |
-| Captures | `tests/Frontend/screenshots/` |
-| `git diff --check` | PASS |
-
-Limite de la preuve navigateur : le navigateur distant a inspecté le HTML réellement rendu par
-Laravel, servi dans un aperçu temporaire avec les mêmes styles et images. Les chemins d'assets
-ont été adaptés au serveur d'aperçu, les scripts applicatifs exclus de cette copie. Cela prouve
-la composition responsive, pas un parcours navigateur connecté de bout en bout. Les soumissions
-et permissions sont couvertes séparément par PHPUnit ; les fournisseurs réels et le runtime cible
-PHP 8.4/PostgreSQL restent à vérifier en préproduction.
-
-UJ-02 reste `IN_PROGRESS` : cette intégration artistique ne ferme ni G01 (récupération de compte)
-ni les autres portes d'identité et de préproduction prévues par UJ-00. Aucun déploiement public
-et aucun passage automatique à UJ-03 ne sont décidés par ce changement.
-
-## Reprise Astra demandée le 7 septembre 2026 — état courant
-
-Base : `main` au commit `496db35` (retrait moteur seul). Source explicitement demandée par
-le dépositaire : `8566c4a`, produite dans cette conversation. La branche est distincte de
-`frontend/uj-02-art-direction` et n’intègre pas la réalisation rejetée de la PR #151.
-
-La proposition contient le socle nécessaire à l’exécution de cette version : pipeline verrouillé,
-composants, layouts, navigation contractuelle, écrans d’identité, accueil et découverte. Leur
-présence dans la proposition ne vaut pas certification ni passage à UJ-03. UJ-01 revient en
-IN_PROGRESS pour revalidation du socle après retrait ; UJ-02 est préparé dans cette proposition
-sur demande explicite, mais reste PENDING jusqu’à validation de cette dépendance.
-
-Les huit champs du contrat restent : personne = visiteur ; intention = comprendre/entrer ;
-état d’entrée = accès public et collection réelle vide/peuplée ; action = navigation vers
-register/login/landing/gateway ; autorité = contrôleurs existants, PortalMemberSession,
-NeedService::canView et ProjectService::canView ; résultat = navigation ou lecture sans mutation ;
-retour = contenu public échappé ou état vide explicite ; suite = identité S03/S04.
-
-Vérifications de cette proposition : 15 tests frontend PASS, build Vite PASS, diff sans erreur.
-Le bundle utilise la distribution Livewire de la version exacte de composer.lock. Aucun fichier
-sous app/, bootstrap/, config/, database/ ou routes/ ne diffère de main.
-
-PHP/Composer sont indisponibles ici : tests Laravel et validation navigateur du rendu serveur
-non exécutés pour cette version. Les preuves de la PR #151 ne s’y appliquent pas. Avant fusion,
-exécuter sous PHP 8.4 les tests FrontendFoundationTest, LandingPublicDiscoveryTest et
-MemberAccountRegistrationTest ; vérifier accueil/découverte/identité à 360, 390, 768 et 1440 px,
-clavier, contraste, zoom 200 %, images absentes et parcours d’identité. La connexion aux
-fournisseurs réels doit être vérifiée en préproduction. Aucune fusion ou mise en ligne autorisée
-par cette proposition.
-
-Illustrations : créations conceptuelles de cette conversation, optimisées en WebP 640/1280 px
-(69/200 ko pour l’accueil, 46/132 ko pour la découverte). Aucun contenu membre simulé. Les textes,
-liens et données restent en HTML/Blade ; aucune capture de maquette n’est utilisée comme page.
+Une migration de nom n’est jamais une autorisation de production. Le **NO-GO production** reste
+inchangé jusqu’aux portes prévues par UJ-10 et les autorités de préproduction.

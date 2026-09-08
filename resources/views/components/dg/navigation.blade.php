@@ -19,8 +19,8 @@
 <div x-data="dgNavigation" @keydown.escape.window="if (panel) close()" @keydown.tab="if (panel) trapFocus($event)">
     <nav class="dg-desktop-nav" aria-label="Navigation principale">
         <div class="dg-desktop-nav__inner">
-            <a class="dg-brand-text" href="{{ route('member.space') }}" aria-label="DG Afrique — Mon espace">
-                <span>DG Afrique</span>
+            <a class="dg-brand-text" href="{{ route('member.space') }}" aria-label="GAMAD — Mon espace">
+                <span>GAMAD</span>
             </a>
 
             <ul class="dg-desktop-nav__links" role="list">

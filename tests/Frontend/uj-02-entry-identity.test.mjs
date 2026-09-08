@@ -12,17 +12,19 @@ const surfaces = [
   'resources/views/auth/verify-account.blade.php',
 ];
 
-test('UJ-02 ships every P0 public and identity surface', async () => {
+test('UJ-02 ships every P0 public and identity surface under the GAMAD product identity', async () => {
   for (const surface of surfaces) {
     const content = await read(surface);
     assert.ok(content.includes('<x-layouts.public'), `${surface} must use the public foundation`);
-    assert.equal(/GAMAD/i.test(content), false, `${surface} must not expose GAMAD jargon`);
+    assert.match(content, /GAMAD/, `${surface} must expose the canonical GAMAD product identity`);
+    assert.equal(/DG Afrique/i.test(content), false, `${surface} must not expose the retired DG Afrique product name`);
   }
 });
 
 test('gateway explains action before architecture and offers real next steps', async () => {
   const content = await read('resources/views/gateway.blade.php');
   assert.match(content, /Réseau social d.action/);
+  assert.match(content, /GAMAD est un réseau social d.action/);
   assert.match(content, /route\('register'\)/);
   assert.match(content, /route\('landing'\)/);
   assert.match(content, /adhésion à une ZUMRA/);
