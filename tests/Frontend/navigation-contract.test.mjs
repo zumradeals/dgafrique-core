@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const navigation = readFileSync('resources/views/components/dg/navigation.blade.php', 'utf8');
 const styles = readFileSync('resources/css/app.css', 'utf8');
+const memberStyles = readFileSync('resources/css/member-space.css', 'utf8');
 const script = readFileSync('resources/js/app.js', 'utf8');
 const state = readFileSync('resources/views/components/dg/state.blade.php', 'utf8');
 
@@ -30,14 +31,18 @@ test('discover is limited to people, needs, and projects', () => {
     assert.match(navigation, /'people'.*'needs'.*'projects'/s);
 });
 
-test('desktop keeps the six direct centres and a distinct action control', () => {
+test('desktop keeps the six direct centres, a distinct action control and explicit account exit', () => {
     const centreDefinitions = navigation.slice(navigation.indexOf('$centres = ['), navigation.indexOf('$discoverActive'));
     const centres = [...centreDefinitions.matchAll(/'key' => '([^']+)'/g)].map((match) => match[1]);
 
     assert.deepEqual(centres, ['fil', 'people', 'needs', 'projects', 'zumra', 'space']);
     assert.match(navigation, /data-desktop-centre="\{\{ \$centre\['key'\] \}\}"/);
-    assert.match(navigation, /class="dg-button dg-button--solar"/);
+    assert.match(navigation, /class="dg-button dg-button--solar(?: [^"]*)?"/);
     assert.match(navigation, /<span>Agir<\/span>/);
+    assert.match(navigation, /route\('logout'\)/);
+    assert.match(navigation, /method="POST"[\s\S]*route\('logout'\)[\s\S]*@csrf/);
+    assert.match(navigation, />Déconnexion</);
+    assert.match(memberStyles, /\.dg-member-account/);
 });
 
 test('the navigation points only at named real contracts', () => {
@@ -48,6 +53,8 @@ test('the navigation points only at named real contracts', () => {
         'projects.index',
         'zumra.index',
         'member.space',
+        'member.profile.edit',
+        'logout',
     ]) {
         assert.match(navigation, new RegExp(route.replace('.', '\\.')));
     }
