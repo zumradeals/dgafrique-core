@@ -102,8 +102,16 @@
                             <span><strong>{{ $profileReady ? 'Profil prêt' : 'Profil en cours' }}</strong><small>{{ $profileReady ? 'Vos informations essentielles sont renseignées.' : 'Quelques informations peuvent encore être complétées.' }}</small></span>
                         </li>
                         <li class="dg-cockpit-situation-item">
-                            <span class="dg-cockpit-status-icon {{ $priority ? 'dg-cockpit-status-icon--info' : 'dg-cockpit-status-icon--calm' }}" aria-hidden="true">{{ $priority ? '!' : '–' }}</span>
-                            <span><strong>{{ $priority ? 'Une priorité active' : 'Aucune action urgente' }}</strong><small>{{ $priority ? 'Votre prochaine action est indiquée juste au-dessus.' : 'Vous êtes à jour.' }}</small></span>
+                            @if ($showFirstSteps)
+                                <span class="dg-cockpit-status-icon dg-cockpit-status-icon--progress" aria-hidden="true">→</span>
+                                <span><strong>Premier pas à choisir</strong><small>Choisissez ce qui compte pour vous aujourd’hui.</small></span>
+                            @elseif ($priority)
+                                <span class="dg-cockpit-status-icon dg-cockpit-status-icon--info" aria-hidden="true">!</span>
+                                <span><strong>Une priorité active</strong><small>Votre prochaine action est indiquée juste au-dessus.</small></span>
+                            @else
+                                <span class="dg-cockpit-status-icon dg-cockpit-status-icon--calm" aria-hidden="true">–</span>
+                                <span><strong>Aucune action urgente</strong><small>Vous êtes à jour.</small></span>
+                            @endif
                         </li>
                         <li class="dg-cockpit-situation-item">
                             <span class="dg-cockpit-status-icon dg-cockpit-status-icon--info" aria-hidden="true">▦</span>
@@ -213,12 +221,11 @@
         <section id="vos-acces-rapides" class="dg-cockpit-quick-access" aria-labelledby="quick-title">
             <div class="dg-cockpit-quick-access__header">
                 <div><p class="dg-cockpit-kicker">TOUT RESTE À PORTÉE DE MAIN</p><h2 id="quick-title">Vos accès rapides</h2></div>
-                <a class="dg-cockpit-alert-link" href="{{ route('member.space') }}">Tout mon espace →</a>
             </div>
             <div class="dg-cockpit-quick-grid">
                 <a class="dg-cockpit-quick-link" href="{{ route('member.profile.edit') }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="space" /></span><span><strong>Mon profil</strong><small>Gérez votre présentation et votre visibilité.</small></span><span aria-hidden="true">→</span></a>
-                <a class="dg-cockpit-quick-link" href="{{ route('people.index') }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="people" /></span><span><strong>Mes personnes</strong><small>Retrouvez les personnes avec qui agir.</small></span><span aria-hidden="true">→</span></a>
-                <a class="dg-cockpit-quick-link" href="{{ route('projects.index') }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="project" /></span><span><strong>Mes projets</strong><small>Suivez vos projets et vos collaborations.</small></span><span aria-hidden="true">→</span></a>
+                <a class="dg-cockpit-quick-link" href="{{ route('people.index') }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="people" /></span><span><strong>Personnes</strong><small>Découvrez les personnes avec qui agir.</small></span><span aria-hidden="true">→</span></a>
+                <a class="dg-cockpit-quick-link" href="{{ route('projects.index') }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="project" /></span><span><strong>Projets</strong><small>Découvrez les projets et collaborations du réseau.</small></span><span aria-hidden="true">→</span></a>
             </div>
         </section>
 
