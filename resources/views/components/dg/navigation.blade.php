@@ -14,13 +14,18 @@
     ];
     $discoverActive = in_array($active, ['people', 'needs', 'projects'], true);
     $actionCount = count($actions);
+    $memberIdentity = request()->attributes->get('dg_identity');
+    $memberLabel = trim((string) ($memberIdentity?->label ?? 'Mon compte'));
+    $memberFirstName = preg_split('/\s+/u', $memberLabel)[0] ?? $memberLabel;
+    $memberInitial = mb_strtoupper(mb_substr($memberFirstName ?: 'M', 0, 1));
 @endphp
 
 <div x-data="dgNavigation" @keydown.escape.window="if (panel) close()" @keydown.tab="if (panel) trapFocus($event)">
     <nav class="dg-desktop-nav" aria-label="Navigation principale">
         <div class="dg-desktop-nav__inner">
-            <a class="dg-brand-text" href="{{ route('member.space') }}" aria-label="GAMAD — Mon espace">
+            <a class="dg-brand-text dg-member-brand" href="{{ route('member.space') }}" aria-label="GAMAD — Mon espace">
                 <span>GAMAD</span>
+                <small>Des personnes. Des actions. Un impact réel.</small>
             </a>
 
             <ul class="dg-desktop-nav__links" role="list">
@@ -41,7 +46,7 @@
 
             <button
                 type="button"
-                class="dg-button dg-button--solar"
+                class="dg-button dg-button--solar dg-member-act"
                 @click="open('actions', $event)"
                 aria-haspopup="dialog"
                 :aria-expanded="panel === 'actions'"
@@ -50,6 +55,20 @@
                 <x-dg.icon name="act" size="20" />
                 <span>Agir</span>
             </button>
+
+            <div class="dg-member-account" aria-label="Compte membre">
+                <a class="dg-member-account__identity" href="{{ route('member.profile.edit') }}" aria-label="Ouvrir mon profil">
+                    <span class="dg-member-account__avatar" aria-hidden="true">{{ $memberInitial }}</span>
+                    <span class="dg-member-account__name">{{ $memberFirstName }}</span>
+                </a>
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="dg-member-logout" type="submit">
+                        <span aria-hidden="true">↪</span>
+                        <span>Déconnexion</span>
+                    </button>
+                </form>
+            </div>
         </div>
     </nav>
 

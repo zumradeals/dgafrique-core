@@ -3,6 +3,7 @@
     'description' => null,
     'active' => null,
     'actions' => [],
+    'wide' => false,
 ])
 
 @php
@@ -25,7 +26,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>
-    <body>
+    <body @class(['dg-member-wide' => $wide])>
         <a class="dg-skip-link" href="#contenu-principal">Aller au contenu</a>
 
         <div
@@ -42,25 +43,25 @@
             <x-dg.navigation :active="$active" :actions="$memberActions" />
 
             @if (session('status'))
-                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" role="status">
+                <div class="dg-member-notice-wrap" role="status">
                     <x-dg.notice type="success" title="Action confirmée">{{ session('status') }}</x-dg.notice>
                 </div>
             @endif
 
             @if (session('success'))
-                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" aria-live="polite">
+                <div class="dg-member-notice-wrap" aria-live="polite">
                     <x-dg.notice type="success" title="Action confirmée">{{ session('success') }}</x-dg.notice>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4">
+                <div class="dg-member-notice-wrap">
                     <x-dg.notice type="danger" title="Nous n’avons pas pu terminer">{{ session('error') }}</x-dg.notice>
                 </div>
             @endif
 
             @if ($errors->any())
-                <div class="mx-auto w-full max-w-[76rem] px-4 pt-4" role="alert">
+                <div class="dg-member-notice-wrap" role="alert">
                     <x-dg.notice type="danger" title="Quelques informations sont à vérifier">
                         <ul>@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                     </x-dg.notice>
