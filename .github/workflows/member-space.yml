@@ -34,3 +34,17 @@ jobs:
       - run: npm run build
       - run: php artisan view:cache
       - run: php artisan test tests/Feature/MemberSpaceTest.php tests/Feature/FederationContinuationTest.php tests/Feature/IdentityAuthorityGuardTest.php
+        env:
+          ASTRA_VISUAL_EXPORT: '1'
+      - name: Export synthetic rendered states for visual review
+        run: |
+          python3 - <<'PYQA'
+          import base64, json, pathlib
+          files = {p.name: p.read_text() for p in pathlib.Path('storage/app/astra-visual').glob('*.html')}
+          print('ASTRA_VISUAL_B64=' + base64.b64encode(json.dumps(files).encode()).decode())
+          PYQA
+      - uses: actions/upload-artifact@v4
+        with:
+          name: astra-rendered-states
+          path: storage/app/astra-visual
+          retention-days: 7

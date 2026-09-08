@@ -29,6 +29,24 @@ final class MemberSpaceTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_visual_states_are_rendered_from_real_member_projections(): void
+    {
+        $this->signIn('IDN-SPACE-VISUAL');
+        $newMember = $this->get('/espace')->assertOk();
+        $this->post('/espace/capacite-rapide', ['capability' => 'Réparer des vélos'])->assertRedirect('/espace');
+        $returningMember = $this->get('/espace')->assertOk();
+        $returningMember->assertSee('Rien ne réclame une décision maintenant.');
+
+        if (getenv('ASTRA_VISUAL_EXPORT') === '1') {
+            $directory = storage_path('app/astra-visual');
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            file_put_contents($directory.'/first-visit.html', $newMember->getContent());
+            file_put_contents($directory.'/daily-return.html', $returningMember->getContent());
+        }
+    }
+
     public function test_member_entry_and_tool_destinations_render_html_for_a_new_member(): void
     {
         $this->signIn('IDN-SPACE-SURFACES');
