@@ -118,13 +118,15 @@ avant implémentation.
 
 | Interface | Rôle |
 |---|---|
-| **Accueil / entrée publique** | Expliquer GAMAD comme réseau social d’action et permettre d’entrer. |
-| **Découvrir** | Montrer uniquement des objets réellement partageables publiquement et des états vides honnêtes. |
+| **Accueil / entrée publique** | Expliquer GAMAD comme réseau social d’action, permettre de comprendre sur une seule page et conduire vers la création ou l’ouverture d’un compte. |
+| **Découvrir (membre)** | Regrouper Personnes, Besoins et Projets dans le réseau après authentification ; ce n’est plus une seconde page marketing publique. |
 | **Mon espace** | Indiquer la priorité personnelle et la prochaine action ; ne jamais devenir un tableau de bord de modules. |
 | **Fil** | Faire circuler les mouvements du réseau avec une pertinence explicable, jamais un score humain. |
 
-Ces surfaces ne fusionnent pas : l’entrée explique, Découvrir ouvre le réseau, Mon espace oriente,
-le Fil fait circuler.
+L’accueil est l’unique porte éditoriale publique. L’ancienne route publique `/decouvrir` peut rester
+comme redirection de compatibilité vers `/`, mais ne constitue plus une surface produit autonome.
+Le mot **Découvrir** reste canonique dans la navigation membre pour trouver Personnes, Besoins et
+Projets conformément au contrat de navigation.
 
 ---
 
