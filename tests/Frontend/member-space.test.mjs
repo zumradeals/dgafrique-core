@@ -42,9 +42,8 @@ test('UJ-03A member shell is universal while Mon espace remains the only wide co
   assert.match(memberSpaceStyles, /\.dg-member-wide \.dg-app-main/);
 });
 
-test('UJ-03A cockpit relaxes welcome typography and keeps newcomer language honest', () => {
+test('UJ-03A cockpit keeps newcomer language honest', () => {
   const space = read('resources/views/member/space.blade.php');
-  const memberEntry = read('resources/css/member.css');
 
   assert.match(space, /Bienvenue chez vous\./);
   assert.match(space, /Quel sera votre premier pas \?/);
@@ -59,9 +58,16 @@ test('UJ-03A cockpit relaxes welcome typography and keeps newcomer language hone
   assert.doesNotMatch(space, />Mes projets</);
   assert.doesNotMatch(space, /Tout mon espace/);
   assert.match(space, /valeur ne se mesure pas en likes/);
-  assert.match(memberEntry, /\.dg-cockpit-hero-copy h1[\s\S]*line-height: 1\.05/);
-  assert.match(memberEntry, /text-wrap: initial/);
-  assert.match(memberEntry, /min-height: 32rem/);
+});
+
+test('UJ-03B widens the hero and keeps the welcome on one line on large screens', () => {
+  const memberEntry = read('resources/css/member.css');
+
+  assert.match(memberEntry, /\.dg-cockpit-hero[\s\S]*2\.05fr[\s\S]*0\.75fr/);
+  assert.match(memberEntry, /\.dg-cockpit-hero-main[\s\S]*1\.25fr[\s\S]*0\.75fr[\s\S]*min-height: 31rem/);
+  assert.match(memberEntry, /\.dg-cockpit-hero-copy h1[\s\S]*line-height: 1\.06/);
+  assert.match(memberEntry, /\.dg-cockpit-intro[\s\S]*max-width: 46ch[\s\S]*font-size: 1\.05rem/);
+  assert.match(memberEntry, /@media \(min-width: 1440px\)[\s\S]*1\.32fr[\s\S]*0\.68fr[\s\S]*white-space: nowrap/);
 });
 
 test('logout remains a governed POST with CSRF and is shared by navigation', () => {
