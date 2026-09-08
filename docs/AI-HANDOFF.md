@@ -1,4 +1,12 @@
-# AI HANDOFF — DG Afrique Core
+# AI HANDOFF — GAMAD (`dgafrique-core`)
+
+> **Décision d'identité du 8 septembre 2026.** Le nom public et produit canonique est désormais
+> **GAMAD** : « le réseau social d'action GAMAD », « le réseau social GAMAD » ou « le réseau
+> GAMAD ». **DG Afrique est un ancien nom produit retiré.** GAMAD Core reste le moteur invisible
+> de confiance, d'identité, de session et de fédération ; il ne devient pas une seconde marque
+> sociale. Les identifiants techniques hérités (`dgafrique-core`, `dg-*`, URLs `dgafrique.com`)
+> peuvent être conservés temporairement pour compatibilité et ne doivent pas être interprétés
+> comme une identité produit active.
 
 > **Reprise autorisée — version Astra `8566c4a` (7 septembre 2026).** Le dépositaire
 > produit a explicitement demandé de publier cette version distincte de la livraison
@@ -7,7 +15,6 @@
 > Le moteur reste intact ; maintenance et NO-GO production restent en vigueur.
 > Les validations antérieures à cette reprise ne certifient pas cette version.
 > Le registre actif et les vérifications restantes figurent dans `docs/roadmap/USER-JOURNEY-001.md`.
-
 
 > **Décision prioritaire du 6 septembre 2026 — MOTEUR SEUL.** À la demande du
 > dépositaire produit, la tentative frontend UJ-01/UJ-02 est retirée intégralement.
@@ -27,6 +34,9 @@ chantier autorisé reste la reconstruction neuve suivant
 `docs/roadmap/FRONTEND-REBUILD-001.md`, exécutée et suivie par
 `docs/roadmap/USER-JOURNEY-001.md`, et les règles racine de `AGENTS.md`.
 
+Le changement de nom **ne modifie pas** ce statut opérationnel : identité GAMAD ne signifie ni
+certification du frontend, ni GO production, ni autorisation de modifier le moteur certifié.
+
 ## Hiérarchie de vérité
 
 1. le code et les tests de `main` décrivent ce qui existe réellement ;
@@ -45,16 +55,34 @@ Pour toute construction d'interface, navigation ou design, lire
 **Fil · Découvrir · Agir · ZUMRA · Espace**, sans menu « Plus ». `docs/design/DESIGN-INVARIANTS.md`
 est une archive de l'interface supprimée, pas l'autorité visuelle du frontend neuf.
 
+Si un document actif contient encore une ancienne règle affirmant que « DG Afrique » est la couche
+sociale visible ou que le mot « GAMAD » doit être caché de l'expérience, cette règle est
+**supersédée** par `docs/AI-RULES.md`, la doctrine fondatrice et `BRAND-DOCTRINE-001.md` régularisés
+le 8 septembre 2026. Elle doit être corrigée dans l'autorité concernée, jamais reproduite dans une
+nouvelle implémentation.
+
 ## Projet canonique
 
-- dépôt : `zumradeals/dgafrique-core` ;
+- produit public : **GAMAD**, réseau social d'action ;
+- dépôt : `zumradeals/dgafrique-core` — identifiant technique historique conservé temporairement ;
 - stack : Laravel, PHP 8.4, PostgreSQL, Blade, Tailwind, Alpine.js, Redis ;
-- identité et fédération : GAMAD Core ;
-- DG Afrique possède son métier et son orchestration ;
+- identité, session et fédération : **GAMAD Core** ;
+- **GAMAD porte le métier du réseau, sa couche publique/sociale et son orchestration produit** ;
 - les outils spécialisés commencent comme modules isolés et extractibles dans l'écosystème ;
 - un module ne devient satellite autonome que lorsqu'un besoin technique réel d'autonomie le justifie ;
 - un satellite autonome garde la propriété logique de son métier et de ses données ;
 - aucune duplication locale concurrente de l'identité canonique Core.
+
+## Compatibilité technique héritée
+
+Ne pas exécuter un remplacement global de `DG`, `dg`, `DG_AFRIQUE`, `dgafrique` ou `dg-*`.
+Un identifiant technique historique peut être référencé par du CSS, des tests, des contrats,
+des variables d'environnement, la base, des URLs, du déploiement ou des systèmes externes.
+
+La migration de ces identifiants est un lot distinct qui exige : inventaire des dépendances,
+contrat de transition, compatibilité descendante lorsque nécessaire, migration SEO/domaine si elle
+est décidée, preuves de non-régression et stratégie de rollback. Jusqu'à ce lot, ils restent des
+identifiants techniques et ne doivent jamais redevenir une marque présentée aux utilisateurs.
 
 ## Règles de chantier
 
@@ -69,7 +97,8 @@ Avant de coder une capacité :
 
 ## Invariants produit
 
-- DG Afrique est un **réseau social d'action** orienté développement humain, capacités, besoins, projets, ZUMRA et coordination ;
+- GAMAD est un **réseau social d'action** orienté développement humain, capacités, besoins, projets, ZUMRA et coordination ;
+- GAMAD est le nom visible ; GAMAD Core reste le moteur invisible de confiance ;
 - ZUMRA est le moteur humain et collectif ;
 - les outils spécialisés servent le réseau et ne constituent pas sa finalité ;
 - **Projet et Satellite sont deux concepts sans relation de maturité** : un projet reste un projet, même lorsqu'il devient autonome économiquement ou organisationnellement ;
