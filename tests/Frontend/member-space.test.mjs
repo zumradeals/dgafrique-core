@@ -24,26 +24,52 @@ test('tool destinations use human HTML surfaces and the protected POST continuat
   }
 });
 
-test('UJ-03 cockpit is wide, readable and exposes only real member actions', () => {
+test('UJ-03A member shell is universal while Mon espace remains the only wide cockpit', () => {
   const space = read('resources/views/member/space.blade.php');
   const layout = read('resources/views/components/layouts/member.blade.php');
-  const styles = read('resources/css/member-space.css');
+  const memberEntry = read('resources/css/member.css');
+  const memberSpaceStyles = read('resources/css/member-space.css');
+  const vite = read('vite.config.js');
 
   assert.match(space, /:wide="true"/);
+  assert.match(layout, /'wide' => false/);
+  assert.match(layout, /dg-member-wide/);
+  assert.match(layout, /resources\/css\/member\.css/);
+  assert.match(vite, /resources\/css\/member\.css/);
+  assert.match(memberEntry, /@import "\.\/member-space\.css"/);
+  assert.match(memberEntry, /\.dg-desktop-nav__inner[\s\S]*96rem[\s\S]*grid-template-columns: auto minmax\(0, 1fr\) auto auto/);
+  assert.match(memberEntry, /\.dg-member-account[\s\S]*display: flex/);
+  assert.match(memberSpaceStyles, /\.dg-member-wide \.dg-app-main/);
+});
+
+test('UJ-03A cockpit relaxes welcome typography and keeps newcomer language honest', () => {
+  const space = read('resources/views/member/space.blade.php');
+  const memberEntry = read('resources/css/member.css');
+
   assert.match(space, /Bienvenue chez vous\./);
   assert.match(space, /Quel sera votre premier pas \?/);
+  assert.match(space, /Premier pas à choisir/);
+  assert.match(space, /Choisissez ce qui compte pour vous aujourd’hui\./);
   assert.match(space, /Votre situation/);
   assert.match(space, /Ce que vous pouvez faire maintenant/);
   assert.match(space, /Vos accès rapides/);
+  assert.match(space, />Personnes</);
+  assert.match(space, />Projets</);
+  assert.doesNotMatch(space, />Mes personnes</);
+  assert.doesNotMatch(space, />Mes projets</);
+  assert.doesNotMatch(space, /Tout mon espace/);
   assert.match(space, /valeur ne se mesure pas en likes/);
-  assert.match(space, /route\('logout'\)/);
-  assert.match(space, /method="POST"[\s\S]*route\('logout'\)[\s\S]*@csrf/);
-  assert.match(layout, /'wide' => false/);
-  assert.match(layout, /dg-member-wide/);
-  assert.match(styles, /96rem/);
-  assert.match(styles, /@media \(max-width: 1180px\)/);
-  assert.match(styles, /@media \(max-width: 860px\)/);
-  assert.match(styles, /@media \(max-width: 640px\)/);
+  assert.match(memberEntry, /\.dg-cockpit-hero-copy h1[\s\S]*line-height: 1\.05/);
+  assert.match(memberEntry, /text-wrap: initial/);
+  assert.match(memberEntry, /min-height: 32rem/);
+});
+
+test('logout remains a governed POST with CSRF and is shared by navigation', () => {
+  const navigation = read('resources/views/components/dg/navigation.blade.php');
+  assert.match(navigation, /method="POST" action="{{ route\('logout'\) }}"/);
+  assert.match(navigation, /@csrf/);
+  assert.match(navigation, /dg-member-account__avatar/);
+  assert.match(navigation, />Déconnexion</);
 });
 
 test('federation handoff keeps the token in a POST field with controller-provided CSP nonce', () => {
