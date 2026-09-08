@@ -1,0 +1,1 @@
+<x-layouts.member title="Préparer un projet" active="projects"><div class="dg-space"><h1>Préparer votre projet.</h1><p>La création d’un projet demande une adhésion active au Programme ZUMRA. Votre compte DG Afrique reste distinct de cette adhésion.</p><a class="dg-space-text-link" href="{{ route('zumra.index') }}">Découvrir les ZUMRA →</a></div></x-layouts.member>

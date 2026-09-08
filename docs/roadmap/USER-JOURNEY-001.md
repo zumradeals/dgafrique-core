@@ -374,3 +374,142 @@ L’accord mobile de la version précédente ne certifie pas les nouvelles secti
 À vérifier après déploiement : HTTP 200 anonyme, absence de X-Robots-Tag noindex sur les pages
 publiques, canonicals, sitemap servi en XML, rendu mobile/desktop, accord éditorial et navigation
 FAQ/ancres au clavier. Aucune soumission Search Console ni indexation effective revendiquée.
+
+### Préparation UJ-03 — première arrivée, demande du dépositaire
+
+Le dépositaire demande l’intégration de la maquette « Quel sera votre premier pas ? ».
+Audit de la base Astra : `member.space`, `member.profile`, `activity.index`, `needs.create`,
+`needs.show`, `projects.index` et `projects.show` sont des vues absentes. Les services et routes
+existent ; leur présence ne prouve pas la disponibilité des parcours.
+
+| Champ | Contrat de première arrivée |
+|---|---|
+| Personne | membre identifié par `core.member` |
+| Intention | choisir un premier apport, besoin, projet ou découverte |
+| État d’entrée | `isNewMember` calculé par MemberSpaceController, sans état concurrent |
+| Action | choix explicite, puis navigation ; capacité via `member.capability.quick` avec CSRF |
+| Autorité | contrôleur existant, middleware membre, QuickCapabilityController et synchroniseur |
+| Résultat | capacité enregistrée transactionnellement ou navigation réelle, jamais sélection assimilée à une mutation |
+| Retour | validation 422, message `session(status)`, refus/session expirée ; choix conservé en cas de validation |
+| Suite | retour `/espace`, puis priorité calculée par le moteur pour un membre actif |
+
+Aucun choix présélectionné. La capacité rapide conserve les consentements existants : sa saisie
+ne doit pas promettre sa visibilité publique. Le feedback `session(status)` doit être rendu
+explicitement, le layout actuel ne traitant que `success` et `error`.
+
+Destinations à livrer et vérifier avant exposition : besoin = saisie puis détail autorisé ;
+participation = liste puis détail de projet et action permise ; découverte = regroupement
+Personnes/Besoins/Projets du contrat canonique (la landing publique n’en est pas un substitut).
+La navigation membre expose aussi Fil et ZUMRA : aucune entrée ne doit aboutir à une vue absente.
+La connexion utilise par défaut `/espace` via SafeLocalDestination ; GatewayController redirige
+un membre existant vers le Fil. Ces deux entrées doivent être couvertes.
+
+Le passage UJ-02 → UJ-03 reste non certifié : PHP absent de l’environnement local ; tests
+MemberAccountRegistrationTest et IdentityAuthorityGuardTest à rejouer sur environnement isolé.
+Aucun changement moteur ou déploiement engagé par cette préparation. La maquette ne doit pas
+être publiée seule en présentant les destinations absentes comme fonctionnelles.
+
+### UJ-03 — cadrage complet de Mon espace après correction du dépositaire
+
+Le dépositaire rappelle que les vues absentes constituent précisément le travail autorisé du
+programme. Elles sont des destinations à construire, pas une anomalie du moteur ni une raison
+de suspendre le parcours. La première arrivée n'est qu'un état de Mon espace. La conception
+englobe également le retour quotidien et l'accès durable aux outils spécialisés.
+
+| Surface | Présentation et source réelle | Suite à construire |
+|---|---|---|
+| Première arrivée | Quatre intentions explicites ; `isNewMember` du contrôleur | Déclaration rapide, besoin, participation, découverte membre |
+| Retour quotidien | Une priorité dominante issue de `priority` ; aucune priorité recalculée dans Blade | Ouvrir l'objet et son action autorisée ; état calme si priorité absente |
+| Engagements | `myGroups`, `myOrganizations`, `projectDraft`, éléments personnellement pertinents | Fiches et reprise du brouillon ; ne pas inventer une liste « mes projets » absente de la projection |
+| Mes outils | Entrée secondaire stable, accessible aussi au débutant | Regroupements humains ci-dessous, sans modifier la navigation canonique |
+| Profil | Déclarations et consentements existants | Profil approfondi facultatif ; aucun score humain |
+
+Placement proposé des accès, fondé sur le contrat de navigation §5 :
+
+| Besoin humain | Fonctions | Placement |
+|---|---|---|
+| Apprendre et transmettre | Transmissions | Mes outils et contexte concerné |
+| Agir et garder une trace | Missions, preuves | Mes outils pour retrouver ; création de mission depuis son contexte autorisé |
+| Contribuer et suivre | Contributions, reçus, ZAHAB | Mes outils et contexte financier légitime |
+| Trouver une possibilité | Opportunités | Mes outils ; signal contextualisé par `opportunitiesCount` |
+| Agir avec un collectif | Organisations, événements, partenariats | Engagements puis objet porteur ; pas un catalogue principal |
+| Utiliser un produit spécialisé | Satellites réellement configurés | Mes outils et contexte métier ; continuation fédérée existante |
+| Administrer ou modérer | Surfaces réservées | Accès distinct soumis à l'autorité concernée, jamais déduit du seul affichage |
+
+Les noms GamaDrive, Wasplex, G-Market et G-POS dans la vision ne constituent pas une preuve
+d'activation. `Satellite` porte le registre ; `federation.continue` est un POST protégé par
+session et limitation de débit, avec vérification du produit et du callback par le contrôleur.
+Ne pas remplacer ce contrat par un lien externe direct. La projection actuelle de Mon espace
+ne fournit aucun registre de satellites : ce raccordement doit être traité explicitement,
+avec ses tests, sans requête métier improvisée dans une vue ni nouvelle autorité frontend.
+
+La planche de conception représente première arrivée, quotidien et Mes outils. Toute mission,
+personne ou ZUMRA illustrative est un contenu d'exemple, jamais une donnée de production.
+Les regroupements sont une proposition de présentation ; ils ne prouvent pas que les vues
+sont intégrées. L'intégration autorisée doit construire les destinations et leurs retours,
+réutiliser les contrats existants, puis vérifier les parcours mobile et desktop. Aucun PASS
+supplémentaire n'est déclaré par cette étape de conception.
+
+### UJ-03 — première intégration Astra en revue
+
+Implémentation sur `frontend/astra-member-space`, issue de la landing fusionnée en PR #154.
+Mon espace consomme `isNewMember`, `priority`, les engagements, les partages et le signal
+notifications existants. Les intentions sont des liens directs explicites, accessibles sans
+JavaScript ; le bouton intermédiaire « Continuer » de la maquette n'est pas nécessaire pour
+une simple navigation. Mes outils est une section ancrée de Mon espace, avec regroupements
+natifs repliables ; aucun nouveau centre ni nouvel état métier n'est introduit.
+
+- Déclaration rapide : POST existant, CSRF, ancienne saisie, validation et `session(status)`.
+- Profil : champs des sections configurées, conservation des valeurs et consentements explicites.
+- Besoins : liste, saisie, détail et suivi autorisé ; participation à un projet par demande réelle.
+- Fil, Personnes et ZUMRA : premières vues consommant les projections disponibles.
+- Outils : listes et premières fiches Missions/Transmissions/Preuves, invitations existantes,
+  opportunités explicables ; portefeuille et contributions en consultation seulement.
+- Les reçus individuels, l'acquisition de ZAHAB et le paiement des contributions ne sont pas
+  intégrés dans ce lot : le libellé de l'entrée doit refléter la consultation disponible.
+- Brouillons Projet : étapes existantes, sauvegarde/reprise et confirmation, sans nouveau modèle.
+- Les fiches métier sont une première couverture : les opérations avancées et l'administration
+  ne sont pas certifiées par leur simple présence.
+
+Raccordement de présentation isolé : `MemberToolsComposer` et son enregistrement dans
+`AppServiceProvider` lisent uniquement le registre Satellite actif. Le POST `federation.continue`
+conserve toute l'autorité d'accès, de callback et de jeton. Aucun service métier, contrôleur,
+modèle, migration ou route n'est modifié. Les vues fédérées respectent le nonce/CSP du contrôleur,
+le POST `jeton`, le refus et l'absence de stockage côté navigateur.
+
+Vérifications locales : 20 tests frontend PASS, build Vite PASS, `git diff --check` PASS.
+Tests Laravel ajoutés pour navigation membre/outils, retour de déclaration sans consentement
+implicite, et outils connectés actifs seulement. PHP absent localement : ces tests et les tests
+existants `MemberSpaceTest`/`FederationContinuationTest` ne sont pas déclarés exécutés.
+Rendu navigateur mobile/desktop non vérifié. Cette branche est une revue d'intégration,
+pas une certification UJ-03 ni une autorisation de déploiement en production.
+
+La PR ajoute un contrôle CI isolé `Astra member space` (PHP 8.4, base SQLite de test,
+aucun accès ni déploiement VPS). Il compile les vues et rejoue les tests membre, fédération et
+identité avec les dépendances verrouillées. Son résultat doit être lu sur le commit exact avant
+promotion ; l'existence du workflow ne vaut pas succès.
+
+Premier contrôle PHP distant : compilation Blade PASS, fédération et identité PASS ; un test
+membre a révélé qu'une proposition de responsabilité était masquée par l'accueil débutant.
+Correction de présentation : une décision personnelle fournie par le moteur passe avant le
+routeur de première arrivée ; l'invitation générique au profil reste le seul fallback.
+Agir ouvre les deux parcours globaux actuellement construits : Besoin et Projet. Le second
+explique les prérequis existants avant de commencer. Nouveau contrôle requis sur cette correction.
+
+### Vérification distante du 8 septembre — PR #155
+
+Sur le commit publié `9d1d7881c5b02a4a8a43a07fd2748decab5dee97` :
+- CI `Astra member space` n°3, run `34206537679` : **SUCCESS**.
+- 31 tests PHP, 210 assertions : PASS (membre, fédération, autorité d'identité).
+- 20 tests frontend : PASS ; build Vite et compilation Blade : PASS.
+- Les destinations principales ont été rendues par Laravel pour un membre neuf ; les tests
+  existants vérifient aussi des besoins, des organisations, des demandes et responsabilités réels
+  de la base de test. Ce résultat ne certifie pas toutes les actions avancées des fiches.
+- Deux rendus HTML synthétiques (première arrivée et retour calme) sont conservés dans l'artefact
+  CI `astra-rendered-states`, pendant sept jours. Ils ne contiennent pas de données de production.
+
+La tentative de revue navigateur de ces rendus a été bloquée par l'environnement navigateur
+(`ERR_BLOCKED_BY_CLIENT` à l'ouverture de l'aperçu local). Aucune capture ni vérification visuelle
+mobile/desktop n'est revendiquée. PR #155 reste en brouillon pour cette revue et la couverture
+progressive des autres opérations. Les résultats PHP distants ci-dessus remplacent le statut
+« PHP non exécuté » des notes d'intégration antérieures ; le moteur métier n'a pas été modifié.

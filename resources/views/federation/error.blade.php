@@ -1,0 +1,1 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ouverture interrompue — DG Afrique</title></head><body><main><h1>Nous n’avons pas pu ouvrir cet outil.</h1><p>{{ $message }}</p><a href="{{ route('member.space') }}#mes-outils">Revenir à mes outils</a></main></body></html>

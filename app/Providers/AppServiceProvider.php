@@ -28,6 +28,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \Illuminate\Support\Facades\View::composer('member.tools', \App\View\Composers\MemberToolsComposer::class);
+
         // Ces limiteurs ne consultent jamais Request::user() : GAMAD Core reste
         // l'unique autorité d'identité et aucun guard Laravel local n'est requis.
         RateLimiter::for('member-login', static fn (Request $request): Limit => Limit::perMinute(5)->by($request->ip()));

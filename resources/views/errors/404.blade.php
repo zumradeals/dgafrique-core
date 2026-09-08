@@ -1,0 +1,1 @@
+<x-layouts.public title="Cette page n’est pas accessible."><section class="dg-space dg-space-section"><h1>Cette page n’est pas accessible.</h1><p>Le contenu a peut-être été retiré ou son accès est réservé.</p><a class="dg-space-text-link" href="{{ route('member.space') }}">Revenir à mon espace →</a></section></x-layouts.public>

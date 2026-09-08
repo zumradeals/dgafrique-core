@@ -1,0 +1,1 @@
+<x-layouts.public title="Un instant, s’il vous plaît."><section class="dg-space dg-space-section"><h1>Un instant, s’il vous plaît.</h1><p>Trop de demandes ont été reçues. Patientez un peu avant de réessayer.</p><a class="dg-space-text-link" href="{{ route('member.space') }}">Revenir à mon espace →</a></section></x-layouts.public>
