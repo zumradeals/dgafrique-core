@@ -21,7 +21,7 @@
         <meta name="robots" content="noindex, nofollow">
         <meta name="theme-color" content="#F6F5F0">
         @if ($description)<meta name="description" content="{{ $description }}">@endif
-        <title>{{ $title ? $title.' — ' : '' }}DG Afrique</title>
+        <title>{{ $title ? $title.' — ' : '' }}GAMAD</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>

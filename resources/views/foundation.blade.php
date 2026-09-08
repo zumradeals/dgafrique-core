@@ -1,4 +1,4 @@
-<x-layouts.public title="Découvrir" description="Découvrez les besoins et les projets partagés publiquement sur DG Afrique." :editorial="true" canonical="https://dgafrique.com/decouvrir">
+<x-layouts.public title="Découvrir" description="Découvrez les besoins et les projets partagés publiquement sur GAMAD." :editorial="true" canonical="https://dgafrique.com/decouvrir">
     <div class="dg-entry dg-discovery">
         <x-dg.public-header :discovery="true" />
         <section class="dg-discovery-intro" aria-labelledby="discovery-title">
@@ -44,7 +44,7 @@
         <section class="dg-entry-how" aria-labelledby="how-title">
             <h2 id="how-title">Comment ça marche ?</h2>
             <ol><li>Partager un savoir-faire</li><li>Rencontrer</li><li>Agir ensemble</li></ol>
-            <a class="dg-entry-link" href="{{ route('gateway') }}">Pourquoi DG Afrique ? <span aria-hidden="true">→</span></a>
+            <a class="dg-entry-link" href="{{ route('gateway') }}">Pourquoi GAMAD ? <span aria-hidden="true">→</span></a>
         </section>
         <x-dg.public-footer />
     </div>

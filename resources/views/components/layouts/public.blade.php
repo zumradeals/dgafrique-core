@@ -14,7 +14,7 @@
         @else
             <meta name="robots" content="noindex, follow">
         @endif
-        <title>{{ $title ? $title.' — ' : '' }}DG Afrique</title>
+        <title>{{ $title ? $title.' — ' : '' }}GAMAD</title>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         @livewireStyles
     </head>

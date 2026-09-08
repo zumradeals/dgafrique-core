@@ -1,4 +1,4 @@
-<x-layouts.public title="Réseau social d’action et projets collectifs" description="Des savoir-faire à partager, des besoins à faire avancer, des personnes avec qui agir. Découvrez DG Afrique, le réseau social d’action." :editorial="true" canonical="https://dgafrique.com/">
+<x-layouts.public title="Réseau social d’action et projets collectifs" description="Des savoir-faire à partager, des besoins à faire avancer, des personnes avec qui agir. Découvrez GAMAD, le réseau social d’action." :editorial="true" canonical="https://dgafrique.com/">
     <div class="dg-entry">
         <x-dg.public-header />
         <section class="dg-entry-hero" aria-labelledby="entry-title">
@@ -24,15 +24,15 @@
             <h2 id="contribution-title">Chacun peut apporter<br>quelque chose.</h2>
             <ul><li>Un savoir-faire</li><li>Un besoin</li><li>L’envie de participer</li></ul>
         </section>
-        <nav class="dg-story-nav" aria-label="Comprendre DG Afrique">
+        <nav class="dg-story-nav" aria-label="Comprendre GAMAD">
             <a href="#vision">La vision</a><a href="#votre-place">Votre place</a><a href="#comment-agir">Comment agir</a><a href="#zumra">Les ZUMRA</a><a href="#questions">Questions fréquentes</a>
         </nav>
 
         <section class="dg-story-section dg-story-vision" id="vision" aria-labelledby="vision-title">
-            <div><p class="dg-entry-eyebrow">Pourquoi DG Afrique</p><h2 id="vision-title">Les talents existent.<br>Créons les liens<br>pour agir.</h2></div>
+            <div><p class="dg-entry-eyebrow">Pourquoi GAMAD</p><h2 id="vision-title">Les talents existent.<br>Créons les liens<br>pour agir.</h2></div>
             <div class="dg-story-prose">
                 <p class="dg-story-intro">Un savoir-faire peut répondre à un besoin. Une rencontre peut donner naissance à une action. Ensemble, ces actions peuvent faire grandir une communauté.</p>
-                <p>DG Afrique est un réseau social d’action au service du développement humain et de la collaboration. Sa vocation : relier les personnes, leurs capacités et les besoins concrets pour faire émerger des projets utiles.</p>
+                <p>GAMAD est un réseau social d’action au service du développement humain et de la collaboration. Sa vocation : relier les personnes, leurs capacités et les besoins concrets pour faire émerger des projets utiles.</p>
                 <p>Ancré en Afrique et ouvert au monde, le réseau donne une place à l’apprentissage, au travail collectif et à la transmission. Chaque personne peut commencer par ce qu’elle sait, ce qu’elle cherche ou ce qu’elle souhaite construire.</p>
             </div>
         </section>
@@ -59,7 +59,7 @@
 
         <section class="dg-story-zumra" id="zumra" aria-labelledby="zumra-title">
             <div class="dg-story-zumra__art"><img src="{{ asset('images/entry/commencer-1280.webp') }}" srcset="{{ asset('images/entry/commencer-640.webp') }} 640w, {{ asset('images/entry/commencer-1280.webp') }} 1280w" sizes="(min-width: 960px) 48vw, 100vw" width="1536" height="1024" loading="lazy" decoding="async" alt="Illustration : deux personnes construisent un espace de travail commun."></div>
-            <div class="dg-story-zumra__copy"><p class="dg-entry-eyebrow">Le collectif prend forme</p><h2 id="zumra-title">Une ZUMRA,<br>pour grandir et<br>agir ensemble.</h2><p>Une ZUMRA est une communauté organisée autour d’un domaine, d’un objectif et d’un projet commun. Elle réunit des personnes qui apprennent, transmettent et travaillent ensemble.</p><p>Le projet porte une action à réaliser. La ZUMRA donne un cadre humain à cette action et à la vie du collectif.</p><p class="dg-story-motto">Formation · Travail · Adoration</p><p class="dg-entry-note">Créer un compte DG Afrique est gratuit. L’adhésion au Programme ZUMRA et l’entrée dans une communauté sont des démarches distinctes, avec leurs propres règles.</p><a class="dg-entry-link" href="#questions">Comprendre avant de rejoindre <span aria-hidden="true">↓</span></a></div>
+            <div class="dg-story-zumra__copy"><p class="dg-entry-eyebrow">Le collectif prend forme</p><h2 id="zumra-title">Une ZUMRA,<br>pour grandir et<br>agir ensemble.</h2><p>Une ZUMRA est une communauté organisée autour d’un domaine, d’un objectif et d’un projet commun. Elle réunit des personnes qui apprennent, transmettent et travaillent ensemble.</p><p>Le projet porte une action à réaliser. La ZUMRA donne un cadre humain à cette action et à la vie du collectif.</p><p class="dg-story-motto">Formation · Travail · Adoration</p><p class="dg-entry-note">Créer un compte GAMAD est gratuit. L’adhésion au Programme ZUMRA et l’entrée dans une communauté sont des démarches distinctes, avec leurs propres règles.</p><a class="dg-entry-link" href="#questions">Comprendre avant de rejoindre <span aria-hidden="true">↓</span></a></div>
         </section>
 
         <section class="dg-story-section dg-story-trust" aria-labelledby="trust-title">
@@ -74,10 +74,10 @@
         <section class="dg-story-section dg-story-faq" id="questions" aria-labelledby="faq-title">
             <div><p class="dg-entry-eyebrow">Avant de commencer</p><h2 id="faq-title">Vos questions.<br>Des réponses simples.</h2></div>
             <div class="dg-story-faq__list">
-                <details><summary>Qu’est-ce qu’un réseau social d’action ?</summary><p>C’est un réseau où les échanges servent à apprendre, à répondre à des besoins et à construire ensemble. Sur DG Afrique, la rencontre s’inscrit dans un chemin vers l’action, la collaboration et des réalisations vérifiables.</p></details>
-                <details><summary>À qui s’adresse DG Afrique ?</summary><p>Aux personnes qui souhaitent apporter un savoir-faire, apprendre, exprimer un besoin ou participer à une initiative collective. Le réseau est ancré en Afrique et ouvert aux personnes qui souhaitent y contribuer, où qu’elles vivent.</p></details>
-                <details><summary>Faut-il déjà avoir un projet ?</summary><p>Non. Un intérêt, une compétence, une question ou l’envie d’apprendre peuvent être un point de départ. La vision de DG Afrique place la personne avant le projet et la structure.</p></details>
-                <details><summary>Le compte DG Afrique est-il gratuit ?</summary><p>Oui. La création du compte est gratuite. Elle ne vaut pas adhésion au Programme ZUMRA et n’entraîne pas automatiquement votre admission dans une ZUMRA.</p></details>
+                <details><summary>Qu’est-ce qu’un réseau social d’action ?</summary><p>C’est un réseau où les échanges servent à apprendre, à répondre à des besoins et à construire ensemble. Sur GAMAD, la rencontre s’inscrit dans un chemin vers l’action, la collaboration et des réalisations vérifiables.</p></details>
+                <details><summary>À qui s’adresse GAMAD ?</summary><p>Aux personnes qui souhaitent apporter un savoir-faire, apprendre, exprimer un besoin ou participer à une initiative collective. Le réseau est ancré en Afrique et ouvert aux personnes qui souhaitent y contribuer, où qu’elles vivent.</p></details>
+                <details><summary>Faut-il déjà avoir un projet ?</summary><p>Non. Un intérêt, une compétence, une question ou l’envie d’apprendre peuvent être un point de départ. La vision de GAMAD place la personne avant le projet et la structure.</p></details>
+                <details><summary>Le compte GAMAD est-il gratuit ?</summary><p>Oui. La création du compte est gratuite. Elle ne vaut pas adhésion au Programme ZUMRA et n’entraîne pas automatiquement votre admission dans une ZUMRA.</p></details>
                 <details><summary>Quelle différence entre une ZUMRA et un projet ?</summary><p>Une ZUMRA est une communauté organisée qui apprend et agit ensemble. Un projet est une action structurée, avec un objectif et des réalisations attendues. Les projets s’inscrivent dans ce cadre collectif tout en pouvant être initiés par une personne.</p></details>
                 <details><summary>Que puis-je découvrir aujourd’hui sans compte ?</summary><p>La page <a href="{{ route('landing') }}">Découvrir</a> présente les besoins et les projets réellement partagés publiquement. Si aucun contenu n’est disponible, elle le précise. Les autres parcours du réseau se construisent progressivement.</p></details>
                 <details><summary>Mes informations sont-elles toutes publiques ?</summary><p>Non. Créer un compte ne rend pas toutes vos informations publiques. La visibilité des contenus dépend des choix et des règles d’accès associés à chaque espace.</p></details>

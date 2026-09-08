@@ -1,7 +1,7 @@
-<x-layouts.public title="Connexion" description="Connectez-vous à votre espace DG Afrique.">
+<x-layouts.public title="Connexion" description="Connectez-vous à votre espace GAMAD.">
     <section class="mx-auto grid min-h-[100svh] w-full max-w-6xl gap-10 px-5 py-6 sm:px-8 lg:grid-cols-[.9fr_1.1fr] lg:items-center lg:px-12 lg:py-10">
         <div class="order-2 lg:order-1">
-            <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="DG Afrique — accueil">DG Afrique</a>
+            <a href="{{ route('gateway') }}" class="dg-brand-text" aria-label="GAMAD — accueil">GAMAD</a>
             <p class="mt-10 text-sm font-bold uppercase tracking-[.18em] text-[var(--dg-growth)]">Votre espace</p>
             <h1 class="mt-3 max-w-xl text-balance text-4xl font-black leading-[1.04] tracking-[-.04em] sm:text-5xl">Reprenez là où vous en étiez.</h1>
             <p class="mt-5 max-w-lg text-lg leading-8 text-[var(--dg-muted)]">Connectez-vous pour retrouver vos priorités, vos collaborations et la prochaine action qui vous concerne.</p>
@@ -29,7 +29,7 @@
             </form>
 
             <div class="mt-6 border-t border-black/10 pt-5 text-sm text-[var(--dg-muted)]">
-                <a href="{{ route('landing') }}" class="font-semibold text-[var(--dg-primary)]">Découvrir DG Afrique sans se connecter</a>
+                <a href="{{ route('landing') }}" class="font-semibold text-[var(--dg-primary)]">Découvrir GAMAD sans se connecter</a>
             </div>
         </div>
     </section>
