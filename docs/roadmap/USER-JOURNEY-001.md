@@ -2,7 +2,7 @@
 
 ## Statut et autorité
 
-`CANONIQUE — UJ-00 PASS — UJ-01 IN_PROGRESS — UJ-02 PENDING`
+`CANONIQUE — UJ-00 PASS — UJ-01 PASS — UJ-02 IN_PROGRESS`
 
 Ce document est le **registre d’exécution des parcours du frontend GAMAD**. Il est subordonné à
 `FRONTEND-REBUILD-001` et aux autorités produit/métier actives. Il ne crée ni seconde roadmap,
@@ -92,9 +92,11 @@ métier par invention.
 
 ### P0 — Entrer et comprendre
 
-`Gateway → Découvrir si nécessaire → Créer/ouvrir un compte → Identité confirmée`
+`Accueil GAMAD → Comprendre → Créer/ouvrir un compte → Identité confirmée`
 
-- expliquer **GAMAD comme réseau social d’action** ;
+- l’accueil `/` est l’unique entrée éditoriale publique et explique **GAMAD comme réseau social d’action** ;
+- l’ancienne route `/decouvrir` n’est plus une page marketing autonome et redirige vers l’accueil ;
+- le regroupement **Découvrir** reste réservé au réseau membre conformément au contrat de navigation ;
 - distinguer **compte GAMAD** et adhésion au Programme ZUMRA ;
 - permettre d’entrer sans apprendre l’architecture de GAMAD Core ;
 - ne montrer aucune statistique ou activité fictive ;
@@ -198,8 +200,8 @@ Les identifiants sont permanents. Leur statut est la seule indication autorisée
 | Lot | Contenu | Dépendance | Statut | Preuve de sortie |
 |---|---|---|---|---|
 | `UJ-00` | matrice écrans ↔ états ↔ services ↔ permissions ↔ erreurs | moteur certifié | **PASS** | `USER-JOURNEY-001-UJ-00-CONTRACT-MATRIX.md` |
-| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **IN_PROGRESS** | revalidation du socle après reprise Astra |
-| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **PENDING** | identité et surfaces P0 à certifier après UJ-01 |
+| `UJ-01` | socle visuel, composants d’état, navigation et pipeline | UJ-00 | **PASS** | frontend Astra réconcilié sur `main`, tests frontend/build et smoke production validés |
+| `UJ-02` | P0 Entrer/comprendre et identité | UJ-01 | **IN_PROGRESS** | accueil canonique, création/vérification/connexion et sortie P0 à certifier ensemble |
 | `UJ-03` | P1 première intention et P2 retour quotidien | UJ-02 | PENDING | cockpit réel, priorité/action prouvées |
 | `UJ-04` | P3 personnes, capacités, besoins et mise en relation | UJ-03 | PENDING | boucle découverte→action automatisée |
 | `UJ-05` | P4 projet, équipe, mission et preuve | UJ-04 | PENDING | boucle projet verticale automatisée |
@@ -247,6 +249,8 @@ Un lot n’est `PASS` que si :
 | 2026-08-29 | `UJ-01` | navigation mobile verrouillée : Fil · Découvrir · Agir · ZUMRA · Espace | `USER-JOURNEY-001-NAVIGATION-CONTRACT.md` |
 | 2026-09-07 | Reprise Astra | version frontend Astra réintroduite pour revue sans modifier le moteur ; NO-GO production maintenu | branche de reprise Astra |
 | 2026-09-08 | Identité GAMAD | ancien nom produit retiré des surfaces ; GAMAD devient le réseau visible, GAMAD Core reste invisible ; aucune promotion de statut UJ par ce seul changement | PR d’identité GAMAD |
+| 2026-09-08 | `UJ-01` | socle Astra réconcilié sur `main`, construit et déployé ; navigation, accueil, connexion et espace membre répondent en production | `main` après PR #157/#158 |
+| 2026-09-08 | `UJ-02` | décision produit : `/` devient l’unique landing publique ; `/decouvrir` est retirée comme page autonome et conservée seulement en redirection ; le « Découvrir » membre reste inchangé | branche `ux/uj02-landing-canonical-entry` |
 
 Les journaux détaillés des tentatives précédentes restent dans l’historique Git. Ils ne sont pas
 une autorité parallèle et ne doivent pas être restaurés comme instructions actives.

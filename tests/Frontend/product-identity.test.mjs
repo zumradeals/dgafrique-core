@@ -64,7 +64,7 @@ test('canonical product and journey authorities encode GAMAD public and GAMAD Co
   assert.doesNotMatch(product, /mot « GAMAD ».*institution invisible/i);
 
   assert.match(journey, /^# USER-JOURNEY-001 — Opération Parcours de l'Utilisateur GAMAD/m);
-  assert.match(journey, /expliquer \*\*GAMAD comme réseau social d’action\*\*/);
+  assert.match(journey, /\*\*GAMAD comme réseau social d’action\*\*/);
   assert.match(journey, /compte GAMAD/);
   assert.match(journey, /architecture de GAMAD Core/);
 });
