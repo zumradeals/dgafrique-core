@@ -118,7 +118,7 @@
         </section>
 
         @if ($hasOtherAttention)
-            <a class="dg-cockpit-alert-link" href="{{ route('notifications.index') }}">D’autres éléments attendent votre attention →</a>
+            <a class="dg-cockpit-alert-link" href="{{ route('notifications.index') }}"><span>D’autres éléments attendent votre attention.</span><span aria-hidden="true">→</span></a>
         @endif
 
         <section class="dg-cockpit-main-grid" aria-label="Actions et outils">
@@ -195,6 +195,9 @@
                     <a class="dg-cockpit-alert-link" href="{{ route('zumra.index') }}">Ouvrir ZUMRA →</a>
                 </div>
                 @if ($myGroups->isNotEmpty() || $myOrganizations->isNotEmpty())
+                    @if ($myOrganizations->isNotEmpty())
+                        <h3>Mes Organisations</h3>
+                    @endif
                     <div class="dg-cockpit-engagement-list">
                         @foreach ($myGroups as $group)
                             <a class="dg-cockpit-quick-link" href="{{ route('zumra.groups.show', $group) }}"><span class="dg-cockpit-quick-icon"><x-dg.icon name="zumra" /></span><span><strong>{{ $group->name }}</strong><small>ZUMRA</small></span><span aria-hidden="true">→</span></a>
