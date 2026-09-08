@@ -23,15 +23,20 @@ async function bladeFiles(directory) {
 }
 
 test('retired DG Afrique product name is absent from every rendered Blade surface', async () => {
+  const violations = [];
+
   for (const file of await bladeFiles(viewsRoot)) {
     const content = await readFile(file, 'utf8');
-    const displayPath = relative(viewsRoot, file);
-    assert.doesNotMatch(
-      content,
-      /DG Afrique/i,
-      `${displayPath} exposes the retired DG Afrique product name`,
-    );
+    if (/DG Afrique/i.test(content)) {
+      violations.push(relative(viewsRoot, file));
+    }
   }
+
+  assert.deepEqual(
+    violations,
+    [],
+    `retired DG Afrique product name remains in: ${violations.join(', ')}`,
+  );
 });
 
 test('canonical GAMAD identity is present on the shared public and member brand surfaces', async () => {
