@@ -59,7 +59,7 @@ final readonly class FederationContinuationController
         } catch (CoreUnavailableException) {
             return $this->failure(
                 $configured['slug'],
-                "{$configured['display_name']} ne peut pas être ouvert pour le moment. Votre connexion DG Afrique reste active.",
+                "{$configured['display_name']} ne peut pas être ouvert pour le moment. Votre connexion GAMAD reste active.",
                 503,
             );
         } catch (CoreProtocolException) {
