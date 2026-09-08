@@ -4,147 +4,54 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\Need;
-use App\Models\Project;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * UIUX-001 §5 « Découvrir » : un visiteur anonyme bénéficie d'une découverte publique limitée et
- * réelle sur la Landing (/decouvrir), strictement bornée à ce que Need::canView()/Project::canView()
- * autorisent déjà pour la visibilité PUBLIC — aucune règle d'autorisation nouvelle et aucune
- * donnée de remplissage quand le portail est vide.
+ * Le nom historique du fichier est conservé pour les scripts d’exploitation existants.
+ * La page `/decouvrir` n’est plus une surface publique autonome : elle redirige vers l’accueil.
  */
 final class LandingPublicDiscoveryTest extends TestCase
 {
-    use RefreshDatabase;
-
-    public function test_honest_empty_state_appears_when_no_real_public_object_exists(): void
+    public function test_home_is_the_canonical_public_entry(): void
     {
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
+        $content = $this->get('/')
+            ->assertOk()
+            ->getContent();
 
-        self::assertStringContainsString('data-public-empty', $content);
-        self::assertStringContainsString('Aucun besoin ou projet public', $content);
-        self::assertStringNotContainsString('· Exemple', $content);
+        self::assertStringContainsString('De vos idées.', $content);
+        self::assertStringContainsString('À nos actions.', $content);
+        self::assertStringContainsString('Voir comment ça marche', $content);
+        self::assertStringContainsString('Vous n’avez pas besoin', $content);
+        self::assertStringContainsString('La valeur ne se mesure pas en likes', $content);
+        self::assertStringContainsString('Vous pouvez utiliser GAMAD sans appartenir à une ZUMRA', $content);
     }
 
-    public function test_a_real_public_need_appears_for_an_anonymous_visitor(): void
+    public function test_legacy_discovery_url_redirects_permanently_to_home(): void
     {
-        $this->need('Un vrai besoin visible sans compte', Need::VISIBILITY_PUBLIC, Need::STATUS_OPEN);
-
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringContainsString('Un vrai besoin visible sans compte', $content);
-        self::assertStringNotContainsString('data-public-empty', $content);
-        self::assertStringNotContainsString('Formation en entrepreneuriat pour jeunes femmes', $content);
+        $this->get('/decouvrir')
+            ->assertStatus(301)
+            ->assertRedirect(route('gateway'));
     }
 
-    public function test_a_real_public_project_appears_for_an_anonymous_visitor(): void
+    public function test_public_entry_does_not_offer_a_second_discovery_page(): void
     {
-        $this->project('Un vrai projet visible sans compte', Project::VISIBILITY_PUBLIC, Project::STATUS_ADOPTED);
+        $content = $this->get('/')
+            ->assertOk()
+            ->getContent();
 
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringContainsString('Un vrai projet visible sans compte', $content);
+        self::assertStringNotContainsString('Découvrir le réseau', $content);
+        self::assertStringNotContainsString('Que puis-je découvrir aujourd’hui sans compte', $content);
+        self::assertStringNotContainsString('Besoins et projets publics', $content);
     }
 
-    public function test_a_private_need_is_never_discoverable_anonymously(): void
+    public function test_public_entry_keeps_account_and_zumra_distinct(): void
     {
-        $this->need('Besoin privé jamais public', Need::VISIBILITY_PRIVATE, Need::STATUS_OPEN);
+        $content = $this->get('/')
+            ->assertOk()
+            ->getContent();
 
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringNotContainsString('Besoin privé jamais public', $content);
-    }
-
-    public function test_a_group_scoped_need_is_never_discoverable_anonymously(): void
-    {
-        $this->need('Besoin réservé à une ZUMRA', Need::VISIBILITY_GROUP, Need::STATUS_OPEN);
-
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringNotContainsString('Besoin réservé à une ZUMRA', $content);
-    }
-
-    public function test_a_program_scoped_need_is_never_discoverable_anonymously(): void
-    {
-        $this->need('Besoin réservé au Programme ZUMRA', Need::VISIBILITY_PROGRAM, Need::STATUS_OPEN);
-
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringNotContainsString('Besoin réservé au Programme ZUMRA', $content);
-    }
-
-    public function test_a_proposed_public_need_is_never_discoverable_anonymously(): void
-    {
-        $this->need('Besoin encore proposé, pas encore publié', Need::VISIBILITY_PUBLIC, Need::STATUS_PROPOSED);
-
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringNotContainsString('Besoin encore proposé, pas encore publié', $content);
-    }
-
-    public function test_a_private_project_is_never_discoverable_anonymously(): void
-    {
-        $this->project('Projet privé jamais public', Project::VISIBILITY_PRIVATE, Project::STATUS_ADOPTED);
-
-        $content = $this->get('/decouvrir')->assertOk()->getContent();
-
-        self::assertStringNotContainsString('Projet privé jamais public', $content);
-    }
-
-    public function test_the_route_never_requires_authentication(): void
-    {
-        $this->get('/decouvrir')->assertOk();
-    }
-
-    private function need(string $title, string $visibility, string $status): Need
-    {
-        return Need::query()->create([
-            'public_reference' => (string) Str::uuid(),
-            'owner_type' => Need::OWNER_PERSON,
-            'owner_reference' => 'IDN-LANDING-OWNER',
-            'author_core_reference' => 'IDN-LANDING-OWNER',
-            'title' => $title,
-            'context' => 'Un contexte suffisamment précis pour ce besoin utilisé par les tests de découverte publique.',
-            'category' => 'SKILL',
-            'collaboration_mode' => 'LOCAL',
-            'location' => 'Abidjan',
-            'visibility' => $visibility,
-            'status' => $status,
-            'decided_by_core_reference' => 'IDN-LANDING-OWNER',
-            'published_at' => $status === Need::STATUS_OPEN ? now() : null,
-        ]);
-    }
-
-    private function project(string $name, string $visibility, string $status): Project
-    {
-        return Project::query()->create([
-            'public_reference' => (string) Str::uuid(),
-            'owner_type' => Project::OWNER_PERSON,
-            'owner_reference' => 'IDN-LANDING-OWNER',
-            'initiator_core_reference' => 'IDN-LANDING-OWNER',
-            'source_need_id' => null,
-            'name' => $name,
-            'summary' => 'Un résumé suffisamment précis pour ce projet utilisé par les tests de découverte publique.',
-            'problem' => 'Un problème réel à décrire pour ce test de découverte publique.',
-            'proposed_solution' => 'Une solution proposée pour ce test de découverte publique.',
-            'beneficiaries' => 'Des bénéficiaires réels pour ce test.',
-            'domain' => 'DIGITAL',
-            'participation_mode' => 'HYBRID',
-            'location' => 'Abidjan',
-            'image_path' => null,
-            'objectives' => [],
-            'required_capabilities' => [],
-            'required_resources' => [],
-            'risks' => [],
-            'property_regime' => 'PERSONAL_SUPPORTED',
-            'visibility' => $visibility,
-            'status' => $status,
-            'maturity' => 'IDEA',
-            'decided_by_core_reference' => $status === Project::STATUS_ADOPTED ? 'IDN-LANDING-OWNER' : null,
-            'adopted_at' => $status === Project::STATUS_ADOPTED ? now() : null,
-        ]);
+        self::assertStringContainsString('Compte gratuit', $content);
+        self::assertStringContainsString('adhésion', mb_strtolower($content));
+        self::assertStringContainsString('ZUMRA', $content);
     }
 }
