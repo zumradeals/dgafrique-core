@@ -1,0 +1,43 @@
+@import "./member-space.css";
+
+/* UJ-03A — authenticated shell shared by every member surface. */
+@media (min-width: 900px) {
+    .dg-desktop-nav__inner {
+        width: min(100%, 96rem);
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+    }
+
+    .dg-member-account {
+        display: flex;
+    }
+}
+
+/* The cockpit keeps the landing's impact without compressing the welcome title. */
+@media (min-width: 1181px) {
+    .dg-cockpit-hero-main {
+        grid-template-columns: minmax(23rem, 0.95fr) minmax(24rem, 1.05fr);
+        min-height: 32rem;
+    }
+
+    .dg-cockpit-hero-copy {
+        padding: clamp(1.75rem, 2.8vw, 2.75rem);
+    }
+
+    .dg-cockpit-hero-copy h1 {
+        font-size: clamp(2.7rem, 4vw, 4.2rem);
+        letter-spacing: -0.045em;
+        line-height: 1.05;
+        text-wrap: initial;
+        overflow-wrap: normal;
+        word-break: normal;
+        hyphens: none;
+    }
+
+    .dg-cockpit-hero-art {
+        min-height: 26rem;
+    }
+
+    .dg-cockpit-hero-art img {
+        min-height: 32rem;
+    }
+}
