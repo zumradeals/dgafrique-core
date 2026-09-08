@@ -4,7 +4,8 @@ import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
-const viewsRoot = fileURLToPath(new URL('../../resources/views/', import.meta.url));
+const root = fileURLToPath(new URL('../../', import.meta.url));
+const viewsRoot = join(root, 'resources/views');
 
 async function bladeFiles(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -50,4 +51,20 @@ test('canonical GAMAD identity is present on the shared public and member brand 
     const content = await readFile(join(viewsRoot, path), 'utf8');
     assert.match(content, /GAMAD/, `${path} must expose the canonical GAMAD identity`);
   }
+});
+
+test('canonical product and journey authorities encode GAMAD public and GAMAD Core invisible', async () => {
+  const product = await readFile(join(root, 'docs/product/EXPERIENCE-PRODUIT-CANONIQUE.md'), 'utf8');
+  const journey = await readFile(join(root, 'docs/roadmap/USER-JOURNEY-001.md'), 'utf8');
+
+  assert.match(product, /^# Expérience produit canonique — GAMAD/m);
+  assert.match(product, /GAMAD est le nom canonique du réseau social d’action visible/);
+  assert.match(product, /GAMAD Core reste le moteur invisible de confiance/);
+  assert.doesNotMatch(product, /DG Afrique est la porte publique et humaine/i);
+  assert.doesNotMatch(product, /mot « GAMAD ».*institution invisible/i);
+
+  assert.match(journey, /^# USER-JOURNEY-001 — Opération Parcours de l'Utilisateur GAMAD/m);
+  assert.match(journey, /expliquer \*\*GAMAD comme réseau social d’action\*\*/);
+  assert.match(journey, /compte GAMAD/);
+  assert.match(journey, /architecture de GAMAD Core/);
 });
