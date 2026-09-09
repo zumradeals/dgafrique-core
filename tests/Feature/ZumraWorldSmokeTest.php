@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Models\ZumraCharter;
+use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
+use App\Models\ZumraGroupRole;
 use App\Models\ZumraProgramMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -46,6 +49,57 @@ final class ZumraWorldSmokeTest extends TestCase
             }
             file_put_contents($directory.'/zumra-hub.html', $response->getContent());
         }
+    }
+
+    public function test_an_active_program_member_can_open_and_really_create_a_zumra(): void
+    {
+        $identity = 'IDN-SMOKE-CREATE';
+        $this->programMember($identity);
+        $this->signIn($identity);
+
+        $this->get('/zumra/groupes/proposer')
+            ->assertOk()
+            ->assertSee('Faire naître une ZUMRA')
+            ->assertSee('Nom de la ZUMRA')
+            ->assertSee('Objectif fondateur')
+            ->assertSee('Faire naître la ZUMRA')
+            ->assertSee('action="'.route('zumra.groups.store').'"', false);
+
+        $response = $this->post('/zumra/groupes', [
+            'name' => 'ZUMRA Test Création',
+            'domain' => 'Agriculture',
+            'founding_objective' => 'Construire ensemble un dispositif agricole local durable qui crée des solutions concrètes pour les membres et leur territoire.',
+            'participation_mode' => 'HYBRID',
+            'location' => 'Abidjan, Côte d’Ivoire',
+            'welcome_capacity' => ZumraGroup::WELCOME_PROGRESSIVELY,
+            'assume_primary_lead' => '1',
+        ]);
+
+        $group = ZumraGroup::query()->where('name', 'ZUMRA Test Création')->sole();
+
+        $response->assertRedirect(route('zumra.groups.show', $group));
+        self::assertSame(ZumraGroup::STATE_CONSTITUTING, $group->state);
+        self::assertSame($identity, $group->proposer_core_reference);
+        self::assertSame(1, (int) $group->active_member_count);
+        self::assertTrue(
+            ZumraGroupMembership::query()
+                ->where('zumra_group_id', $group->id)
+                ->where('core_identity_reference', $identity)
+                ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+                ->exists(),
+        );
+        self::assertTrue(
+            ZumraGroupRole::query()
+                ->where('zumra_group_id', $group->id)
+                ->where('role', 'PRIMARY_LEAD')
+                ->where('core_identity_reference', $identity)
+                ->where('status', ZumraGroupRole::STATUS_ACCEPTED)
+                ->exists(),
+        );
+
+        $this->get(route('zumra.groups.show', $group))
+            ->assertOk()
+            ->assertSee('ZUMRA Test Création');
     }
 
     public function test_the_legacy_directory_preserves_its_redirect_contract(): void
