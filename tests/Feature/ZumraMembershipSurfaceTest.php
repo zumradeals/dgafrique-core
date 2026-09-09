@@ -16,16 +16,27 @@ final class ZumraMembershipSurfaceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_a_gamad_member_accepts_the_charter_for_free_then_opens_zumra_creation(): void
+    public function test_the_canonical_v1_charter_is_published_and_must_be_accepted_before_creation(): void
     {
         $identity = 'IDN-MEMBERSHIP-JOURNEY';
-        $charter = $this->publishedCharter('2026.1');
+        $charter = ZumraCharter::query()->where('version', '1.0')->sole();
+
+        self::assertSame(ZumraCharter::STATUS_PUBLISHED, $charter->status);
+        self::assertSame('Charte du Programme ZUMRA', $charter->title);
+        self::assertSame('GAMAD-SYSTEM', $charter->published_by_core_reference);
+        self::assertStringContainsString('L’adhésion au Programme ZUMRA est gratuite.', $charter->body);
+        self::assertStringContainsString('Son projet principal constitue son cœur opérationnel', $charter->body);
+        self::assertStringContainsString('Elle ne crée pas automatiquement une ZUMRA', $charter->body);
+        self::assertSame(hash('sha256', $charter->title."\n".$charter->body), $charter->content_hash);
+
         $this->signIn($identity);
 
         $this->get(route('zumra.membership.show'))
             ->assertOk()
             ->assertSee('Adhérez gratuitement au Programme ZUMRA.')
             ->assertSee('Charte du Programme ZUMRA')
+            ->assertSee('Version 1.0')
+            ->assertSee('Respect et dignité.')
             ->assertSee('Accepter la charte et adhérer gratuitement');
 
         $this->post(route('zumra.membership.store'), [
@@ -37,19 +48,22 @@ final class ZumraMembershipSurfaceTest extends TestCase
         self::assertSame(ZumraProgramMembership::STATUS_ACTIVE, $membership->status);
         self::assertNotNull($membership->activated_at);
         self::assertSame($charter->id, $membership->accepted_charter_id);
+        self::assertSame('1.0', $membership->accepted_charter_version);
+        self::assertSame($charter->content_hash, $membership->accepted_charter_hash);
 
         $event = ZumraProgramMembershipEvent::query()->where('membership_id', $membership->id)->sole();
         self::assertSame('MEMBERSHIP_ACTIVATED', $event->event);
         self::assertNull($event->from_status);
         self::assertSame(ZumraProgramMembership::STATUS_ACTIVE, $event->to_status);
         self::assertSame('FREE_CHARTER_ACCEPTANCE', $event->context['activation_mode']);
+        self::assertSame('1.0', $event->context['charter_version']);
 
         $this->get(route('zumra.groups.create'))
             ->assertOk()
             ->assertSee('Faire naître une ZUMRA');
     }
 
-    public function test_a_legacy_pending_membership_can_be_activated_for_free_by_reaccepting_the_charter(): void
+    public function test_a_legacy_pending_membership_can_be_activated_for_free_by_reaccepting_the_current_charter(): void
     {
         $identity = 'IDN-LEGACY-PENDING';
         $charter = $this->publishedCharter('2026.2');
@@ -79,6 +93,9 @@ final class ZumraMembershipSurfaceTest extends TestCase
 
     private function publishedCharter(string $version): ZumraCharter
     {
+        ZumraCharter::query()->where('status', ZumraCharter::STATUS_PUBLISHED)
+            ->update(['status' => ZumraCharter::STATUS_RETIRED]);
+
         $body = str_repeat('Respect, transmission et construction collective. ', 4);
 
         return ZumraCharter::query()->create([
