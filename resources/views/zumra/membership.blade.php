@@ -51,6 +51,7 @@
                         <p class="dg-zumra-eyebrow">ANCIEN DOSSIER À ACTIVER</p>
                         <h2>Votre adhésion peut maintenant être activée gratuitement.</h2>
                         <p>Le Programme ZUMRA ne demande plus de paiement d’adhésion. Il suffit d’accepter la charte actuellement publiée pour devenir membre actif.</p>
+                        <p class="dg-zumra-membership__warning">L’ancienne action « Payer avec mon Wallet ZAHAB » n’est plus nécessaire : aucune somme ne sera débitée pour activer votre adhésion.</p>
 
                         @if ($charter)
                             <article class="dg-zumra-membership__charter">
