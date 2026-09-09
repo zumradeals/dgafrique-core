@@ -86,4 +86,10 @@ final class ZumraGroup extends Model
     {
         return $this->hasMany(ZumraGroupActivity::class, 'zumra_group_id');
     }
+
+    /** Les projets nés dans ce monde ZUMRA, pour les compter sans fabriquer de métrique côté vue. */
+    public function projects(): HasMany
+    {
+        return $this->hasMany(Project::class, 'zumra_group_id');
+    }
 }
