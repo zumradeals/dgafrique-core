@@ -18,7 +18,29 @@ final class ZumraWorldSmokeTest extends TestCase
     {
         $this->programMember('IDN-SMOKE-EMPTY');
         $this->signIn('IDN-SMOKE-EMPTY');
-        $this->get('/zumra')->assertOk();
+
+        $response = $this->get('/zumra')
+            ->assertOk()
+            ->assertSee('Grandir et agir ensemble.')
+            ->assertSee('Mes ZUMRA')
+            ->assertSee('ZUMRA à découvrir')
+            ->assertSee('Les ZUMRA en chiffres')
+            ->assertSee('Explorer par territoire')
+            ->assertSee('Qu’est-ce qu’une ZUMRA ?')
+            ->assertSee('Créer une ZUMRA')
+            ->assertSee('Abidjan')
+            ->assertSee('Yamoussoukro')
+            ->assertDontSee('+ 320')
+            ->assertDontSee('+ 18 000')
+            ->assertDontSee('+ 1 200');
+
+        if (getenv('ASTRA_VISUAL_EXPORT') === '1') {
+            $directory = storage_path('app/astra-visual');
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            file_put_contents($directory.'/zumra-hub.html', $response->getContent());
+        }
     }
 
     public function test_the_legacy_directory_preserves_its_redirect_contract(): void

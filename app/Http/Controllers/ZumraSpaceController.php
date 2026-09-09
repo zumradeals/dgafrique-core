@@ -23,10 +23,10 @@ use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
- * UIUX-010 — le carrefour ZUMRA. Chaque bloc réutilise une capacité déjà confirmée par l'audit
- * (adhésion, décisions, activités dérivées, domaines) ; les deux seules surfaces sans métier réel
- * derrière elles (Fil ZUMRA détaillé, proximité géographique) sont explicitement documentées
- * comme vitrines en attendant leur moteur, jamais présentées comme le produit final.
+ * UIUX-010 / ZUMRA-HUB-001 — le carrefour ZUMRA.
+ * Les chiffres et cartes sont des projections de données réelles. Les surfaces qui n'ont pas
+ * encore de moteur dédié (notamment la proximité géographique avancée) restent présentées comme
+ * des portes d'entrée, sans fabriquer de classement ni de résultat.
  */
 final class ZumraSpaceController
 {
@@ -37,10 +37,13 @@ final class ZumraSpaceController
         $profile = PersonProfile::query()->find($identity->reference);
         $membership = ZumraProgramMembership::query()->where('core_identity_reference', $identity->reference)->first();
         $isAdministrator = PortalAdministrator::query()->whereKey($identity->reference)->exists();
+        $canCreateGroup = $membership?->status === ZumraProgramMembership::STATUS_ACTIVE;
+
         $query = is_string($request->query('q')) ? trim($request->query('q')) : '';
         $mode = in_array($request->query('mode'), ['PHYSICAL', 'DIGITAL', 'HYBRID'], true) ? $request->query('mode') : null;
         $location = is_string($request->query('location')) ? trim($request->query('location')) : '';
         $personalFilter = in_array($request->query('view'), ['mine', 'invited', 'requested'], true) ? $request->query('view') : null;
+        $showAll = $request->boolean('all');
 
         $myMemberships = ZumraGroupMembership::query()
             ->where('core_identity_reference', $identity->reference)
@@ -78,9 +81,6 @@ final class ZumraSpaceController
             ->values();
 
         $myPendingRoleProposals = $zumraAttention->myPendingRoleProposals($identity->reference);
-
-        // « À faire maintenant » reste volontairement court dans son détail (deux éléments
-        // maximum, jamais un score) ; le badge de navigation porte lui le total réel.
         $attentionItems = $this->attentionItems($myPendingRoleProposals, $pendingRequestsToDecide, $myGroups);
         $attentionTotal = $myPendingRoleProposals->count() + (int) $pendingRequestsToDecide->sum('count')
             + $myGroups->where('status', ZumraGroupMembership::STATUS_INVITED)->count();
@@ -117,7 +117,22 @@ final class ZumraSpaceController
             ->get()
             ->pluck('label');
 
-        $isExhaustive = $query !== '' || $mode !== null || $location !== '' || $personalFilter !== null;
+        $territoryCounts = ZumraGroup::query()
+            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->whereNotNull('location')
+            ->where('location', '!=', '')
+            ->selectRaw('location, COUNT(*) AS groups_count')
+            ->groupBy('location')
+            ->orderByDesc('groups_count')
+            ->orderBy('location')
+            ->limit(12)
+            ->get()
+            ->map(fn (ZumraGroup $row): array => [
+                'location' => $row->location,
+                'count' => (int) $row->getAttribute('groups_count'),
+            ]);
+
+        $isExhaustive = $showAll || $query !== '' || $mode !== null || $location !== '' || $personalFilter !== null;
         $discoverGroups = $isExhaustive
             ? $this->filteredGroups($identity->reference, $query, $mode, $location, $personalFilter)
                 ->paginate(8)->withQueryString()->through(fn (ZumraGroup $group): array => $this->presentGroup($group))
@@ -125,10 +140,11 @@ final class ZumraSpaceController
 
         $fil = $this->filPanel();
         $stats = $this->stats();
+
         return view('zumra.index', compact(
-            'identity', 'profile', 'membership', 'isAdministrator', 'myGroups', 'navCounts',
-            'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities',
-            'discoverGroups', 'isExhaustive', 'fil', 'stats', 'query', 'mode', 'location', 'personalFilter',
+            'identity', 'profile', 'membership', 'isAdministrator', 'canCreateGroup', 'myGroups', 'navCounts',
+            'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities', 'territoryCounts',
+            'discoverGroups', 'isExhaustive', 'showAll', 'fil', 'stats', 'query', 'mode', 'location', 'personalFilter',
         ));
     }
 
@@ -204,16 +220,10 @@ final class ZumraSpaceController
         return $items;
     }
 
-    /**
-     * « ZUMRA à découvrir » privilégie la diversité des activités représentées (une ZUMRA par
-     * domaine avant d'en montrer une seconde) plutôt qu'un simple tri chronologique ou par
-     * taille, pour que la découverte reste un vrai aperçu du réseau plutôt qu'un domaine unique
-     * qui écraserait les autres.
-     */
+    /** Une ZUMRA par domaine avant répétition : la découverte reste diverse, pas populaire. */
     private function diverseDiscoverGroups(int $limit): Collection
     {
-        $candidates = ZumraGroup::query()
-            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+        $candidates = $this->directoryQuery()
             ->oldest()
             ->limit($limit * 4)
             ->get();
@@ -221,6 +231,7 @@ final class ZumraSpaceController
         $seenDomains = [];
         $primary = collect();
         $rest = collect();
+
         foreach ($candidates as $group) {
             $domainKey = mb_strtolower(trim((string) $group->domain));
             if ($domainKey !== '' && ! isset($seenDomains[$domainKey])) {
@@ -236,26 +247,36 @@ final class ZumraSpaceController
 
     private function filteredGroups(string $identityReference, string $query, ?string $mode, string $location, ?string $personalFilter): Builder
     {
-        return ZumraGroup::query()
-            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
-            ->when($query !== '', fn ($builder) => $builder->where(function ($builder) use ($query): void {
+        return $this->directoryQuery()
+            ->when($query !== '', fn (Builder $builder) => $builder->where(function (Builder $builder) use ($query): void {
                 $like = '%'.$query.'%';
                 $builder->whereRaw('LOWER(domain) LIKE LOWER(?)', [$like])
                     ->orWhereRaw('LOWER(name) LIKE LOWER(?)', [$like])
                     ->orWhereRaw('LOWER(founding_objective) LIKE LOWER(?)', [$like]);
             }))
-            ->when($mode !== null, fn ($builder) => $builder->where('participation_mode', $mode))
-            ->when($location !== '', fn ($builder) => $builder->whereRaw('LOWER(location) LIKE LOWER(?)', ['%'.$location.'%']))
-            ->when($personalFilter !== null, function ($builder) use ($personalFilter, $identityReference): void {
+            ->when($mode !== null, fn (Builder $builder) => $builder->where('participation_mode', $mode))
+            ->when($location !== '', fn (Builder $builder) => $builder->whereRaw('LOWER(location) LIKE LOWER(?)', ['%'.$location.'%']))
+            ->when($personalFilter !== null, function (Builder $builder) use ($personalFilter, $identityReference): void {
                 $status = match ($personalFilter) {
                     'invited' => ZumraGroupMembership::STATUS_INVITED,
                     'requested' => ZumraGroupMembership::STATUS_REQUESTED,
                     default => ZumraGroupMembership::STATUS_ACTIVE,
                 };
-                $builder->whereHas('memberships', fn ($memberships) => $memberships
+                $builder->whereHas('memberships', fn (Builder $memberships) => $memberships
                     ->where('core_identity_reference', $identityReference)
                     ->where('status', $status));
-            })->oldest();
+            })
+            ->oldest();
+    }
+
+    private function directoryQuery(): Builder
+    {
+        return ZumraGroup::query()
+            ->where('state', '!=', ZumraGroup::STATE_SUSPENDED)
+            ->withCount([
+                'projects as visible_projects_count' => fn (Builder $projects) => $projects
+                    ->where('status', '!=', Project::STATUS_ARCHIVED),
+            ]);
     }
 
     private function presentGroup(ZumraGroup $group): array
@@ -265,16 +286,18 @@ final class ZumraSpaceController
             'cover' => ZumraDomainPresentation::cover($group->domain),
             'initials' => mb_strtoupper(mb_substr($group->name, 0, 1)),
             'mode_label' => match ($group->participation_mode) {
-                'PHYSICAL' => 'Physique', 'DIGITAL' => 'Numérique', default => 'Hybride',
+                'PHYSICAL' => 'Physique',
+                'DIGITAL' => 'Numérique',
+                default => 'Hybride',
             },
             'welcome_open' => in_array($group->welcome_capacity, [ZumraGroup::WELCOME_ALREADY_CAPABLE, ZumraGroup::WELCOME_PROGRESSIVELY], true),
+            'projects_count' => (int) $group->getAttribute('visible_projects_count'),
         ];
     }
 
     /**
-     * Le Fil ZUMRA détaillé (un fil dédié, filtrable, commentable) reste une direction produit
-     * documentée, pas un chantier de cette mission : ce panneau ne fait qu'orienter vers la vue
-     * déjà réelle du Fil global filtrée par type ZUMRA (`activity.index`), jamais un second Fil.
+     * Le Fil ZUMRA détaillé reste une direction produit. Ce panneau oriente uniquement vers le Fil
+     * global déjà réel filtré par type ZUMRA, jamais vers un second moteur de Fil.
      *
      * @return array{href: string, avatars: list<string>, remainder: int}
      */
@@ -298,26 +321,36 @@ final class ZumraSpaceController
         ];
     }
 
-    /**
-     * Statistiques réelles, jamais des nombres fabriqués : elles reflètent exactement ce que
-     * contient la base au moment de l'affichage — vides sur un portail neuf.
-     *
-     * @return array{groups: int, groups_delta: int, members: int, members_delta: int, domains: int, actions: int}
-     */
+    /** Statistiques réelles du carrefour ; aucune valeur de démonstration n'est fabriquée. */
     private function stats(): array
     {
         $activeGroups = ZumraGroup::query()->where('state', '!=', ZumraGroup::STATE_SUSPENDED);
 
         $needsOpen = Need::query()->where('owner_type', Need::OWNER_GROUP)->where('status', Need::STATUS_OPEN)->count();
-        $projectsOngoing = Project::query()->where('owner_type', Project::OWNER_GROUP)->whereIn('status', [Project::STATUS_ADOPTED, Project::STATUS_IN_PROGRESS])->count();
-        $eventsScheduled = CommunityEvent::query()->where('organizer_type', CommunityEvent::ORGANIZER_ZUMRA_GROUP)->where('status', CommunityEvent::STATUS_SCHEDULED)->count();
+        $projectsOngoing = Project::query()
+            ->where('owner_type', Project::OWNER_GROUP)
+            ->whereIn('status', [Project::STATUS_ADOPTED, Project::STATUS_IN_PROGRESS])
+            ->count();
+        $eventsScheduled = CommunityEvent::query()
+            ->where('organizer_type', CommunityEvent::ORGANIZER_ZUMRA_GROUP)
+            ->where('status', CommunityEvent::STATUS_SCHEDULED)
+            ->count();
 
         return [
             'groups' => (clone $activeGroups)->count(),
             'groups_delta' => (clone $activeGroups)->where('created_at', '>=', now()->subDays(30))->count(),
             'members' => (int) (clone $activeGroups)->sum('active_member_count'),
-            'members_delta' => ZumraGroupMembership::query()->where('status', ZumraGroupMembership::STATUS_ACTIVE)->where('joined_at', '>=', now()->subDays(30))->count(),
-            'domains' => (int) (clone $activeGroups)->whereNotNull('domain')->where('domain', '!=', '')->distinct()->count('domain'),
+            'members_delta' => ZumraGroupMembership::query()
+                ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+                ->where('joined_at', '>=', now()->subDays(30))
+                ->count(),
+            'domains' => (int) (clone $activeGroups)
+                ->whereNotNull('domain')->where('domain', '!=', '')
+                ->distinct()->count('domain'),
+            'territories' => (int) (clone $activeGroups)
+                ->whereNotNull('location')->where('location', '!=', '')
+                ->distinct()->count('location'),
+            'projects' => $projectsOngoing,
             'actions' => $needsOpen + $projectsOngoing + $eventsScheduled,
         ];
     }
