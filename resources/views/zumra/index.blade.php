@@ -84,7 +84,11 @@
                             <h2 id="discover-title">ZUMRA à découvrir</h2>
                             <p>Des communautés qui construisent des solutions concrètes.</p>
                         </div>
-                        @if (!$isExhaustive)<a class="dg-zumra-link" href="{{ route('zumra.index', ['q' => ' ']) }}#zumra-decouvrir">Voir toutes les ZUMRA →</a>@endif
+                        @if (!$isExhaustive)
+                            <a class="dg-zumra-link" href="{{ route('zumra.index', ['all' => 1]) }}#zumra-decouvrir">Voir toutes les ZUMRA →</a>
+                        @elseif ($showAll && $query === '' && $location === '' && $mode === null && $personalFilter === null)
+                            <a class="dg-zumra-link" href="{{ route('zumra.index') }}#zumra-decouvrir">Voir une sélection →</a>
+                        @endif
                     </div>
 
                     <div class="dg-zumra-cards">
