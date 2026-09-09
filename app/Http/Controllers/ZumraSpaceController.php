@@ -43,6 +43,7 @@ final class ZumraSpaceController
         $mode = in_array($request->query('mode'), ['PHYSICAL', 'DIGITAL', 'HYBRID'], true) ? $request->query('mode') : null;
         $location = is_string($request->query('location')) ? trim($request->query('location')) : '';
         $personalFilter = in_array($request->query('view'), ['mine', 'invited', 'requested'], true) ? $request->query('view') : null;
+        $showAll = $request->boolean('all');
 
         $myMemberships = ZumraGroupMembership::query()
             ->where('core_identity_reference', $identity->reference)
@@ -131,7 +132,7 @@ final class ZumraSpaceController
                 'count' => (int) $row->getAttribute('groups_count'),
             ]);
 
-        $isExhaustive = $query !== '' || $mode !== null || $location !== '' || $personalFilter !== null;
+        $isExhaustive = $showAll || $query !== '' || $mode !== null || $location !== '' || $personalFilter !== null;
         $discoverGroups = $isExhaustive
             ? $this->filteredGroups($identity->reference, $query, $mode, $location, $personalFilter)
                 ->paginate(8)->withQueryString()->through(fn (ZumraGroup $group): array => $this->presentGroup($group))
@@ -143,7 +144,7 @@ final class ZumraSpaceController
         return view('zumra.index', compact(
             'identity', 'profile', 'membership', 'isAdministrator', 'canCreateGroup', 'myGroups', 'navCounts',
             'pendingRequestsToDecide', 'attentionItems', 'discoverDomains', 'popularActivities', 'territoryCounts',
-            'discoverGroups', 'isExhaustive', 'fil', 'stats', 'query', 'mode', 'location', 'personalFilter',
+            'discoverGroups', 'isExhaustive', 'showAll', 'fil', 'stats', 'query', 'mode', 'location', 'personalFilter',
         ));
     }
 
