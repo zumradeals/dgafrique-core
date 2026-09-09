@@ -10,6 +10,7 @@ on:
       - 'app/Http/Controllers/ZumraMembershipPaymentController.php'
       - 'app/Models/ZumraGroup.php'
       - 'app/Providers/AppServiceProvider.php'
+      - 'database/migrations/**'
       - 'public/images/zumra/**'
       - 'public/sitemap.xml'
       - 'tests/Feature/LandingPublicDiscoveryTest.php'
