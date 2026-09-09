@@ -8,6 +8,7 @@ test('ZUMRA hub preserves the full canonical crossroads composition', () => {
   const view = read('resources/views/zumra/index.blade.php');
   const member = read('resources/css/member.css');
   const styles = read('resources/css/zumra-hub.css');
+  const polish = read('resources/css/zumra-hub-polish.css');
 
   assert.match(view, /:wide="true"/);
   assert.match(view, /COMMUNAUTÉS · PROJETS · IMPACT/);
@@ -31,9 +32,25 @@ test('ZUMRA hub preserves the full canonical crossroads composition', () => {
   assert.match(view, /\['location' => \$territory\]/);
 
   assert.match(member, /@import "\.\/zumra-hub\.css"/);
+  assert.match(member, /@import "\.\/zumra-hub-polish\.css"/);
   assert.match(styles, /\.dg-zumra-hub/);
-  assert.match(styles, /\.dg-zumra-territory/);
-  assert.match(styles, /@media \(max-width: 620px\)/);
+  assert.match(polish, /\.dg-zumra-territory--wide/);
+  assert.match(polish, /\.dg-zumra-what-pillars/);
+  assert.match(polish, /@media \(max-width: 620px\)/);
+});
+
+test('ZUMRA empty state stays useful and territory leaves the sidebar', () => {
+  const view = read('resources/views/zumra/index.blade.php');
+
+  assert.match(view, /Les premières ZUMRA apparaîtront ici\./);
+  assert.match(view, /Explorer les territoires/);
+  assert.match(view, /id="territoires-zumra"/);
+  assert.match(view, /Un projet principal/);
+  assert.match(view, /Un monde d’action/);
+
+  const asideEnd = view.indexOf('</aside>');
+  const territoryStart = view.indexOf('id="territoires-zumra"');
+  assert.ok(asideEnd >= 0 && territoryStart > asideEnd, 'Explorer par territoire doit être hors de la sidebar');
 });
 
 test('ZUMRA hub never hard-codes mockup demo metrics as production truth', () => {
