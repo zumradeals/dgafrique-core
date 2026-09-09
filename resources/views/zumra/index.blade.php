@@ -117,8 +117,21 @@
                             </article>
                         @empty
                             <div class="dg-zumra-directory-empty">
-                                <h3>Aucune ZUMRA à afficher pour le moment.</h3>
-                                <p>{{ $isExhaustive ? 'Modifiez votre recherche ou explorez un autre domaine ou territoire.' : 'Le répertoire se remplira à mesure que de nouvelles communautés naîtront dans GAMAD.' }}</p>
+                                @if ($isExhaustive)
+                                    <h3>Aucune ZUMRA ne correspond à cette recherche.</h3>
+                                    <p>Modifiez votre recherche ou explorez un autre domaine ou territoire.</p>
+                                    <div class="dg-zumra-directory-empty__actions">
+                                        <x-dg.button :href="route('zumra.index').'#zumra-decouvrir'" variant="secondary">Réinitialiser la recherche</x-dg.button>
+                                        <x-dg.button href="#territoires-zumra" variant="solar">Explorer les territoires</x-dg.button>
+                                    </div>
+                                @else
+                                    <h3>Les premières ZUMRA apparaîtront ici.</h3>
+                                    <p>Explorez les territoires, recherchez une communauté ou créez celle qui correspond à votre objectif.</p>
+                                    <div class="dg-zumra-directory-empty__actions">
+                                        <x-dg.button href="#territoires-zumra" variant="secondary">Explorer les territoires</x-dg.button>
+                                        <x-dg.button :href="$canCreateGroup ? route('zumra.groups.create') : route('zumra.membership.show')" variant="solar">Créer une ZUMRA</x-dg.button>
+                                    </div>
+                                @endif
                             </div>
                         @endforelse
                     </div>
@@ -183,42 +196,70 @@
                     <x-dg.button :href="$canCreateGroup ? route('zumra.groups.create') : route('zumra.membership.show')" variant="solar"><x-dg.icon name="people" /> Créer une ZUMRA</x-dg.button>
                     @if (!$canCreateGroup)<p class="dg-zumra-territory-note">Une adhésion ZUMRA active est nécessaire pour lancer une communauté.</p>@endif
                 </section>
-
-                <section class="dg-zumra-panel dg-zumra-sidebar-card dg-zumra-territory" aria-labelledby="territory-title">
-                    <div class="dg-zumra-sidebar-heading">
-                        <h2 id="territory-title">Explorer par territoire</h2>
-                        <a class="dg-zumra-link" href="{{ route('zumra.index') }}#zumra-decouvrir">Toutes les régions →</a>
-                    </div>
-                    <div class="dg-zumra-territory__body">
-                        <svg class="dg-zumra-map" viewBox="0 0 250 300" role="img" aria-label="Exploration des ZUMRA par grands territoires de Côte d’Ivoire">
-                            <path class="dg-zumra-map__shape" d="M70 24 L111 16 L144 29 L178 24 L203 54 L198 88 L219 115 L205 150 L215 187 L193 216 L187 250 L151 274 L117 265 L82 278 L58 253 L35 218 L40 181 L24 145 L39 112 L35 78 L55 56 Z" />
-                            <circle class="dg-zumra-map__pin" cx="142" cy="230" r="4"/><text x="150" y="234">Abidjan</text>
-                            <circle class="dg-zumra-map__pin" cx="124" cy="174" r="4"/><text x="132" y="178">Yamoussoukro</text>
-                            <circle class="dg-zumra-map__pin" cx="160" cy="137" r="4"/><text x="168" y="141">Bouaké</text>
-                            <circle class="dg-zumra-map__pin" cx="135" cy="70" r="4"/><text x="143" y="74">Korhogo</text>
-                            <circle class="dg-zumra-map__pin" cx="73" cy="231" r="4"/><text x="23" y="245">San Pedro</text>
-                            <circle class="dg-zumra-map__pin" cx="61" cy="133" r="4"/><text x="34" y="126">Man</text>
-                        </svg>
-                        <div class="dg-zumra-territory-list">
-                            @foreach ($featuredTerritories as $territory)
-                                <a href="{{ route('zumra.index', ['location' => $territory]) }}#zumra-decouvrir"><span>{{ $territory }}</span>@if($territoryCount($territory) !== null)<small>{{ $territoryCount($territory) }}</small>@endif</a>
-                            @endforeach
-                            <a href="{{ route('zumra.index') }}#zumra-decouvrir"><span>Autres régions</span><span aria-hidden="true">→</span></a>
-                        </div>
-                    </div>
-                    <p class="dg-zumra-territory-note">La carte facilite l’exploration. Les résultats sont issus uniquement des localisations réellement déclarées par les ZUMRA.</p>
-                </section>
-
-                <section class="dg-zumra-panel dg-zumra-sidebar-card dg-zumra-what" aria-labelledby="what-zumra-title">
-                    <span class="dg-zumra-what__icon" aria-hidden="true">?</span>
-                    <div>
-                        <h2 id="what-zumra-title">Qu’est-ce qu’une ZUMRA ?</h2>
-                        <p>Une ZUMRA est une communauté organisée de personnes qui choisissent de grandir et d’agir ensemble autour d’un objectif commun.</p>
-                        <a class="dg-zumra-link" href="#comprendre-zumra">En savoir plus →</a>
-                    </div>
-                </section>
             </aside>
         </div>
+
+        <section id="territoires-zumra" class="dg-zumra-panel dg-zumra-wide-section dg-zumra-territory dg-zumra-territory--wide" aria-labelledby="territory-title">
+            <div class="dg-zumra-wide-heading">
+                <div>
+                    <p class="dg-zumra-eyebrow">PROXIMITÉ · TERRITOIRES · ACTION</p>
+                    <h2 id="territory-title">Explorer par territoire</h2>
+                    <p>Découvrez les communautés qui agissent dans les territoires qui comptent pour vous.</p>
+                </div>
+                <a class="dg-zumra-link" href="{{ route('zumra.index') }}#zumra-decouvrir">Toutes les régions →</a>
+            </div>
+
+            <div class="dg-zumra-territory__body">
+                <div class="dg-zumra-map-stage">
+                    <svg class="dg-zumra-map" viewBox="0 0 250 300" role="img" aria-label="Exploration des ZUMRA par grands territoires de Côte d’Ivoire">
+                        <path class="dg-zumra-map__shape" d="M70 24 L111 16 L144 29 L178 24 L203 54 L198 88 L219 115 L205 150 L215 187 L193 216 L187 250 L151 274 L117 265 L82 278 L58 253 L35 218 L40 181 L24 145 L39 112 L35 78 L55 56 Z" />
+                        <circle class="dg-zumra-map__pin" cx="142" cy="230" r="4"/><text x="150" y="234">Abidjan</text>
+                        <circle class="dg-zumra-map__pin" cx="124" cy="174" r="4"/><text x="132" y="178">Yamoussoukro</text>
+                        <circle class="dg-zumra-map__pin" cx="160" cy="137" r="4"/><text x="168" y="141">Bouaké</text>
+                        <circle class="dg-zumra-map__pin" cx="135" cy="70" r="4"/><text x="143" y="74">Korhogo</text>
+                        <circle class="dg-zumra-map__pin" cx="73" cy="231" r="4"/><text x="23" y="245">San Pedro</text>
+                        <circle class="dg-zumra-map__pin" cx="61" cy="133" r="4"/><text x="34" y="126">Man</text>
+                    </svg>
+                </div>
+
+                <div class="dg-zumra-territory-list" aria-label="Territoires proposés">
+                    @foreach ($featuredTerritories as $territory)
+                        <a href="{{ route('zumra.index', ['location' => $territory]) }}#zumra-decouvrir"><span>{{ $territory }}</span>@if($territoryCount($territory) !== null)<small>{{ $territoryCount($territory) }} ZUMRA</small>@else<span aria-hidden="true">→</span>@endif</a>
+                    @endforeach
+                    <a href="{{ route('zumra.index') }}#zumra-decouvrir"><span>Autres régions</span><span aria-hidden="true">→</span></a>
+                </div>
+            </div>
+            <p class="dg-zumra-territory-note">La carte facilite l’exploration. Les résultats sont issus uniquement des localisations réellement déclarées par les ZUMRA.</p>
+        </section>
+
+        <section class="dg-zumra-panel dg-zumra-wide-section dg-zumra-what-wide" aria-labelledby="what-zumra-title">
+            <div class="dg-zumra-what-wide__intro">
+                <span class="dg-zumra-what__icon" aria-hidden="true">?</span>
+                <div>
+                    <p class="dg-zumra-eyebrow">COMPRENDRE AVANT D’ENTRER</p>
+                    <h2 id="what-zumra-title">Qu’est-ce qu’une ZUMRA ?</h2>
+                    <p>Une ZUMRA est un monde communautaire organisé autour de personnes, d’un projet commun et d’actions concrètes.</p>
+                </div>
+            </div>
+
+            <div class="dg-zumra-what-pillars">
+                <article>
+                    <span class="dg-zumra-pillar-number">01</span>
+                    <h3>Une communauté</h3>
+                    <p>Des personnes choisissent de grandir, apprendre et agir ensemble autour de ce qui les rassemble.</p>
+                </article>
+                <article>
+                    <span class="dg-zumra-pillar-number">02</span>
+                    <h3>Un projet principal</h3>
+                    <p>Le cœur de la ZUMRA est son projet principal, autour duquel peuvent naître des projets de la même famille.</p>
+                </article>
+                <article>
+                    <span class="dg-zumra-pillar-number">03</span>
+                    <h3>Un monde d’action</h3>
+                    <p>Besoins, projets, échanges et contributions prennent vie dans cet espace avant de rayonner dans GAMAD.</p>
+                </article>
+            </div>
+        </section>
 
         <footer class="dg-zumra-footer">
             <div><strong>GAMAD</strong><small>Des personnes. Des actions. Un impact réel.</small></div>
