@@ -65,3 +65,20 @@ test('PROJECT-001 uses real governed routes for contribution pathways', () => {
   assert.match(view, /route\('projects\.autonomy\.show'/);
   assert.match(view, /route\('projects\.accompaniment\.show'/);
 });
+
+test('PROJECT-001A keeps empty and missing real-world data visually honest', () => {
+  const view = read('resources/views/projects/show.blade.php');
+  const member = read('resources/css/member.css');
+  const polish = read('resources/css/project-cv-polish.css');
+
+  assert.match(view, /Storage::disk\('public'\)->exists/);
+  assert.match(view, /is_file\(public_path/);
+  assert.match(view, /Identité visuelle par défaut du projet/);
+  assert.match(view, /Projet GAMAD/);
+  assert.match(view, /Équipe à constituer/);
+  assert.match(view, /L’équipe se constituera au fil des participations/);
+  assert.match(view, /\$identity->label/);
+  assert.match(member, /@import "\.\/project-cv-polish\.css"/);
+  assert.match(polish, /\.dg-project-cv__cover-fallback/);
+  assert.match(polish, /\.dg-project-cv__identity h1/);
+});
