@@ -76,20 +76,26 @@ test('ZUMRA creation surface exists and posts every real creation field to the g
   assert.match(styles, /@media \(max-width: 700px\)/);
 });
 
-test('ZUMRA membership prerequisite has complete human surfaces instead of missing views', () => {
+test('ZUMRA membership is free, charter-governed and keeps complete historical surfaces', () => {
   const membership = read('resources/views/zumra/membership.blade.php');
+  const controller = read('app/Http/Controllers/ZumraProgramMembershipController.php');
   const paymentStatus = read('resources/views/zumra/payment-status.blade.php');
   const receipt = read('resources/views/zumra/receipt.blade.php');
   const member = read('resources/css/member.css');
   const styles = read('resources/css/zumra-membership.css');
 
   assert.match(membership, /route\('zumra\.membership\.store'\)/);
-  assert.match(membership, /route\('zumra\.payment\.zahab\.store'\)/);
-  assert.match(membership, /route\('zumra\.payment\.store'\)/);
-  assert.match(membership, /route\('zumra\.groups\.create'\)/);
-  assert.match(membership, /Wallet ZAHAB/);
-  assert.match(membership, /avec mon Wallet/);
+  assert.match(membership, /Adhérez gratuitement au Programme ZUMRA/);
+  assert.match(membership, /Accepter la charte et adhérer gratuitement/);
+  assert.match(membership, /Aucun paiement n’est demandé/);
   assert.match(membership, /Votre compte GAMAD reste indépendant/);
+  assert.doesNotMatch(membership, /route\('zumra\.payment\.zahab\.store'\)/);
+  assert.doesNotMatch(membership, /route\('zumra\.payment\.store'\)/);
+
+  assert.match(controller, /STATUS_ACTIVE/);
+  assert.match(controller, /FREE_CHARTER_ACCEPTANCE/);
+  assert.match(controller, /route\('zumra\.groups\.create'\)/);
+
   assert.match(paymentStatus, /Votre adhésion ZUMRA est active/);
   assert.match(receipt, /Reçu d’adhésion ZUMRA/);
   assert.match(member, /@import "\.\/zumra-membership\.css"/);
