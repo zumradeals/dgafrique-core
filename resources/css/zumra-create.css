@@ -1,0 +1,338 @@
+/* ZUMRA-CREATE-001 — real creation flow, scoped to the missing create surface. */
+.dg-zumra-create {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    color: var(--dg-ink);
+}
+
+.dg-zumra-create__back {
+    width: fit-content;
+    color: var(--dg-primary);
+    font-size: .86rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.dg-zumra-create__back:hover { text-decoration: underline; }
+
+.dg-zumra-create__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(20rem, .65fr);
+    gap: clamp(1.25rem, 3vw, 2.4rem);
+    align-items: center;
+    border: 1px solid var(--dg-border);
+    border-radius: 1.25rem;
+    background: linear-gradient(125deg, var(--dg-white) 0%, #f2fbff 67%, #fff9cc 100%);
+    box-shadow: var(--dg-shadow-sm);
+    padding: clamp(1.5rem, 3vw, 2.6rem);
+}
+
+.dg-zumra-create__hero h1 {
+    margin: 0;
+    color: var(--dg-deep);
+    font-size: clamp(2.4rem, 4.4vw, 4.5rem);
+    font-weight: 950;
+    letter-spacing: -.055em;
+    line-height: .96;
+}
+
+.dg-zumra-create__hero > div > p:not(.dg-zumra-eyebrow) {
+    max-width: 66ch;
+    margin: .9rem 0 0;
+    color: var(--dg-muted);
+    font-size: 1.02rem;
+    line-height: 1.65;
+}
+
+.dg-zumra-create__principle {
+    display: grid;
+    gap: .45rem;
+    border-radius: 1rem;
+    background: var(--dg-deep);
+    color: var(--dg-white);
+    padding: 1.2rem;
+}
+
+.dg-zumra-create__principle strong {
+    font-size: 1.2rem;
+    line-height: 1.2;
+}
+
+.dg-zumra-create__principle span {
+    opacity: .82;
+    font-size: .88rem;
+    line-height: 1.55;
+}
+
+.dg-zumra-create__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 23rem);
+    gap: 1rem;
+    align-items: start;
+}
+
+.dg-zumra-create__main,
+.dg-zumra-create__aside {
+    display: grid;
+    gap: 1rem;
+}
+
+.dg-zumra-create__section,
+.dg-zumra-create__optional,
+.dg-zumra-create__aside > section {
+    border: 1px solid var(--dg-border);
+    border-radius: 1.15rem;
+    background: var(--dg-white);
+    box-shadow: var(--dg-shadow-sm);
+}
+
+.dg-zumra-create__section {
+    display: grid;
+    gap: 1.1rem;
+    padding: clamp(1.2rem, 2.3vw, 1.8rem);
+}
+
+.dg-zumra-create__section-heading {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .8rem;
+    align-items: start;
+}
+
+.dg-zumra-create__section-heading > span {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--dg-blue-soft);
+    color: var(--dg-primary);
+    font-size: .76rem;
+    font-weight: 950;
+}
+
+.dg-zumra-create__section-heading h2 {
+    margin: 0;
+    color: var(--dg-deep);
+    font-size: 1.35rem;
+    font-weight: 920;
+    letter-spacing: -.035em;
+}
+
+.dg-zumra-create__section-heading p {
+    margin: .25rem 0 0;
+    color: var(--dg-muted);
+    font-size: .86rem;
+    line-height: 1.5;
+}
+
+.dg-zumra-create__fields {
+    display: grid;
+    gap: 1rem;
+}
+
+.dg-zumra-create__fields--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dg-zumra-create .dg-field { margin: 0; }
+.dg-zumra-create .dg-input { width: 100%; }
+.dg-zumra-create textarea.dg-input { min-height: 8rem; resize: vertical; }
+
+.dg-zumra-create__choice {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .75rem;
+    align-items: start;
+    border: 1px solid var(--dg-border);
+    border-radius: .95rem;
+    background: linear-gradient(130deg, #f8fcff, var(--dg-white));
+    padding: 1rem;
+    cursor: pointer;
+}
+
+.dg-zumra-create__choice input {
+    width: 1.2rem;
+    height: 1.2rem;
+    margin-top: .1rem;
+    accent-color: var(--dg-primary);
+}
+
+.dg-zumra-create__choice strong {
+    display: block;
+    color: var(--dg-deep);
+    font-size: .95rem;
+    line-height: 1.35;
+}
+
+.dg-zumra-create__choice small {
+    display: block;
+    margin-top: .25rem;
+    color: var(--dg-muted);
+    font-size: .8rem;
+    line-height: 1.5;
+}
+
+.dg-zumra-create__optional {
+    overflow: hidden;
+}
+
+.dg-zumra-create__optional summary {
+    padding: 1rem 1.25rem;
+    color: var(--dg-deep);
+    font-weight: 880;
+    cursor: pointer;
+}
+
+.dg-zumra-create__optional[open] summary {
+    border-bottom: 1px solid var(--dg-border);
+    background: #fbfcfd;
+}
+
+.dg-zumra-create__optional-body {
+    display: grid;
+    gap: 1.2rem;
+    padding: 1.25rem;
+}
+
+.dg-zumra-create__activities {
+    display: grid;
+    gap: .9rem;
+    border-top: 1px solid var(--dg-border);
+    padding-top: 1rem;
+}
+
+.dg-zumra-create__activities h3 {
+    margin: 0;
+    color: var(--dg-deep);
+    font-size: 1rem;
+}
+
+.dg-zumra-create__activities > div:first-child p {
+    margin: .25rem 0 0;
+    color: var(--dg-muted);
+    font-size: .8rem;
+    line-height: 1.45;
+}
+
+.dg-zumra-create__activity-row {
+    display: grid;
+    grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr);
+    gap: .8rem;
+    border: 1px solid var(--dg-border);
+    border-radius: .9rem;
+    background: #fcfcfa;
+    padding: .9rem;
+}
+
+.dg-zumra-create__submit {
+    display: flex;
+    justify-content: flex-end;
+    gap: .7rem;
+    padding-block: .2rem;
+}
+
+.dg-zumra-create__submit .dg-button { min-height: 3rem; }
+
+.dg-zumra-create__aside {
+    position: sticky;
+    top: 5.5rem;
+}
+
+.dg-zumra-create__aside > section {
+    padding: 1.15rem;
+}
+
+.dg-zumra-create__aside h2 {
+    margin: 0;
+    color: var(--dg-deep);
+    font-size: 1.4rem;
+    font-weight: 930;
+    letter-spacing: -.035em;
+    line-height: 1.1;
+}
+
+.dg-zumra-create__aside ol {
+    display: grid;
+    gap: .85rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dg-zumra-create__aside li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .7rem;
+    align-items: start;
+}
+
+.dg-zumra-create__aside li > span {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--dg-solar);
+    color: var(--dg-deep);
+    font-size: .75rem;
+    font-weight: 950;
+}
+
+.dg-zumra-create__aside li strong,
+.dg-zumra-create__aside li small {
+    display: block;
+}
+
+.dg-zumra-create__aside li strong {
+    color: var(--dg-deep);
+    font-size: .88rem;
+}
+
+.dg-zumra-create__aside li small {
+    margin-top: .15rem;
+    color: var(--dg-muted);
+    font-size: .76rem;
+    line-height: 1.45;
+}
+
+.dg-zumra-create__aside-note {
+    background: linear-gradient(135deg, #fff8c9, var(--dg-white)) !important;
+}
+
+.dg-zumra-create__aside-note strong {
+    color: var(--dg-deep);
+}
+
+.dg-zumra-create__aside-note p {
+    margin: .4rem 0 0;
+    color: var(--dg-muted);
+    font-size: .8rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 1050px) {
+    .dg-zumra-create__hero,
+    .dg-zumra-create__layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dg-zumra-create__aside {
+        position: static;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 700px) {
+    .dg-zumra-create__hero { padding: 1.15rem; }
+    .dg-zumra-create__hero h1 { font-size: clamp(2.35rem, 12vw, 3.5rem); }
+    .dg-zumra-create__fields--two,
+    .dg-zumra-create__activity-row,
+    .dg-zumra-create__aside {
+        grid-template-columns: 1fr;
+    }
+    .dg-zumra-create__section { padding: 1rem; }
+    .dg-zumra-create__submit { flex-direction: column-reverse; }
+    .dg-zumra-create__submit .dg-button { width: 100%; justify-content: center; }
+}
