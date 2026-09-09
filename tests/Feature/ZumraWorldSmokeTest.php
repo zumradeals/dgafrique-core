@@ -100,13 +100,19 @@ final class ZumraWorldSmokeTest extends TestCase
         $world = $this->get(route('zumra.groups.show', $group))
             ->assertOk()
             ->assertSee('ZUMRA Test Création')
-            ->assertSee('Projet principal')
-            ->assertSee('Projet principal à formaliser')
+            ->assertSee('FORMATION · TRAVAIL · ADORATION')
+            ->assertSee('Formation')
+            ->assertSee('Apprendre, progresser, transmettre.')
+            ->assertSee('La première mission d’une ZUMRA est de faire grandir ses membres.')
+            ->assertSee('Donnez vie au premier projet')
+            ->assertSee('Créer un projet')
             ->assertSee('À faire maintenant')
             ->assertSee('Besoins actuels')
-            ->assertSee('Projets dérivés')
-            ->assertSee('Aucun projet dérivé pour le moment')
-            ->assertSee('Une ZUMRA peut très bien fonctionner avec un seul projet principal');
+            ->assertSee('Autres projets')
+            ->assertSee('Aucun autre projet pour le moment')
+            ->assertSee('Une ZUMRA peut très bien avancer avec un seul projet')
+            ->assertDontSee('Projet principal')
+            ->assertDontSee('Projets dérivés');
 
         if (getenv('ASTRA_VISUAL_EXPORT') === '1') {
             $directory = storage_path('app/astra-visual');

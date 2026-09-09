@@ -15,10 +15,10 @@
         $projectHref = $primaryProject
             ? route('projects.show', $primaryProject)
             : route('projects.create', ['group' => $group->public_reference]);
-        $projectAction = $primaryProject ? 'Voir le projet' : 'Compléter le projet';
-        $projectTitle = $primaryProject?->name ?? 'Projet principal à formaliser';
+        $projectAction = $primaryProject ? 'Voir le projet' : 'Créer un projet';
+        $projectTitle = $primaryProject?->name ?? 'Donnez vie au premier projet';
         $projectSummary = $primaryProject?->summary ?? $group->founding_objective;
-        $projectStatus = $primaryProject ? ($projectStatusLabels[$primaryProject->status] ?? $primaryProject->status) : 'À structurer';
+        $projectStatus = $primaryProject ? ($projectStatusLabels[$primaryProject->status] ?? $primaryProject->status) : 'À créer';
         $projectPhase = match ($primaryProject?->status) {
             'PROPOSED' => 'Proposition et structuration',
             'ADOPTED' => 'Adoption et préparation',
@@ -27,11 +27,11 @@
             default => 'Idéation et structuration',
         };
         $nextStep = match ($primaryProject?->status) {
-            'PROPOSED' => 'Faire adopter le projet principal par la ZUMRA.',
+            'PROPOSED' => 'Faire adopter le projet par la ZUMRA.',
             'ADOPTED' => 'Préparer son démarrage et ses premiers jalons.',
             'IN_PROGRESS' => 'Faire progresser les jalons et documenter les preuves.',
             'COMPLETED' => 'Capitaliser les résultats et préparer la suite.',
-            default => 'Formaliser le projet principal dans GAMAD.',
+            default => 'Créer le premier projet de cette ZUMRA dans GAMAD.',
         };
         $cover = \App\Support\ZumraDomainPresentation::cover($group->domain);
         $projectCover = $primaryProject?->image_path ? asset('storage/'.$primaryProject->image_path) : $cover;
@@ -58,6 +58,7 @@
             <div class="dg-zumra-world-hero__content">
                 <div class="dg-zumra-world-mark" aria-hidden="true">{{ $initials }}</div>
                 <div>
+                    <p class="dg-zumra-world-hero__doctrine">FORMATION · TRAVAIL · ADORATION</p>
                     <h1 id="zumra-world-title">{{ $group->name }}</h1>
                     <p class="dg-zumra-world-hero__lead">{{ $group->founding_objective }}</p>
                     <div class="dg-zumra-world-hero__meta">
@@ -75,7 +76,8 @@
 
         <nav class="dg-zumra-world-tabs" aria-label="Navigation dans la ZUMRA">
             <a class="is-active" href="#accueil">⌂ Accueil</a>
-            <a href="#projet-principal">▣ Projet principal</a>
+            <a href="#formation">◈ Formation</a>
+            <a href="#projets">▣ Projets</a>
             <a href="#membres">♙ Membres</a>
             @if ($isLeader)
                 <a href="#demandes">▤ Demandes @if($pendingCount > 0)<span class="dg-zumra-world-tabs__badge">{{ $pendingCount }}</span>@endif</a>
@@ -110,6 +112,8 @@
                     <h2>Navigation rapide</h2>
                     <nav class="dg-zumra-world-quicknav">
                         <a href="#accueil">▣ Tableau de bord</a>
+                        <a href="#formation">◈ Se former</a>
+                        <a href="#projets">▣ Nos projets</a>
                         <a href="#a-faire">▤ Notre charte</a>
                         <a href="#activite">▤ Nos actualités</a>
                         <span aria-disabled="true">▦ Nos ressources</span>
@@ -119,16 +123,33 @@
 
                 <section class="dg-zumra-world-card dg-zumra-world-vision">
                     <h2>◎ Vision</h2>
-                    <p>« Faire grandir le projet principal jusqu’à pouvoir donner naissance à une organisation durable, sans cesser de faire évoluer sa ZUMRA mère. »</p>
+                    <p>« Faire grandir les personnes par la formation, transformer leurs capacités en projets utiles et, avec la maturité, faire naître des organisations durables qui restent liées à leur ZUMRA mère. »</p>
                 </section>
             </aside>
 
             <main class="dg-zumra-world-center">
-                <section id="projet-principal" class="dg-zumra-world-card dg-zumra-project-main">
+                <section id="formation" class="dg-zumra-world-card dg-zumra-world-formation">
+                    <div class="dg-zumra-world-formation__head">
+                        <div>
+                            <p class="dg-zumra-world-formation__eyebrow">◈ FORMATION</p>
+                            <h2>Apprendre, progresser, transmettre.</h2>
+                            <p>La première mission d’une ZUMRA est de faire grandir ses membres. On peut rejoindre cette communauté d’abord pour apprendre, développer une capacité et évoluer progressivement avant de contribuer davantage aux projets.</p>
+                        </div>
+                        <span class="dg-zumra-world-button" aria-disabled="true" title="Le moteur de parcours de formation sera raccordé dans une étape dédiée">Parcours de formation à raccorder</span>
+                    </div>
+                    <div class="dg-zumra-world-formation__path" aria-label="Chemin de progression dans la ZUMRA">
+                        <article><span>01</span><strong>Apprendre</strong><p>Découvrir des savoirs et développer de nouvelles capacités avec la communauté.</p></article>
+                        <article><span>02</span><strong>Pratiquer</strong><p>Mettre en application ce qui est appris dans des activités et des projets réels.</p></article>
+                        <article><span>03</span><strong>Transmettre</strong><p>Partager son expérience à son tour et aider d’autres membres à progresser.</p></article>
+                    </div>
+                    <p class="dg-zumra-world-formation__note">Aucun parcours de formation n’est encore formalisé dans GAMAD pour cette ZUMRA. Cette section reste visible sans inventer de cours, de niveau ou de résultat.</p>
+                </section>
+
+                <section id="projets" class="dg-zumra-world-card dg-zumra-project-main">
                     <div class="dg-zumra-project-main__hero">
                         <img src="{{ $projectCover }}" alt="" aria-hidden="true">
                         <div class="dg-zumra-project-main__topline">
-                            <p class="dg-zumra-project-main__eyebrow">◉ Projet principal <span class="dg-zumra-project-main__status">{{ $projectStatus }}</span></p>
+                            <p class="dg-zumra-project-main__eyebrow">◉ Projet <span class="dg-zumra-project-main__status">{{ $projectStatus }}</span></p>
                             <a class="dg-zumra-project-main__link" href="{{ $projectHref }}">{{ $projectAction }} →</a>
                         </div>
                         <h2>{{ $projectTitle }}</h2>
@@ -158,7 +179,7 @@
 
                 <section class="dg-zumra-world-kpis" aria-label="Situation de la ZUMRA">
                     <div class="dg-zumra-world-kpi"><strong>♙ {{ $memberCount }}</strong><span>Membre{{ $memberCount === 1 ? '' : 's' }}</span></div>
-                    <div class="dg-zumra-world-kpi"><strong>▰ {{ $derivedProjects->count() }}</strong><span>Projet{{ $derivedProjects->count() === 1 ? '' : 's' }} dérivé{{ $derivedProjects->count() === 1 ? '' : 's' }}</span></div>
+                    <div class="dg-zumra-world-kpi"><strong>▰ {{ $derivedProjects->count() }}</strong><span>Autre{{ $derivedProjects->count() === 1 ? '' : 's' }} projet{{ $derivedProjects->count() === 1 ? '' : 's' }}</span></div>
                     <div class="dg-zumra-world-kpi"><strong>◎ {{ $groupNeeds->count() }}</strong><span>Besoin{{ $groupNeeds->count() === 1 ? '' : 's' }}</span></div>
                     <div class="dg-zumra-world-kpi"><strong>✓ {{ $groupMissions->count() }}</strong><span>Mission{{ $groupMissions->count() === 1 ? '' : 's' }}</span></div>
                     <div id="evenements" class="dg-zumra-world-kpi"><strong>▣ {{ $groupEvents->count() }}</strong><span>Événement{{ $groupEvents->count() === 1 ? '' : 's' }}</span></div>
@@ -177,21 +198,21 @@
                         @if (!$primaryProject)
                             <div class="dg-zumra-world-task">
                                 <span class="dg-zumra-world-task__icon">▣</span>
-                                <div><strong>Compléter le projet principal</strong><p>Formalisez le projet autour duquel cette ZUMRA a été créée.</p></div>
-                                <a class="dg-zumra-world-button" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">Compléter</a>
+                                <div><strong>Créer le premier projet</strong><p>Formalisez le projet autour duquel cette ZUMRA veut travailler et progresser.</p></div>
+                                <a class="dg-zumra-world-button" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">Créer un projet</a>
                             </div>
                         @endif
                         @if ($memberCount <= 1 && $isLeader)
                             <div class="dg-zumra-world-task">
                                 <span class="dg-zumra-world-task__icon">♙</span>
-                                <div><strong>Inviter vos premiers membres</strong><p>Commencez à constituer votre équipe autour du projet principal.</p></div>
+                                <div><strong>Inviter vos premiers membres</strong><p>Commencez à constituer une communauté où chacun peut apprendre, progresser puis contribuer.</p></div>
                                 <a class="dg-zumra-world-button" href="{{ route('people.index') }}">Explorer les personnes</a>
                             </div>
                         @endif
                         @if (!$canSetCharter && $primaryProject && $memberCount > 1 && !$collectivePriority)
                             <div class="dg-zumra-world-task">
                                 <span class="dg-zumra-world-task__icon">✓</span>
-                                <div><strong>Continuer à faire progresser la ZUMRA</strong><p>Le prochain geste utile dépend maintenant de l’activité réelle du projet et de ses besoins.</p></div>
+                                <div><strong>Continuer à faire progresser la ZUMRA</strong><p>Le prochain geste utile dépend maintenant de l’apprentissage des membres, de l’activité des projets et des besoins réels.</p></div>
                                 <a class="dg-zumra-world-button" href="{{ $projectHref }}">Voir le projet</a>
                             </div>
                         @endif
@@ -248,16 +269,19 @@
                     </article>
 
                     <article class="dg-zumra-world-card">
-                        <h2>▰ Projets dérivés</h2>
+                        <h2>▰ Autres projets</h2>
                         @if ($derivedProjects->isEmpty())
                             <div class="dg-zumra-world-empty">
                                 <span class="dg-zumra-world-empty__plus">+</span>
-                                <strong>Aucun projet dérivé pour le moment</strong>
-                                <p>Une ZUMRA peut fonctionner avec son seul projet principal. Un projet dérivé naît lorsqu’un besoin réel l’exige.</p>
-                                @if($isActiveMember && $primaryProject)<a class="dg-zumra-world-button" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">Créer un projet dérivé</a>@endif
+                                <strong>Aucun autre projet pour le moment</strong>
+                                <p>Une ZUMRA peut très bien avancer avec un seul projet. Un autre projet naît lorsqu’un besoin réel ou une nouvelle spécialisation le justifie.</p>
+                                @if($isActiveMember)
+                                    <a class="dg-zumra-world-button" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">{{ $primaryProject ? 'Proposer un projet' : 'Créer un projet' }}</a>
+                                @endif
                             </div>
                         @else
                             <div class="dg-zumra-world-list">@foreach($derivedProjects->take(4) as $project)<a href="{{ route('projects.show', $project) }}"><span>{{ $project->name }}</span><span>→</span></a>@endforeach</div>
+                            @if($isActiveMember)<a class="dg-zumra-world-button" style="margin-top:.75rem" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">Proposer un projet</a>@endif
                         @endif
                     </article>
 
@@ -279,9 +303,10 @@
             <aside class="dg-zumra-world-right">
                 <section class="dg-zumra-world-card dg-zumra-world-action">
                     <h2>🚀 Agir maintenant</h2>
-                    <p>Votre ZUMRA grandit avec l’action. Invitez des personnes, partagez des idées et identifiez des besoins réels.</p>
+                    <p>Votre ZUMRA grandit par la formation et l’action. Invitez des personnes, apprenez ensemble, faites émerger des projets et identifiez des besoins réels.</p>
                     <div class="dg-zumra-world-action__buttons">
                         @if ($isLeader)<a class="dg-zumra-world-button dg-zumra-world-button--primary" href="{{ route('people.index') }}">♙ Inviter des membres</a>@endif
+                        @if ($isActiveMember)<a class="dg-zumra-world-button" href="{{ route('projects.create', ['group' => $group->public_reference]) }}">▣ {{ $primaryProject ? 'Proposer un projet' : 'Créer un projet' }}</a>@endif
                         @if ($isActiveMember)<a class="dg-zumra-world-button" href="{{ route('needs.create', ['group' => $group->public_reference]) }}">◎ Ajouter un besoin</a>@endif
                         <span class="dg-zumra-world-button" aria-disabled="true" title="Le mini-fil ZUMRA sera raccordé dans une étape dédiée">✎ Créer une publication</span>
                     </div>
@@ -303,18 +328,18 @@
                         <div><p><strong>{{ $leaderLabel }}</strong> a créé la ZUMRA <strong>{{ $group->name }}</strong>.</p><small>{{ $group->created_at?->diffForHumans() }}</small></div>
                     </div>
                     @if($primaryProject)
-                        <div class="dg-zumra-world-activity-item"><span class="dg-zumra-world-avatar">P</span><div><p>Le projet principal <strong>{{ $primaryProject->name }}</strong> est maintenant rattaché à ce monde.</p><small>{{ $primaryProject->created_at?->diffForHumans() }}</small></div></div>
+                        <div class="dg-zumra-world-activity-item"><span class="dg-zumra-world-avatar">P</span><div><p>Le projet <strong>{{ $primaryProject->name }}</strong> est maintenant rattaché à cette ZUMRA.</p><small>{{ $primaryProject->created_at?->diffForHumans() }}</small></div></div>
                     @endif
                 </section>
 
-                <section class="dg-zumra-world-card dg-zumra-world-quote"><p>« Les grandes réalisations naissent de communautés qui croient en un même but. »</p><strong>— GAMAD</strong></section>
+                <section class="dg-zumra-world-card dg-zumra-world-quote"><p>« Les grandes réalisations naissent de communautés qui apprennent, travaillent et croient en un même but. »</p><strong>— GAMAD</strong></section>
             </aside>
         </div>
 
         <section class="dg-zumra-world-reminder">
             <span aria-hidden="true">🌱</span>
-            <div><strong>Rappel</strong><p>Une ZUMRA peut très bien fonctionner avec un seul projet principal. Les projets dérivés naissent lorsqu’un besoin réel émerge.</p></div>
-            <a class="dg-zumra-world-button" href="#projet-principal">Voir le projet principal</a>
+            <div><strong>Rappel</strong><p>Une ZUMRA peut très bien avancer avec un seul projet. D’autres projets naissent lorsqu’un besoin réel ou une nouvelle spécialisation émerge.</p></div>
+            <a class="dg-zumra-world-button" href="#projets">{{ $primaryProject ? 'Voir le projet' : 'Créer un projet' }}</a>
         </section>
     </div>
 </x-layouts.member>
