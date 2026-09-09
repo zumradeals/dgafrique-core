@@ -34,6 +34,19 @@
         'PLATFORM' => 'Plateforme',
         'OTHER' => $project->autonomyPathway?->other_form_label ?: 'Autre forme',
     ];
+    $hasProjectCover = filled($project->image_path)
+        && \Illuminate\Support\Facades\Storage::disk('public')->exists($project->image_path)
+        && is_file(public_path('storage/'.$project->image_path));
+    $projectInitials = collect(preg_split('/\s+/u', trim($project->name)) ?: [])
+        ->filter()
+        ->take(2)
+        ->map(fn (string $word): string => mb_strtoupper(mb_substr($word, 0, 1)))
+        ->implode('');
+    $projectInitials = $projectInitials !== '' ? $projectInitials : 'G';
+    $teamCount = $teamMembers->count();
+    $teamLabel = $teamCount === 0
+        ? 'Équipe à constituer'
+        : ($teamCount === 1 ? '1 membre impliqué' : $teamCount.' membres impliqués');
 @endphp
 
 <div class="dg-project-cv">
@@ -46,10 +59,13 @@
     <section class="dg-project-cv__hero" aria-labelledby="project-title">
         <div class="dg-project-cv__hero-main">
             <div class="dg-project-cv__cover">
-                @if ($project->image_path)
+                @if ($hasProjectCover)
                     <img src="{{ asset('storage/'.$project->image_path) }}" alt="Illustration du projet {{ $project->name }}">
                 @else
-                    <span>{{ mb_strtoupper(mb_substr($project->name, 0, 2)) }}</span>
+                    <div class="dg-project-cv__cover-fallback" aria-label="Identité visuelle par défaut du projet">
+                        <strong>{{ $projectInitials }}</strong>
+                        <small>Projet GAMAD</small>
+                    </div>
                 @endif
             </div>
             <div class="dg-project-cv__identity">
@@ -62,7 +78,7 @@
                 <div class="dg-project-cv__meta">
                     @if ($group)<span>◉ {{ $group->name }}</span>@endif
                     <span>⌖ {{ $project->location ?: 'Territoire non précisé' }}</span>
-                    <span>♟ {{ $teamMembers->count() }} {{ $teamMembers->count() === 1 ? 'membre impliqué' : 'membres impliqués' }}</span>
+                    <span>♟ {{ $teamLabel }}</span>
                     <span>{{ $configuration['domains'][$project->domain] ?? $project->domain }}</span>
                 </div>
             </div>
@@ -172,10 +188,14 @@
                 <article class="dg-project-cv__panel" id="activite">
                     <div class="dg-project-cv__section-head"><div><p class="dg-project-cv__eyebrow">ACTIVITÉ RÉELLE</p><h2>Ce qui a bougé récemment</h2></div></div>
                     @forelse ($recentEvents as $event)
-                        @php($actor = $eventActorProfiles[$event->actor_core_reference] ?? null)
+                        @php
+                            $actor = $eventActorProfiles[$event->actor_core_reference] ?? null;
+                            $actorName = $actor?->discovery_display_name
+                                ?: ($event->actor_core_reference === $identity->reference ? $identity->label : 'Un membre GAMAD');
+                        @endphp
                         <div class="dg-project-cv__activity-row">
-                            <span class="dg-project-cv__avatar">{{ mb_strtoupper(mb_substr($actor?->discovery_display_name ?? 'G', 0, 1)) }}</span>
-                            <div><strong>{{ $actor?->discovery_display_name ?? 'Un membre GAMAD' }}</strong> {{ $eventLabels[$event->event] ?? 'a fait évoluer le projet' }}.<small>{{ $event->occurred_at?->diffForHumans() }}</small></div>
+                            <span class="dg-project-cv__avatar">{{ mb_strtoupper(mb_substr($actorName, 0, 1)) }}</span>
+                            <div><strong>{{ $actorName }}</strong> {{ $eventLabels[$event->event] ?? 'a fait évoluer le projet' }}.<small>{{ $event->occurred_at?->diffForHumans() }}</small></div>
                         </div>
                     @empty
                         <div class="dg-project-cv__empty"><strong>Aucune activité enregistrée.</strong><p>Les événements réels du projet apparaîtront ici.</p></div>
@@ -262,7 +282,7 @@
             </section>
 
             <section class="dg-project-cv__panel" id="equipe">
-                <div class="dg-project-cv__section-head"><div><p class="dg-project-cv__eyebrow">ÉQUIPE</p><h2>{{ $teamMembers->count() }} impliqué{{ $teamMembers->count() > 1 ? 's' : '' }}</h2></div></div>
+                <div class="dg-project-cv__section-head"><div><p class="dg-project-cv__eyebrow">ÉQUIPE</p><h2>{{ $teamLabel }}</h2></div></div>
                 @if ($teamMembers->isNotEmpty())
                     <div class="dg-project-cv__avatars">
                         @foreach ($teamMembers->take(8) as $member)
@@ -280,7 +300,7 @@
                 @elseif ($myTeamMembership?->status === 'INVITED')
                     <form method="POST" action="{{ route('projects.team.invitation.accept', $project) }}">@csrf<button class="dg-project-cv__wide-action" type="submit">Accepter l’invitation</button></form>
                 @elseif ($isProjectCarrier)
-                    <p class="dg-project-cv__muted">Vous portez ce projet.</p>
+                    <p class="dg-project-cv__muted">Vous portez ce projet.@if ($teamMembers->isEmpty()) L’équipe se constituera au fil des participations.@endif</p>
                 @else
                     <form class="dg-project-cv__join" method="POST" action="{{ route('projects.team.request', $project) }}">@csrf
                         <label for="motivation">Comment souhaitez-vous contribuer ?</label>
