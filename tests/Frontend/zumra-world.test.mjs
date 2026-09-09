@@ -7,6 +7,7 @@ const read = path => readFileSync(path, 'utf8');
 test('ZUMRA-WORLD-001 preserves the canonical world composition', () => {
   const view = read('resources/views/zumra/groups/show.blade.php');
   const styles = read('resources/css/zumra-world.css');
+  const formation = read('resources/css/zumra-world-formation.css');
   const member = read('resources/css/member.css');
 
   assert.match(view, /:wide="true"/);
@@ -33,9 +34,12 @@ test('ZUMRA-WORLD-001 preserves the canonical world composition', () => {
   assert.match(view, /route\('projects\.create', \['group' => \$group->public_reference\]\)/);
   assert.match(view, /route\('needs\.create', \['group' => \$group->public_reference\]\)/);
   assert.match(member, /@import "\.\/zumra-world\.css"/);
+  assert.match(member, /@import "\.\/zumra-world-formation\.css"/);
   assert.match(styles, /\.dg-zumra-world-layout/);
   assert.match(styles, /grid-template-columns:minmax\(13\.5rem/);
   assert.match(styles, /@media\(max-width:620px\)/);
+  assert.match(formation, /\.dg-zumra-world-formation/);
+  assert.match(formation, /\.dg-zumra-world-formation__path/);
 });
 
 test('user-facing project language stays simple and other projects remain optional', () => {
