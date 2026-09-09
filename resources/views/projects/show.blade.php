@@ -188,14 +188,10 @@
                 <article class="dg-project-cv__panel" id="activite">
                     <div class="dg-project-cv__section-head"><div><p class="dg-project-cv__eyebrow">ACTIVITÉ RÉELLE</p><h2>Ce qui a bougé récemment</h2></div></div>
                     @forelse ($recentEvents as $event)
-                        @php
-                            $actor = $eventActorProfiles[$event->actor_core_reference] ?? null;
-                            $actorName = $actor?->discovery_display_name
-                                ?: ($event->actor_core_reference === $identity->reference ? $identity->label : 'Un membre GAMAD');
-                        @endphp
+                        @php($actor = $eventActorProfiles[$event->actor_core_reference] ?? null)
                         <div class="dg-project-cv__activity-row">
-                            <span class="dg-project-cv__avatar">{{ mb_strtoupper(mb_substr($actorName, 0, 1)) }}</span>
-                            <div><strong>{{ $actorName }}</strong> {{ $eventLabels[$event->event] ?? 'a fait évoluer le projet' }}.<small>{{ $event->occurred_at?->diffForHumans() }}</small></div>
+                            <span class="dg-project-cv__avatar">{{ mb_strtoupper(mb_substr($actor?->discovery_display_name ?: ($event->actor_core_reference === $identity->reference ? $identity->label : 'Un membre GAMAD'), 0, 1)) }}</span>
+                            <div><strong>{{ $actor?->discovery_display_name ?: ($event->actor_core_reference === $identity->reference ? $identity->label : 'Un membre GAMAD') }}</strong> {{ $eventLabels[$event->event] ?? 'a fait évoluer le projet' }}.<small>{{ $event->occurred_at?->diffForHumans() }}</small></div>
                         </div>
                     @empty
                         <div class="dg-project-cv__empty"><strong>Aucune activité enregistrée.</strong><p>Les événements réels du projet apparaîtront ici.</p></div>
