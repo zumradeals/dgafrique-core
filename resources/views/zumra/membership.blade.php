@@ -72,7 +72,7 @@
                                         </form>
                                     @else
                                         <p class="dg-zumra-membership__warning">Votre solde ZAHAB est insuffisant pour ce paiement.</p>
-                                        <x-dg.button href="{{ route('wallet.show') }}" variant="secondary">Voir mon Wallet</x-dg.button>
+                                        <x-dg.button href="{{ route('zahab.wallet.person') }}" variant="secondary">Voir mon Wallet</x-dg.button>
                                     @endif
                                 </section>
 
