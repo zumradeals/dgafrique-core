@@ -97,9 +97,24 @@ final class ZumraWorldSmokeTest extends TestCase
                 ->exists(),
         );
 
-        $this->get(route('zumra.groups.show', $group))
+        $world = $this->get(route('zumra.groups.show', $group))
             ->assertOk()
-            ->assertSee('ZUMRA Test Création');
+            ->assertSee('ZUMRA Test Création')
+            ->assertSee('Projet principal')
+            ->assertSee('Projet principal à formaliser')
+            ->assertSee('À faire maintenant')
+            ->assertSee('Besoins actuels')
+            ->assertSee('Projets dérivés')
+            ->assertSee('Aucun projet dérivé pour le moment')
+            ->assertSee('Une ZUMRA peut très bien fonctionner avec un seul projet principal');
+
+        if (getenv('ASTRA_VISUAL_EXPORT') === '1') {
+            $directory = storage_path('app/astra-visual');
+            if (! is_dir($directory)) {
+                mkdir($directory, 0755, true);
+            }
+            file_put_contents($directory.'/zumra-world.html', $world->getContent());
+        }
     }
 
     public function test_the_legacy_directory_preserves_its_redirect_contract(): void
