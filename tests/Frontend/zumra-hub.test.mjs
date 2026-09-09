@@ -53,6 +53,29 @@ test('ZUMRA empty state stays useful and territory leaves the sidebar', () => {
   assert.ok(asideEnd >= 0 && territoryStart > asideEnd, 'Explorer par territoire doit être hors de la sidebar');
 });
 
+test('ZUMRA creation surface exists and posts every real creation field to the governed store route', () => {
+  const view = read('resources/views/zumra/groups/create.blade.php');
+  const member = read('resources/css/member.css');
+  const styles = read('resources/css/zumra-create.css');
+
+  assert.match(view, /route\('zumra\.groups\.store'\)/);
+  assert.match(view, /name="name"/);
+  assert.match(view, /name="domain"/);
+  assert.match(view, /name="founding_objective"/);
+  assert.match(view, /name="participation_mode"/);
+  assert.match(view, /name="location"/);
+  assert.match(view, /name="welcome_capacity"/);
+  assert.match(view, /name="assume_primary_lead"/);
+  assert.match(view, /name="internal_charter"/);
+  assert.match(view, /activity_label\[/);
+  assert.match(view, /activity_relation\[/);
+  assert.match(view, /Faire naître la ZUMRA/);
+  assert.match(view, /Son projet principal prend forme/);
+  assert.match(member, /@import "\.\/zumra-create\.css"/);
+  assert.match(styles, /\.dg-zumra-create/);
+  assert.match(styles, /@media \(max-width: 700px\)/);
+});
+
 test('ZUMRA hub never hard-codes mockup demo metrics as production truth', () => {
   const view = read('resources/views/zumra/index.blade.php');
   const controller = read('app/Http/Controllers/ZumraSpaceController.php');
