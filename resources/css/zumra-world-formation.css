@@ -1,0 +1,13 @@
+/* ZUMRA-WORLD-001 — correction Formation / Projet. */
+.dg-zumra-world-hero__doctrine{margin:0 0 .55rem;color:#ffe15a;font-size:.72rem;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+.dg-zumra-world-formation{overflow:hidden;border-color:#a9d8ef;background:linear-gradient(135deg,#edf9ff 0%,#f7fcff 55%,#fff9dc 100%)}
+.dg-zumra-world-formation__head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1rem;align-items:start}
+.dg-zumra-world-formation__eyebrow{margin:0 0 .35rem!important;color:var(--dg-primary)!important;font-size:.72rem!important;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+.dg-zumra-world-formation h2{font-size:clamp(1.35rem,2.2vw,2rem);line-height:1.08}
+.dg-zumra-world-formation__head p:not(.dg-zumra-world-formation__eyebrow){max-width:48rem;margin:.55rem 0 0}
+.dg-zumra-world-formation__path{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.75rem;margin-top:1rem}
+.dg-zumra-world-formation__path article{display:grid;gap:.35rem;border:1px solid rgba(4,82,121,.15);border-radius:.85rem;background:rgba(255,255,255,.82);padding:.9rem}
+.dg-zumra-world-formation__path article>span{display:grid;width:1.8rem;height:1.8rem;place-items:center;border-radius:999px;background:var(--dg-blue-soft);color:var(--dg-primary);font-size:.68rem;font-weight:950}
+.dg-zumra-world-formation__path strong{font-size:.95rem}.dg-zumra-world-formation__path p{margin:0;font-size:.79rem}
+.dg-zumra-world-formation__note{margin:.8rem 0 0!important;border-top:1px solid rgba(4,82,121,.14);padding-top:.7rem;color:var(--dg-muted)!important;font-size:.76rem!important}
+@media(max-width:760px){.dg-zumra-world-formation__head{grid-template-columns:1fr}.dg-zumra-world-formation__head .dg-zumra-world-button{justify-self:start}.dg-zumra-world-formation__path{grid-template-columns:1fr}}
