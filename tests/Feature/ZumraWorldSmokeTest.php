@@ -18,7 +18,21 @@ final class ZumraWorldSmokeTest extends TestCase
     {
         $this->programMember('IDN-SMOKE-EMPTY');
         $this->signIn('IDN-SMOKE-EMPTY');
-        $this->get('/zumra')->assertOk();
+
+        $this->get('/zumra')
+            ->assertOk()
+            ->assertSee('Grandir et agir ensemble.')
+            ->assertSee('Mes ZUMRA')
+            ->assertSee('ZUMRA à découvrir')
+            ->assertSee('Les ZUMRA en chiffres')
+            ->assertSee('Explorer par territoire')
+            ->assertSee('Qu’est-ce qu’une ZUMRA ?')
+            ->assertSee('Créer une ZUMRA')
+            ->assertSee('Abidjan')
+            ->assertSee('Yamoussoukro')
+            ->assertDontSee('+ 320')
+            ->assertDontSee('+ 18 000')
+            ->assertDontSee('+ 1 200');
     }
 
     public function test_the_legacy_directory_preserves_its_redirect_contract(): void
