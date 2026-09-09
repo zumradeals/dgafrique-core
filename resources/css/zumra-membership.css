@@ -1,0 +1,439 @@
+/* ZUMRA-MEMBERSHIP-001 — shared membership/payment/receipt surfaces. */
+.dg-zumra-membership {
+    width: min(100%, 96rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 2vw, 2rem) clamp(.9rem, 2vw, 1.6rem) 3rem;
+    color: var(--dg-deep);
+}
+
+.dg-zumra-membership__back {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    color: var(--dg-primary);
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.dg-zumra-membership__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(19rem, .65fr);
+    gap: clamp(1rem, 2.5vw, 2rem);
+    align-items: stretch;
+    border: 1px solid var(--dg-border);
+    border-radius: 1.3rem;
+    background: linear-gradient(135deg, #f4fbff 0%, var(--dg-white) 68%);
+    padding: clamp(1.4rem, 3vw, 2.6rem);
+    box-shadow: var(--dg-shadow-soft);
+}
+
+.dg-zumra-membership__hero h1,
+.dg-zumra-membership__card h1,
+.dg-zumra-membership__card h2,
+.dg-zumra-membership__aside h2,
+.dg-zumra-receipt h1 {
+    margin: 0;
+    color: var(--dg-deep);
+    font-weight: 950;
+    letter-spacing: -.045em;
+    line-height: 1.02;
+}
+
+.dg-zumra-membership__hero h1 {
+    max-width: 15ch;
+    font-size: clamp(2.2rem, 4.2vw, 4.3rem);
+}
+
+.dg-zumra-membership__hero > div > p:last-child,
+.dg-zumra-membership__card > p,
+.dg-zumra-membership__card > div > p,
+.dg-zumra-membership__aside p,
+.dg-zumra-receipt p {
+    color: var(--dg-muted);
+    line-height: 1.65;
+}
+
+.dg-zumra-membership__principle {
+    display: grid;
+    align-content: center;
+    gap: .7rem;
+    border-radius: 1rem;
+    background: var(--dg-blue-soft);
+    padding: clamp(1.1rem, 2vw, 1.6rem);
+}
+
+.dg-zumra-membership__principle strong {
+    font-size: 1.12rem;
+    line-height: 1.3;
+}
+
+.dg-zumra-membership__principle span {
+    color: var(--dg-muted);
+    line-height: 1.55;
+}
+
+.dg-zumra-membership__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(19rem, .55fr);
+    gap: clamp(1rem, 2.4vw, 1.7rem);
+    align-items: start;
+    margin-top: 1.2rem;
+}
+
+.dg-zumra-membership__main,
+.dg-zumra-membership__aside {
+    display: grid;
+    gap: 1rem;
+}
+
+.dg-zumra-membership__card,
+.dg-zumra-membership__aside > section,
+.dg-zumra-receipt {
+    border: 1px solid var(--dg-border);
+    border-radius: 1.15rem;
+    background: var(--dg-white);
+    padding: clamp(1.2rem, 2.5vw, 2rem);
+    box-shadow: var(--dg-shadow-soft);
+}
+
+.dg-zumra-membership__card h2 {
+    font-size: clamp(1.55rem, 2.7vw, 2.35rem);
+}
+
+.dg-zumra-membership__card h1 {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+}
+
+.dg-zumra-membership__card--success {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    background: linear-gradient(135deg, #f2fff7, var(--dg-white));
+    border-color: #b9e7c9;
+}
+
+.dg-zumra-membership__status-icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--dg-solar);
+    color: var(--dg-deep);
+    font-size: 1.35rem;
+    font-weight: 950;
+}
+
+.dg-zumra-membership__actions,
+.dg-zumra-membership__join-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.dg-zumra-membership__amount {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    border-radius: .9rem;
+    background: var(--dg-blue-soft);
+    padding: 1rem 1.1rem;
+}
+
+.dg-zumra-membership__amount span {
+    color: var(--dg-muted);
+    font-weight: 750;
+}
+
+.dg-zumra-membership__amount strong {
+    font-size: clamp(1.35rem, 2.2vw, 1.8rem);
+}
+
+.dg-zumra-membership__payment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.dg-zumra-membership__payment-option {
+    border: 1px solid var(--dg-border);
+    border-radius: 1rem;
+    background: #fffef8;
+    padding: 1.1rem;
+}
+
+.dg-zumra-membership__payment-option h3 {
+    margin: .2rem 0 .45rem;
+    font-size: 1.08rem;
+}
+
+.dg-zumra-membership__payment-option p {
+    color: var(--dg-muted);
+    line-height: 1.55;
+}
+
+.dg-zumra-membership__warning,
+.dg-zumra-membership__unavailable {
+    border-radius: .9rem;
+    background: #fff6d7;
+    padding: .9rem 1rem;
+}
+
+.dg-zumra-membership__warning {
+    color: #695200 !important;
+    font-weight: 800;
+}
+
+.dg-zumra-membership__unavailable {
+    margin-top: 1rem;
+}
+
+.dg-zumra-membership__unavailable p {
+    margin-bottom: 0;
+    color: var(--dg-muted);
+}
+
+.dg-zumra-membership__charter {
+    margin-top: 1rem;
+    overflow: hidden;
+    border: 1px solid var(--dg-border);
+    border-radius: 1rem;
+    background: #fffefa;
+}
+
+.dg-zumra-membership__charter-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--dg-border);
+    padding: 1rem 1.1rem;
+}
+
+.dg-zumra-membership__charter-heading span,
+.dg-zumra-membership__charter-heading small {
+    color: var(--dg-primary);
+    font-size: .76rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.dg-zumra-membership__charter-heading h3 {
+    margin: .15rem 0 0;
+    font-size: 1.25rem;
+}
+
+.dg-zumra-membership__charter-body {
+    max-height: 25rem;
+    overflow: auto;
+    padding: 1.1rem;
+    color: var(--dg-muted);
+    line-height: 1.68;
+    white-space: pre-line;
+}
+
+.dg-zumra-membership__accept {
+    display: flex;
+    gap: .8rem;
+    align-items: flex-start;
+    width: 100%;
+    border: 1px solid var(--dg-border);
+    border-radius: .9rem;
+    background: var(--dg-blue-soft);
+    padding: 1rem;
+    cursor: pointer;
+}
+
+.dg-zumra-membership__accept input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: .15rem;
+    accent-color: var(--dg-primary);
+}
+
+.dg-zumra-membership__accept span {
+    display: grid;
+    gap: .25rem;
+}
+
+.dg-zumra-membership__accept small {
+    color: var(--dg-muted);
+    line-height: 1.45;
+}
+
+.dg-zumra-membership__aside {
+    position: sticky;
+    top: 6rem;
+}
+
+.dg-zumra-membership__aside h2 {
+    font-size: clamp(1.4rem, 2vw, 1.9rem);
+}
+
+.dg-zumra-membership__aside ol {
+    display: grid;
+    gap: .9rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.dg-zumra-membership__aside li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .7rem;
+    align-items: start;
+}
+
+.dg-zumra-membership__aside li > span {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--dg-blue-soft);
+    color: var(--dg-primary);
+    font-weight: 950;
+}
+
+.dg-zumra-membership__aside li div {
+    display: grid;
+    gap: .15rem;
+}
+
+.dg-zumra-membership__aside li small {
+    color: var(--dg-muted);
+    line-height: 1.45;
+}
+
+.dg-zumra-membership__aside-note {
+    background: #fff9dc !important;
+}
+
+.dg-zumra-membership__admin-note {
+    background: #f6f7f8 !important;
+}
+
+.dg-zumra-membership--status {
+    max-width: 70rem;
+}
+
+.dg-zumra-receipt {
+    max-width: 64rem;
+    margin: 0 auto;
+}
+
+.dg-zumra-receipt__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.3rem;
+    border-bottom: 1px solid var(--dg-border);
+}
+
+.dg-zumra-receipt__header h1 {
+    font-size: clamp(1.9rem, 3.5vw, 3rem);
+}
+
+.dg-zumra-receipt__number {
+    display: grid;
+    gap: .2rem;
+    min-width: 12rem;
+    border-radius: .8rem;
+    background: var(--dg-blue-soft);
+    padding: .9rem 1rem;
+}
+
+.dg-zumra-receipt__number span {
+    color: var(--dg-muted);
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.dg-zumra-receipt__number strong {
+    overflow-wrap: anywhere;
+}
+
+.dg-zumra-receipt__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 1.3rem 0;
+}
+
+.dg-zumra-receipt__grid > div {
+    border: 1px solid var(--dg-border);
+    border-radius: .8rem;
+    padding: .9rem 1rem;
+}
+
+.dg-zumra-receipt__grid dt {
+    color: var(--dg-muted);
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.dg-zumra-receipt__grid dd {
+    margin: .3rem 0 0;
+    overflow-wrap: anywhere;
+    font-weight: 850;
+}
+
+.dg-zumra-receipt__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1.1rem;
+    border-top: 1px solid var(--dg-border);
+}
+
+.dg-zumra-receipt__footer p {
+    margin: .25rem 0 0;
+}
+
+@media (max-width: 980px) {
+    .dg-zumra-membership__hero,
+    .dg-zumra-membership__layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dg-zumra-membership__aside {
+        position: static;
+    }
+}
+
+@media (max-width: 680px) {
+    .dg-zumra-membership {
+        padding-inline: .75rem;
+    }
+
+    .dg-zumra-membership__hero h1 {
+        font-size: clamp(2rem, 12vw, 3.2rem);
+    }
+
+    .dg-zumra-membership__payment-grid,
+    .dg-zumra-receipt__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dg-zumra-membership__card--success {
+        grid-template-columns: 1fr;
+    }
+
+    .dg-zumra-receipt__header,
+    .dg-zumra-receipt__footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .dg-zumra-receipt__number {
+        min-width: 0;
+    }
+}

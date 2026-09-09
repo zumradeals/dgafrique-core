@@ -2,6 +2,7 @@
 @import "./zumra-hub.css";
 @import "./zumra-hub-polish.css";
 @import "./zumra-create.css";
+@import "./zumra-membership.css";
 
 /* UJ-03A — authenticated shell shared by every member surface. */
 @media (min-width: 900px) {
