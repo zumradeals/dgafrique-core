@@ -12,7 +12,8 @@ test('ZUMRA-WORLD-001 preserves the canonical world composition', () => {
   assert.match(view, /:wide="true"/);
   assert.match(view, /dg-zumra-world-hero/);
   assert.match(view, /Accueil/);
-  assert.match(view, /Projet principal/);
+  assert.match(view, /Formation/);
+  assert.match(view, /Projets/);
   assert.match(view, /Membres/);
   assert.match(view, /Demandes/);
   assert.match(view, /Discussion/);
@@ -27,6 +28,8 @@ test('ZUMRA-WORLD-001 preserves the canonical world composition', () => {
   assert.match(view, /À faire maintenant/);
   assert.match(view, /Progression actuelle/);
   assert.match(view, /Prochaine étape/);
+  assert.match(view, /FORMATION · TRAVAIL · ADORATION/);
+  assert.match(view, /Apprendre, progresser, transmettre/);
   assert.match(view, /route\('projects\.create', \['group' => \$group->public_reference\]\)/);
   assert.match(view, /route\('needs\.create', \['group' => \$group->public_reference\]\)/);
   assert.match(member, /@import "\.\/zumra-world\.css"/);
@@ -35,16 +38,26 @@ test('ZUMRA-WORLD-001 preserves the canonical world composition', () => {
   assert.match(styles, /@media\(max-width:620px\)/);
 });
 
-test('the principal project is canonical and derived projects remain optional', () => {
+test('user-facing project language stays simple and other projects remain optional', () => {
   const view = read('resources/views/zumra/groups/show.blade.php');
 
-  assert.match(view, /\$primaryProject = \$projectSequence->first\(\)/);
-  assert.match(view, /\$derivedProjects = \$projectSequence->slice\(1\)/);
-  assert.match(view, /Projet principal à formaliser/);
-  assert.match(view, /Aucun projet dérivé pour le moment/);
-  assert.match(view, /Une ZUMRA peut fonctionner avec son seul projet principal/);
-  assert.match(view, /Une ZUMRA peut très bien fonctionner avec un seul projet principal/);
+  assert.match(view, /Créer un projet/);
+  assert.match(view, /Proposer un projet/);
+  assert.match(view, /Aucun autre projet pour le moment/);
+  assert.match(view, /Une ZUMRA peut très bien avancer avec un seul projet/);
+  assert.doesNotMatch(view, /Projet principal/);
+  assert.doesNotMatch(view, /Projets dérivés/);
   assert.doesNotMatch(view, /projet dérivé obligatoire/i);
+});
+
+test('Formation is a first-class ZUMRA surface without fabricated training data', () => {
+  const view = read('resources/views/zumra/groups/show.blade.php');
+
+  assert.match(view, /id="formation"/);
+  assert.match(view, /La première mission d’une ZUMRA est de faire grandir ses membres/);
+  assert.match(view, /Aucun parcours de formation n’est encore formalisé/);
+  assert.match(view, /Parcours de formation à raccorder/);
+  assert.match(view, /aria-disabled="true"/);
 });
 
 test('unimplemented world surfaces stay visible without fake backend actions', () => {
