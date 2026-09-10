@@ -17,6 +17,7 @@ use App\Models\Project;
 use App\Models\Proof;
 use App\Models\Transmission;
 use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -71,11 +72,12 @@ final class ContextCommentService
     public function zumraActivityThread(ZumraGroup $group, string $actor): array
     {
         abort_if($group->state === ZumraGroup::STATE_SUSPENDED, 404);
+        $this->assertActiveZumraMember($group, $actor);
 
         return $this->thread([
             'type' => ContextComment::CONTEXT_ZUMRA_ACTIVITY,
             'reference' => $group->public_reference,
-            'label' => 'Activité ZUMRA',
+            'label' => 'Discussion ZUMRA',
             'title' => $group->name,
             'summary' => Str::limit(trim($group->founding_objective), 240),
             'back_url' => route('zumra.groups.show', $group),
@@ -221,7 +223,7 @@ final class ContextCommentService
                 'purpose_label' => ContextComment::PURPOSES[$comment->purpose] ?? $comment->purpose,
                 'body' => $comment->body,
                 'posted_at' => $comment->posted_at,
-                'author_label' => $labels[$comment->author_core_reference] ?? 'Membre DG Afrique',
+                'author_label' => $labels[$comment->author_core_reference] ?? 'Membre GAMAD',
             ]),
         ];
     }
@@ -240,9 +242,21 @@ final class ContextCommentService
         foreach ($references as $reference) {
             $labels[$reference] = $reference === $actor
                 ? 'Vous'
-                : ($profiles->get($reference)?->discovery_display_name ?: 'Membre DG Afrique');
+                : ($profiles->get($reference)?->discovery_display_name ?: 'Membre GAMAD');
         }
 
         return $labels;
+    }
+
+    private function assertActiveZumraMember(ZumraGroup $group, string $actor): void
+    {
+        abort_unless(
+            ZumraGroupMembership::query()
+                ->where('zumra_group_id', $group->id)
+                ->where('core_identity_reference', $actor)
+                ->where('status', ZumraGroupMembership::STATUS_ACTIVE)
+                ->exists(),
+            403
+        );
     }
 }
