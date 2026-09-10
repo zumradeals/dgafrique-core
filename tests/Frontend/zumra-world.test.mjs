@@ -66,10 +66,17 @@ test('Formation is a first-class ZUMRA surface backed by real Transmissions with
   assert.doesNotMatch(view, /Parcours de formation à raccorder/);
 });
 
+test('Discussion is a real member-only destination in the ZUMRA world', () => {
+  const view = read('resources/views/zumra/groups/show.blade.php');
+
+  assert.match(view, /@if \(\$isActiveMember\)[\s\S]*route\('zumra\.groups\.discussion', \$group\)[\s\S]*▢ Discussion/);
+  assert.match(view, /La discussion est réservée aux membres actifs/);
+  assert.doesNotMatch(view, /Le canal de discussion sera raccordé à son moteur dédié/);
+});
+
 test('unimplemented world surfaces stay visible without fake backend actions', () => {
   const view = read('resources/views/zumra/groups/show.blade.php');
 
-  assert.match(view, /aria-disabled="true" title="Le canal de discussion/);
   assert.match(view, /mini-fil ZUMRA sera raccordé/);
   assert.match(view, /Modifier la couverture/);
   assert.match(view, /Paramètres/);
