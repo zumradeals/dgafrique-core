@@ -1,0 +1,314 @@
+.dg-formation,
+.dg-transmission-create {
+    width: min(100%, 96rem);
+    margin: 0 auto;
+    padding: clamp(1rem, 2vw, 2rem) clamp(.8rem, 2vw, 1.4rem) 3rem;
+    color: #073b56;
+}
+
+.dg-formation__back,
+.dg-transmission-create__back {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    color: #00678f;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.dg-formation__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(22rem, .75fr);
+    overflow: hidden;
+    border: 1px solid rgba(3, 78, 105, .15);
+    border-radius: 1.25rem;
+    background: linear-gradient(118deg, #033f59 0%, #005c55 66%, #0a6a60 100%);
+    box-shadow: 0 18px 45px rgba(3, 54, 73, .12);
+    color: white;
+}
+
+.dg-formation__hero-copy {
+    padding: clamp(2rem, 4vw, 4rem);
+}
+
+.dg-formation__eyebrow {
+    margin: 0 0 .45rem;
+    color: #00769d;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+}
+
+.dg-formation__hero .dg-formation__eyebrow {
+    color: #ffdc00;
+}
+
+.dg-formation__world {
+    display: inline-flex;
+    margin-bottom: 1rem;
+    padding: .38rem .7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.dg-formation__hero h1,
+.dg-transmission-create__hero h1 {
+    max-width: 12ch;
+    margin: 0;
+    font-size: clamp(2.4rem, 5vw, 4.9rem);
+    line-height: .98;
+    letter-spacing: -.055em;
+}
+
+.dg-formation__hero-copy > p:last-of-type {
+    max-width: 62ch;
+    margin: 1.25rem 0 0;
+    color: rgba(255, 255, 255, .88);
+    font-size: 1.06rem;
+    line-height: 1.65;
+}
+
+.dg-formation__hero-actions,
+.dg-formation__empty-actions,
+.dg-formation__practice-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .65rem;
+    margin-top: 1.2rem;
+}
+
+.dg-formation__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.7rem;
+    padding: .68rem 1rem;
+    border: 1px solid rgba(3, 73, 98, .28);
+    border-radius: .7rem;
+    background: white;
+    color: #073b56;
+    font: inherit;
+    font-weight: 850;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.dg-formation__button--solar {
+    border-color: #d3ae00;
+    background: #ffdc00;
+    color: #071f2b;
+}
+
+.dg-formation__cycle {
+    display: grid;
+    align-content: center;
+    gap: .75rem;
+    padding: 1.4rem;
+    background: rgba(2, 39, 55, .32);
+}
+
+.dg-formation__cycle article {
+    display: grid;
+    grid-template-columns: 2.3rem 1fr;
+    gap: .2rem .8rem;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, .13);
+    border-radius: .9rem;
+    background: rgba(255, 255, 255, .07);
+}
+
+.dg-formation__cycle article > span {
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: #ffdc00;
+    color: #073b56;
+    font-size: .72rem;
+    font-weight: 900;
+}
+
+.dg-formation__cycle strong { font-size: 1rem; }
+.dg-formation__cycle p { margin: .12rem 0 0; color: rgba(255,255,255,.78); font-size: .82rem; line-height: 1.45; }
+
+.dg-formation__notice {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid #efce46;
+    border-radius: .9rem;
+    background: #fff9dc;
+}
+
+.dg-formation__notice p { margin: .2rem 0 0; }
+
+.dg-formation__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 19rem;
+    gap: 1rem;
+    margin-top: 1rem;
+    align-items: start;
+}
+
+.dg-formation__main,
+.dg-formation__side {
+    display: grid;
+    gap: 1rem;
+}
+
+.dg-formation__panel {
+    border: 1px solid #d9ddd9;
+    border-radius: 1rem;
+    background: #fff;
+    padding: 1.1rem;
+    box-shadow: 0 8px 24px rgba(20, 48, 57, .045);
+}
+
+.dg-formation__panel h2 { margin: 0; font-size: clamp(1.15rem, 2vw, 1.55rem); letter-spacing: -.025em; }
+.dg-formation__panel p { line-height: 1.55; }
+
+.dg-formation__section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.dg-formation__section-head a,
+.dg-formation__text-link {
+    color: #00678f;
+    font-weight: 800;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.dg-formation__chips,
+.dg-formation__side-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .55rem;
+}
+
+.dg-formation__chips span,
+.dg-formation__side-list span {
+    padding: .5rem .7rem;
+    border-radius: 999px;
+    background: #eef8f4;
+    color: #07564b;
+    font-size: .82rem;
+    font-weight: 750;
+}
+
+.dg-formation__empty {
+    padding: 1rem;
+    border: 1px dashed #9eb8ba;
+    border-radius: .85rem;
+    background: #fbfcfb;
+    text-align: center;
+}
+
+.dg-formation__empty strong { display: block; }
+.dg-formation__empty p { max-width: 62ch; margin: .45rem auto; color: #58676c; }
+.dg-formation__empty--large { padding: 2.1rem 1rem; }
+.dg-formation__empty--large > span { display: grid; place-items: center; width: 3rem; height: 3rem; margin: 0 auto .8rem; border-radius: 50%; background: #e0f5fa; color: #00769d; font-size: 1.4rem; }
+.dg-formation__empty-actions { justify-content: center; }
+
+.dg-formation__transmissions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.dg-formation__transmission {
+    display: block;
+    min-height: 11rem;
+    padding: 1rem;
+    border: 1px solid #dbe5e2;
+    border-radius: .9rem;
+    background: linear-gradient(145deg, #fff 0%, #f5fbf8 100%);
+    color: inherit;
+    text-decoration: none;
+}
+
+.dg-formation__transmission:hover { border-color: #69a997; transform: translateY(-1px); }
+.dg-formation__transmission h3 { margin: .7rem 0 .35rem; font-size: 1.08rem; }
+.dg-formation__transmission p { margin: 0; color: #52666b; font-size: .88rem; }
+.dg-formation__transmission-top,
+.dg-formation__transmission-meta { display: flex; justify-content: space-between; gap: .6rem; font-size: .72rem; }
+.dg-formation__transmission-meta { margin-top: 1rem; color: #66777c; }
+.dg-formation__status { padding: .25rem .5rem; border-radius: 999px; background: #dff5e7; color: #145e3b; font-weight: 850; }
+
+.dg-formation__practice {
+    background: linear-gradient(110deg, #f4fbf6, #f0f9fb);
+}
+
+.dg-formation__situation { border-top: .25rem solid #ffdc00; }
+.dg-formation__principle { background: #fff9df; border-color: #ecd677; }
+.dg-formation__principle blockquote { margin: .3rem 0 .75rem; font-size: 1.05rem; font-weight: 750; line-height: 1.5; }
+.dg-formation__quick { background: #f0faf7; }
+.dg-formation__quick a { display: block; padding: .7rem 0; border-bottom: 1px solid #dce9e5; color: #073b56; font-weight: 800; text-decoration: none; }
+.dg-formation__quick a:last-child { border-bottom: 0; }
+
+/* Transmission creation: the existing governed workflow finally gets a real human entry surface. */
+.dg-transmission-create__hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(18rem, .8fr);
+    gap: 1rem;
+    padding: clamp(1.5rem, 3vw, 3rem);
+    border-radius: 1.2rem;
+    background: linear-gradient(120deg, #043f59, #066457);
+    color: #fff;
+}
+
+.dg-transmission-create__hero h1 { max-width: 14ch; }
+.dg-transmission-create__hero p { max-width: 58ch; color: rgba(255,255,255,.84); line-height: 1.6; }
+.dg-transmission-create__context { align-self: center; padding: 1rem; border: 1px solid rgba(255,255,255,.16); border-radius: .9rem; background: rgba(255,255,255,.08); }
+.dg-transmission-create__context strong { display: block; font-size: 1.1rem; }
+.dg-transmission-create__context span { display: block; margin-top: .3rem; color: rgba(255,255,255,.72); }
+
+.dg-transmission-create__layout { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: 1rem; margin-top: 1rem; align-items: start; }
+.dg-transmission-create__card { border: 1px solid #d9ddd9; border-radius: 1rem; background: #fff; padding: 1.2rem; }
+.dg-transmission-create__form { display: grid; gap: 1rem; }
+.dg-transmission-create__field { display: grid; gap: .4rem; }
+.dg-transmission-create__field label { font-weight: 800; }
+.dg-transmission-create__field input,
+.dg-transmission-create__field textarea,
+.dg-transmission-create__field select { width: 100%; padding: .75rem .8rem; border: 1px solid #aeb9b9; border-radius: .65rem; background: #fff; color: #172c34; font: inherit; }
+.dg-transmission-create__roles { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .65rem; }
+.dg-transmission-create__role { position: relative; display: block; padding: 1rem; border: 1px solid #cad8d5; border-radius: .8rem; background: #f8fbfa; }
+.dg-transmission-create__role input { width: auto; margin-right: .4rem; }
+.dg-transmission-create__role strong { display: block; margin: .35rem 0; }
+.dg-transmission-create__role small { display: block; color: #647377; line-height: 1.4; }
+.dg-transmission-create__aside { display: grid; gap: 1rem; }
+.dg-transmission-create__aside .dg-transmission-create__card:first-child { background: #fff9df; border-color: #ecd677; }
+.dg-transmission-create__aside ol { padding-left: 1.2rem; line-height: 1.7; }
+.dg-transmission-create__note { color: #607176; font-size: .84rem; line-height: 1.5; }
+
+@media (max-width: 1000px) {
+    .dg-formation__hero,
+    .dg-formation__layout,
+    .dg-transmission-create__hero,
+    .dg-transmission-create__layout { grid-template-columns: 1fr; }
+    .dg-formation__cycle { grid-template-columns: repeat(3, minmax(0,1fr)); }
+}
+
+@media (max-width: 700px) {
+    .dg-formation,
+    .dg-transmission-create { padding-inline: .7rem; }
+    .dg-formation__hero h1,
+    .dg-transmission-create__hero h1 { font-size: clamp(2.25rem, 12vw, 3.4rem); }
+    .dg-formation__cycle,
+    .dg-formation__transmissions,
+    .dg-transmission-create__roles { grid-template-columns: 1fr; }
+    .dg-formation__section-head,
+    .dg-formation__notice { align-items: stretch; flex-direction: column; }
+    .dg-formation__section-head a { white-space: normal; }
+}

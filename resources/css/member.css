@@ -8,6 +8,7 @@
 @import "./project-cv.css";
 @import "./project-cv-polish.css";
 @import "./project-create.css";
+@import "./formation-001.css";
 
 /* UJ-03A — authenticated shell shared by every member surface. */
 @media (min-width: 900px) {

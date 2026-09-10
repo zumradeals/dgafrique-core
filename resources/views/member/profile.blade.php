@@ -17,7 +17,7 @@
         @endphp
         @foreach ($sections as $section => [$heading, $fields])
             @if ($profileConfiguration['sections'][$section]['enabled'] ?? false)
-                <fieldset class="dg-space-section"><legend><h2>{{ $heading }}</h2></legend>
+                <fieldset id="{{ $section }}" class="dg-space-section"><legend><h2>{{ $heading }}</h2></legend>
                     @foreach ($fields as $name => [$label, $maximum])
                         @php
                             $isList = str_ends_with($name, '_text');

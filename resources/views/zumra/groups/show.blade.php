@@ -76,7 +76,7 @@
 
         <nav class="dg-zumra-world-tabs" aria-label="Navigation dans la ZUMRA">
             <a class="is-active" href="#accueil">⌂ Accueil</a>
-            <a href="#formation">◈ Formation</a>
+            <a href="{{ route('zumra.groups.formation', $group) }}">◈ Formation</a>
             <a href="#projets">▣ Projets</a>
             <a href="#membres">♙ Membres</a>
             @if ($isLeader)
@@ -112,7 +112,7 @@
                     <h2>Navigation rapide</h2>
                     <nav class="dg-zumra-world-quicknav">
                         <a href="#accueil">▣ Tableau de bord</a>
-                        <a href="#formation">◈ Se former</a>
+                        <a href="{{ route('zumra.groups.formation', $group) }}">◈ Se former</a>
                         <a href="#projets">▣ Nos projets</a>
                         <a href="#a-faire">▤ Notre charte</a>
                         <a href="#activite">▤ Nos actualités</a>
@@ -135,14 +135,14 @@
                             <h2>Apprendre, progresser, transmettre.</h2>
                             <p>La première mission d’une ZUMRA est de faire grandir ses membres. On peut rejoindre cette communauté d’abord pour apprendre, développer une capacité et évoluer progressivement avant de contribuer davantage aux projets.</p>
                         </div>
-                        <span class="dg-zumra-world-button" aria-disabled="true" title="Le moteur de parcours de formation sera raccordé dans une étape dédiée">Parcours de formation à raccorder</span>
+                        <a class="dg-zumra-world-button" href="{{ route('zumra.groups.formation', $group) }}">Entrer dans l’espace Formation</a>
                     </div>
                     <div class="dg-zumra-world-formation__path" aria-label="Chemin de progression dans la ZUMRA">
                         <article><span>01</span><strong>Apprendre</strong><p>Découvrir des savoirs et développer de nouvelles capacités avec la communauté.</p></article>
                         <article><span>02</span><strong>Pratiquer</strong><p>Mettre en application ce qui est appris dans des activités et des projets réels.</p></article>
                         <article><span>03</span><strong>Transmettre</strong><p>Partager son expérience à son tour et aider d’autres membres à progresser.</p></article>
                     </div>
-                    <p class="dg-zumra-world-formation__note">Aucun parcours de formation n’est encore formalisé dans GAMAD pour cette ZUMRA. Cette section reste visible sans inventer de cours, de niveau ou de résultat.</p>
+                    <p class="dg-zumra-world-formation__note">Les apprentissages réels de cette ZUMRA sont désormais portés par les Transmissions GAMAD. Aucun cours, niveau ou résultat n’est inventé pour remplir cet espace.</p>
                 </section>
 
                 <section id="projets" class="dg-zumra-world-card dg-zumra-project-main">
