@@ -4,79 +4,43 @@ declare(strict_types=1);
 
 use App\Http\Controllers\ContextCommentController;
 use App\Http\Controllers\ZumraDiscussionController;
+use App\Http\Controllers\ZumraMembersController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
     Route::get('/commentaires/besoins/{need}', [ContextCommentController::class, 'need'])
-        ->whereUuid('need')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.need');
-
+        ->whereUuid('need')->middleware(['core.member', 'throttle:comments-read'])->name('comments.need');
     Route::post('/commentaires/besoins/{need}', [ContextCommentController::class, 'storeNeed'])
-        ->whereUuid('need')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.need.store');
-
+        ->whereUuid('need')->middleware(['core.member', 'throttle:comments-write'])->name('comments.need.store');
     Route::get('/commentaires/projets/{project}', [ContextCommentController::class, 'project'])
-        ->whereUuid('project')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.project');
-
+        ->whereUuid('project')->middleware(['core.member', 'throttle:comments-read'])->name('comments.project');
     Route::post('/commentaires/projets/{project}', [ContextCommentController::class, 'storeProject'])
-        ->whereUuid('project')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.project.store');
+        ->whereUuid('project')->middleware(['core.member', 'throttle:comments-write'])->name('comments.project.store');
 
-    // DISCUSSION-001 — canal ZUMRA canonique. Il réutilise ContextComment/ZUMRA_ACTIVITY :
-    // aucun moteur de messagerie parallèle, aucune création implicite de conversation sur GET.
+    // MEMBERS-001 — projection des appartenances et responsabilités ZUMRA déjà canoniques.
+    Route::get('/zumra/groupes/{group}/membres', ZumraMembersController::class)
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-read'])->name('zumra.groups.members');
+
+    // DISCUSSION-001 — canal ZUMRA canonique. Il réutilise ContextComment/ZUMRA_ACTIVITY.
     Route::get('/zumra/groupes/{group}/discussion', [ZumraDiscussionController::class, 'show'])
-        ->whereUuid('group')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('zumra.groups.discussion');
-
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-read'])->name('zumra.groups.discussion');
     Route::post('/zumra/groupes/{group}/discussion', [ZumraDiscussionController::class, 'store'])
-        ->whereUuid('group')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('zumra.groups.discussion.store');
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-write'])->name('zumra.groups.discussion.store');
 
-    // Compatibilité avec la surface CAP-021 historique.
     Route::get('/commentaires/activite/zumra/{group}', [ContextCommentController::class, 'zumraActivity'])
-        ->whereUuid('group')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.zumra-activity');
-
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-read'])->name('comments.zumra-activity');
     Route::post('/commentaires/activite/zumra/{group}', [ContextCommentController::class, 'storeZumraActivity'])
-        ->whereUuid('group')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.zumra-activity.store');
-
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-write'])->name('comments.zumra-activity.store');
     Route::get('/commentaires/missions/{mission}', [ContextCommentController::class, 'mission'])
-        ->whereUuid('mission')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.mission');
-
+        ->whereUuid('mission')->middleware(['core.member', 'throttle:comments-read'])->name('comments.mission');
     Route::post('/commentaires/missions/{mission}', [ContextCommentController::class, 'storeMission'])
-        ->whereUuid('mission')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.mission.store');
-
+        ->whereUuid('mission')->middleware(['core.member', 'throttle:comments-write'])->name('comments.mission.store');
     Route::get('/commentaires/transmissions/{transmission}', [ContextCommentController::class, 'transmission'])
-        ->whereUuid('transmission')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.transmission');
-
+        ->whereUuid('transmission')->middleware(['core.member', 'throttle:comments-read'])->name('comments.transmission');
     Route::post('/commentaires/transmissions/{transmission}', [ContextCommentController::class, 'storeTransmission'])
-        ->whereUuid('transmission')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.transmission.store');
-
+        ->whereUuid('transmission')->middleware(['core.member', 'throttle:comments-write'])->name('comments.transmission.store');
     Route::get('/commentaires/preuves/{proof}', [ContextCommentController::class, 'proof'])
-        ->whereUuid('proof')
-        ->middleware(['core.member', 'throttle:comments-read'])
-        ->name('comments.proof');
-
+        ->whereUuid('proof')->middleware(['core.member', 'throttle:comments-read'])->name('comments.proof');
     Route::post('/commentaires/preuves/{proof}', [ContextCommentController::class, 'storeProof'])
-        ->whereUuid('proof')
-        ->middleware(['core.member', 'throttle:comments-write'])
-        ->name('comments.proof.store');
+        ->whereUuid('proof')->middleware(['core.member', 'throttle:comments-write'])->name('comments.proof.store');
 });
