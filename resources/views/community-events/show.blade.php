@@ -54,8 +54,10 @@
                             <form method="POST" action="{{ route('community-events.register', $event) }}">@csrf<button class="dg-event-button dg-event-button--primary" type="submit">M'inscrire</button></form>
                         @endif
                     </section>
+                @elseif ($event->status === \App\Models\CommunityEvent::STATUS_CANCELLED)
+                    <p class="dg-event-terminal">Cet événement est annulé et n’accepte plus d’inscription.</p>
                 @else
-                    <p class="dg-event-terminal">Cet événement est terminé ou n’accepte plus d’inscription.</p>
+                    <p class="dg-event-terminal">Cet événement est terminé et n’accepte plus d’inscription.</p>
                 @endif
             </main>
 
@@ -63,7 +65,7 @@
                 <aside class="dg-event-panel dg-event-panel--manage">
                     <p class="dg-event-space__eyebrow">ORGANISATION</p>
                     <h2>Vous organisez cet événement</h2>
-                    @if ($participantsCount !== null)<p><strong>{{ $participantsCount }}</strong> inscrit{{ $participantsCount === 1 ? '' : 's' }}</p>@endif
+                    @if ($participantsCount !== null)<p><strong>{{ $participantsCount }} inscrit{{ $participantsCount === 1 ? '' : 's' }}</strong></p>@endif
 
                     <details>
                         <summary>Modifier les informations</summary>
