@@ -54,14 +54,16 @@ test('user-facing project language stays simple and other projects remain option
   assert.doesNotMatch(view, /projet dérivé obligatoire/i);
 });
 
-test('Formation is a first-class ZUMRA surface without fabricated training data', () => {
+test('Formation is a first-class ZUMRA surface backed by real Transmissions without fabricated training data', () => {
   const view = read('resources/views/zumra/groups/show.blade.php');
 
   assert.match(view, /id="formation"/);
   assert.match(view, /La première mission d’une ZUMRA est de faire grandir ses membres/);
-  assert.match(view, /Aucun parcours de formation n’est encore formalisé/);
-  assert.match(view, /Parcours de formation à raccorder/);
-  assert.match(view, /aria-disabled="true"/);
+  assert.match(view, /Entrer dans l’espace Formation/);
+  assert.match(view, /route\('zumra\.groups\.formation', \$group\)/);
+  assert.match(view, /Les apprentissages réels de cette ZUMRA sont désormais portés par les Transmissions GAMAD/);
+  assert.match(view, /Aucun cours, niveau ou résultat n’est inventé/);
+  assert.doesNotMatch(view, /Parcours de formation à raccorder/);
 });
 
 test('unimplemented world surfaces stay visible without fake backend actions', () => {
