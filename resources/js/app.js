@@ -96,6 +96,17 @@ const connectZumraEventTab = () => {
     });
 };
 
+// MEMBERS-001 — raccord de présentation vers l’espace membres réel ; l’autorité reste côté serveur.
+const connectZumraMembersTab = () => {
+    const match = window.location.pathname.match(/^\/zumra\/groupes\/([0-9a-f-]+)\/?$/i);
+    if (!match) return;
+
+    document.querySelectorAll('.dg-zumra-world-tabs a[href="#membres"]').forEach((link) => {
+        link.setAttribute('href', `/zumra/groupes/${match[1]}/membres`);
+    });
+};
+
 document.addEventListener('DOMContentLoaded', connectZumraEventTab);
+document.addEventListener('DOMContentLoaded', connectZumraMembersTab);
 
 Livewire.start();
