@@ -45,7 +45,9 @@ test('ZUMRA empty state stays useful and territory leaves the sidebar', () => {
   assert.match(view, /Les premières ZUMRA apparaîtront ici\./);
   assert.match(view, /Explorer les territoires/);
   assert.match(view, /id="territoires-zumra"/);
-  assert.match(view, /Un projet principal/);
+  assert.match(view, /Un projet commun/);
+  assert.match(view, /Une ZUMRA peut faire naître et porter un projet/);
+  assert.doesNotMatch(view, /Un projet principal/);
   assert.match(view, /Un monde d’action/);
 
   const asideEnd = view.indexOf('</aside>');
