@@ -119,7 +119,7 @@
                     <p>{{ $group->founding_objective }}</p>
                     <div class="dg-project-cv__zumra-nav">
                         <a href="{{ route('zumra.groups.show', $group) }}">⌂ Accueil ZUMRA</a>
-                        <a href="{{ route('zumra.groups.show', $group) }}#formation">✦ Formation</a>
+                        <a href="{{ route('zumra.groups.formation', $group) }}">✦ Formation</a>
                         <a class="is-active" href="{{ route('projects.index', ['group' => $group->public_reference]) }}">▣ Projets</a>
                         <a href="{{ route('zumra.groups.show', $group) }}#besoins">♡ Besoins</a>
                         <a href="{{ route('zumra.groups.show', $group) }}#membres">♙ Membres</a>
@@ -248,7 +248,7 @@
                     @endforeach
                 </div>
                 <div class="dg-project-cv__autonomy">
-                    <div><strong>Vers une organisation</strong><p>À maturité suffisante, le projet peut explorer une structure autonome tout en restant rattaché à sa ZUMRA mère dans l’écosystème GAMAD.</p></div>
+                    <div><strong>Vers une organisation</strong><p>À maturité suffisante, ce projet peut donner naissance à une startup ou une autre organisation durable. Rien n’est créé automatiquement : cette évolution reste une décision explicite. L’organisation issue du projet reste liée à sa ZUMRA mère dans GAMAD, afin que talents, expérience et opportunités continuent à circuler dans les deux sens.</p></div>
                     @if ($project->autonomyPathway)
                         <span>Trajectoire : {{ $autonomyLabels[$project->autonomyPathway->target_form] ?? $project->autonomyPathway->target_form }} · {{ $project->autonomyPathway->status }}</span>
                     @elseif ($canDecide)
