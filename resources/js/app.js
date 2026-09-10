@@ -86,4 +86,16 @@ Alpine.data('dgNavigation', () => ({
     },
 }));
 
+// EVENT-001 — raccord de présentation uniquement. Le moteur et les droits restent CAP-068 côté serveur.
+const connectZumraEventTab = () => {
+    const match = window.location.pathname.match(/^\/zumra\/groupes\/([0-9a-f-]+)\/?$/i);
+    if (!match) return;
+
+    document.querySelectorAll('.dg-zumra-world-tabs a[href="#evenements"]').forEach((link) => {
+        link.setAttribute('href', `/zumra/groupes/${match[1]}/evenements`);
+    });
+};
+
+document.addEventListener('DOMContentLoaded', connectZumraEventTab);
+
 Livewire.start();
