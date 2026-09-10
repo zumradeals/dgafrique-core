@@ -3,11 +3,12 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\CommunityEventController;
+use App\Http\Controllers\ZumraEventSpaceController;
 use Illuminate\Support\Facades\Route;
 
 /** CAP-068 — Événement. Routes propres à un objet nouveau (motif routes/cap063.php). */
 Route::middleware('web')->group(function (): void {
-    Route::get('/zumra/groupes/{group}/evenements', [CommunityEventController::class, 'indexForZumraGroup'])
+    Route::get('/zumra/groupes/{group}/evenements', [ZumraEventSpaceController::class, 'index'])
         ->whereUuid('group')->middleware('core.member')->name('community-events.zumra.index');
     // UIUX-007 — gabarit minimal de création (le POST existait déjà, aucune vue GET ne l'exposait).
     Route::get('/zumra/groupes/{group}/evenements/creer', [CommunityEventController::class, 'createForZumraGroup'])
