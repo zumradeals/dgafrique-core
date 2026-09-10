@@ -82,7 +82,11 @@
             @if ($isLeader)
                 <a href="#demandes">▤ Demandes @if($pendingCount > 0)<span class="dg-zumra-world-tabs__badge">{{ $pendingCount }}</span>@endif</a>
             @endif
-            <span aria-disabled="true" title="Le canal de discussion sera raccordé à son moteur dédié">▢ Discussion</span>
+            @if ($isActiveMember)
+                <a href="{{ route('zumra.groups.discussion', $group) }}">▢ Discussion</a>
+            @else
+                <span aria-disabled="true" title="La discussion est réservée aux membres actifs">▢ Discussion</span>
+            @endif
             <a href="#evenements">▣ Événements</a>
             <a href="#besoins">♡ Besoins</a>
             <a href="#missions">◉ Missions</a>
