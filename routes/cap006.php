@@ -8,9 +8,15 @@ use App\Http\Controllers\TransmissionMatchingController;
 use App\Http\Controllers\TransmissionMilestoneController;
 use App\Http\Controllers\TransmissionParticipationController;
 use App\Http\Controllers\TransmissionWorkflowController;
+use App\Http\Controllers\ZumraFormationController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
+    // FORMATION-001 — surface Formation d'une ZUMRA, alimentée par les capacités et
+    // Transmissions réelles existantes. Aucune table de cours parallèle n'est créée.
+    Route::get('/zumra/groupes/{group}/formation', ZumraFormationController::class)
+        ->whereUuid('group')->middleware(['core.member', 'throttle:transmission-read'])->name('zumra.groups.formation');
+
     Route::get('/transmissions', [TransmissionController::class, 'index'])
         ->middleware(['core.member', 'throttle:transmission-read'])->name('transmissions.index');
 
