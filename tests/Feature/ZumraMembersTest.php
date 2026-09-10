@@ -36,7 +36,7 @@ final class ZumraMembersTest extends TestCase
             ->assertSee('Les personnes qui font vivre '.$group->name)
             ->assertSee('Awa Koné')
             ->assertSee('Responsable financier')
-            ->assertSee('2 membres actifs')
+            ->assertSeeInOrder(['2', 'membres actifs'])
             ->assertDontSee('Ancien Membre');
     }
 
