@@ -7,10 +7,13 @@ on:
       - 'app/Http/Controllers/LandingController.php'
       - 'app/Http/Controllers/ZumraSpaceController.php'
       - 'app/Http/Controllers/ZumraFormationController.php'
+      - 'app/Http/Controllers/ZumraDiscussionController.php'
       - 'app/Http/Controllers/ZumraProgramMembershipController.php'
       - 'app/Http/Controllers/ZumraMembershipPaymentController.php'
       - 'app/Http/Controllers/ProjectController.php'
+      - 'app/Application/Comments/ContextCommentService.php'
       - 'routes/cap006.php'
+      - 'routes/cap021.php'
       - 'app/Models/ZumraGroup.php'
       - 'app/Providers/AppServiceProvider.php'
       - 'database/migrations/**'
@@ -20,6 +23,7 @@ on:
       - 'tests/Feature/MemberSpaceTest.php'
       - 'tests/Feature/ZumraWorldSmokeTest.php'
       - 'tests/Feature/ZumraFormationSmokeTest.php'
+      - 'tests/Feature/ContextCommentTest.php'
       - 'tests/Feature/AdhesionZahabTest.php'
       - 'tests/Feature/ZumraMembershipSurfaceTest.php'
       - 'tests/Feature/ProjectCvSmokeTest.php'
@@ -50,7 +54,7 @@ jobs:
       - run: npm run test:frontend
       - run: npm run build
       - run: php artisan view:cache
-      - run: php artisan test tests/Feature/LandingPublicDiscoveryTest.php tests/Feature/MemberSpaceTest.php tests/Feature/ZumraWorldSmokeTest.php tests/Feature/ZumraFormationSmokeTest.php tests/Feature/AdhesionZahabTest.php tests/Feature/ZumraMembershipSurfaceTest.php tests/Feature/ProjectCvSmokeTest.php tests/Feature/FederationContinuationTest.php tests/Feature/IdentityAuthorityGuardTest.php
+      - run: php artisan test tests/Feature/LandingPublicDiscoveryTest.php tests/Feature/MemberSpaceTest.php tests/Feature/ZumraWorldSmokeTest.php tests/Feature/ZumraFormationSmokeTest.php tests/Feature/ContextCommentTest.php tests/Feature/AdhesionZahabTest.php tests/Feature/ZumraMembershipSurfaceTest.php tests/Feature/ProjectCvSmokeTest.php tests/Feature/FederationContinuationTest.php tests/Feature/IdentityAuthorityGuardTest.php
         env:
           ASTRA_VISUAL_EXPORT: '1'
       - name: Export synthetic rendered states for visual review
