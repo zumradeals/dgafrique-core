@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ContextCommentController;
+use App\Http\Controllers\ZumraDiscussionController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('web')->group(function (): void {
@@ -26,6 +27,19 @@ Route::middleware('web')->group(function (): void {
         ->middleware(['core.member', 'throttle:comments-write'])
         ->name('comments.project.store');
 
+    // DISCUSSION-001 — canal ZUMRA canonique. Il réutilise ContextComment/ZUMRA_ACTIVITY :
+    // aucun moteur de messagerie parallèle, aucune création implicite de conversation sur GET.
+    Route::get('/zumra/groupes/{group}/discussion', [ZumraDiscussionController::class, 'show'])
+        ->whereUuid('group')
+        ->middleware(['core.member', 'throttle:comments-read'])
+        ->name('zumra.groups.discussion');
+
+    Route::post('/zumra/groupes/{group}/discussion', [ZumraDiscussionController::class, 'store'])
+        ->whereUuid('group')
+        ->middleware(['core.member', 'throttle:comments-write'])
+        ->name('zumra.groups.discussion.store');
+
+    // Compatibilité avec la surface CAP-021 historique.
     Route::get('/commentaires/activite/zumra/{group}', [ContextCommentController::class, 'zumraActivity'])
         ->whereUuid('group')
         ->middleware(['core.member', 'throttle:comments-read'])
