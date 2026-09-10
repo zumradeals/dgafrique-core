@@ -12,6 +12,7 @@ use App\Models\NeedEvent;
 use App\Models\PersonProfile;
 use App\Models\Project;
 use App\Models\ZumraGroup;
+use App\Models\ZumraGroupMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
@@ -107,9 +108,68 @@ final class ContextCommentTest extends TestCase
         ])->assertNotFound();
     }
 
+    public function test_zumra_discussion_requires_active_membership_and_get_is_read_only(): void
+    {
+        $group = $this->group('ZUMRA Discussion');
+        $this->activateMember($group, 'IDN-A');
+        $this->signIn('IDN-A');
+
+        $beforeComments = ContextComment::query()->count();
+        $beforeMemberships = ZumraGroupMembership::query()->count();
+
+        $this->get(route('zumra.groups.discussion', $group))
+            ->assertOk()
+            ->assertSee('La conversation de '.$group->name)
+            ->assertSee('Aucun message pour le moment.')
+            ->assertSee('Publier dans la discussion');
+
+        self::assertSame($beforeComments, ContextComment::query()->count());
+        self::assertSame($beforeMemberships, ZumraGroupMembership::query()->count());
+
+        $this->signIn('IDN-OUTSIDER');
+        $this->get(route('zumra.groups.discussion', $group))->assertForbidden();
+        $this->post(route('zumra.groups.discussion.store', $group), [
+            'purpose' => 'QUESTION',
+            'body' => 'Cette tentative ne doit pas entrer dans le canal.',
+        ])->assertForbidden();
+    }
+
+    public function test_zumra_discussion_is_isolated_and_author_comes_from_session(): void
+    {
+        $groupA = $this->group('ZUMRA Alpha');
+        $groupB = $this->group('ZUMRA Bêta');
+        $this->activateMember($groupA, 'IDN-A');
+        $this->activateMember($groupB, 'IDN-A');
+        $this->signIn('IDN-A');
+
+        $this->post(route('zumra.groups.discussion.store', $groupA), [
+            'purpose' => 'COORDINATION',
+            'body' => 'Préparons la prochaine séance de travail Alpha.',
+            'author_core_reference' => 'IDN-SPOOFED',
+        ])->assertRedirect(route('zumra.groups.discussion', $groupA));
+
+        $this->assertDatabaseHas('dg_context_comments', [
+            'context_type' => ContextComment::CONTEXT_ZUMRA_ACTIVITY,
+            'context_reference' => $groupA->public_reference,
+            'author_core_reference' => 'IDN-A',
+            'purpose' => 'COORDINATION',
+            'body' => 'Préparons la prochaine séance de travail Alpha.',
+        ]);
+        $this->assertDatabaseMissing('dg_context_comments', ['author_core_reference' => 'IDN-SPOOFED']);
+
+        $this->get(route('zumra.groups.discussion', $groupA))
+            ->assertOk()
+            ->assertSee('Préparons la prochaine séance de travail Alpha.');
+        $this->get(route('zumra.groups.discussion', $groupB))
+            ->assertOk()
+            ->assertDontSee('Préparons la prochaine séance de travail Alpha.');
+    }
+
     public function test_suspended_zumra_hides_its_activity_comment_thread(): void
     {
         $group = $this->group('ZUMRA active');
+        $this->activateMember($group, 'IDN-A');
+        $this->activateMember($group, 'IDN-B');
         app(ContextCommentService::class)->addZumraActivity(
             $group,
             'IDN-A',
@@ -122,6 +182,7 @@ final class ContextCommentTest extends TestCase
         $group->update(['state' => ZumraGroup::STATE_SUSPENDED, 'suspended_at' => now()]);
         $this->signIn('IDN-B');
         $this->get(route('comments.zumra-activity', $group))->assertNotFound();
+        $this->get(route('zumra.groups.discussion', $group))->assertNotFound();
     }
 
     public function test_private_identity_reference_is_never_rendered_as_comment_author(): void
@@ -143,7 +204,7 @@ final class ContextCommentTest extends TestCase
 
         $this->get(route('comments.need', $need))
             ->assertOk()
-            ->assertSee('Membre DG Afrique')
+            ->assertSee('Membre GAMAD')
             ->assertDontSee('IDN-HIDDEN-AUTHOR')
             ->assertDontSee('Nom qui ne doit pas sortir');
     }
@@ -264,6 +325,18 @@ final class ContextCommentTest extends TestCase
         ]);
     }
 
+    private function activateMember(ZumraGroup $group, string $reference): ZumraGroupMembership
+    {
+        return ZumraGroupMembership::query()->create([
+            'zumra_group_id' => $group->id,
+            'core_identity_reference' => $reference,
+            'status' => ZumraGroupMembership::STATUS_ACTIVE,
+            'entry_mode' => 'REQUEST',
+            'initiated_by_core_reference' => $reference,
+            'joined_at' => now(),
+        ]);
+    }
+
     private function signIn(string $reference): void
     {
         Http::fake([
@@ -276,7 +349,7 @@ final class ContextCommentTest extends TestCase
             'core.test/api/v1/identites/*' => Http::response([
                 'reference' => $reference,
                 'type' => 'personne',
-                'libelle' => 'Membre DG Afrique',
+                'libelle' => 'Membre GAMAD',
                 'etat' => 'ACTIF',
                 'source' => 'CORE',
                 'regime' => 'INSCRIT_AU_REGISTRE',
