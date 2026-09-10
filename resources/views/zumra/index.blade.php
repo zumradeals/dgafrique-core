@@ -250,8 +250,8 @@
                 </article>
                 <article>
                     <span class="dg-zumra-pillar-number">02</span>
-                    <h3>Un projet principal</h3>
-                    <p>Le cœur de la ZUMRA est son projet principal, autour duquel peuvent naître des projets de la même famille.</p>
+                    <h3>Un projet commun</h3>
+                    <p>Une ZUMRA peut faire naître et porter un projet autour duquel ses membres apprennent, travaillent et agissent ensemble. D’autres projets peuvent émerger lorsqu’un besoin réel le justifie.</p>
                 </article>
                 <article>
                     <span class="dg-zumra-pillar-number">03</span>
