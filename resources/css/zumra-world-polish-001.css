@@ -1,0 +1,339 @@
+/* ZUMRA-WORLD-POLISH-001 — polish visuel uniquement. Aucun état métier n'est fabriqué. */
+
+/* Le monde doit respirer comme une destination, pas comme un empilement de cartes. */
+.dg-zumra-world {
+    --zumra-polish-shadow: 0 18px 50px rgba(2, 43, 65, .08);
+    --zumra-polish-shadow-strong: 0 24px 70px rgba(2, 43, 65, .15);
+    padding-top: 1.25rem;
+}
+
+.dg-zumra-world-hero {
+    min-height: 21rem;
+    border-radius: 1.55rem 1.55rem 0 0;
+    box-shadow: var(--zumra-polish-shadow-strong);
+}
+
+.dg-zumra-world-hero__cover {
+    opacity: .54;
+    transform: scale(1.015);
+}
+
+.dg-zumra-world-hero__shade {
+    background:
+        radial-gradient(circle at 82% 35%, rgba(255, 225, 90, .12), transparent 24%),
+        linear-gradient(90deg, rgba(1, 34, 53, .98) 0%, rgba(1, 48, 69, .9) 48%, rgba(1, 54, 65, .55) 100%);
+}
+
+.dg-zumra-world-hero__content {
+    min-height: 21rem;
+    padding: clamp(1.6rem, 3.6vw, 3.35rem);
+}
+
+.dg-zumra-world-mark {
+    border-radius: 1.25rem;
+    background: linear-gradient(145deg, rgba(255,255,255,.18), rgba(3,50,72,.7));
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), 0 16px 35px rgba(0,0,0,.16);
+    backdrop-filter: blur(8px);
+}
+
+.dg-zumra-world-hero__doctrine {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    min-height: 1.9rem;
+    margin-bottom: .8rem;
+    border: 1px solid rgba(255,225,90,.32);
+    border-radius: 999px;
+    background: rgba(255,225,90,.1);
+    padding: .28rem .7rem;
+}
+
+.dg-zumra-world-hero__lead {
+    max-width: 54rem;
+    font-size: clamp(1rem, 1.45vw, 1.24rem);
+}
+
+.dg-zumra-world-hero__meta span {
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: 999px;
+    background: rgba(0,0,0,.16);
+    padding: .38rem .65rem;
+    backdrop-filter: blur(5px);
+}
+
+.dg-zumra-world-hero__motto {
+    opacity: .97;
+    text-shadow: 0 2px 20px rgba(0,0,0,.22);
+}
+
+/* La navigation reste lisible pendant l'exploration du monde. */
+.dg-zumra-world-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 18;
+    border-radius: 0 0 1.15rem 1.15rem;
+    box-shadow: 0 12px 32px rgba(2,43,65,.08);
+    backdrop-filter: blur(14px);
+}
+
+.dg-zumra-world-tabs a,
+.dg-zumra-world-tabs span {
+    transition: background-color .18s ease, transform .18s ease;
+}
+
+.dg-zumra-world-tabs a:hover {
+    transform: translateY(-1px);
+}
+
+/* Plus d'espace au centre : Formation et Travail sont les deux foyers du monde ZUMRA. */
+.dg-zumra-world-layout {
+    grid-template-columns: minmax(12.75rem,.58fr) minmax(0,2.18fr) minmax(15.5rem,.72fr);
+    gap: 1.15rem;
+    margin-top: 1.15rem;
+}
+
+.dg-zumra-world-left,
+.dg-zumra-world-center,
+.dg-zumra-world-right {
+    gap: 1.15rem;
+}
+
+.dg-zumra-world-card {
+    box-shadow: var(--zumra-polish-shadow);
+}
+
+/* Formation : premier chemin. La surface annonce désormais clairement qu'elle est active. */
+.dg-zumra-world-center > #formation {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(9, 111, 132, .24);
+    border-radius: 1.2rem;
+    background:
+        radial-gradient(circle at 92% 12%, rgba(255,225,90,.24), transparent 23%),
+        linear-gradient(135deg, #eaf9fb 0%, #f4fbff 52%, #fff8d9 100%);
+    padding: clamp(1.15rem, 2.1vw, 1.65rem);
+    box-shadow: 0 20px 48px rgba(4,82,121,.1);
+}
+
+.dg-zumra-world-center > #formation::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: .34rem;
+    background: linear-gradient(180deg, var(--dg-solar), var(--dg-primary));
+}
+
+.dg-zumra-world-formation__head {
+    gap: 1.35rem;
+}
+
+.dg-zumra-world-formation__head h2 {
+    max-width: 31rem;
+    font-size: clamp(1.65rem, 2.45vw, 2.3rem);
+}
+
+.dg-zumra-world-formation__head .dg-zumra-world-button {
+    border-color: var(--dg-deep);
+    background: var(--dg-solar);
+    color: var(--dg-deep) !important;
+    box-shadow: 0 9px 22px rgba(255, 214, 0, .16);
+}
+
+.dg-zumra-world-formation__path {
+    gap: .85rem;
+    margin-top: 1.15rem;
+}
+
+.dg-zumra-world-formation__path article {
+    min-height: 8.1rem;
+    align-content: start;
+    border-color: rgba(4,82,121,.13);
+    background: rgba(255,255,255,.9);
+    box-shadow: 0 8px 24px rgba(2,43,65,.045);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.dg-zumra-world-formation__path article:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 13px 28px rgba(2,43,65,.08);
+}
+
+.dg-zumra-world-formation__path article > span {
+    background: var(--dg-solar);
+    color: var(--dg-deep);
+}
+
+/* Travail : le Projet réel devient le deuxième grand foyer, sans modifier son état. */
+.dg-zumra-world-center > #projets {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.2rem;
+    box-shadow: var(--zumra-polish-shadow-strong);
+}
+
+.dg-zumra-world-center > #projets::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: .3rem;
+    z-index: 4;
+    background: linear-gradient(90deg, var(--dg-solar), #31b879 52%, #59bfe5);
+}
+
+.dg-zumra-project-main__hero {
+    min-height: 18rem;
+    padding: clamp(1.45rem, 2.8vw, 2.25rem);
+}
+
+.dg-zumra-project-main__hero::after {
+    background:
+        radial-gradient(circle at 88% 15%, rgba(255,225,90,.12), transparent 25%),
+        linear-gradient(90deg, rgba(2,43,65,.99), rgba(2,65,72,.82) 67%, rgba(2,43,65,.42));
+}
+
+.dg-zumra-project-main h2 {
+    max-width: 42rem;
+    font-size: clamp(2rem, 3.25vw, 3.05rem);
+}
+
+.dg-zumra-project-main__summary {
+    max-width: 47rem;
+    font-size: 1.03rem;
+    line-height: 1.6;
+}
+
+.dg-zumra-project-main__tags span {
+    border: 1px solid rgba(255,255,255,.14);
+    backdrop-filter: blur(4px);
+}
+
+.dg-zumra-project-main__foot {
+    gap: .85rem;
+    background: linear-gradient(180deg, #fff, #f8fbfc);
+    padding: 1.05rem;
+}
+
+.dg-zumra-project-progress,
+.dg-zumra-project-next {
+    min-height: 9.2rem;
+}
+
+.dg-zumra-project-next {
+    border-color: rgba(26,161,101,.2);
+    background: linear-gradient(145deg,#eefaf4,#f8fdfb);
+}
+
+/* Les indicateurs réels restent secondaires aux deux chemins Formation / Travail. */
+.dg-zumra-world-kpis {
+    gap: .7rem;
+}
+
+.dg-zumra-world-kpi {
+    min-height: 5.35rem;
+    border-radius: .95rem;
+    background: linear-gradient(180deg,#fff,#fbfcfd);
+    box-shadow: 0 8px 22px rgba(2,43,65,.045);
+}
+
+.dg-zumra-world-kpi strong {
+    color: var(--dg-deep);
+    font-size: 1.24rem;
+}
+
+/* Les zones de gouvernance et d'action restent lisibles sans rivaliser avec les chemins principaux. */
+.dg-zumra-world-now,
+.dg-zumra-world-triple > .dg-zumra-world-card {
+    box-shadow: 0 10px 28px rgba(2,43,65,.055);
+}
+
+.dg-zumra-world-right .dg-zumra-world-action {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(239,212,109,.85);
+    background: linear-gradient(145deg,#fff3ad,#fffbed);
+}
+
+.dg-zumra-world-right .dg-zumra-world-action::after {
+    content: '';
+    position: absolute;
+    width: 7rem;
+    height: 7rem;
+    right: -2.5rem;
+    top: -2.7rem;
+    border-radius: 999px;
+    background: rgba(255,255,255,.35);
+}
+
+.dg-zumra-world-vision {
+    border-color: rgba(239,212,109,.72);
+}
+
+@media (min-width: 1181px) {
+    .dg-zumra-world-left,
+    .dg-zumra-world-right {
+        position: sticky;
+        top: 4.85rem;
+    }
+}
+
+@media (max-width: 1180px) {
+    .dg-zumra-world-layout {
+        grid-template-columns: minmax(12.5rem,.6fr) minmax(0,1.7fr);
+    }
+
+    .dg-zumra-world-right {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 900px) {
+    .dg-zumra-world-hero {
+        min-height: 18rem;
+    }
+
+    .dg-zumra-world-hero__content {
+        min-height: 18rem;
+    }
+
+    .dg-zumra-world-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dg-zumra-world-center {
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 620px) {
+    .dg-zumra-world {
+        padding-top: .65rem;
+    }
+
+    .dg-zumra-world-hero {
+        min-height: 16.5rem;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .dg-zumra-world-hero__content {
+        min-height: 16.5rem;
+    }
+
+    .dg-zumra-world-tabs {
+        position: relative;
+        top: auto;
+    }
+
+    .dg-zumra-world-center > #formation,
+    .dg-zumra-world-center > #projets {
+        border-radius: 1rem;
+    }
+
+    .dg-zumra-world-formation__head h2,
+    .dg-zumra-project-main h2 {
+        font-size: 1.7rem;
+    }
+
+    .dg-zumra-world-formation__path article {
+        min-height: auto;
+    }
+}
