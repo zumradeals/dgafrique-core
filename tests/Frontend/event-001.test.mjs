@@ -21,7 +21,7 @@ test('EVENT-001 exposes a real ZUMRA event space backed by CAP-068', () => {
 test('the ZUMRA world Events tab is connected to the real event route', () => {
   const app = read('resources/js/app.js');
 
-  assert.match(app, /dg-zumra-world-tabs a\[href="\\#evenements"\]/);
+  assert.match(app, /dg-zumra-world-tabs a\[href="#evenements"\]/);
   assert.match(app, /\/evenements`/);
   assert.match(app, /EVENT-001/);
 });
