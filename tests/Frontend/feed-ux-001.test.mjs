@@ -13,7 +13,7 @@ test('FEED-UX-001 matérialise la maquette GAMAD sans second moteur social', () 
   assert.match(view, /Activité de vos ZUMRA/);
   assert.match(view, /Besoins récents/);
   assert.match(view, /Projets récents/);
-  assert.match(css, /grid-template-columns:13\.5rem minmax\(0,1fr\) 18rem/);
+  assert.match(css, /grid-template-columns:13\.5rem minmax\(0,1fr\)18rem/);
 });
 
 test('le Fil reste une projection des contrats canoniques', () => {
