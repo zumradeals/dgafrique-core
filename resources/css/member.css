@@ -13,6 +13,7 @@
 @import "./discussion-001.css";
 @import "./event-001.css";
 @import "./zumra-polish-001.css";
+@import "./people-ux-001.css";
 
 /* UJ-03A — authenticated shell shared by every member surface. */
 @media (min-width: 900px) {
