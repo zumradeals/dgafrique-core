@@ -128,8 +128,44 @@ const connectZumraActivityTab = () => {
     });
 };
 
+// ZUMRA-POLISH-001 — une seule navigation locale lisible sur tous les sous-espaces.
+// Ce raccord ne décide d’aucun droit : chaque destination conserve son middleware et son autorité métier.
+const connectZumraPolishNavigation = () => {
+    const match = window.location.pathname.match(/^\/zumra\/groupes\/([0-9a-f-]+)\/(activite|membres|formation|discussion|evenements)\/?$/i);
+    if (!match || document.querySelector('.dg-zumra-polish-tabs')) return;
+
+    const [, group, section] = match;
+    const items = [
+        ['accueil', `/zumra/groupes/${group}`, '⌂ Accueil'],
+        ['activite', `/zumra/groupes/${group}/activite`, '◉ Fil'],
+        ['membres', `/zumra/groupes/${group}/membres`, '♙ Membres'],
+        ['formation', `/zumra/groupes/${group}/formation`, '◈ Formation'],
+        ['discussion', `/zumra/groupes/${group}/discussion`, '▢ Discussion'],
+        ['evenements', `/zumra/groupes/${group}/evenements`, '▣ Événements'],
+    ];
+
+    const nav = document.createElement('nav');
+    nav.className = 'dg-zumra-polish-tabs';
+    nav.setAttribute('aria-label', 'Navigation dans la ZUMRA');
+
+    items.forEach(([key, href, label]) => {
+        const link = document.createElement('a');
+        link.href = href;
+        link.textContent = label;
+        if (key === section) {
+            link.classList.add('is-active');
+            link.setAttribute('aria-current', 'page');
+        }
+        nav.appendChild(link);
+    });
+
+    const host = document.querySelector('.za-hero, .dg-zumra-members__hero, .dg-event-space__hero, .dg-zumra-discussion__hero, .dg-formation__hero');
+    host?.insertAdjacentElement('afterend', nav);
+};
+
 document.addEventListener('DOMContentLoaded', connectZumraEventTab);
 document.addEventListener('DOMContentLoaded', connectZumraMembersTab);
 document.addEventListener('DOMContentLoaded', connectZumraActivityTab);
+document.addEventListener('DOMContentLoaded', connectZumraPolishNavigation);
 
 Livewire.start();

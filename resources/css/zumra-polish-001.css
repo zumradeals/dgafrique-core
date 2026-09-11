@@ -1,0 +1,190 @@
+/* ZUMRA-POLISH-001 — cohérence visuelle transversale des espaces ZUMRA.
+ * Présentation uniquement : aucune autorité métier, aucun droit et aucune donnée ne sont reconstruits ici.
+ */
+
+:root {
+    --zumra-ink: #102f45;
+    --zumra-deep: #071f35;
+    --zumra-blue: #0d659b;
+    --zumra-sky: #eaf5fd;
+    --zumra-border: #dfe8ef;
+    --zumra-muted: #667b89;
+    --zumra-surface: #ffffff;
+    --zumra-soft: #f5f8fa;
+    --zumra-orange: #d96812;
+    --zumra-radius-lg: 26px;
+    --zumra-radius-md: 18px;
+    --zumra-shadow: 0 14px 38px rgba(16, 47, 69, .08);
+}
+
+/* Une même largeur de lecture et un même rythme sur toutes les surfaces du monde ZUMRA. */
+.za-wrap,
+.dg-zumra-members,
+.dg-event-space,
+.dg-zumra-discussion,
+.dg-formation {
+    width: min(100%, 1180px);
+    margin-inline: auto;
+    padding-inline: clamp(.75rem, 2vw, 1.25rem);
+}
+
+/* Barre locale canonique injectée par app.js : Accueil / Fil / Membres / Formation / Discussion / Événements. */
+.dg-zumra-polish-tabs {
+    display: flex;
+    gap: .5rem;
+    overflow-x: auto;
+    margin: 1rem 0 1.35rem;
+    padding: .2rem 0 .45rem;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+}
+
+.dg-zumra-polish-tabs a {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    padding: .62rem .9rem;
+    border: 1px solid var(--zumra-border);
+    border-radius: 999px;
+    background: var(--zumra-surface);
+    color: #34566b;
+    font-size: .86rem;
+    font-weight: 800;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(16, 47, 69, .035);
+    transition: border-color .15s ease, background .15s ease, color .15s ease, transform .15s ease;
+}
+
+.dg-zumra-polish-tabs a:hover,
+.dg-zumra-polish-tabs a:focus-visible {
+    border-color: #9fc9e2;
+    color: var(--zumra-blue);
+    transform: translateY(-1px);
+}
+
+.dg-zumra-polish-tabs a.is-active {
+    border-color: var(--zumra-deep);
+    background: var(--zumra-deep);
+    color: #fff;
+}
+
+/* Sur les sous-espaces, la barre transversale remplace les anciennes barres locales hétérogènes. */
+body:has(.dg-zumra-polish-tabs) .za-tabs,
+body:has(.dg-zumra-polish-tabs) .dg-event-tabs,
+body:has(.dg-zumra-polish-tabs) .dg-zumra-discussion__tabs {
+    display: none;
+}
+
+/* Même langage de hero sans effacer la personnalité fonctionnelle de chaque espace. */
+.za-hero,
+.dg-zumra-members__hero,
+.dg-event-space__hero,
+.dg-zumra-discussion__hero,
+.dg-formation__hero {
+    border-radius: var(--zumra-radius-lg);
+    box-shadow: 0 20px 50px rgba(7, 31, 53, .13);
+}
+
+.za-hero,
+.dg-zumra-members__hero {
+    background: linear-gradient(135deg, #071f35 0%, #174f78 100%);
+}
+
+.dg-event-space__hero,
+.dg-zumra-discussion__hero,
+.dg-formation__hero {
+    border: 1px solid rgba(13, 101, 155, .1);
+}
+
+.za-kicker,
+.dg-zumra-members__eyebrow,
+.dg-event-space__eyebrow,
+.dg-zumra-discussion__eyebrow,
+.dg-formation__eyebrow {
+    letter-spacing: .14em;
+    font-weight: 900;
+}
+
+/* Les cartes donnent désormais la même sensation de profondeur et de densité. */
+.za-card,
+.dg-zumra-member-card,
+.dg-event-card,
+.dg-zumra-discussion__panel,
+.dg-formation__panel {
+    border-color: var(--zumra-border);
+    box-shadow: var(--zumra-shadow);
+}
+
+.za-card,
+.dg-zumra-member-card,
+.dg-event-card,
+.dg-zumra-discussion__panel,
+.dg-formation__panel,
+.dg-zumra-members__intro {
+    border-radius: var(--zumra-radius-md);
+}
+
+/* Les liens d'action partagent une hiérarchie visuelle commune. */
+.za-action,
+.dg-zumra-member-card__action,
+.dg-event-card h3 a,
+.dg-zumra-discussion a:not(.dg-zumra-polish-tabs a),
+.dg-formation a:not(.dg-zumra-polish-tabs a) {
+    text-underline-offset: .18em;
+}
+
+/* Retour au monde : même discrétion partout. */
+.dg-zumra-members__back,
+.dg-event-space__back,
+.dg-zumra-discussion__back,
+.dg-formation__back {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    margin-bottom: .8rem;
+    color: var(--zumra-blue);
+    font-size: .86rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.dg-zumra-members__hero .dg-zumra-members__back {
+    color: #c8e7ff;
+}
+
+/* Root world : les tabs existants reçoivent le même traitement que les sous-espaces. */
+.dg-zumra-world-tabs {
+    gap: .45rem;
+    scrollbar-width: thin;
+}
+
+.dg-zumra-world-tabs a {
+    border-radius: 999px;
+}
+
+@media (max-width: 760px) {
+    .za-wrap,
+    .dg-zumra-members,
+    .dg-event-space,
+    .dg-zumra-discussion,
+    .dg-formation {
+        padding-inline: .7rem;
+    }
+
+    .za-hero,
+    .dg-zumra-members__hero,
+    .dg-event-space__hero,
+    .dg-zumra-discussion__hero,
+    .dg-formation__hero {
+        border-radius: 20px;
+    }
+
+    .dg-zumra-polish-tabs {
+        margin-top: .75rem;
+    }
+
+    .dg-zumra-polish-tabs a {
+        padding: .58rem .78rem;
+        font-size: .8rem;
+    }
+}
