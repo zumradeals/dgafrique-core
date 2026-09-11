@@ -40,11 +40,10 @@ test('PROJECT-UX-001 — la page réutilise les routes et données canoniques du
 
 test('PROJECT-UX-001 — la progression affichée reste factuelle et non inventée', () => {
     const presentation = read('app/Application/Projects/ProjectHubPresentation.php');
-    const model = read('app/Models/Project.php');
     const index = read('resources/views/projects/index.blade.php');
 
     assert.match(presentation, /milestoneProgressPercentage/);
-    assert.match(model, /Aucun jalon défini/);
+    assert.match(presentation, /Aucun jalon défini/);
     assert.match(index, /Non mesuré/);
     assert.match(index, /progress_label/);
     assert.doesNotMatch(index, /score d'impact|score humain/i);
