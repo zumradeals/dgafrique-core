@@ -34,18 +34,29 @@
         @if ($recommendations !== [])
             <section class="dg-people-panel" aria-labelledby="people-recommendations-title">
                 <div class="dg-people-section-head">
-                    <div><p class="dg-people-eyebrow">POUR VOUS</p><h2 id="people-recommendations-title">Des rapprochements qui ont du sens</h2></div>
+                    <div>
+                        <p class="dg-people-eyebrow">POUR VOUS</p>
+                        <h2 id="people-recommendations-title">Des rapprochements qui ont du sens</h2>
+                    </div>
                     <a class="dg-people-chip" href="{{ route('recommendations.index') }}">Toutes mes recommandations →</a>
                 </div>
                 <div class="dg-people-recos">
                     @foreach (array_slice($recommendations, 0, 3) as $recommendation)
-                        @php($recommended = $recommendation['profile'])
+                        @php
+                            $recommended = $recommendation['profile'];
+                            $firstReason = $recommendation['reasons'][0] ?? null;
+                        @endphp
                         <article class="dg-people-reco">
                             <div class="dg-people-reco-top">
                                 <span class="dg-people-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($recommended->discovery_display_name, 0, 1)) }}</span>
-                                <div><h3>{{ $recommended->discovery_display_name }}</h3><small>{{ $recommended->current_activity ?: 'Profil GAMAD' }}</small></div>
+                                <div>
+                                    <h3>{{ $recommended->discovery_display_name }}</h3>
+                                    <small>{{ $recommended->current_activity ?: 'Profil GAMAD' }}</small>
+                                </div>
                             </div>
-                            @if (($recommendation['reasons'][0] ?? null))<p>{{ $recommendation['reasons'][0] }}</p>@endif
+                            @if ($firstReason)
+                                <p>{{ $firstReason }}</p>
+                            @endif
                             <p><a class="dg-people-chip" href="{{ route('people.show', $recommended->discovery_reference) }}">Voir le profil →</a></p>
                         </article>
                     @endforeach
@@ -83,8 +94,14 @@
                         @endforeach
                     </select>
 
-                    @if ($recentQuery === '1')<input type="hidden" name="recent" value="1">@endif
-                    <div class="dg-people-filter-actions"><button type="submit">Appliquer</button><a href="{{ route('people.index') }}">Réinitialiser</a></div>
+                    @if ($recentQuery === '1')
+                        <input type="hidden" name="recent" value="1">
+                    @endif
+
+                    <div class="dg-people-filter-actions">
+                        <button type="submit">Appliquer</button>
+                        <a href="{{ route('people.index') }}">Réinitialiser</a>
+                    </div>
                 </form>
 
                 <div id="capacites" style="margin-top:1.25rem">
@@ -104,7 +121,11 @@
                     <div>
                         <p class="dg-people-eyebrow">PERSONNES À DÉCOUVRIR</p>
                         <h2>{{ $profiles->total() }} résultat{{ $profiles->total() === 1 ? '' : 's' }}</h2>
-                        @if (request('q'))<p>Recherche : « {{ request('q') }} »</p>@else<p>Des personnes visibles par choix, à découvrir par ce qu’elles peuvent apporter.</p>@endif
+                        @if (request('q'))
+                            <p>Recherche : « {{ request('q') }} »</p>
+                        @else
+                            <p>Des personnes visibles par choix, à découvrir par ce qu’elles peuvent apporter.</p>
+                        @endif
                     </div>
                 </div>
 
@@ -119,19 +140,35 @@
                             <div>
                                 <h3>{{ $person->discovery_display_name }}</h3>
                                 <div class="dg-person-card__meta">
-                                    @if ($person->city)<span>⌖ {{ $person->city }}@if($person->country_code), {{ $person->country_code }}@endif</span>@endif
-                                    @if ($person->current_activity)<span>{{ $person->current_activity }}</span>@endif
-                                    @if ($person->availability_status)<span class="dg-person-card__availability {{ $isOpen ? 'is-open' : '' }}">{{ \App\Models\PersonProfile::AVAILABILITY_LABELS[$person->availability_status] ?? $person->availability_status }}</span>@endif
+                                    @if ($person->city)
+                                        <span>⌖ {{ $person->city }}@if ($person->country_code), {{ $person->country_code }}@endif</span>
+                                    @endif
+                                    @if ($person->current_activity)
+                                        <span>{{ $person->current_activity }}</span>
+                                    @endif
+                                    @if ($person->availability_status)
+                                        <span class="dg-person-card__availability {{ $isOpen ? 'is-open' : '' }}">{{ \App\Models\PersonProfile::AVAILABILITY_LABELS[$person->availability_status] ?? $person->availability_status }}</span>
+                                    @endif
                                 </div>
                                 <div class="dg-people-chips">
-                                    @foreach ($visibleCapabilities as $statement)<span class="dg-people-chip">{{ $statement->label }}</span>@endforeach
+                                    @foreach ($visibleCapabilities as $statement)
+                                        <span class="dg-people-chip">{{ $statement->label }}</span>
+                                    @endforeach
                                 </div>
-                                @if ($person->discovery_bio)<p>{{ \Illuminate\Support\Str::limit($person->discovery_bio, 170) }}</p>@endif
-                                <p class="dg-person-card__reason"><strong>Pourquoi ce profil apparaît :</strong> {{ request('q') ? 'il correspond à votre recherche ou à une capacité visible.' : 'cette personne a choisi d’être découvrable dans GAMAD.' }}</p>
+                                @if ($person->discovery_bio)
+                                    <p>{{ \Illuminate\Support\Str::limit($person->discovery_bio, 170) }}</p>
+                                @endif
+                                <p class="dg-person-card__reason">
+                                    <strong>Pourquoi ce profil apparaît :</strong>
+                                    {{ request('q') ? 'il correspond à votre recherche ou à une capacité visible.' : 'cette personne a choisi d’être découvrable dans GAMAD.' }}
+                                </p>
                             </div>
                             <div class="dg-person-card__actions">
                                 <a href="{{ route('people.show', $person->discovery_reference) }}">{{ $settings['detail_button'] }}</a>
-                                <form method="POST" action="{{ route('messages.direct', $person->discovery_reference) }}">@csrf<button type="submit">Contacter</button></form>
+                                <form method="POST" action="{{ route('messages.direct', $person->discovery_reference) }}">
+                                    @csrf
+                                    <button type="submit">Contacter</button>
+                                </form>
                             </div>
                         </article>
                     @empty
@@ -142,7 +179,9 @@
                     @endforelse
                 </div>
 
-                @if ($profiles->hasPages())<div class="dg-people-pagination">{{ $profiles->links() }}</div>@endif
+                @if ($profiles->hasPages())
+                    <div class="dg-people-pagination">{{ $profiles->links() }}</div>
+                @endif
             </main>
         </div>
 
