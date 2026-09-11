@@ -106,7 +106,30 @@ const connectZumraMembersTab = () => {
     });
 };
 
+// ZUMRA-ACTIVITY-001 — le mini Fil est une destination de lecture, jamais un moteur navigateur.
+const connectZumraActivityTab = () => {
+    const match = window.location.pathname.match(/^\/zumra\/groupes\/([0-9a-f-]+)\/?$/i);
+    if (!match) return;
+
+    const activityUrl = `/zumra/groupes/${match[1]}/activite`;
+    const tabs = document.querySelector('.dg-zumra-world-tabs');
+    const home = tabs?.querySelector('a[href="#accueil"]');
+
+    if (tabs && home && !tabs.querySelector('a[data-zumra-activity]')) {
+        const link = document.createElement('a');
+        link.href = activityUrl;
+        link.dataset.zumraActivity = 'true';
+        link.textContent = '◉ Fil';
+        home.insertAdjacentElement('afterend', link);
+    }
+
+    document.querySelectorAll('a[href="#activite"]').forEach((link) => {
+        link.setAttribute('href', activityUrl);
+    });
+};
+
 document.addEventListener('DOMContentLoaded', connectZumraEventTab);
 document.addEventListener('DOMContentLoaded', connectZumraMembersTab);
+document.addEventListener('DOMContentLoaded', connectZumraActivityTab);
 
 Livewire.start();
