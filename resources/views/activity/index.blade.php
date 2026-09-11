@@ -1,5 +1,110 @@
-<x-layouts.member title="Fil" active="fil"><div class="dg-space"><p class="dg-space-eyebrow">LE RÉSEAU EN MOUVEMENT</p><h1>Ce qui avance ensemble.</h1><p>Des besoins, des actions et des nouvelles des collectifs.</p>
-<form method="GET" action="{{ route('activity.index') }}"><label for="type">Que souhaitez-vous voir ?</label><select class="dg-input" id="type" name="type">@foreach ($filters as $value => $label)<option value="{{ $value }}" @selected($filter === $value)>{{ $label }}</option>@endforeach</select><x-dg.button type="submit">Afficher</x-dg.button></form>
-@forelse ($feed as $item)<article class="dg-space-section"><h2>{{ $item['title'] }}</h2><p>{{ $item['summary'] }}</p><a class="dg-space-text-link" href="{{ $item['action_url'] }}">{{ $item['action_label'] }} →</a></article>@empty<section class="dg-space-section"><h2>Le mouvement commence avec vous.</h2><p>Aucune actualité accessible à afficher pour le moment.</p><x-dg.button :href="route('member.space')">Retrouver mon espace</x-dg.button></section>@endforelse
-{{ $feed->links() }}
-</div></x-layouts.member>
+<x-layouts.member title="Fil global" active="fil">
+@php
+    $feedItems = $feed->getCollection();
+    $recentNeeds = $feedItems->where('kind', 'NEEDS')->take(3);
+    $recentProjects = $feedItems->where('kind', 'PROJECTS')->take(3);
+    $spotlight = $feedItems->first(fn ($item) => in_array($item['kind'], ['PROJECTS', 'NEEDS'], true));
+    $kindIcons = ['NEEDS' => '♡', 'PROJECTS' => '▣', 'ZUMRA' => '◉'];
+@endphp
+<div class="feed-global">
+    <div class="feed-global__layout">
+        <aside class="feed-global__rail" aria-label="Navigation du Fil global">
+            <section class="feed-global__panel">
+                <nav class="feed-global__nav">
+                    <a href="{{ route('member.space') }}">⌂ Accueil</a>
+                    <a class="is-active" href="{{ route('activity.index') }}">☷ Fil global</a>
+                    <a href="{{ route('people.index') }}">♙ Personnes</a>
+                    <a href="{{ route('needs.index') }}">♡ Besoins</a>
+                    <a href="{{ route('projects.index') }}">▣ Projets</a>
+                    <a href="{{ route('zumra.index') }}">◉ ZUMRA</a>
+                </nav>
+            </section>
+            <section class="feed-global__panel">
+                <p class="feed-global__rail-title">Agir maintenant</p>
+                <nav class="feed-global__nav feed-global__nav--actions">
+                    <a href="{{ route('needs.create') }}">▧ Publier un besoin</a>
+                    <a href="{{ route('projects.create') }}">＋ Proposer un projet</a>
+                    <a href="{{ route('zumra.index') }}">◉ Rejoindre une ZUMRA</a>
+                </nav>
+            </section>
+            <blockquote class="feed-global__quote">« Ensemble, les bonnes volontés transforment les défis en solutions. »<strong>GAMAD</strong></blockquote>
+        </aside>
+
+        <main class="feed-global__main">
+            <section class="feed-global__hero">
+                <div class="feed-global__hero-copy">
+                    <p class="feed-global__eyebrow">LE RÉSEAU EN MOUVEMENT</p>
+                    <h1>Le Fil global GAMAD</h1>
+                    <h2>Ce qui se passe. Ce qui avance.<br>Où vous pouvez agir.</h2>
+                    <p>Découvrez les besoins, projets, ZUMRA, missions, transmissions et preuves qui font avancer le réseau GAMAD.</p>
+                </div>
+                <div class="feed-global__hero-art" aria-hidden="true"><span>Des actions aujourd'hui<br>pour une Afrique<br>meilleure demain.</span></div>
+            </section>
+
+            <section class="feed-global__pulse" aria-label="Repères du réseau">
+                <span><strong>{{ number_format($networkStats['groups'], 0, ',', ' ') }}</strong> ZUMRA</span>
+                <span><strong>{{ number_format($networkStats['projects'], 0, ',', ' ') }}</strong> projets en action</span>
+                <span><strong>{{ number_format($networkStats['needs'], 0, ',', ' ') }}</strong> besoins ouverts</span>
+                <span><strong>{{ number_format($networkStats['members'], 0, ',', ' ') }}</strong> membres actifs</span>
+            </section>
+
+            <nav class="feed-global__filters" aria-label="Filtrer le Fil global">
+                @foreach ($filters as $value => $label)
+                    <a class="{{ $filter === $value ? 'is-active' : '' }}" href="{{ route('activity.index', $value === 'ALL' ? [] : ['type' => $value]) }}">{{ $label }}</a>
+                @endforeach
+            </nav>
+
+            <section class="feed-global__stream" aria-label="Activité du réseau GAMAD">
+                @forelse ($feed as $item)
+                    <article class="feed-card feed-card--{{ strtolower($item['kind']) }}">
+                        <header class="feed-card__meta">
+                            <span class="feed-card__kind">{{ $kindIcons[$item['kind']] ?? '◇' }} {{ $item['kind_label'] }}</span>
+                            <span>{{ $item['event_label'] }}</span>
+                            <time datetime="{{ $item['occurred_at']->toIso8601String() }}">{{ $item['occurred_at']->diffForHumans() }}</time>
+                            @if (!empty($item['relevance_reason']))<strong class="feed-card__relevant">Ceci vous concerne</strong>@endif
+                        </header>
+                        <div class="feed-card__body {{ !empty($item['image_url']) ? 'has-image' : '' }}">
+                            <div>
+                                <h2>{{ $item['title'] }}</h2>
+                                @if (!empty($item['summary']))<p>{{ $item['summary'] }}</p>@endif
+                                @if (!empty($item['context']))<p class="feed-card__context">{{ $item['context'] }}</p>@endif
+                                @if (!empty($item['location']))<span class="feed-card__location">⌖ {{ $item['location'] }}</span>@endif
+                                @if (!empty($item['relevance_reason']))<p class="feed-card__reason">{{ $item['relevance_reason'] }}</p>@endif
+                            </div>
+                            @if (!empty($item['image_url']))<img src="{{ $item['image_url'] }}" alt="" loading="lazy">@endif
+                        </div>
+                        <footer class="feed-card__actions">
+                            <div>
+                                @if (!empty($item['comment_url']))<a href="{{ $item['comment_url'] }}">◯ Commenter</a>@endif
+                                @if (!empty($item['share_url']))<a href="{{ $item['share_url'] }}">⇧ Partager</a>@endif
+                                @if (!empty($item['contact_url']))<a href="{{ $item['contact_url'] }}">✉ Contacter</a>@endif
+                            </div>
+                            <a class="feed-card__primary" href="{{ $item['action_url'] }}">{{ $item['action_label'] }} →</a>
+                        </footer>
+                    </article>
+                @empty
+                    <section class="feed-global__empty"><h2>Le mouvement commence avec vous.</h2><p>Aucune activité accessible à afficher pour le moment.</p><a href="{{ route('needs.create') }}">Exprimer un besoin</a></section>
+                @endforelse
+            </section>
+            <div class="feed-global__pagination">{{ $feed->links() }}</div>
+        </main>
+
+        <aside class="feed-global__aside" aria-label="Repères du réseau">
+            @if ($spotlight)
+                <section class="feed-global__spotlight">
+                    <p>À la une aujourd'hui</p><span>{{ $spotlight['kind_label'] }}</span><h2>{{ $spotlight['title'] }}</h2>
+                    @if (!empty($spotlight['summary']))<p>{{ $spotlight['summary'] }}</p>@endif
+                    <a href="{{ $spotlight['action_url'] }}">{{ $spotlight['action_label'] }} →</a>
+                </section>
+            @endif
+            <section class="feed-global__side-card">
+                <div class="feed-global__side-head"><h2>Activité de vos ZUMRA</h2><a href="{{ route('zumra.index') }}">Voir tout →</a></div>
+                @forelse ($myGroups as $group)<a class="feed-global__mini" href="{{ route('zumra.show', $group) }}"><span>◉</span><div><strong>{{ $group->name }}</strong><small>Ouvrir l'espace ZUMRA</small></div></a>@empty<p class="feed-global__muted">Rejoignez une ZUMRA pour retrouver ici vos collectifs.</p>@endforelse
+            </section>
+            @if ($recentNeeds->isNotEmpty())<section class="feed-global__side-card"><div class="feed-global__side-head"><h2>Besoins récents</h2><a href="{{ route('needs.index') }}">Voir tout →</a></div>@foreach ($recentNeeds as $item)<a class="feed-global__mini" href="{{ $item['action_url'] }}"><span>♡</span><div><strong>{{ $item['title'] }}</strong><small>{{ $item['occurred_at']->diffForHumans() }}</small></div></a>@endforeach</section>@endif
+            @if ($recentProjects->isNotEmpty())<section class="feed-global__side-card"><div class="feed-global__side-head"><h2>Projets récents</h2><a href="{{ route('projects.index') }}">Voir tout →</a></div>@foreach ($recentProjects as $item)<a class="feed-global__mini" href="{{ $item['action_url'] }}"><span>▣</span><div><strong>{{ $item['title'] }}</strong><small>{{ $item['occurred_at']->diffForHumans() }}</small></div></a>@endforeach</section>@endif
+            <section class="feed-global__cta"><strong>Chaque action compte.</strong><p>Découvrez où votre contribution peut faire avancer une action réelle.</p><a href="{{ route('needs.index') }}">Agir maintenant →</a></section>
+        </aside>
+    </div>
+</div>
+</x-layouts.member>
