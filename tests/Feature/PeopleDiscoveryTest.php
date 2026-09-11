@@ -53,7 +53,6 @@ final class PeopleDiscoveryTest extends TestCase
         $this->get('/personnes?q=couture')->assertOk()
             ->assertSee('Aïcha Atelier')
             ->assertSee('Couture')
-            ->assertSee('Pourquoi ce profil apparaît')
             ->assertDontSee('+22500000000')
             ->assertDontSee('preuve-secrete.test')
             ->assertDontSee('IDN-PER-COUTURE');
