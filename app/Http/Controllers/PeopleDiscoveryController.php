@@ -31,6 +31,8 @@ final class PeopleDiscoveryController
             'q' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'size:2', 'regex:/^[A-Za-z]{2}$/'],
             'mode' => ['nullable', Rule::in($modeValues)],
+            'availability' => ['nullable', Rule::in(array_keys(PersonProfile::AVAILABILITY_LABELS))],
+            'recent' => ['nullable', Rule::in(['1'])],
         ]);
         $term = CapabilityStatementSynchronizer::normalize((string) ($data['q'] ?? ''));
 
@@ -76,6 +78,12 @@ final class PeopleDiscoveryController
         }
         if (($settings['mode_filter'] ?? true) && isset($data['mode'])) {
             $query->where('participation_mode', $data['mode']);
+        }
+        if (isset($data['availability'])) {
+            $query->where('availability_status', $data['availability']);
+        }
+        if (($data['recent'] ?? null) === '1') {
+            $query->where('discovery_consented_at', '>=', now()->subMonth());
         }
 
         $profiles = $query->orderByDesc('discovery_consented_at')
