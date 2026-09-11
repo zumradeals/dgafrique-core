@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ContextCommentController;
+use App\Http\Controllers\ZumraActivityController;
 use App\Http\Controllers\ZumraDiscussionController;
 use App\Http\Controllers\ZumraMembersController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,10 @@ Route::middleware('web')->group(function (): void {
         ->whereUuid('project')->middleware(['core.member', 'throttle:comments-read'])->name('comments.project');
     Route::post('/commentaires/projets/{project}', [ContextCommentController::class, 'storeProject'])
         ->whereUuid('project')->middleware(['core.member', 'throttle:comments-write'])->name('comments.project.store');
+
+    // ZUMRA-ACTIVITY-001 — mini Fil en lecture, strictement limité au contexte de la ZUMRA.
+    Route::get('/zumra/groupes/{group}/activite', ZumraActivityController::class)
+        ->whereUuid('group')->middleware(['core.member', 'throttle:comments-read'])->name('zumra.groups.activity');
 
     // MEMBERS-001 — projection des appartenances et responsabilités ZUMRA déjà canoniques.
     Route::get('/zumra/groupes/{group}/membres', ZumraMembersController::class)
