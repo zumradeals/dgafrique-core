@@ -110,9 +110,13 @@ final class PeopleDiscoveryTest extends TestCase
         self::assertFalse($profile->refresh()->discovery_consent);
         self::assertSame(CapabilityStatement::VISIBILITY_PRIVATE, CapabilityStatement::query()->sole()->visibility);
 
-        $this->signIn('IDN-PER-VIEWER', 'Visiteur');
+        // PEOPLE-UX-002 peut afficher à son propriétaire sa propre présence privée.
+        // Le contrat à certifier ici est donc la projection publique : après retrait,
+        // le profil ne doit plus être routable publiquement ni appartenir aux résultats découvrables.
         $this->get('/personnes/'.$profile->discovery_reference)->assertNotFound();
-        $this->get('/personnes?q=menuiserie')->assertOk()->assertDontSee('Atelier Bois');
+        $this->get('/personnes?q=menuiserie')->assertOk()
+            ->assertViewHas('profiles', static fn ($profiles): bool => $profiles->getCollection()
+                ->doesntContain('core_identity_reference', 'IDN-PER-OWNER'));
     }
 
     public function test_discovery_filters_country_and_participation_mode_without_scoring_people(): void
