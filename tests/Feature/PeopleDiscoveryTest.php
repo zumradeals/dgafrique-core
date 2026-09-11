@@ -110,6 +110,9 @@ final class PeopleDiscoveryTest extends TestCase
         self::assertFalse($profile->refresh()->discovery_consent);
         self::assertSame(CapabilityStatement::VISIBILITY_PRIVATE, CapabilityStatement::query()->sole()->visibility);
 
+        // PEOPLE-UX-002 affiche désormais sa propre présence privée dans le Carrefour.
+        // On réinitialise donc explicitement la session avant de tester ce qu'un autre membre voit.
+        $this->flushSession();
         $this->signIn('IDN-PER-VIEWER', 'Visiteur');
         $this->get('/personnes/'.$profile->discovery_reference)->assertNotFound();
         $this->get('/personnes?q=menuiserie')->assertOk()->assertDontSee('Atelier Bois');
