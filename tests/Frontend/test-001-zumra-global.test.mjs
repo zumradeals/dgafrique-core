@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 const read = (path) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8');
 
 test('TEST-001 — le monde ZUMRA expose ses cinq surfaces cohérentes', () => {
-    const routes = read('routes/cap021.php') + read('routes/cap068.php');
+    const routes = read('routes/cap006.php') + read('routes/cap021.php') + read('routes/cap068.php');
     const world = read('resources/views/zumra/groups/show.blade.php');
     const app = read('resources/js/app.js');
 
